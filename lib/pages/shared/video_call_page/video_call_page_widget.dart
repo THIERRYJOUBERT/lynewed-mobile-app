@@ -1,0 +1,258 @@
+import '/auth/supabase_auth/auth_util.dart';
+import '/backend/schema/enums/enums.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_widgets.dart';
+import 'dart:ui';
+import '/custom_code/actions/index.dart' as actions;
+import '/custom_code/widgets/index.dart' as custom_widgets;
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'video_call_page_model.dart';
+export 'video_call_page_model.dart';
+
+class VideoCallPageWidget extends StatefulWidget {
+  const VideoCallPageWidget({
+    super.key,
+    required this.videoSessionId,
+    required this.channelName,
+    required this.agoraToken,
+    required this.isInitiator,
+  });
+
+  final String? videoSessionId;
+  final String? channelName;
+  final String? agoraToken;
+  final bool? isInitiator;
+
+  static String routeName = 'VideoCallPage';
+  static String routePath = '/videoCallPage';
+
+  @override
+  State<VideoCallPageWidget> createState() => _VideoCallPageWidgetState();
+}
+
+class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
+  late VideoCallPageModel _model;
+
+  final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _model = createModel(context, () => VideoCallPageModel());
+  }
+
+  @override
+  void dispose() {
+    _model.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+      child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: FlutterFlowTheme.of(context).primaryText,
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          child: Stack(
+            children: [
+              Container(
+                width: double.infinity,
+                height: double.infinity,
+                child: custom_widgets.AgoraVideoView(
+                  width: double.infinity,
+                  height: double.infinity,
+                  appId: FFAppConstants.agoraAppId,
+                  channelName: widget!.channelName!,
+                  token: widget!.agoraToken!,
+                  userId: currentUserUid,
+                  onCallEnd: () async {
+                    _model.updateVideoSessionStatusActionEndCall =
+                        await actions.updateVideoSessionStatusAction(
+                      widget!.videoSessionId!,
+                      VideoSessionStatus.completed,
+                    );
+                    context.safePop();
+
+                    safeSetState(() {});
+                  },
+                ),
+              ),
+              Align(
+                alignment: AlignmentDirectional(0.0, 1.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        InkWell(
+                          splashColor: Colors.transparent,
+                          focusColor: Colors.transparent,
+                          hoverColor: Colors.transparent,
+                          highlightColor: Colors.transparent,
+                          onTap: () async {
+                            _model.isMuted = !_model.isMuted;
+                            safeSetState(() {});
+                            await actions.agoraToggleMute(
+                              _model.isMuted,
+                            );
+                          },
+                          child: Container(
+                            width: 72.0,
+                            height: 72.0,
+                            decoration: BoxDecoration(
+                              color: Color(0xCC4B4B4B),
+                              borderRadius: BorderRadius.circular(99.0),
+                            ),
+                            child: Stack(
+                              children: [
+                                if (_model.isMuted == true)
+                                  Align(
+                                    alignment: AlignmentDirectional(0.0, 0.0),
+                                    child: Icon(
+                                      Icons.mic_off_rounded,
+                                      color: Colors.white,
+                                      size: 36.0,
+                                    ),
+                                  ),
+                                if (_model.isMuted == false)
+                                  Align(
+                                    alignment: AlignmentDirectional(0.0, 0.0),
+                                    child: Icon(
+                                      Icons.mic,
+                                      color: Colors.white,
+                                      size: 36.0,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        InkWell(
+                          splashColor: Colors.transparent,
+                          focusColor: Colors.transparent,
+                          hoverColor: Colors.transparent,
+                          highlightColor: Colors.transparent,
+                          onTap: () async {
+                            _model.isCameraOff = !_model.isCameraOff;
+                            safeSetState(() {});
+                            await actions.agoraToggleCamera(
+                              _model.isCameraOff,
+                            );
+                          },
+                          child: Container(
+                            width: 72.0,
+                            height: 72.0,
+                            decoration: BoxDecoration(
+                              color: Color(0xCC4B4B4B),
+                              borderRadius: BorderRadius.circular(99.0),
+                            ),
+                            child: Stack(
+                              children: [
+                                if (_model.isCameraOff == true)
+                                  Align(
+                                    alignment: AlignmentDirectional(0.0, 0.0),
+                                    child: Icon(
+                                      Icons.videocam_off,
+                                      color: Colors.white,
+                                      size: 36.0,
+                                    ),
+                                  ),
+                                if (_model.isCameraOff == false)
+                                  Align(
+                                    alignment: AlignmentDirectional(0.0, 0.0),
+                                    child: Icon(
+                                      Icons.videocam_sharp,
+                                      color: Colors.white,
+                                      size: 36.0,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        InkWell(
+                          splashColor: Colors.transparent,
+                          focusColor: Colors.transparent,
+                          hoverColor: Colors.transparent,
+                          highlightColor: Colors.transparent,
+                          onTap: () async {
+                            await actions.agoraSwitchCamera();
+                          },
+                          child: Container(
+                            width: 72.0,
+                            height: 72.0,
+                            decoration: BoxDecoration(
+                              color: Color(0xCC4B4B4B),
+                              borderRadius: BorderRadius.circular(99.0),
+                            ),
+                            child: Align(
+                              alignment: AlignmentDirectional(0.0, 0.0),
+                              child: Icon(
+                                Icons.flip_camera_ios,
+                                color: Colors.white,
+                                size: 36.0,
+                              ),
+                            ),
+                          ),
+                        ),
+                        InkWell(
+                          splashColor: Colors.transparent,
+                          focusColor: Colors.transparent,
+                          hoverColor: Colors.transparent,
+                          highlightColor: Colors.transparent,
+                          onTap: () async {
+                            await actions.agoraEndCall();
+                            _model.updateVideoSessionStatusActionResult =
+                                await actions.updateVideoSessionStatusAction(
+                              widget!.videoSessionId!,
+                              VideoSessionStatus.completed,
+                            );
+                            context.safePop();
+
+                            safeSetState(() {});
+                          },
+                          child: Container(
+                            width: 72.0,
+                            height: 72.0,
+                            decoration: BoxDecoration(
+                              color: FlutterFlowTheme.of(context).accent2,
+                              borderRadius: BorderRadius.circular(99.0),
+                            ),
+                            child: Align(
+                              alignment: AlignmentDirectional(0.0, 0.0),
+                              child: Icon(
+                                Icons.call_end,
+                                color: Colors.white,
+                                size: 36.0,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ]
+                          .addToStart(SizedBox(width: 10.0))
+                          .addToEnd(SizedBox(width: 10.0)),
+                    ),
+                  ].addToEnd(SizedBox(height: 60.0)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
