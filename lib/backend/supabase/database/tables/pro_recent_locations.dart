@@ -10,7 +10,7 @@ class ProRecentLocationsTable extends SupabaseTable<ProRecentLocationsRow> {
 }
 
 class ProRecentLocationsRow extends SupabaseDataRow {
-  ProRecentLocationsRow(Map<String, dynamic> data) : super(data);
+  ProRecentLocationsRow(super.data);
 
   @override
   SupabaseTable get table => ProRecentLocationsTable();

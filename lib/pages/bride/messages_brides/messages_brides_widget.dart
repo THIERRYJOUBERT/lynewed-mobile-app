@@ -6,15 +6,12 @@ import '/components/ui_system/empty_state/empty_state_widget.dart';
 import '/conversation_sheet/conversation_actions_sheet/conversation_actions_sheet_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/actions/actions.dart' as action_blocks;
 import '/custom_code/actions/index.dart' as actions;
 import 'package:aligned_dialog/aligned_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/scheduler.dart';
 import 'messages_brides_model.dart';
 export 'messages_brides_model.dart';
 
@@ -85,15 +82,15 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         body: Align(
-          alignment: AlignmentDirectional(0.0, -1.0),
-          child: Container(
+          alignment: const AlignmentDirectional(0.0, -1.0),
+          child: SizedBox(
             width: MediaQuery.sizeOf(context).width * 1.0,
             height: MediaQuery.sizeOf(context).height * 1.0,
             child: Stack(
               children: [
                 Padding(
                   padding:
-                      EdgeInsetsDirectional.fromSTEB(20.0, 130.0, 20.0, 84.0),
+                      const EdgeInsetsDirectional.fromSTEB(20.0, 130.0, 20.0, 84.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
@@ -118,7 +115,7 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
                           Container(
                             width: double.infinity,
                             height: 70.0,
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: Builder(
                               builder: (context) {
                                 final requestList = _model.psRequestItems
@@ -126,7 +123,7 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
                                         e.otherProfileId != currentUserUid)
                                     .toList();
                                 if (requestList.isEmpty) {
-                                  return Center(
+                                  return const Center(
                                     child: EmptyStateWidget(
                                       message: 'No contact request',
                                     ),
@@ -139,7 +136,7 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
                                   scrollDirection: Axis.horizontal,
                                   itemCount: requestList.length,
                                   separatorBuilder: (_, __) =>
-                                      SizedBox(width: 14.0),
+                                      const SizedBox(width: 14.0),
                                   itemBuilder: (context, requestListIndex) {
                                     final requestListItem =
                                         requestList[requestListIndex];
@@ -158,7 +155,7 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
                                       },
                                       child: Container(
                                         width: 64.0,
-                                        decoration: BoxDecoration(),
+                                        decoration: const BoxDecoration(),
                                         child: Column(
                                           mainAxisSize: MainAxisSize.max,
                                           children: [
@@ -202,7 +199,7 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
                                                 ],
                                               ),
                                             ),
-                                          ].divide(SizedBox(height: 6.0)),
+                                          ].divide(const SizedBox(height: 6.0)),
                                         ),
                                       ),
                                     );
@@ -212,8 +209,8 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
                             ),
                           ),
                         ]
-                            .divide(SizedBox(height: 14.0))
-                            .addToStart(SizedBox(height: 2.0)),
+                            .divide(const SizedBox(height: 14.0))
+                            .addToStart(const SizedBox(height: 2.0)),
                       ),
                       Divider(
                         height: 1.0,
@@ -241,7 +238,7 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
                             ),
                             Flexible(
                               child: Container(
-                                decoration: BoxDecoration(),
+                                decoration: const BoxDecoration(),
                                 child: Builder(
                                   builder: (context) {
                                     final conversationItem = _model.psInboxItems
@@ -251,7 +248,7 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
                                             (e.roomType == RoomType.private))
                                         .toList();
                                     if (conversationItem.isEmpty) {
-                                      return Center(
+                                      return const Center(
                                         child: EmptyStateWidget(
                                           message: 'No recent chats',
                                         ),
@@ -275,7 +272,7 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
                                         scrollDirection: Axis.vertical,
                                         itemCount: conversationItem.length,
                                         separatorBuilder: (_, __) =>
-                                            SizedBox(height: 14.0),
+                                            const SizedBox(height: 14.0),
                                         itemBuilder:
                                             (context, conversationItemIndex) {
                                           final conversationItemItem =
@@ -303,13 +300,13 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
                                                   isGlobal: false,
                                                   avoidOverflow: true,
                                                   targetAnchor:
-                                                      AlignmentDirectional(
+                                                      const AlignmentDirectional(
                                                               -1.0, 0.0)
                                                           .resolve(
                                                               Directionality.of(
                                                                   context)),
                                                   followerAnchor:
-                                                      AlignmentDirectional(
+                                                      const AlignmentDirectional(
                                                               -1.0, 0.0)
                                                           .resolve(
                                                               Directionality.of(
@@ -326,7 +323,7 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
                                                               .primaryFocus
                                                               ?.unfocus();
                                                         },
-                                                        child: Container(
+                                                        child: SizedBox(
                                                           width:
                                                               MediaQuery.sizeOf(
                                                                           context)
@@ -371,7 +368,7 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
                                                           2.0),
                                                 ),
                                                 child: Padding(
-                                                  padding: EdgeInsetsDirectional
+                                                  padding: const EdgeInsetsDirectional
                                                       .fromSTEB(12.0, 12.0,
                                                           14.0, 12.0),
                                                   child: Row(
@@ -506,7 +503,7 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
                                                                     1)
                                                                   Align(
                                                                     alignment:
-                                                                        AlignmentDirectional(
+                                                                        const AlignmentDirectional(
                                                                             0.0,
                                                                             0.0),
                                                                     child:
@@ -522,12 +519,12 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
                                                                       ),
                                                                       child:
                                                                           Align(
-                                                                        alignment: AlignmentDirectional(
+                                                                        alignment: const AlignmentDirectional(
                                                                             0.0,
                                                                             0.0),
                                                                         child:
                                                                             Padding(
-                                                                          padding: EdgeInsetsDirectional.fromSTEB(
+                                                                          padding: const EdgeInsetsDirectional.fromSTEB(
                                                                               3.0,
                                                                               0.0,
                                                                               3.0,
@@ -550,15 +547,15 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
                                                                       ),
                                                                     ),
                                                                   ),
-                                                              ].divide(SizedBox(
+                                                              ].divide(const SizedBox(
                                                                   width: 20.0)),
                                                             ),
-                                                          ].divide(SizedBox(
+                                                          ].divide(const SizedBox(
                                                               height: 4.0)),
                                                         ),
                                                       ),
                                                     ].divide(
-                                                        SizedBox(width: 14.0)),
+                                                        const SizedBox(width: 14.0)),
                                                   ),
                                                 ),
                                               ),
@@ -571,16 +568,16 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
                                 ),
                               ),
                             ),
-                          ].divide(SizedBox(height: 14.0)),
+                          ].divide(const SizedBox(height: 14.0)),
                         ),
                       ),
-                    ].divide(SizedBox(height: 14.0)),
+                    ].divide(const SizedBox(height: 14.0)),
                   ),
                 ),
                 wrapWithModel(
                   model: _model.headerBarModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: HeaderBarWidget(
+                  child: const HeaderBarWidget(
                     title: 'MESSAGING',
                   ),
                 ),

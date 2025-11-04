@@ -1,12 +1,9 @@
 // Automatic FlutterFlow imports
-import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+// Imports other custom actions
+// Imports custom functions
+import '/utils/secure_logger.dart';
 import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -24,8 +21,7 @@ Future<bool> validateChatDetailsParams(
   // est bien présent. Si non, elle redirige l'utilisateur et retourne 'false'.
 
   if (roomId == null || roomId.isEmpty) {
-    debugPrint(
-        '[DEBUG] validateChatDetailsParams: roomId is NULL or EMPTY. Redirecting...');
+    SecureLogger.warning('Chat details validation failed: roomId is null or empty, redirecting...');
 
     // Redirection de secours vers la liste des messages appropriée
     if (userRole == UserRole.professional) {
@@ -39,6 +35,6 @@ Future<bool> validateChatDetailsParams(
   }
 
   // Si le roomId est valide, on indique que tout va bien
-  debugPrint('[DEBUG] validateChatDetailsParams: roomId is VALID.');
+  SecureLogger.debug('Chat details validation: roomId is valid');
   return true;
 }

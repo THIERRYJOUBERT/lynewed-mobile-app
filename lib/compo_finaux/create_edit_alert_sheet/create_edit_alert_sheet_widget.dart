@@ -7,13 +7,11 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/scheduler.dart';
 import 'create_edit_alert_sheet_model.dart';
 export 'create_edit_alert_sheet_model.dart';
 
@@ -71,7 +69,7 @@ class _CreateEditAlertSheetWidgetState
           width: MediaQuery.sizeOf(context).width * 1.0,
           decoration: BoxDecoration(
             color: FlutterFlowTheme.of(context).primaryBackground,
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(0.0),
               bottomRight: Radius.circular(0.0),
               topLeft: Radius.circular(24.0),
@@ -79,7 +77,7 @@ class _CreateEditAlertSheetWidgetState
             ),
           ),
           child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(20.0, 20.0, 20.0, 20.0),
+            padding: const EdgeInsetsDirectional.fromSTEB(20.0, 20.0, 20.0, 20.0),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -103,7 +101,7 @@ class _CreateEditAlertSheetWidgetState
                               BoxShadow(
                                 blurRadius: 10.0,
                                 color: FlutterFlowTheme.of(context).secondary,
-                                offset: Offset(
+                                offset: const Offset(
                                   0.0,
                                   0.0,
                                 ),
@@ -148,7 +146,7 @@ class _CreateEditAlertSheetWidgetState
                           size: 24.0,
                         ),
                       ),
-                    ].divide(SizedBox(width: 8.0)),
+                    ].divide(const SizedBox(width: 8.0)),
                   ),
                   Column(
                     mainAxisSize: MainAxisSize.min,
@@ -199,7 +197,7 @@ class _CreateEditAlertSheetWidgetState
                         borderColor: Colors.transparent,
                         borderWidth: 1.0,
                         borderRadius: 0.0,
-                        margin: EdgeInsetsDirectional.fromSTEB(
+                        margin: const EdgeInsetsDirectional.fromSTEB(
                             4.0, 0.0, 12.0, 10.0),
                         isOverButton: false,
                         isSearchable: false,
@@ -230,7 +228,7 @@ class _CreateEditAlertSheetWidgetState
                         mainAxisSize: MainAxisSize.max,
                         children: [
                           Flexible(
-                            child: Container(
+                            child: SizedBox(
                               width: MediaQuery.sizeOf(context).width * 1.0,
                               height: 50.0,
                               child: custom_widgets.InstantSearchTextField(
@@ -275,7 +273,7 @@ class _CreateEditAlertSheetWidgetState
                             onPressed: () async {
                               currentUserLocationValue =
                                   await getCurrentUserLocation(
-                                      defaultLocation: LatLng(0.0, 0.0));
+                                      defaultLocation: const LatLng(0.0, 0.0));
                               _model.placeLatLng = currentUserLocationValue;
                               _model.searchText = 'Geolocation';
                               safeSetState(() {});
@@ -283,9 +281,9 @@ class _CreateEditAlertSheetWidgetState
                           ),
                         ],
                       ),
-                      if (_model.psPlaceSuggestions.length != 0)
+                      if (_model.psPlaceSuggestions.isNotEmpty)
                         Align(
-                          alignment: AlignmentDirectional(0.0, 0.44),
+                          alignment: const AlignmentDirectional(0.0, 0.44),
                           child: Material(
                             color: Colors.transparent,
                             elevation: 0.0,
@@ -300,14 +298,14 @@ class _CreateEditAlertSheetWidgetState
                                 borderRadius: BorderRadius.circular(2.0),
                               ),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     16.0, 14.0, 16.0, 14.0),
                                 child: Builder(
                                   builder: (context) {
                                     final placeSuggestionList =
                                         _model.psPlaceSuggestions.toList();
                                     if (placeSuggestionList.isEmpty) {
-                                      return Center(
+                                      return const Center(
                                         child: EmptyStateWidget(
                                           message: 'Aucune adresse trouvée...',
                                         ),
@@ -321,7 +319,7 @@ class _CreateEditAlertSheetWidgetState
                                       scrollDirection: Axis.vertical,
                                       itemCount: placeSuggestionList.length,
                                       separatorBuilder: (_, __) =>
-                                          SizedBox(height: 10.0),
+                                          const SizedBox(height: 10.0),
                                       itemBuilder:
                                           (context, placeSuggestionListIndex) {
                                         final placeSuggestionListItem =
@@ -409,7 +407,7 @@ class _CreateEditAlertSheetWidgetState
                             ),
                           ),
                         ),
-                    ].divide(SizedBox(height: 10.0)),
+                    ].divide(const SizedBox(height: 10.0)),
                   ),
                   Column(
                     mainAxisSize: MainAxisSize.min,
@@ -430,7 +428,7 @@ class _CreateEditAlertSheetWidgetState
                           ),
                         ],
                       ),
-                      Container(
+                      SizedBox(
                         width: MediaQuery.sizeOf(context).width * 1.0,
                         child: TextFormField(
                           controller: _model.textFieldDetailsTextController,
@@ -444,20 +442,20 @@ class _CreateEditAlertSheetWidgetState
                                 .labelMedium
                                 .override(
                                   fontFamily: 'Haas Grot Text Trial',
-                                  color: Color(0x9C57636C),
+                                  color: const Color(0x9C57636C),
                                   fontSize: 14.0,
                                   letterSpacing: 0.0,
                                   fontWeight: FontWeight.normal,
                                 ),
                             enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
+                              borderSide: const BorderSide(
                                 color: Color(0x00000000),
                                 width: 1.0,
                               ),
                               borderRadius: BorderRadius.circular(2.0),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
+                              borderSide: const BorderSide(
                                 color: Color(0x00000000),
                                 width: 1.0,
                               ),
@@ -478,8 +476,8 @@ class _CreateEditAlertSheetWidgetState
                               borderRadius: BorderRadius.circular(2.0),
                             ),
                             filled: true,
-                            fillColor: Color(0xFFF5F5F5),
-                            contentPadding: EdgeInsetsDirectional.fromSTEB(
+                            fillColor: const Color(0xFFF5F5F5),
+                            contentPadding: const EdgeInsetsDirectional.fromSTEB(
                                 16.0, 20.0, 16.0, 12.0),
                           ),
                           style:
@@ -496,7 +494,7 @@ class _CreateEditAlertSheetWidgetState
                               .asValidator(context),
                         ),
                       ),
-                    ].divide(SizedBox(height: 10.0)),
+                    ].divide(const SizedBox(height: 10.0)),
                   ),
                   Column(
                     mainAxisSize: MainAxisSize.max,
@@ -518,7 +516,7 @@ class _CreateEditAlertSheetWidgetState
                         ],
                       ),
                       Align(
-                        alignment: AlignmentDirectional(-1.0, 0.0),
+                        alignment: const AlignmentDirectional(-1.0, 0.0),
                         child: InkWell(
                           splashColor: Colors.transparent,
                           focusColor: Colors.transparent,
@@ -583,7 +581,7 @@ class _CreateEditAlertSheetWidgetState
                           ),
                         ),
                       ),
-                    ].divide(SizedBox(height: 10.0)),
+                    ].divide(const SizedBox(height: 10.0)),
                   ),
                   FFButtonWidget(
                     onPressed: () async {
@@ -591,8 +589,7 @@ class _CreateEditAlertSheetWidgetState
                               _model.selectedMotifCode != '') &&
                           (_model.endDate != null) &&
                           (_model.placeLatLng != null) &&
-                          (_model.textFieldDetailsTextController.text != null &&
-                              _model.textFieldDetailsTextController.text !=
+                          (_model.textFieldDetailsTextController.text !=
                                   '')) {
                         _model.newAlertId =
                             await actions.createProfessionalAlertAction(
@@ -613,7 +610,7 @@ class _CreateEditAlertSheetWidgetState
                                       FlutterFlowTheme.of(context).primaryText,
                                 ),
                               ),
-                              duration: Duration(milliseconds: 2000),
+                              duration: const Duration(milliseconds: 2000),
                               backgroundColor:
                                   FlutterFlowTheme.of(context).success,
                             ),
@@ -628,7 +625,7 @@ class _CreateEditAlertSheetWidgetState
                                       FlutterFlowTheme.of(context).primaryText,
                                 ),
                               ),
-                              duration: Duration(milliseconds: 2000),
+                              duration: const Duration(milliseconds: 2000),
                               backgroundColor:
                                   FlutterFlowTheme.of(context).error,
                             ),
@@ -641,14 +638,14 @@ class _CreateEditAlertSheetWidgetState
                           context: context,
                           builder: (alertDialogContext) {
                             return AlertDialog(
-                              title: Text('Missing information.'),
-                              content: Text(
+                              title: const Text('Missing information.'),
+                              content: const Text(
                                   'Some information is missing, please complete it.'),
                               actions: [
                                 TextButton(
                                   onPressed: () =>
                                       Navigator.pop(alertDialogContext),
-                                  child: Text('Ok'),
+                                  child: const Text('Ok'),
                                 ),
                               ],
                             );
@@ -663,9 +660,9 @@ class _CreateEditAlertSheetWidgetState
                       width: double.infinity,
                       height: 48.0,
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
                       iconPadding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                       color: FlutterFlowTheme.of(context).primary,
                       textStyle:
                           FlutterFlowTheme.of(context).titleSmall.override(
@@ -679,7 +676,7 @@ class _CreateEditAlertSheetWidgetState
                       borderRadius: BorderRadius.circular(0.0),
                     ),
                   ),
-                ].divide(SizedBox(height: 20.0)),
+                ].divide(const SizedBox(height: 20.0)),
               ),
             ),
           ),

@@ -1,13 +1,7 @@
 // Automatic FlutterFlow imports
-import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -21,7 +15,7 @@ Future<String?> getInitialDeepLink() async {
     return initialLink;
   } on PlatformException {
     // Gère les erreurs si le plugin ne parvient pas à communiquer avec la plateforme.
-    print("Failed to get initial link.");
+    debugPrint("Failed to get initial link.");
     return null;
   }
 }

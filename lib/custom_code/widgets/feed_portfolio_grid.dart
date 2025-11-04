@@ -1,13 +1,9 @@
 // Automatic FlutterFlow imports
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
+// Imports other custom widgets
 import '/custom_code/actions/index.dart'; // Imports custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+// Imports custom functions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -80,10 +76,12 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
     final newFilters = newF ?? QueryFiltersStruct();
 
     // AJOUTÉ : Vérification des filtres de budget
-    if ((oldFilters.budgetMin ?? 0.0) != (newFilters.budgetMin ?? 0.0))
+    if ((oldFilters.budgetMin ?? 0.0) != (newFilters.budgetMin ?? 0.0)) {
       return true;
-    if ((oldFilters.budgetMax ?? 0.0) != (newFilters.budgetMax ?? 0.0))
+    }
+    if ((oldFilters.budgetMax ?? 0.0) != (newFilters.budgetMax ?? 0.0)) {
       return true;
+    }
 
     final oldLat = oldFilters.center?.latitude;
     final oldLng = oldFilters.center?.longitude;
@@ -93,13 +91,13 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
 
     if ((oldFilters.radiusKm ?? 0) != (newFilters.radiusKm ?? 0)) return true;
 
-    List<String> _norm(dynamic list) {
+    List<String> norm(dynamic list) {
       final out = <String>[];
       if (list is List) {
         for (final e in list) {
-          if (e is String)
+          if (e is String) {
             out.add(e.toUpperCase());
-          else if (e is Profession)
+          } else if (e is Profession)
             out.add(e.name.toUpperCase());
           else
             out.add(e.toString().toUpperCase());
@@ -109,8 +107,8 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
       return out;
     }
 
-    final op = _norm(oldFilters.professions);
-    final np = _norm(newFilters.professions);
+    final op = norm(oldFilters.professions);
+    final np = norm(newFilters.professions);
     if (op.length != np.length) return true;
     for (int i = 0; i < op.length; i++) {
       if (op[i] != np[i]) return true;
@@ -164,9 +162,9 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
       final newItems = <FeedImageItemStruct>[];
       for (final it in result.items) {
         final pid = it.proProfileId ?? '';
-        final idx = it.imageIndex?.toString();
+        final idx = it.imageIndex.toString();
         final url = it.imageUrl ?? '';
-        final key = (pid.isNotEmpty && idx != null) ? '$pid#$idx' : url;
+        final key = (pid.isNotEmpty) ? '$pid#$idx' : url;
 
         if (key.isNotEmpty && !_seenKeys.contains(key)) {
           _seenKeys.add(key);
@@ -187,8 +185,8 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
         });
       }
     } catch (e, st) {
-      print('Error fetching feed data: $e');
-      print(st);
+      debugPrint('Error fetching feed data: $e');
+      debugPrint(st.toString());
       if (mounted) {
         setState(() {
           _hasMore = false;
@@ -234,10 +232,10 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
     }
 
     if (_items.isEmpty && !_isLoading) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children: [
             Icon(Icons.search_off, size: 64, color: Colors.grey),
             SizedBox(height: 16),
             Text('Aucune inspiration trouvée.',
@@ -283,7 +281,7 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
               }
             }
           },
-          child: Container(
+          child: SizedBox(
             height: 220,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(0),

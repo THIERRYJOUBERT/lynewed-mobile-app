@@ -1,13 +1,9 @@
 // Automatic FlutterFlow imports
-import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
+import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -35,8 +31,8 @@ Future<bool> signUpBride(
     if (res.user != null) {
       // L'utilisateur est créé et la session est active
       final String userId = res.user!.id;
-      final String tosVersion = FFAppConstants.tosVersion;
-      final String privacyVersion = FFAppConstants.privacyVersion;
+      const String tosVersion = FFAppConstants.tosVersion;
+      const String privacyVersion = FFAppConstants.privacyVersion;
 
       // Insérer l'acceptation des conditions légales
       await client.from('user_legal_acceptances').insert({
@@ -50,12 +46,12 @@ Future<bool> signUpBride(
       return true;
     } else {
       // Si l'utilisateur est null, il y a eu un problème lors de l'inscription
-      print('signUpBride error: User creation failed');
+      debugPrint('signUpBride error: User creation failed');
       return false;
     }
   } catch (e) {
     // Gérer les erreurs (AuthException ou autres exceptions)
-    print('signUpBride exception: $e');
+    debugPrint('signUpBride exception: $e');
     return false;
   }
 }

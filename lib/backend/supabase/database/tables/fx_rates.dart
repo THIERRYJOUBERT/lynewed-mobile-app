@@ -9,7 +9,7 @@ class FxRatesTable extends SupabaseTable<FxRatesRow> {
 }
 
 class FxRatesRow extends SupabaseDataRow {
-  FxRatesRow(Map<String, dynamic> data) : super(data);
+  FxRatesRow(super.data);
 
   @override
   SupabaseTable get table => FxRatesTable();

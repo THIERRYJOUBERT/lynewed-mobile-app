@@ -1,13 +1,10 @@
 // Automatic FlutterFlow imports
+import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -25,7 +22,7 @@ Profession? _professionFromString(String? s) {
 
 Future<AlertItemDataStruct?> getAlertItemDetailsRpc(String alertId) async {
   if (alertId.isEmpty) {
-    print('getAlertItemDetailsRpc error: alertId is empty.');
+    debugPrint('getAlertItemDetailsRpc error: alertId is empty.');
     return null;
   }
   try {
@@ -33,7 +30,7 @@ Future<AlertItemDataStruct?> getAlertItemDetailsRpc(String alertId) async {
         .rpc('get_alert_item_details', params: {'p_alert_id': alertId});
 
     if (data is! Map<String, dynamic>) {
-      print('getAlertItemDetailsRpc error: Invalid payload received.');
+      debugPrint('getAlertItemDetailsRpc error: Invalid payload received.');
       return null;
     }
 
@@ -54,7 +51,7 @@ Future<AlertItemDataStruct?> getAlertItemDetailsRpc(String alertId) async {
       isContactable: data['isContactable'] == true,
     );
   } catch (e) {
-    print('getAlertItemDetailsRpc error: $e');
+    debugPrint('getAlertItemDetailsRpc error: $e');
     return null;
   }
 }

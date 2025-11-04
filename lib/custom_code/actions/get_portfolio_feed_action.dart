@@ -1,13 +1,11 @@
 // Automatic FlutterFlow imports
+import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -22,7 +20,7 @@ Future<FeedPageResultStruct?> getPortfolioFeedAction(
   int? pageSize,
   String? seed,
 ) async {
-  List<String> _normalizeProfessions(dynamic list) {
+  List<String> normalizeProfessions(dynamic list) {
     final out = <String>[];
     if (list is List) {
       for (final e in list) {
@@ -38,7 +36,7 @@ Future<FeedPageResultStruct?> getPortfolioFeedAction(
     return out;
   }
 
-  Profession _professionFromString(String? s) {
+  Profession professionFromString(String? s) {
     if (s == null) return Profession.PHOTOGRAPHER;
     try {
       return Profession.values
@@ -63,16 +61,16 @@ Future<FeedPageResultStruct?> getPortfolioFeedAction(
       }
       if ((filters.professions ?? []).isNotEmpty) {
         filterParams['professions'] =
-            _normalizeProfessions(filters.professions);
+            normalizeProfessions(filters.professions);
       }
 
       // MODIFIÉ : Ajout des filtres de budget s'ils sont pertinents
       // On n'envoie pas budgetMin s'il est à zéro (pas de limite inférieure)
-      if (filters.budgetMin != null && filters.budgetMin! > 0) {
+      if (filters.budgetMin > 0) {
         filterParams['budgetMin'] = filters.budgetMin;
       }
       // On n'envoie pas budgetMax s'il est à la valeur maximale (pas de limite supérieure)
-      if (filters.budgetMax != null && filters.budgetMax! < 40000.0) {
+      if (filters.budgetMax < 40000.0) {
         filterParams['budgetMax'] = filters.budgetMax;
       }
     }
@@ -108,7 +106,7 @@ Future<FeedPageResultStruct?> getPortfolioFeedAction(
           proFullName: item['proFullName'] as String?,
           proAvatarUrl: item['proAvatarUrl'] as String?,
           proProfession:
-              _professionFromString(item['proProfession'] as String?),
+              professionFromString(item['proProfession'] as String?),
           proLocationLabel: item['proLocationLabel'] as String?,
           isFavorited: item['isFavorited'] as bool? ?? false,
         ),
@@ -121,8 +119,8 @@ Future<FeedPageResultStruct?> getPortfolioFeedAction(
       newSeed: responseMap['newSeed'] as String?,
     );
   } catch (e, st) {
-    print('CRITICAL ERROR in getPortfolioFeedAction: $e');
-    print(st);
+    debugPrint('CRITICAL ERROR in getPortfolioFeedAction: $e');
+    debugPrint(st.toString());
     return null;
   }
 }

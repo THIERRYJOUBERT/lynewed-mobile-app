@@ -10,7 +10,7 @@ class GeographyColumnsTable extends SupabaseTable<GeographyColumnsRow> {
 }
 
 class GeographyColumnsRow extends SupabaseDataRow {
-  GeographyColumnsRow(Map<String, dynamic> data) : super(data);
+  GeographyColumnsRow(super.data);
 
   @override
   SupabaseTable get table => GeographyColumnsTable();

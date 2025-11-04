@@ -4,10 +4,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'support_model.dart';
 export 'support_model.dart';
@@ -64,19 +61,19 @@ class _SupportWidgetState extends State<SupportWidget> {
                 Flexible(
                   child: Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(20.0, 130.0, 10.0, 84.0),
+                        const EdgeInsetsDirectional.fromSTEB(20.0, 130.0, 10.0, 84.0),
                     child: SingleChildScrollView(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
                             width: MediaQuery.sizeOf(context).width * 1.0,
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 0.0, 4.0),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.max,
@@ -104,7 +101,7 @@ class _SupportWidgetState extends State<SupportWidget> {
                                   controller:
                                       _model.dropDownSubjectValueController ??=
                                           FormFieldController<String>(null),
-                                  options: [
+                                  options: const [
                                     'Question about my account',
                                     'Report a bug',
                                     'Other...'
@@ -142,7 +139,7 @@ class _SupportWidgetState extends State<SupportWidget> {
                                   borderColor: Colors.transparent,
                                   borderWidth: 0.0,
                                   borderRadius: 4.0,
-                                  margin: EdgeInsetsDirectional.fromSTEB(
+                                  margin: const EdgeInsetsDirectional.fromSTEB(
                                       12.0, 0.0, 12.0, 0.0),
                                   hidesUnderline: true,
                                   isOverButton: false,
@@ -175,7 +172,7 @@ class _SupportWidgetState extends State<SupportWidget> {
                                           ),
                                         ],
                                       ),
-                                      Container(
+                                      SizedBox(
                                         width:
                                             MediaQuery.sizeOf(context).width *
                                                 1.0,
@@ -195,14 +192,14 @@ class _SupportWidgetState extends State<SupportWidget> {
                                                     .override(
                                                       fontFamily:
                                                           'Haas Grot Text Trial',
-                                                      color: Color(0x9C57636C),
+                                                      color: const Color(0x9C57636C),
                                                       fontSize: 14.0,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
                                                           FontWeight.normal,
                                                     ),
                                             enabledBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
+                                              borderSide: const BorderSide(
                                                 color: Color(0x00000000),
                                                 width: 1.0,
                                               ),
@@ -210,7 +207,7 @@ class _SupportWidgetState extends State<SupportWidget> {
                                                   BorderRadius.circular(4.0),
                                             ),
                                             focusedBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
+                                              borderSide: const BorderSide(
                                                 color: Color(0x00000000),
                                                 width: 1.0,
                                               ),
@@ -239,9 +236,9 @@ class _SupportWidgetState extends State<SupportWidget> {
                                                   BorderRadius.circular(4.0),
                                             ),
                                             filled: true,
-                                            fillColor: Color(0xFFF5F5F5),
+                                            fillColor: const Color(0xFFF5F5F5),
                                             contentPadding:
-                                                EdgeInsetsDirectional.fromSTEB(
+                                                const EdgeInsetsDirectional.fromSTEB(
                                                     16.0, 20.0, 16.0, 12.0),
                                           ),
                                           style: FlutterFlowTheme.of(context)
@@ -261,16 +258,16 @@ class _SupportWidgetState extends State<SupportWidget> {
                                               .asValidator(context),
                                         ),
                                       ),
-                                    ].divide(SizedBox(height: 10.0)),
+                                    ].divide(const SizedBox(height: 10.0)),
                                   ),
-                              ].divide(SizedBox(height: 10.0)),
+                              ].divide(const SizedBox(height: 10.0)),
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 16.0, 0.0, 0.0),
                             child: Container(
-                              decoration: BoxDecoration(),
+                              decoration: const BoxDecoration(),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
@@ -295,31 +292,53 @@ class _SupportWidgetState extends State<SupportWidget> {
                                     ],
                                   ),
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0.0, 0.0, 0.0, 4.0),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          'Describe your request in detail',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily:
-                                                    'Haas Grot Text Trial',
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .secondaryText,
-                                                fontSize: 11.0,
-                                                letterSpacing: 0.0,
-                                              ),
+                                        Flexible(
+                                          child: RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: 'Describe your request in detail',
+                                                  style: FlutterFlowTheme.of(context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        fontFamily:
+                                                            'Haas Grot Text Trial',
+                                                        color:
+                                                            FlutterFlowTheme.of(context)
+                                                                .secondaryText,
+                                                        fontSize: 11.0,
+                                                        letterSpacing: 0.0,
+                                                      ),
+                                                ),
+                                                TextSpan(
+                                                  text: ' Or contact us directly at support@lynewed.com',
+                                                  style: FlutterFlowTheme.of(context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        fontFamily:
+                                                            'Haas Grot Text Trial',
+                                                        color:
+                                                            FlutterFlowTheme.of(context)
+                                                                .primary,
+                                                        fontSize: 11.0,
+                                                        letterSpacing: 0.0,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  Container(
+                                  SizedBox(
                                     width:
                                         MediaQuery.sizeOf(context).width * 1.0,
                                     child: TextFormField(
@@ -337,13 +356,13 @@ class _SupportWidgetState extends State<SupportWidget> {
                                             .override(
                                               fontFamily:
                                                   'Haas Grot Text Trial',
-                                              color: Color(0x9C57636C),
+                                              color: const Color(0x9C57636C),
                                               fontSize: 14.0,
                                               letterSpacing: 0.0,
                                               fontWeight: FontWeight.normal,
                                             ),
                                         enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
+                                          borderSide: const BorderSide(
                                             color: Color(0x00000000),
                                             width: 1.0,
                                           ),
@@ -351,7 +370,7 @@ class _SupportWidgetState extends State<SupportWidget> {
                                               BorderRadius.circular(4.0),
                                         ),
                                         focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
+                                          borderSide: const BorderSide(
                                             color: Color(0x00000000),
                                             width: 1.0,
                                           ),
@@ -377,9 +396,9 @@ class _SupportWidgetState extends State<SupportWidget> {
                                               BorderRadius.circular(4.0),
                                         ),
                                         filled: true,
-                                        fillColor: Color(0xFFF5F5F5),
+                                        fillColor: const Color(0xFFF5F5F5),
                                         contentPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
+                                            const EdgeInsetsDirectional.fromSTEB(
                                                 16.0, 20.0, 16.0, 12.0),
                                       ),
                                       style: FlutterFlowTheme.of(context)
@@ -398,11 +417,11 @@ class _SupportWidgetState extends State<SupportWidget> {
                                           .asValidator(context),
                                     ),
                                   ),
-                                ].divide(SizedBox(height: 10.0)),
+                                ].divide(const SizedBox(height: 10.0)),
                               ),
                             ),
                           ),
-                        ].divide(SizedBox(height: 20.0)),
+                        ].divide(const SizedBox(height: 20.0)),
                       ),
                     ),
                   ),
@@ -412,29 +431,29 @@ class _SupportWidgetState extends State<SupportWidget> {
             wrapWithModel(
               model: _model.headerBarModel,
               updateCallback: () => safeSetState(() {}),
-              child: HeaderBarWidget(
+              child: const HeaderBarWidget(
                 title: 'CONTACT SUPPORT',
               ),
             ),
             Align(
-              alignment: AlignmentDirectional(0.0, 1.0),
+              alignment: const AlignmentDirectional(0.0, 1.0),
               child: Container(
                 width: double.infinity,
                 height: 90.0,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
                 ),
                 child: Stack(
                   children: [
                     Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 14.0, 0.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(0.0, 14.0, 0.0, 0.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 20.0, 0.0, 20.0, 0.0),
                             child: FFButtonWidget(
                               onPressed: () async {
@@ -445,13 +464,10 @@ class _SupportWidgetState extends State<SupportWidget> {
                                             'Other...')) &&
                                     (_model.textFieldDetailsTextController
                                                 .text !=
-                                            null &&
-                                        _model.textFieldDetailsTextController
-                                                .text !=
                                             '')) {
                                   await launchUrl(Uri(
                                       scheme: 'mailto',
-                                      path: 'leoberthet1@gmail.com',
+                                      path: 'support@lynewed.com',
                                       query: {
                                         'subject': _model.dropDownSubjectValue!,
                                         'body': _model
@@ -471,7 +487,7 @@ class _SupportWidgetState extends State<SupportWidget> {
                                               .primaryText,
                                         ),
                                       ),
-                                      duration: Duration(milliseconds: 2000),
+                                      duration: const Duration(milliseconds: 2000),
                                       backgroundColor:
                                           FlutterFlowTheme.of(context).success,
                                     ),
@@ -481,19 +497,13 @@ class _SupportWidgetState extends State<SupportWidget> {
                                           'Other...') &&
                                       (_model.textFieldOtherSubjectTextController
                                                   .text !=
-                                              null &&
-                                          _model.textFieldOtherSubjectTextController
-                                                  .text !=
                                               '') &&
                                       (_model.textFieldDetailsTextController
-                                                  .text !=
-                                              null &&
-                                          _model.textFieldDetailsTextController
                                                   .text !=
                                               '')) {
                                     await launchUrl(Uri(
                                         scheme: 'mailto',
-                                        path: 'leoberthet1@gmail.com',
+                                        path: 'support@lynewed.com',
                                         query: {
                                           'subject': _model
                                               .textFieldOtherSubjectTextController
@@ -515,7 +525,7 @@ class _SupportWidgetState extends State<SupportWidget> {
                                                 .primaryText,
                                           ),
                                         ),
-                                        duration: Duration(milliseconds: 2000),
+                                        duration: const Duration(milliseconds: 2000),
                                         backgroundColor:
                                             FlutterFlowTheme.of(context)
                                                 .success,
@@ -525,9 +535,6 @@ class _SupportWidgetState extends State<SupportWidget> {
                                     if ((((_model.dropDownSubjectValue ==
                                                     'Other...') &&
                                                 (_model.textFieldOtherSubjectTextController
-                                                            .text ==
-                                                        null ||
-                                                    _model.textFieldOtherSubjectTextController
                                                             .text ==
                                                         '')) ==
                                             true) ||
@@ -549,7 +556,7 @@ class _SupportWidgetState extends State<SupportWidget> {
                                             ),
                                           ),
                                           duration:
-                                              Duration(milliseconds: 2000),
+                                              const Duration(milliseconds: 2000),
                                           backgroundColor:
                                               FlutterFlowTheme.of(context)
                                                   .warning,
@@ -557,9 +564,6 @@ class _SupportWidgetState extends State<SupportWidget> {
                                       );
                                     } else {
                                       if (_model.textFieldDetailsTextController
-                                                  .text ==
-                                              null ||
-                                          _model.textFieldDetailsTextController
                                                   .text ==
                                               '') {
                                         ScaffoldMessenger.of(context)
@@ -574,7 +578,7 @@ class _SupportWidgetState extends State<SupportWidget> {
                                               ),
                                             ),
                                             duration:
-                                                Duration(milliseconds: 2000),
+                                                const Duration(milliseconds: 2000),
                                             backgroundColor:
                                                 FlutterFlowTheme.of(context)
                                                     .warning,
@@ -593,7 +597,7 @@ class _SupportWidgetState extends State<SupportWidget> {
                                               ),
                                             ),
                                             duration:
-                                                Duration(milliseconds: 2000),
+                                                const Duration(milliseconds: 2000),
                                             backgroundColor:
                                                 FlutterFlowTheme.of(context)
                                                     .error,
@@ -618,9 +622,9 @@ class _SupportWidgetState extends State<SupportWidget> {
                               options: FFButtonOptions(
                                 width: double.infinity,
                                 height: 48.0,
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     16.0, 0.0, 16.0, 0.0),
-                                iconPadding: EdgeInsetsDirectional.fromSTEB(
+                                iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                     0.0, 0.0, 0.0, 0.0),
                                 color: FlutterFlowTheme.of(context).primary,
                                 textStyle: FlutterFlowTheme.of(context)
@@ -641,7 +645,7 @@ class _SupportWidgetState extends State<SupportWidget> {
                       ),
                     ),
                     Align(
-                      alignment: AlignmentDirectional(0.0, -1.0),
+                      alignment: const AlignmentDirectional(0.0, -1.0),
                       child: Container(
                         width: double.infinity,
                         height: 1.0,

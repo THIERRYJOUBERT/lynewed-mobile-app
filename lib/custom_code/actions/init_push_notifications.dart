@@ -1,12 +1,8 @@
 // Automatic FlutterFlow imports
-import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+// Imports custom functions
 import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -18,22 +14,22 @@ import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '/custom_code/push_background.dart';
 import '/custom_code/firebase_options.dart';
 import '/custom_code/actions/handle_notification_redirection.dart';
 import '/auth/supabase_auth/auth_util.dart';
+import '/utils/secure_logger.dart';
 
 StreamSubscription<AuthState>? _authStateSubscription;
 
 Future<void> initPushNotifications(BuildContext context) async {
-  debugPrint('--- [DEBUG] initPushNotifications: START');
+  SecureLogger.functionStart('initPushNotifications');
   try {
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(
           options: DefaultFirebaseOptions.currentPlatform);
-      debugPrint('--- [DEBUG] Firebase initialized');
+      SecureLogger.info('Firebase initialized');
     }
 
     await FirebaseMessaging.instance
@@ -44,10 +40,10 @@ Future<void> initPushNotifications(BuildContext context) async {
     );
 
     final settings = await FirebaseMessaging.instance.requestPermission();
-    debugPrint('--- [DEBUG] FCM permission: ${settings.authorizationStatus}');
+    SecureLogger.debug('FCM permission status: ${settings.authorizationStatus}');
     if (settings.authorizationStatus != AuthorizationStatus.authorized &&
         settings.authorizationStatus != AuthorizationStatus.provisional) {
-      debugPrint('--- [DEBUG] Permission refused, stopping init.');
+      SecureLogger.warning('FCM permission refused, stopping initialization');
       return;
     }
 
@@ -83,7 +79,7 @@ Future<void> initPushNotifications(BuildContext context) async {
     });
 
     // Fonction pour rafraîchir le badge
-    Future<void> _refreshUnreadBadge() async {
+    Future<void> refreshUnreadBadge() async {
       try {
         final resp =
             await SupaFlow.client.rpc('get_unread_notifications_count');
@@ -91,47 +87,54 @@ Future<void> initPushNotifications(BuildContext context) async {
         FFAppState()
             .update(() => FFAppState().hasUnreadNotifications = count > 0);
       } catch (e) {
-        debugPrint('--- [DEBUG] Badge refresh error: $e');
+        SecureLogger.error('Badge refresh error', error: e);
       }
     }
 
     // Écouteur pour les messages reçus quand l'app est OUVERTE (Foreground)
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-      debugPrint('--- [DEBUG] onMessage (Foreground) data=${message.data}');
+      SecureLogger.debugSanitized(
+        'onMessage (Foreground) received',
+        sensitiveKeys: ['token', 'session_id', 'user_id', 'video_session_id']
+      );
       final data = message.data;
       final type = data['type'] as String?;
       if (type == 'videoIncoming') {
         FFAppState().update(() => FFAppState().incomingVideoCallData =
             Map<String, dynamic>.from(data));
       } else {
-        await _refreshUnreadBadge();
+        await refreshUnreadBadge();
       }
     });
 
     // Écouteur pour le TAP sur une notification quand l'app est en ARRIÈRE-PLAN
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
-      debugPrint(
-          '--- [DEBUG] onMessageOpenedApp (Background) data=${message.data}');
+      SecureLogger.debugSanitized(
+        'onMessageOpenedApp (Background) notification tapped',
+        sensitiveKeys: ['token', 'session_id', 'user_id', 'video_session_id']
+      );
       final data = message.data;
       // IMPORTANT : On ne gère pas 'videoIncoming' ici car le widget listener va s'en charger.
       // On appelle directement la redirection pour tous les autres types.
       if (context.mounted) {
         await handleNotificationRedirection(context, data);
       }
-      await _refreshUnreadBadge();
+      await refreshUnreadBadge();
     });
 
     // Gestion de la notification qui a LANCÉ l'app (état terminé)
     final initialMsg = await FirebaseMessaging.instance.getInitialMessage();
     if (initialMsg != null) {
-      debugPrint(
-          '--- [DEBUG] getInitialMessage (Terminated) data=${initialMsg.data}');
+      SecureLogger.debugSanitized(
+        'getInitialMessage (Terminated) app launched from notification',
+        sensitiveKeys: ['token', 'session_id', 'user_id', 'video_session_id']
+      );
       // On attend un peu que l'UI soit prête
       Future.delayed(const Duration(milliseconds: 2000), () async {
         if (context.mounted) {
           await handleNotificationRedirection(context, initialMsg.data);
         }
-        await _refreshUnreadBadge();
+        await refreshUnreadBadge();
       });
     }
 
@@ -151,9 +154,9 @@ Future<void> initPushNotifications(BuildContext context) async {
     }
 
     // Rafraîchir le badge une première fois
-    await _refreshUnreadBadge();
+    await refreshUnreadBadge();
   } catch (e) {
-    debugPrint('--- [DEBUG] CRITICAL ERROR in initPushNotifications: $e');
+    SecureLogger.error('CRITICAL ERROR in initPushNotifications', error: e);
   }
-  debugPrint('--- [DEBUG] initPushNotifications: END');
+  SecureLogger.functionEnd('initPushNotifications');
 }

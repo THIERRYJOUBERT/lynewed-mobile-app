@@ -1,18 +1,12 @@
 // Automatic FlutterFlow imports
-import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'package:permission_handler/permission_handler.dart';
-import '/backend/schema/enums/enums.dart'; // N'oubliez pas cet import pour votre Enum
+// N'oubliez pas cet import pour votre Enum
 
 Future<String> checkAndRequestPermission(
     PermissionType permissionTypeEnum) async {

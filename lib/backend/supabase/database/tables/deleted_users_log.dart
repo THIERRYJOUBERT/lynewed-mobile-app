@@ -10,7 +10,7 @@ class DeletedUsersLogTable extends SupabaseTable<DeletedUsersLogRow> {
 }
 
 class DeletedUsersLogRow extends SupabaseDataRow {
-  DeletedUsersLogRow(Map<String, dynamic> data) : super(data);
+  DeletedUsersLogRow(super.data);
 
   @override
   SupabaseTable get table => DeletedUsersLogTable();

@@ -1,26 +1,10 @@
-import '/auth/supabase_auth/auth_util.dart';
-import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
-import '/backend/supabase/supabase.dart';
 import '/components/item_all_alert_widget.dart';
 import '/components/nav/nav_bar_pro/nav_bar_pro_widget.dart';
-import '/components/ui_system/empty_state/empty_state_widget.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
-import '/actions/actions.dart' as action_blocks;
-import '/custom_code/actions/index.dart' as actions;
-import '/custom_code/widgets/index.dart' as custom_widgets;
-import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'dashboard_pro_widget.dart' show DashboardProWidget;
-import 'package:smooth_page_indicator/smooth_page_indicator.dart'
-    as smooth_page_indicator;
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class DashboardProModel extends FlutterFlowModel<DashboardProWidget> {
   ///  Local state fields for this page.

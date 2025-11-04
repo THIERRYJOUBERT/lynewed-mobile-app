@@ -3,11 +3,8 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'set_password_page_pro_model.dart';
 export 'set_password_page_pro_model.dart';
 
@@ -67,9 +64,9 @@ class _SetPasswordPageProWidgetState extends State<SetPasswordPageProWidget> {
                   children: [
                     Flexible(
                       child: Align(
-                        alignment: AlignmentDirectional(0.0, 0.0),
+                        alignment: const AlignmentDirectional(0.0, 0.0),
                         child: Stack(
-                          alignment: AlignmentDirectional(0.0, -1.0),
+                          alignment: const AlignmentDirectional(0.0, -1.0),
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(0.0),
@@ -81,16 +78,16 @@ class _SetPasswordPageProWidgetState extends State<SetPasswordPageProWidget> {
                               ),
                             ),
                             Align(
-                              alignment: AlignmentDirectional(0.0, -1.0),
+                              alignment: const AlignmentDirectional(0.0, -1.0),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     32.0, 70.0, 32.0, 0.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      alignment: const AlignmentDirectional(0.0, 0.0),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.max,
                                         mainAxisAlignment:
@@ -98,7 +95,7 @@ class _SetPasswordPageProWidgetState extends State<SetPasswordPageProWidget> {
                                         children: [
                                           Align(
                                             alignment:
-                                                AlignmentDirectional(0.0, 0.0),
+                                                const AlignmentDirectional(0.0, 0.0),
                                             child: FlutterFlowIconButton(
                                               borderRadius: 100.0,
                                               borderWidth: 0.0,
@@ -106,7 +103,7 @@ class _SetPasswordPageProWidgetState extends State<SetPasswordPageProWidget> {
                                               fillColor:
                                                   FlutterFlowTheme.of(context)
                                                       .backgroundIcons,
-                                              icon: Icon(
+                                              icon: const Icon(
                                                 Icons.arrow_back_ios_rounded,
                                                 color: Colors.white,
                                                 size: 17.0,
@@ -137,7 +134,7 @@ class _SetPasswordPageProWidgetState extends State<SetPasswordPageProWidget> {
                                           Container(
                                             width: 40.0,
                                             height: 30.0,
-                                            decoration: BoxDecoration(),
+                                            decoration: const BoxDecoration(),
                                           ),
                                         ],
                                       ),
@@ -155,7 +152,7 @@ class _SetPasswordPageProWidgetState extends State<SetPasswordPageProWidget> {
                                             fontWeight: FontWeight.w500,
                                           ),
                                     ),
-                                  ].divide(SizedBox(height: 12.0)),
+                                  ].divide(const SizedBox(height: 12.0)),
                                 ),
                               ),
                             ),
@@ -167,7 +164,7 @@ class _SetPasswordPageProWidgetState extends State<SetPasswordPageProWidget> {
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(32.0, 0.0, 32.0, 0.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(32.0, 0.0, 32.0, 0.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -177,7 +174,7 @@ class _SetPasswordPageProWidgetState extends State<SetPasswordPageProWidget> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Align(
-                          alignment: AlignmentDirectional(-1.0, -1.0),
+                          alignment: const AlignmentDirectional(-1.0, -1.0),
                           child: Text(
                             'FIRST TIME LOGGING IN ?',
                             style: FlutterFlowTheme.of(context)
@@ -202,9 +199,9 @@ class _SetPasswordPageProWidgetState extends State<SetPasswordPageProWidget> {
                               ),
                         ),
                         Align(
-                          alignment: AlignmentDirectional(1.0, 1.0),
+                          alignment: const AlignmentDirectional(1.0, 1.0),
                           child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 12.0, 0.0, 0.0),
                             child: Text(
                               'Required fields*',
@@ -219,16 +216,16 @@ class _SetPasswordPageProWidgetState extends State<SetPasswordPageProWidget> {
                             ),
                           ),
                         ),
-                      ].divide(SizedBox(height: 14.0)),
+                      ].divide(const SizedBox(height: 14.0)),
                     ),
                     Container(
                       width: double.infinity,
-                      decoration: BoxDecoration(),
+                      decoration: const BoxDecoration(),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
+                          SizedBox(
                             width: double.infinity,
                             child: TextFormField(
                               controller: _model.emailAddressTextController,
@@ -279,7 +276,7 @@ class _SetPasswordPageProWidgetState extends State<SetPasswordPageProWidget> {
                                   ),
                                   borderRadius: BorderRadius.circular(0.0),
                                 ),
-                                contentPadding: EdgeInsetsDirectional.fromSTEB(
+                                contentPadding: const EdgeInsetsDirectional.fromSTEB(
                                     4.0, 12.0, 0.0, 12.0),
                               ),
                               style: FlutterFlowTheme.of(context)
@@ -297,7 +294,7 @@ class _SetPasswordPageProWidgetState extends State<SetPasswordPageProWidget> {
                                   .asValidator(context),
                             ),
                           ),
-                        ].divide(SizedBox(height: 24.0)),
+                        ].divide(const SizedBox(height: 24.0)),
                       ),
                     ),
                     Column(
@@ -308,7 +305,7 @@ class _SetPasswordPageProWidgetState extends State<SetPasswordPageProWidget> {
                             if (_model
                                 .emailAddressTextController.text.isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
+                                const SnackBar(
                                   content: Text(
                                     'Email required!',
                                   ),
@@ -325,7 +322,7 @@ class _SetPasswordPageProWidgetState extends State<SetPasswordPageProWidget> {
                             context.goNamed(
                               AuthWelcomePageWidget.routeName,
                               extra: <String, dynamic>{
-                                kTransitionInfoKey: TransitionInfo(
+                                kTransitionInfoKey: const TransitionInfo(
                                   hasTransition: true,
                                   transitionType: PageTransitionType.fade,
                                   duration: Duration(milliseconds: 0),
@@ -337,9 +334,9 @@ class _SetPasswordPageProWidgetState extends State<SetPasswordPageProWidget> {
                           options: FFButtonOptions(
                             width: double.infinity,
                             height: 48.0,
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 16.0, 0.0, 16.0, 0.0),
-                            iconPadding: EdgeInsetsDirectional.fromSTEB(
+                            iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
                             color: FlutterFlowTheme.of(context).primary,
                             textStyle: FlutterFlowTheme.of(context)
@@ -355,12 +352,12 @@ class _SetPasswordPageProWidgetState extends State<SetPasswordPageProWidget> {
                             borderRadius: BorderRadius.circular(0.0),
                           ),
                         ),
-                      ].divide(SizedBox(height: 12.0)),
+                      ].divide(const SizedBox(height: 12.0)),
                     ),
-                  ].divide(SizedBox(height: 48.0)),
+                  ].divide(const SizedBox(height: 48.0)),
                 ),
               ),
-            ].divide(SizedBox(height: 32.0)),
+            ].divide(const SizedBox(height: 32.0)),
           ),
         ),
       ),

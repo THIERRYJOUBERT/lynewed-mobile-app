@@ -10,7 +10,7 @@ class PublicProfilesTable extends SupabaseTable<PublicProfilesRow> {
 }
 
 class PublicProfilesRow extends SupabaseDataRow {
-  PublicProfilesRow(Map<String, dynamic> data) : super(data);
+  PublicProfilesRow(super.data);
 
   @override
   SupabaseTable get table => PublicProfilesTable();

@@ -4,13 +4,10 @@ import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/actions/actions.dart' as action_blocks;
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'info_wedding_pin_sheet_model.dart';
 export 'info_wedding_pin_sheet_model.dart';
 
@@ -55,7 +52,7 @@ class _InfoWeddingPinSheetWidgetState extends State<InfoWeddingPinSheetWidget> {
       width: MediaQuery.sizeOf(context).width * 1.0,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).primaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(0.0),
           bottomRight: Radius.circular(0.0),
           topLeft: Radius.circular(24.0),
@@ -63,7 +60,7 @@ class _InfoWeddingPinSheetWidgetState extends State<InfoWeddingPinSheetWidget> {
         ),
       ),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(20.0, 14.0, 20.0, 20.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(20.0, 14.0, 20.0, 20.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -104,11 +101,11 @@ class _InfoWeddingPinSheetWidgetState extends State<InfoWeddingPinSheetWidget> {
                   thickness: 1.0,
                   color: FlutterFlowTheme.of(context).tertiary,
                 ),
-              ].divide(SizedBox(height: 8.0)),
+              ].divide(const SizedBox(height: 8.0)),
             ),
             Container(
               width: MediaQuery.sizeOf(context).width * 1.0,
-              decoration: BoxDecoration(),
+              decoration: const BoxDecoration(),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
@@ -116,7 +113,7 @@ class _InfoWeddingPinSheetWidgetState extends State<InfoWeddingPinSheetWidget> {
                     borderRadius: BorderRadius.circular(100.0),
                     child: Image.network(
                       valueOrDefault<String>(
-                        widget!.weddingPinData?.brideAvatarUrl,
+                        widget.weddingPinData?.brideAvatarUrl,
                         'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwyfHxwcm9maWx8ZW58MHx8fHwxNzU4MTc4NTA3fDA&ixlib=rb-4.1.0&q=80&w=1080',
                       ),
                       width: 52.0,
@@ -131,7 +128,7 @@ class _InfoWeddingPinSheetWidgetState extends State<InfoWeddingPinSheetWidget> {
                       children: [
                         Text(
                           valueOrDefault<String>(
-                            widget!.weddingPinData?.locationLabel,
+                            widget.weddingPinData?.locationLabel,
                             'Label...',
                           ),
                           style: FlutterFlowTheme.of(context)
@@ -147,7 +144,7 @@ class _InfoWeddingPinSheetWidgetState extends State<InfoWeddingPinSheetWidget> {
                           valueOrDefault<String>(
                             dateTimeFormat(
                               "d/M/y",
-                              widget!.weddingPinData?.eventStartDate,
+                              widget.weddingPinData?.eventStartDate,
                               locale: FFLocalizations.of(context).languageCode,
                             ),
                             'EventStartDate...',
@@ -163,13 +160,13 @@ class _InfoWeddingPinSheetWidgetState extends State<InfoWeddingPinSheetWidget> {
                         ),
                         Text(
                           'Budget : ${valueOrDefault<String>(
-                            widget!.weddingPinData?.budgetMin?.toString(),
+                            widget.weddingPinData?.budgetMin.toString(),
                             '0',
                           )} - ${valueOrDefault<String>(
-                            widget!.weddingPinData?.budgetMax?.toString(),
+                            widget.weddingPinData?.budgetMax.toString(),
                             '0',
                           )}${valueOrDefault<String>(
-                            widget!.weddingPinData?.currency,
+                            widget.weddingPinData?.currency,
                             '\$',
                           )}',
                           style: FlutterFlowTheme.of(context)
@@ -181,10 +178,10 @@ class _InfoWeddingPinSheetWidgetState extends State<InfoWeddingPinSheetWidget> {
                                 letterSpacing: 0.0,
                               ),
                         ),
-                      ].divide(SizedBox(height: 2.0)),
+                      ].divide(const SizedBox(height: 2.0)),
                     ),
                   ),
-                ].divide(SizedBox(width: 12.0)),
+                ].divide(const SizedBox(width: 12.0)),
               ),
             ),
             Column(
@@ -205,16 +202,16 @@ class _InfoWeddingPinSheetWidgetState extends State<InfoWeddingPinSheetWidget> {
                   ],
                 ),
                 Align(
-                  alignment: AlignmentDirectional(-1.0, 0.0),
+                  alignment: const AlignmentDirectional(-1.0, 0.0),
                   child: Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 6.0, 0.0, 0.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 6.0, 0.0, 0.0),
                     child: Builder(
                       builder: (context) {
-                        final listProfession = widget!
+                        final listProfession = widget
                                 .weddingPinData?.professionsNeeded
-                                ?.map((e) => e)
+                                .map((e) => e)
                                 .toList()
-                                ?.toList() ??
+                                .toList() ??
                             [];
 
                         return Wrap(
@@ -237,7 +234,7 @@ class _InfoWeddingPinSheetWidgetState extends State<InfoWeddingPinSheetWidget> {
                                 borderRadius: BorderRadius.circular(24.0),
                               ),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     12.0, 0.0, 12.0, 0.0),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -265,7 +262,7 @@ class _InfoWeddingPinSheetWidgetState extends State<InfoWeddingPinSheetWidget> {
                     ),
                   ),
                 ),
-              ].divide(SizedBox(height: 6.0)),
+              ].divide(const SizedBox(height: 6.0)),
             ),
             Divider(
               thickness: 1.0,
@@ -273,16 +270,16 @@ class _InfoWeddingPinSheetWidgetState extends State<InfoWeddingPinSheetWidget> {
               endIndent: 4.0,
               color: FlutterFlowTheme.of(context).tertiary,
             ),
-            Container(
+            SizedBox(
               width: MediaQuery.sizeOf(context).width * 1.0,
               height: 300.0,
               child: custom_widgets.LynewedMiniMap(
                 width: MediaQuery.sizeOf(context).width * 1.0,
                 height: 300.0,
-                radiusKm: widget!.weddingPinData?.radiusKm?.toDouble(),
+                radiusKm: widget.weddingPinData?.radiusKm.toDouble(),
                 borderRadius: 0.0,
                 useLiteMode: false,
-                center: widget!.weddingPinData!.center!,
+                center: widget.weddingPinData!.center!,
                 markerStyle: MarkerStyleInfoStruct(),
                 mapStyle: MapStyleType.normal,
                 onTap: () async {},
@@ -290,28 +287,28 @@ class _InfoWeddingPinSheetWidgetState extends State<InfoWeddingPinSheetWidget> {
             ),
             FFButtonWidget(
               onPressed: () async {
-                if (widget!.weddingPinData?.brideProfileId == currentUserUid) {
+                if (widget.weddingPinData?.brideProfileId == currentUserUid) {
                   _model.deleteWeddingPin = await actions.deleteWeddingPin(
-                    widget!.weddingPinData!.weddingPinId,
+                    widget.weddingPinData!.weddingPinId,
                   );
                   Navigator.pop(context);
                 } else {
                   await action_blocks.contactChatRoom(
                     context,
-                    targetProfileID: widget!.weddingPinData?.brideProfileId,
+                    targetProfileID: widget.weddingPinData?.brideProfileId,
                   );
                 }
 
                 safeSetState(() {});
               },
-              text: widget!.weddingPinData?.brideProfileId == currentUserUid
+              text: widget.weddingPinData?.brideProfileId == currentUserUid
                   ? 'Delete'
                   : 'Contact',
               options: FFButtonOptions(
                 width: double.infinity,
                 height: 48.0,
-                padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-                iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                iconPadding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                 color: FlutterFlowTheme.of(context).primary,
                 textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                       fontFamily: 'Haas Grot Text Trial',
@@ -324,7 +321,7 @@ class _InfoWeddingPinSheetWidgetState extends State<InfoWeddingPinSheetWidget> {
                 borderRadius: BorderRadius.circular(0.0),
               ),
             ),
-          ].divide(SizedBox(height: 10.0)),
+          ].divide(const SizedBox(height: 10.0)),
         ),
       ),
     );

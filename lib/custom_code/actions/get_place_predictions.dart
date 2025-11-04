@@ -1,13 +1,9 @@
 // Automatic FlutterFlow imports
+import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -31,7 +27,7 @@ Future<PlacePredictionsResultStruct> getPlacePredictions(
   final String lang =
       (locale ?? 'en').toLowerCase().startsWith('fr') ? 'fr' : 'en';
   final String currentSessionToken = sessionToken ?? const Uuid().v4();
-  final String baseUrl =
+  const String baseUrl =
       'https://maps.googleapis.com/maps/api/place/autocomplete/json';
   final String request =
       '$baseUrl?input=${Uri.encodeComponent(inputString)}&key=$apiKey&sessiontoken=$currentSessionToken&language=$lang';
@@ -52,10 +48,10 @@ Future<PlacePredictionsResultStruct> getPlacePredictions(
         }
       }
     } else {
-      print('Google Places API error: ${response.statusCode} ${response.body}');
+      debugPrint('Google Places API error: ${response.statusCode} ${response.body}');
     }
   } catch (e) {
-    print('getPlacePredictions error: $e');
+    debugPrint('getPlacePredictions error: $e');
   }
   return PlacePredictionsResultStruct(
       suggestions: suggestions, newSessionToken: currentSessionToken);

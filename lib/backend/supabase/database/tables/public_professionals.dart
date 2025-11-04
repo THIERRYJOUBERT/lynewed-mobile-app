@@ -10,7 +10,7 @@ class PublicProfessionalsTable extends SupabaseTable<PublicProfessionalsRow> {
 }
 
 class PublicProfessionalsRow extends SupabaseDataRow {
-  PublicProfessionalsRow(Map<String, dynamic> data) : super(data);
+  PublicProfessionalsRow(super.data);
 
   @override
   SupabaseTable get table => PublicProfessionalsTable();

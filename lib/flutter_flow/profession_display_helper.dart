@@ -1,0 +1,61 @@
+import '/backend/schema/enums/enums.dart';
+
+/// Helper pour afficher les noms de professions de manière lisible
+String getProfessionDisplayName(Profession profession) {
+  switch (profession) {
+    case Profession.PHOTOGRAPHER:
+      return 'Photographer';
+    case Profession.FILMMAKER:
+      return 'Filmmaker';
+    case Profession.PLANNER:
+      return 'Planner';
+    case Profession.MAKEUP:
+      return 'Make-up';
+    case Profession.HAIRDRESSER:
+      return 'Hairdresser';
+    case Profession.DESIGNER:
+      return 'Designer';
+    case Profession.BRIDALDESIGNER:
+      return 'Bridal Designer';
+    case Profession.VENUE:
+      return 'Venue';
+    case Profession.BRIDALSHOP:
+      return 'Bridal Shop';
+    case Profession.FLORIST:
+      return 'Florist';
+    case Profession.PHOTOMOVIE:
+      return 'Photo/Movie';
+    case Profession.MAKEUPARTIST:
+      return 'Make-up Artist';
+    case Profession.EVENTDESIGNER:
+      return 'Event Designer';
+    case Profession.OTHER:
+      return 'Other';
+    default:
+      return profession.name;
+  }
+}
+
+/// Helper pour afficher les types de marqueurs de manière lisible
+String getMapMarkerTypeDisplayName(MapMarkerType markerType) {
+  switch (markerType) {
+    case MapMarkerType.professional:
+      return 'Professional';
+    case MapMarkerType.fixedLocation:
+      return 'Fixed Location';
+    case MapMarkerType.proRecent:
+      return 'Recent Pro';
+    case MapMarkerType.professionalAlert:
+      return 'Alert';
+    case MapMarkerType.weddingPin:
+      return 'Wedding Pin';
+    case MapMarkerType.poiPrivate:
+      return 'Private POI';
+    case MapMarkerType.searchTarget:
+      return 'Search Target';
+    case MapMarkerType.user:
+      return 'User';
+    default:
+      return markerType.name;
+  }
+}

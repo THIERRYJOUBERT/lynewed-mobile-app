@@ -4,11 +4,7 @@ import '/backend/schema/structs/index.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'conversation_actions_sheet_model.dart';
 export 'conversation_actions_sheet_model.dart';
 
@@ -59,7 +55,7 @@ class _ConversationActionsSheetWidgetState
         borderRadius: BorderRadius.circular(4.0),
       ),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(14.0, 14.0, 20.0, 14.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(14.0, 14.0, 20.0, 14.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,7 +73,7 @@ class _ConversationActionsSheetWidgetState
                   matchingRows: (rows) => rows
                       .eqOrNull(
                         'room_id',
-                        widget!.conversationItem?.roomId,
+                        widget.conversationItem?.roomId,
                       )
                       .eqOrNull(
                         'profile_id',
@@ -91,7 +87,7 @@ class _ConversationActionsSheetWidgetState
               },
               child: Container(
                 height: 36.0,
-                decoration: BoxDecoration(),
+                decoration: const BoxDecoration(),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -103,7 +99,7 @@ class _ConversationActionsSheetWidgetState
                         borderRadius: BorderRadius.circular(40.0),
                       ),
                       child: Padding(
-                        padding: EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(8.0),
                         child: Icon(
                           Icons.archive,
                           color: FlutterFlowTheme.of(context).secondaryText,
@@ -113,7 +109,7 @@ class _ConversationActionsSheetWidgetState
                     ),
                     Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 0.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 0.0, 0.0),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -137,7 +133,7 @@ class _ConversationActionsSheetWidgetState
             ),
             Container(
               height: 36.0,
-              decoration: BoxDecoration(),
+              decoration: const BoxDecoration(),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -149,7 +145,7 @@ class _ConversationActionsSheetWidgetState
                       borderRadius: BorderRadius.circular(40.0),
                     ),
                     child: Padding(
-                      padding: EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(8.0),
                       child: Icon(
                         Icons.delete_sharp,
                         color: FlutterFlowTheme.of(context).error,
@@ -159,7 +155,7 @@ class _ConversationActionsSheetWidgetState
                   ),
                   Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 0.0, 0.0),
+                        const EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 0.0, 0.0),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -180,7 +176,7 @@ class _ConversationActionsSheetWidgetState
                 ],
               ),
             ),
-          ].divide(SizedBox(height: 10.0)),
+          ].divide(const SizedBox(height: 10.0)),
         ),
       ),
     );

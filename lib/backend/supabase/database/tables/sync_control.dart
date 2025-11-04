@@ -9,7 +9,7 @@ class SyncControlTable extends SupabaseTable<SyncControlRow> {
 }
 
 class SyncControlRow extends SupabaseDataRow {
-  SyncControlRow(Map<String, dynamic> data) : super(data);
+  SyncControlRow(super.data);
 
   @override
   SupabaseTable get table => SyncControlTable();

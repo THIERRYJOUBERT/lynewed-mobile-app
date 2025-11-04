@@ -1,19 +1,14 @@
 // Automatic FlutterFlow imports
-import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
+import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 // Set your action name, define your arguments and return parameter,
 // and then add the boilerplate code using the green button on the right!
-import 'dart:typed_data';
 import 'package:uuid/uuid.dart';
 
 Future<bool> uploadAndSendAudioAction(
@@ -28,7 +23,7 @@ Future<bool> uploadAndSendAudioAction(
     final bytes = audioFile.bytes;
     if (bytes == null || bytes.isEmpty) return false;
 
-    final uuid = const Uuid();
+    const uuid = Uuid();
     final ts = DateTime.now().millisecondsSinceEpoch;
     final filename = 'audio_${ts}_${uuid.v4()}.m4a';
     final storagePath = '$roomId/$filename';
@@ -56,7 +51,7 @@ Future<bool> uploadAndSendAudioAction(
 
     return true;
   } catch (e) {
-    print('uploadAndSendAudioAction exception: $e');
+    debugPrint('uploadAndSendAudioAction exception: $e');
     // Essayer un rollback si l'erreur n'est pas lors de l'insert
     // Note: une gestion d'erreur plus fine serait nécessaire en prod
     return false;

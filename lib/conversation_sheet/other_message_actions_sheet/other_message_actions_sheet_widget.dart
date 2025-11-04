@@ -1,12 +1,8 @@
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'other_message_actions_sheet_model.dart';
 export 'other_message_actions_sheet_model.dart';
 
@@ -58,7 +54,7 @@ class _OtherMessageActionsSheetWidgetState
           mainAxisSize: MainAxisSize.min,
           children: [
             Align(
-              alignment: AlignmentDirectional(-1.0, -1.0),
+              alignment: const AlignmentDirectional(-1.0, -1.0),
               child: Container(
                 width: MediaQuery.sizeOf(context).width * 1.0,
                 decoration: BoxDecoration(
@@ -67,14 +63,14 @@ class _OtherMessageActionsSheetWidgetState
                 ),
                 child: Padding(
                   padding:
-                      EdgeInsetsDirectional.fromSTEB(14.0, 14.0, 20.0, 14.0),
+                      const EdgeInsetsDirectional.fromSTEB(14.0, 14.0, 20.0, 14.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
                         padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 10.0),
+                            const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 10.0),
                         child: Row(
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -114,7 +110,7 @@ class _OtherMessageActionsSheetWidgetState
                         onTap: () async {
                           _model.reportSuccess =
                               await actions.reportMessageAction(
-                            widget!.messageLongPressData!.messageId,
+                            widget.messageLongPressData!.messageId,
                             'ok',
                           );
                           Navigator.pop(context);
@@ -123,7 +119,7 @@ class _OtherMessageActionsSheetWidgetState
                         },
                         child: Container(
                           height: 36.0,
-                          decoration: BoxDecoration(),
+                          decoration: const BoxDecoration(),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -136,7 +132,7 @@ class _OtherMessageActionsSheetWidgetState
                                   borderRadius: BorderRadius.circular(40.0),
                                 ),
                                 child: Padding(
-                                  padding: EdgeInsets.all(8.0),
+                                  padding: const EdgeInsets.all(8.0),
                                   child: Icon(
                                     Icons.report,
                                     color: FlutterFlowTheme.of(context)
@@ -146,7 +142,7 @@ class _OtherMessageActionsSheetWidgetState
                                 ),
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     12.0, 0.0, 0.0, 0.0),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -170,7 +166,7 @@ class _OtherMessageActionsSheetWidgetState
                           ),
                         ),
                       ),
-                    ].divide(SizedBox(height: 4.0)),
+                    ].divide(const SizedBox(height: 4.0)),
                   ),
                 ),
               ),

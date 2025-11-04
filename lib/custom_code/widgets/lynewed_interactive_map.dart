@@ -1,23 +1,18 @@
 // Automatic FlutterFlow imports
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
+// Imports other custom widgets
 import '/custom_code/actions/index.dart'; // Imports custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+// Imports custom functions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
-import 'package:flutter/painting.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -182,7 +177,7 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
         ..write('|cur:${f.currency}')
         ..write('|r:${f.radiusKm}')
         ..write(
-            '|c:${f.center?.latitude?.toStringAsFixed(5)},${f.center?.longitude?.toStringAsFixed(5)}')
+            '|c:${f.center?.latitude.toStringAsFixed(5)},${f.center?.longitude.toStringAsFixed(5)}')
         ..write(
             '|pros:${(f.professions ?? []).map((e) => e.name).toList()..sort()}')
         ..write(
@@ -242,17 +237,15 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
         break;
       case MapActionType.fitBounds:
         if ((cmd.fitBoundsTo ?? []).length >= 2) {
-          final first = cmd.fitBoundsTo!.first;
-          final last = cmd.fitBoundsTo!.last;
-          if (first != null && last != null) {
-            final bounds = gmaps.LatLngBounds(
-              southwest: gmaps.LatLng(first.latitude, first.longitude),
-              northeast: gmaps.LatLng(last.latitude, last.longitude),
-            );
-            await c.animateCamera(
-                gmaps.CameraUpdate.newLatLngBounds(bounds, 60.0));
-          }
-        }
+          final first = cmd.fitBoundsTo.first;
+          final last = cmd.fitBoundsTo.last;
+          final bounds = gmaps.LatLngBounds(
+            southwest: gmaps.LatLng(first.latitude, first.longitude),
+            northeast: gmaps.LatLng(last.latitude, last.longitude),
+          );
+          await c.animateCamera(
+              gmaps.CameraUpdate.newLatLngBounds(bounds, 60.0));
+                }
         break;
       case MapActionType.none:
       case null:
@@ -370,15 +363,15 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
     final id = m.id ?? '';
     final lat = m.position?.latitude.toStringAsFixed(6) ?? '0';
     final lng = m.position?.longitude.toStringAsFixed(6) ?? '0';
-    return '${t}_${id}_${lat}_${lng}';
+    return '${t}_${id}_${lat}_$lng';
   }
 
   String _styleSig(MapMarkerStruct m) {
     final t = (m.type ?? MapMarkerType.professional).name;
-    final avatar = m.styleInfo?.avatarUrl ?? '';
-    final border = m.styleInfo?.borderColorHex ?? '';
-    final own = (m.styleInfo?.isOwn == true) ? '1' : '0';
-    final themeColor = Theme.of(context).primaryColor.value.toString();
+    final avatar = m.styleInfo.avatarUrl ?? '';
+    final border = m.styleInfo.borderColorHex ?? '';
+    final own = (m.styleInfo.isOwn == true) ? '1' : '0';
+    final themeColor = Theme.of(context).primaryColor.toARGB32().toString();
     return '$t|$avatar|$border|$own|$themeColor';
   }
 
@@ -414,8 +407,9 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
 
     final all = <MapMarkerStruct>[];
     if (widget.searchTargetMarker != null) all.add(widget.searchTargetMarker!);
-    if (_markersProp.isNotEmpty)
+    if (_markersProp.isNotEmpty) {
       all.addAll(_markersProp.where((m) => m.position != null));
+    }
 
     final newKeys = <String>{};
     final tasks = <Future<void>>[];
@@ -491,7 +485,7 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
 
     // Projection mercator
     final scale = 256.0 * math.pow(2.0, zoom);
-    ui.Offset _project(LatLng p) {
+    ui.Offset project(LatLng p) {
       final lat = p.latitude.clamp(-85.05112878, 85.05112878);
       final lng = p.longitude;
       final x = (lng + 180.0) / 360.0 * scale;
@@ -502,7 +496,7 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
       return ui.Offset(x, y);
     }
 
-    gmaps.LatLng _unproject(ui.Offset pt) {
+    gmaps.LatLng unproject(ui.Offset pt) {
       final lon = pt.dx / scale * 360.0 - 180.0;
       final n = math.pi - 2.0 * math.pi * pt.dy / scale;
       final lat =
@@ -515,7 +509,7 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
     final Map<String, List<String>> bucketKeys = {};
 
     for (final m in candidates) {
-      final pt = _project(m.position!);
+      final pt = project(m.position!);
       final gx = (pt.dx / cell).floor();
       final gy = (pt.dy / cell).floor();
       final key = 'z${zoom.toStringAsFixed(2)}_${gx}_$gy';
@@ -536,13 +530,13 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
       // Centroid pixel
       double sx = 0.0, sy = 0.0;
       for (final m in members) {
-        final p = _project(m.position!);
+        final p = project(m.position!);
         sx += p.dx;
         sy += p.dy;
       }
       final cx = sx / members.length;
       final cy = sy / members.length;
-      final center = _unproject(ui.Offset(cx, cy));
+      final center = unproject(ui.Offset(cx, cy));
 
       final count = members.length;
       final icon = await _getClusterIcon(count);
@@ -652,9 +646,9 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
     final cacheKey = [
       marker.type?.name ?? 'unknown',
       marker.id,
-      marker.styleInfo?.avatarUrl ?? '',
-      marker.styleInfo?.borderColorHex ?? '',
-      Theme.of(context).primaryColor.value.toString(),
+      marker.styleInfo.avatarUrl ?? '',
+      marker.styleInfo.borderColorHex ?? '',
+      Theme.of(context).primaryColor.toARGB32().toString(),
       size.toStringAsFixed(0),
     ].join('|');
 
@@ -671,11 +665,11 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
       case MapMarkerType.proRecent:
       case MapMarkerType.user:
         {
-          final ring = marker.styleInfo?.borderColorHex != null
-              ? _colorFromHex(marker.styleInfo!.borderColorHex!)
+          final ring = marker.styleInfo.borderColorHex != null
+              ? _colorFromHex(marker.styleInfo.borderColorHex)
               : _ringColorForType(markerType);
           icon = await _generateAvatarIcon(
-            imageUrl: marker.styleInfo?.avatarUrl,
+            imageUrl: marker.styleInfo.avatarUrl,
             ringColor: ring,
             size: size,
             fallbackIcon: Icons.person_outline,
@@ -686,7 +680,7 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
         {
           final ring = _ringColorForType(markerType);
           icon = await _generateAvatarIcon(
-            imageUrl: marker.styleInfo?.avatarUrl,
+            imageUrl: marker.styleInfo.avatarUrl,
             ringColor: ring,
             size: size,
             fallbackIcon: Icons.favorite,
@@ -697,7 +691,7 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
         {
           final ring = _ringColorForType(markerType);
           icon = await _generateAvatarIcon(
-            imageUrl: marker.styleInfo?.avatarUrl,
+            imageUrl: marker.styleInfo.avatarUrl,
             ringColor: ring,
             size: size,
             fallbackIcon: Icons.pin_drop,
@@ -708,7 +702,7 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
         {
           final ring = _ringColorForType(markerType);
           icon = await _generateAvatarIcon(
-            imageUrl: marker.styleInfo?.avatarUrl,
+            imageUrl: marker.styleInfo.avatarUrl,
             ringColor: ring,
             size: size,
             fallbackIcon: Icons.crisis_alert_rounded,
@@ -823,8 +817,8 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
     final paint = Paint()..isAntiAlias = true;
-    final center = ui.Offset(size / 2, size / 2);
-    final radius = size / 2;
+    const center = ui.Offset(size / 2, size / 2);
+    const radius = size / 2;
 
     // Cercle noir
     paint.color = Colors.black87;
@@ -833,7 +827,7 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
     paint
       ..style = PaintingStyle.stroke
       ..strokeWidth = size * 0.06
-      ..color = Colors.white.withOpacity(0.85);
+      ..color = Colors.white.withValues(alpha: 0.85);
     canvas.drawCircle(center, radius - paint.strokeWidth / 2, paint);
 
     // Nombre
@@ -939,7 +933,7 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
                 width: 28,
                 height: 28,
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.25),
+                  color: Colors.black.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 padding: const EdgeInsets.all(4),

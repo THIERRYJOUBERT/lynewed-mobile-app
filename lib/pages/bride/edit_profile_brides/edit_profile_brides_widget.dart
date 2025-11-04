@@ -1,14 +1,11 @@
 import '/auth/supabase_auth/auth_util.dart';
-import '/backend/schema/structs/index.dart';
 import '/components/nav/header_bar/header_bar_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'dart:io';
 import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'edit_profile_brides_model.dart';
 export 'edit_profile_brides_model.dart';
@@ -63,22 +60,22 @@ class _EditProfileBridesWidgetState extends State<EditProfileBridesWidget> {
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         body: Align(
-          alignment: AlignmentDirectional(0.0, -1.0),
-          child: Container(
+          alignment: const AlignmentDirectional(0.0, -1.0),
+          child: SizedBox(
             width: MediaQuery.sizeOf(context).width * 1.0,
             height: MediaQuery.sizeOf(context).height * 1.0,
             child: Stack(
               children: [
                 Padding(
                   padding:
-                      EdgeInsetsDirectional.fromSTEB(20.0, 130.0, 20.0, 0.0),
+                      const EdgeInsetsDirectional.fromSTEB(20.0, 130.0, 20.0, 0.0),
                   child: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Align(
-                          alignment: AlignmentDirectional(0.0, 0.0),
+                          alignment: const AlignmentDirectional(0.0, 0.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -98,11 +95,11 @@ class _EditProfileBridesWidgetState extends State<EditProfileBridesWidget> {
 
                                   safeSetState(() {});
                                 },
-                                child: Container(
+                                child: SizedBox(
                                   width: 82.0,
                                   height: 82.0,
                                   child: Stack(
-                                    alignment: AlignmentDirectional(1.0, 1.0),
+                                    alignment: const AlignmentDirectional(1.0, 1.0),
                                     children: [
                                       ClipRRect(
                                         borderRadius:
@@ -127,7 +124,7 @@ class _EditProfileBridesWidgetState extends State<EditProfileBridesWidget> {
                                                 fit: BoxFit.cover,
                                                 loadingBuilder: (context, child, loadingProgress) {
                                                   if (loadingProgress == null) return child;
-                                                  return Container(
+                                                  return SizedBox(
                                                     width: 80.0,
                                                     height: 80.0,
                                                     child: Center(
@@ -172,7 +169,7 @@ class _EditProfileBridesWidgetState extends State<EditProfileBridesWidget> {
                                       letterSpacing: 0.0,
                                     ),
                               ),
-                            ].divide(SizedBox(height: 14.0)),
+                            ].divide(const SizedBox(height: 14.0)),
                           ),
                         ),
                         Column(
@@ -184,7 +181,7 @@ class _EditProfileBridesWidgetState extends State<EditProfileBridesWidget> {
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 Expanded(
-                                  child: Container(
+                                  child: SizedBox(
                                     width: 170.0,
                                     child: TextFormField(
                                       controller: _model.fullNameTextController,
@@ -249,7 +246,7 @@ class _EditProfileBridesWidgetState extends State<EditProfileBridesWidget> {
                                               BorderRadius.circular(0.0),
                                         ),
                                         contentPadding:
-                                            EdgeInsetsDirectional.fromSTEB(
+                                            const EdgeInsetsDirectional.fromSTEB(
                                                 4.0, 12.0, 0.0, 12.0),
                                       ),
                                       style: FlutterFlowTheme.of(context)
@@ -268,9 +265,9 @@ class _EditProfileBridesWidgetState extends State<EditProfileBridesWidget> {
                                     ),
                                   ),
                                 ),
-                              ].divide(SizedBox(width: 24.0)),
+                              ].divide(const SizedBox(width: 24.0)),
                             ),
-                            Container(
+                            SizedBox(
                               width: double.infinity,
                               child: TextFormField(
                                 controller: _model.emailAddressTextController,
@@ -325,7 +322,7 @@ class _EditProfileBridesWidgetState extends State<EditProfileBridesWidget> {
                                     borderRadius: BorderRadius.circular(0.0),
                                   ),
                                   contentPadding:
-                                      EdgeInsetsDirectional.fromSTEB(
+                                      const EdgeInsetsDirectional.fromSTEB(
                                           4.0, 12.0, 0.0, 12.0),
                                 ),
                                 style: FlutterFlowTheme.of(context)
@@ -345,11 +342,11 @@ class _EditProfileBridesWidgetState extends State<EditProfileBridesWidget> {
                                     .asValidator(context),
                               ),
                             ),
-                          ].divide(SizedBox(height: 24.0)),
+                          ].divide(const SizedBox(height: 24.0)),
                         ),
                         Flexible(
                           child: Align(
-                            alignment: AlignmentDirectional(0.0, 1.0),
+                            alignment: const AlignmentDirectional(0.0, 1.0),
                             child: FFButtonWidget(
                               onPressed: () async {
                                 if (_model.localAvatarPath != null &&
@@ -371,9 +368,9 @@ class _EditProfileBridesWidgetState extends State<EditProfileBridesWidget> {
                               options: FFButtonOptions(
                                 width: double.infinity,
                                 height: 48.0,
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     16.0, 0.0, 16.0, 0.0),
-                                iconPadding: EdgeInsetsDirectional.fromSTEB(
+                                iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                     0.0, 0.0, 0.0, 0.0),
                                 color: FlutterFlowTheme.of(context).primary,
                                 textStyle: FlutterFlowTheme.of(context)
@@ -391,14 +388,14 @@ class _EditProfileBridesWidgetState extends State<EditProfileBridesWidget> {
                             ),
                           ),
                         ),
-                      ].divide(SizedBox(height: 32.0)),
+                      ].divide(const SizedBox(height: 32.0)),
                     ),
                   ),
                 ),
                 wrapWithModel(
                   model: _model.headerBarModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: HeaderBarWidget(
+                  child: const HeaderBarWidget(
                     title: 'EDIT MY PROFILE',
                   ),
                 ),

@@ -2,14 +2,10 @@ import '/auth/supabase_auth/auth_util.dart';
 import '/backend/schema/enums/enums.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'incoming_call_sheet_model.dart';
 export 'incoming_call_sheet_model.dart';
 
@@ -57,9 +53,9 @@ class _IncomingCallSheetWidgetState extends State<IncomingCallSheetWidget> {
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: AlignmentDirectional(0.0, 1.0),
+      alignment: const AlignmentDirectional(0.0, 1.0),
       child: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Color(0xCC1A1A1A),
           borderRadius: BorderRadius.only(
             bottomLeft: Radius.circular(0.0),
@@ -69,7 +65,7 @@ class _IncomingCallSheetWidgetState extends State<IncomingCallSheetWidget> {
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.all(48.0),
+          padding: const EdgeInsets.all(48.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -78,11 +74,11 @@ class _IncomingCallSheetWidgetState extends State<IncomingCallSheetWidget> {
                 width: 80.0,
                 height: 80.0,
                 clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                 ),
                 child: Image.network(
-                  widget!.callerAvatar!,
+                  widget.callerAvatar!,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -91,7 +87,7 @@ class _IncomingCallSheetWidgetState extends State<IncomingCallSheetWidget> {
                 children: [
                   Text(
                     valueOrDefault<String>(
-                      widget!.callerName,
+                      widget.callerName,
                       'Name',
                     ),
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -110,10 +106,10 @@ class _IncomingCallSheetWidgetState extends State<IncomingCallSheetWidget> {
                           letterSpacing: 0.0,
                         ),
                   ),
-                ].divide(SizedBox(height: 10.0)),
+                ].divide(const SizedBox(height: 10.0)),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 20.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 20.0),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -126,18 +122,18 @@ class _IncomingCallSheetWidgetState extends State<IncomingCallSheetWidget> {
                       onTap: () async {
                         _model.updateVideoSessionResult =
                             await actions.updateVideoSessionStatusAction(
-                          widget!.videoSessionId!,
+                          widget.videoSessionId!,
                           VideoSessionStatus.accepted,
                         );
                         _model.agoraToken = await actions.getAgoraTokenAction(
-                          widget!.channelName!,
+                          widget.channelName!,
                           functions.generateAgoraUid(currentUserUid).toString(),
                         );
                         if (_model.agoraToken != null &&
                             _model.agoraToken != '') {
                           Navigator.pop(context);
                           await Future.delayed(
-                            Duration(
+                            const Duration(
                               milliseconds: 250,
                             ),
                           );
@@ -146,11 +142,11 @@ class _IncomingCallSheetWidgetState extends State<IncomingCallSheetWidget> {
                             VideoCallPageWidget.routeName,
                             queryParameters: {
                               'videoSessionId': serializeParam(
-                                widget!.videoSessionId,
+                                widget.videoSessionId,
                                 ParamType.String,
                               ),
                               'channelName': serializeParam(
-                                widget!.channelName,
+                                widget.channelName,
                                 ParamType.String,
                               ),
                               'agoraToken': serializeParam(
@@ -166,13 +162,13 @@ class _IncomingCallSheetWidgetState extends State<IncomingCallSheetWidget> {
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(
+                              content: const Text(
                                 'Impossible de rejoindre l\'appel',
                                 style: TextStyle(
                                   color: Colors.white,
                                 ),
                               ),
-                              duration: Duration(milliseconds: 4000),
+                              duration: const Duration(milliseconds: 4000),
                               backgroundColor:
                                   FlutterFlowTheme.of(context).accent2,
                             ),
@@ -189,7 +185,7 @@ class _IncomingCallSheetWidgetState extends State<IncomingCallSheetWidget> {
                           borderRadius: BorderRadius.circular(99.0),
                         ),
                         child: Align(
-                          alignment: AlignmentDirectional(0.0, 0.0),
+                          alignment: const AlignmentDirectional(0.0, 0.0),
                           child: Icon(
                             Icons.call,
                             color: FlutterFlowTheme.of(context).success,
@@ -205,7 +201,7 @@ class _IncomingCallSheetWidgetState extends State<IncomingCallSheetWidget> {
                       highlightColor: Colors.transparent,
                       onTap: () async {
                         await actions.updateVideoSessionStatusAction(
-                          widget!.videoSessionId!,
+                          widget.videoSessionId!,
                           VideoSessionStatus.declined,
                         );
                         Navigator.pop(context);
@@ -218,7 +214,7 @@ class _IncomingCallSheetWidgetState extends State<IncomingCallSheetWidget> {
                           borderRadius: BorderRadius.circular(99.0),
                         ),
                         child: Align(
-                          alignment: AlignmentDirectional(0.0, 0.0),
+                          alignment: const AlignmentDirectional(0.0, 0.0),
                           child: Icon(
                             Icons.call_end,
                             color: FlutterFlowTheme.of(context).accent2,
@@ -230,7 +226,7 @@ class _IncomingCallSheetWidgetState extends State<IncomingCallSheetWidget> {
                   ],
                 ),
               ),
-            ].divide(SizedBox(height: 32.0)),
+            ].divide(const SizedBox(height: 32.0)),
           ),
         ),
       ),

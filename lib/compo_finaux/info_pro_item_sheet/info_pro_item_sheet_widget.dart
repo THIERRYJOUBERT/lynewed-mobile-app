@@ -3,13 +3,10 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_toggle_icon.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'info_pro_item_sheet_model.dart';
 export 'info_pro_item_sheet_model.dart';
 
@@ -41,7 +38,7 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      _model.fav = widget!.proDetails!.isFavorited;
+      _model.fav = widget.proDetails!.isFavorited;
       safeSetState(() {});
     });
   }
@@ -59,7 +56,7 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
       width: MediaQuery.sizeOf(context).width * 1.0,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).primaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(0.0),
           bottomRight: Radius.circular(0.0),
           topLeft: Radius.circular(24.0),
@@ -67,7 +64,7 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
         ),
       ),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(20.0, 14.0, 20.0, 20.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(20.0, 14.0, 20.0, 20.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -79,7 +76,7 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Point professionnel',
+                      'Professional point',
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'Haas Grot Text Trial',
                             fontSize: 16.0,
@@ -108,11 +105,11 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
                   thickness: 1.0,
                   color: FlutterFlowTheme.of(context).tertiary,
                 ),
-              ].divide(SizedBox(height: 8.0)),
+              ].divide(const SizedBox(height: 8.0)),
             ),
             Container(
               width: MediaQuery.sizeOf(context).width * 1.0,
-              decoration: BoxDecoration(),
+              decoration: const BoxDecoration(),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 children: [
@@ -120,7 +117,7 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
                     borderRadius: BorderRadius.circular(100.0),
                     child: Image.network(
                       valueOrDefault<String>(
-                        widget!.proDetails?.avatarUrl,
+                        widget.proDetails?.avatarUrl,
                         'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwyfHxwcm9maWx8ZW58MHx8fHwxNzU4MTc4NTA3fDA&ixlib=rb-4.1.0&q=80&w=1080',
                       ),
                       width: 52.0,
@@ -139,9 +136,11 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
                             children: [
                               Text(
                                 valueOrDefault<String>(
-                                  widget!.proDetails?.fullName,
+                                  widget.proDetails?.fullName,
                                   'Name...',
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(
@@ -157,9 +156,11 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
                                 children: [
                                   Text(
                                     valueOrDefault<String>(
-                                      widget!.proDetails?.profession?.name,
+                                      widget.proDetails?.profession?.name,
                                       'profession',
                                     ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
@@ -171,9 +172,11 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
                                   ),
                                   Text(
                                     valueOrDefault<String>(
-                                      widget!.proDetails?.businessName,
+                                      widget.proDetails?.businessName,
                                       'businessName',
                                     ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
@@ -183,13 +186,13 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
                                           letterSpacing: 0.0,
                                         ),
                                   ),
-                                ].divide(SizedBox(width: 10.0)),
+                                ].divide(const SizedBox(width: 10.0)),
                               ),
-                            ].divide(SizedBox(height: 2.0)),
+                            ].divide(const SizedBox(height: 2.0)),
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 16.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
@@ -197,15 +200,19 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
                             children: [
                               ToggleIcon(
                                 onPressed: () async {
+                                  // Toggle optimiste pour UI réactive
                                   safeSetState(() => _model.fav = !_model.fav);
+                                  
                                   _model.toggleResult =
                                       await actions.toggleWishlistAction(
-                                    widget!.proDetails!.proProfileId,
+                                    widget.proDetails!.proProfileId,
                                   );
-                                  _model.fav = !_model.fav;
-                                  safeSetState(() {});
-
-                                  safeSetState(() {});
+                                  
+                                  // Mettre à jour avec le résultat réel du serveur
+                                  if (_model.toggleResult != null) {
+                                    _model.fav = _model.toggleResult!;
+                                    safeSetState(() {});
+                                  }
                                 },
                                 value: _model.fav,
                                 onIcon: Icon(
@@ -227,7 +234,7 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
                       ],
                     ),
                   ),
-                ].divide(SizedBox(width: 12.0)),
+                ].divide(const SizedBox(width: 12.0)),
               ),
             ),
             Flexible(
@@ -236,12 +243,14 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 2.0, 0.0, 0.0),
                     child: Text(
                       valueOrDefault<String>(
-                        widget!.proDetails?.locationLabel,
+                        widget.proDetails?.locationLabel,
                         'Location',
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'Haas Grot Text Trial',
                             color: FlutterFlowTheme.of(context).secondaryText,
@@ -255,14 +264,14 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
             ),
             FFButtonWidget(
               onPressed: () async {
-                if ((widget!.proDetails!.portfolioImages.length >= 1) &&
-                    (widget!.proDetails?.proProfileId != null &&
-                        widget!.proDetails?.proProfileId != '')) {
+                if ((widget.proDetails!.portfolioImages.isNotEmpty) &&
+                    (widget.proDetails?.proProfileId != null &&
+                        widget.proDetails?.proProfileId != '')) {
                   context.goNamed(
                     ProDetailsWidget.routeName,
                     queryParameters: {
                       'proDetails': serializeParam(
-                        widget!.proDetails,
+                        widget.proDetails,
                         ParamType.DataStruct,
                       ),
                     }.withoutNulls,
@@ -277,7 +286,7 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
                           color: FlutterFlowTheme.of(context).primaryText,
                         ),
                       ),
-                      duration: Duration(milliseconds: 2000),
+                      duration: const Duration(milliseconds: 2000),
                       backgroundColor: FlutterFlowTheme.of(context).warning,
                     ),
                   );
@@ -287,8 +296,8 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
               options: FFButtonOptions(
                 width: double.infinity,
                 height: 48.0,
-                padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-                iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                iconPadding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                 color: FlutterFlowTheme.of(context).primary,
                 textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                       fontFamily: 'Haas Grot Text Trial',
@@ -301,7 +310,7 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
                 borderRadius: BorderRadius.circular(0.0),
               ),
             ),
-          ].divide(SizedBox(height: 10.0)),
+          ].divide(const SizedBox(height: 10.0)),
         ),
       ),
     );

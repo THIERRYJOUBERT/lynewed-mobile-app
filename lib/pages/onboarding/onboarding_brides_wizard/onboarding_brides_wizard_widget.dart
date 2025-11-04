@@ -6,16 +6,14 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import 'dart:io';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/permissions_util.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:percent_indicator/percent_indicator.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 import 'onboarding_brides_wizard_model.dart';
 export 'onboarding_brides_wizard_model.dart';
 
@@ -74,7 +72,7 @@ class _OnboardingBridesWizardWidgetState
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        body: Container(
+        body: SizedBox(
           width: MediaQuery.sizeOf(context).width * 1.0,
           height: MediaQuery.sizeOf(context).height * 1.0,
           child: PageView(
@@ -84,7 +82,7 @@ class _OnboardingBridesWizardWidgetState
             scrollDirection: Axis.horizontal,
             children: [
               Align(
-                alignment: AlignmentDirectional(0.0, -1.0),
+                alignment: const AlignmentDirectional(0.0, -1.0),
                 child: SingleChildScrollView(
                   primary: false,
                   child: Column(
@@ -103,9 +101,9 @@ class _OnboardingBridesWizardWidgetState
                             children: [
                               Flexible(
                                 child: Align(
-                                  alignment: AlignmentDirectional(0.0, 0.0),
+                                  alignment: const AlignmentDirectional(0.0, 0.0),
                                   child: Stack(
-                                    alignment: AlignmentDirectional(0.0, -1.0),
+                                    alignment: const AlignmentDirectional(0.0, -1.0),
                                     children: [
                                       ClipRRect(
                                         borderRadius:
@@ -121,10 +119,10 @@ class _OnboardingBridesWizardWidgetState
                                       ),
                                       Align(
                                         alignment:
-                                            AlignmentDirectional(0.0, -1.0),
+                                            const AlignmentDirectional(0.0, -1.0),
                                         child: Padding(
                                           padding:
-                                              EdgeInsetsDirectional.fromSTEB(
+                                              const EdgeInsetsDirectional.fromSTEB(
                                                   32.0, 70.0, 32.0, 0.0),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.max,
@@ -159,13 +157,13 @@ class _OnboardingBridesWizardWidgetState
                                               ),
                                               Container(
                                                 decoration: BoxDecoration(
-                                                  color: Color(0xCD141414),
+                                                  color: const Color(0xCD141414),
                                                   borderRadius:
                                                       BorderRadius.circular(
                                                           2.0),
                                                 ),
                                                 child: Padding(
-                                                  padding: EdgeInsetsDirectional
+                                                  padding: const EdgeInsetsDirectional
                                                       .fromSTEB(
                                                           12.0, 8.0, 12.0, 8.0),
                                                   child: Text(
@@ -184,7 +182,7 @@ class _OnboardingBridesWizardWidgetState
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(height: 12.0)),
+                                            ].divide(const SizedBox(height: 12.0)),
                                           ),
                                         ),
                                       ),
@@ -198,7 +196,7 @@ class _OnboardingBridesWizardWidgetState
                       ),
                       Flexible(
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               32.0, 0.0, 32.0, 0.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -209,7 +207,7 @@ class _OnboardingBridesWizardWidgetState
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Align(
-                                    alignment: AlignmentDirectional(-1.0, -1.0),
+                                    alignment: const AlignmentDirectional(-1.0, -1.0),
                                     child: Text(
                                       'WE ARE ALMOST THERE !',
                                       style: FlutterFlowTheme.of(context)
@@ -233,7 +231,7 @@ class _OnboardingBridesWizardWidgetState
                                           letterSpacing: 0.0,
                                         ),
                                   ),
-                                ].divide(SizedBox(height: 8.0)),
+                                ].divide(const SizedBox(height: 8.0)),
                               ),
                               InkWell(
                                 splashColor: Colors.transparent,
@@ -252,7 +250,7 @@ class _OnboardingBridesWizardWidgetState
                                   safeSetState(() {});
                                 },
                                 child: Stack(
-                                  alignment: AlignmentDirectional(1.0, 1.0),
+                                  alignment: const AlignmentDirectional(1.0, 1.0),
                                   children: [
                                     Container(
                                       width: 100.0,
@@ -266,7 +264,7 @@ class _OnboardingBridesWizardWidgetState
                                         width: 200.0,
                                         height: 200.0,
                                         clipBehavior: Clip.antiAlias,
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           shape: BoxShape.circle,
                                         ),
                                         child: _model.localAvatarPath != null &&
@@ -297,12 +295,12 @@ class _OnboardingBridesWizardWidgetState
                               ),
                               Container(
                                 width: double.infinity,
-                                decoration: BoxDecoration(),
+                                decoration: const BoxDecoration(),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Container(
+                                    SizedBox(
                                       width: double.infinity,
                                       child: TextFormField(
                                         controller:
@@ -371,7 +369,7 @@ class _OnboardingBridesWizardWidgetState
                                                 BorderRadius.circular(0.0),
                                           ),
                                           contentPadding:
-                                              EdgeInsetsDirectional.fromSTEB(
+                                              const EdgeInsetsDirectional.fromSTEB(
                                                   4.0, 12.0, 0.0, 12.0),
                                         ),
                                         style: FlutterFlowTheme.of(context)
@@ -392,7 +390,7 @@ class _OnboardingBridesWizardWidgetState
                                             .asValidator(context),
                                       ),
                                     ),
-                                    Container(
+                                    SizedBox(
                                       width: double.infinity,
                                       child: TextFormField(
                                         controller:
@@ -461,7 +459,7 @@ class _OnboardingBridesWizardWidgetState
                                                 BorderRadius.circular(0.0),
                                           ),
                                           contentPadding:
-                                              EdgeInsetsDirectional.fromSTEB(
+                                              const EdgeInsetsDirectional.fromSTEB(
                                                   4.0, 12.0, 0.0, 12.0),
                                         ),
                                         style: FlutterFlowTheme.of(context)
@@ -518,7 +516,7 @@ class _OnboardingBridesWizardWidgetState
                                                   'USD',
                                                 ),
                                               ),
-                                              options: [
+                                              options: const [
                                                 'USD',
                                                 'EUR',
                                                 'GBP',
@@ -550,7 +548,7 @@ class _OnboardingBridesWizardWidgetState
                                               borderColor: Colors.transparent,
                                               borderWidth: 1.0,
                                               borderRadius: 0.0,
-                                              margin: EdgeInsetsDirectional
+                                              margin: const EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       4.0, 0.0, 12.0, 10.0),
                                               isOverButton: false,
@@ -593,7 +591,7 @@ class _OnboardingBridesWizardWidgetState
                                                   'km',
                                                 ),
                                               ),
-                                              options: ['km', 'miles'],
+                                              options: const ['km', 'miles'],
                                               onChanged: (val) => safeSetState(
                                                   () => _model
                                                           .dropDownDistanceValue =
@@ -619,7 +617,7 @@ class _OnboardingBridesWizardWidgetState
                                               borderColor: Colors.transparent,
                                               borderWidth: 1.0,
                                               borderRadius: 0.0,
-                                              margin: EdgeInsetsDirectional
+                                              margin: const EdgeInsetsDirectional
                                                   .fromSTEB(
                                                       4.0, 0.0, 12.0, 10.0),
                                               isOverButton: false,
@@ -628,19 +626,19 @@ class _OnboardingBridesWizardWidgetState
                                             ),
                                           ],
                                         ),
-                                      ].divide(SizedBox(width: 32.0)),
+                                      ].divide(const SizedBox(width: 32.0)),
                                     ),
-                                  ].divide(SizedBox(height: 24.0)),
+                                  ].divide(const SizedBox(height: 24.0)),
                                 ),
                               ),
-                            ].divide(SizedBox(height: 32.0)),
+                            ].divide(const SizedBox(height: 32.0)),
                           ),
                         ),
                       ),
                       Align(
-                        alignment: AlignmentDirectional(0.0, 0.8),
+                        alignment: const AlignmentDirectional(0.0, 0.8),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               20.0, 64.0, 20.0, 0.0),
                           child: FFButtonWidget(
                             onPressed: () async {
@@ -695,7 +693,7 @@ class _OnboardingBridesWizardWidgetState
                                     _model.updatedProfile!;
                                 safeSetState(() {});
                                 await _model.pageViewController?.nextPage(
-                                  duration: Duration(milliseconds: 300),
+                                  duration: const Duration(milliseconds: 300),
                                   curve: Curves.ease,
                                 );
                               } else {
@@ -708,7 +706,7 @@ class _OnboardingBridesWizardWidgetState
                                             .primaryText,
                                       ),
                                     ),
-                                    duration: Duration(milliseconds: 2000),
+                                    duration: const Duration(milliseconds: 2000),
                                     backgroundColor:
                                         FlutterFlowTheme.of(context).warning,
                                   ),
@@ -721,9 +719,9 @@ class _OnboardingBridesWizardWidgetState
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 48.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   16.0, 0.0, 16.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
                               color: FlutterFlowTheme.of(context).primary,
                               textStyle: FlutterFlowTheme.of(context)
@@ -741,7 +739,7 @@ class _OnboardingBridesWizardWidgetState
                           ),
                         ),
                       ),
-                    ].divide(SizedBox(height: 32.0)),
+                    ].divide(const SizedBox(height: 32.0)),
                   ),
                 ),
               ),
@@ -758,7 +756,7 @@ class _OnboardingBridesWizardWidgetState
                   ),
                   Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(20.0, 70.0, 20.0, 0.0),
+                        const EdgeInsetsDirectional.fromSTEB(20.0, 70.0, 20.0, 0.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -778,11 +776,11 @@ class _OnboardingBridesWizardWidgetState
                         ),
                         Container(
                           decoration: BoxDecoration(
-                            color: Color(0xCD141414),
+                            color: const Color(0xCD141414),
                             borderRadius: BorderRadius.circular(2.0),
                           ),
                           child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 12.0, 8.0, 12.0, 8.0),
                             child: Text(
                               '2 / 3',
@@ -798,7 +796,7 @@ class _OnboardingBridesWizardWidgetState
                           ),
                         ),
                         Align(
-                          alignment: AlignmentDirectional(0.0, 0.0),
+                          alignment: const AlignmentDirectional(0.0, 0.0),
                           child: LinearPercentIndicator(
                             percent: 0.66,
                             width: 326.0,
@@ -806,14 +804,14 @@ class _OnboardingBridesWizardWidgetState
                             animation: true,
                             animateFromLastPercent: true,
                             progressColor: Colors.white,
-                            backgroundColor: Color(0x7FFFFFFF),
-                            barRadius: Radius.circular(99.0),
+                            backgroundColor: const Color(0x7FFFFFFF),
+                            barRadius: const Radius.circular(99.0),
                             padding: EdgeInsets.zero,
                           ),
                         ),
                         Flexible(
                           child: Align(
-                            alignment: AlignmentDirectional(0.0, 0.45),
+                            alignment: const AlignmentDirectional(0.0, 0.45),
                             child: Text(
                               'Enable your location to find the best service providers near you and access all our features.',
                               textAlign: TextAlign.center,
@@ -830,19 +828,19 @@ class _OnboardingBridesWizardWidgetState
                             ),
                           ),
                         ),
-                      ].divide(SizedBox(height: 12.0)),
+                      ].divide(const SizedBox(height: 12.0)),
                     ),
                   ),
                   Align(
-                    alignment: AlignmentDirectional(0.0, 0.8),
+                    alignment: const AlignmentDirectional(0.0, 0.8),
                     child: Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
                       child: FFButtonWidget(
                         onPressed: () async {
                           await requestPermission(locationPermission);
                           await _model.pageViewController?.nextPage(
-                            duration: Duration(milliseconds: 300),
+                            duration: const Duration(milliseconds: 300),
                             curve: Curves.ease,
                           );
                         },
@@ -850,9 +848,9 @@ class _OnboardingBridesWizardWidgetState
                         options: FFButtonOptions(
                           width: double.infinity,
                           height: 48.0,
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               16.0, 0.0, 16.0, 0.0),
-                          iconPadding: EdgeInsetsDirectional.fromSTEB(
+                          iconPadding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
                           color: FlutterFlowTheme.of(context).primaryBackground,
                           textStyle: FlutterFlowTheme.of(context)
@@ -885,7 +883,7 @@ class _OnboardingBridesWizardWidgetState
                   ),
                   Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(32.0, 70.0, 32.0, 40.0),
+                        const EdgeInsetsDirectional.fromSTEB(32.0, 70.0, 32.0, 40.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       children: [
@@ -910,11 +908,11 @@ class _OnboardingBridesWizardWidgetState
                               ),
                               Container(
                                 decoration: BoxDecoration(
-                                  color: Color(0xCD141414),
+                                  color: const Color(0xCD141414),
                                   borderRadius: BorderRadius.circular(2.0),
                                 ),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       12.0, 8.0, 12.0, 8.0),
                                   child: Text(
                                     '3 / 3',
@@ -930,7 +928,7 @@ class _OnboardingBridesWizardWidgetState
                                 ),
                               ),
                               Align(
-                                alignment: AlignmentDirectional(0.0, 0.0),
+                                alignment: const AlignmentDirectional(0.0, 0.0),
                                 child: LinearPercentIndicator(
                                   percent: 1.0,
                                   width: 326.0,
@@ -938,16 +936,16 @@ class _OnboardingBridesWizardWidgetState
                                   animation: true,
                                   animateFromLastPercent: true,
                                   progressColor: Colors.white,
-                                  backgroundColor: Color(0x7FFFFFFF),
-                                  barRadius: Radius.circular(99.0),
+                                  backgroundColor: const Color(0x7FFFFFFF),
+                                  barRadius: const Radius.circular(99.0),
                                   padding: EdgeInsets.zero,
                                 ),
                               ),
-                            ].divide(SizedBox(height: 12.0)),
+                            ].divide(const SizedBox(height: 12.0)),
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 40.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
@@ -985,9 +983,9 @@ class _OnboardingBridesWizardWidgetState
                                 options: FFButtonOptions(
                                   width: double.infinity,
                                   height: 48.0,
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       16.0, 0.0, 16.0, 0.0),
-                                  iconPadding: EdgeInsetsDirectional.fromSTEB(
+                                  iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                       0.0, 0.0, 0.0, 0.0),
                                   color: FlutterFlowTheme.of(context)
                                       .primaryBackground,
@@ -1005,7 +1003,7 @@ class _OnboardingBridesWizardWidgetState
                                   borderRadius: BorderRadius.circular(0.0),
                                 ),
                               ),
-                            ].divide(SizedBox(height: 24.0)),
+                            ].divide(const SizedBox(height: 24.0)),
                           ),
                         ),
                       ],

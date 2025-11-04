@@ -9,7 +9,7 @@ class WedArticlesTable extends SupabaseTable<WedArticlesRow> {
 }
 
 class WedArticlesRow extends SupabaseDataRow {
-  WedArticlesRow(Map<String, dynamic> data) : super(data);
+  WedArticlesRow(super.data);
 
   @override
   SupabaseTable get table => WedArticlesTable();
@@ -24,12 +24,12 @@ class WedArticlesRow extends SupabaseDataRow {
   set linkedProProfileId(String value) =>
       setField<String>('linked_pro_profile_id', value);
 
-  List<String> get coverImages => getListField<String>('cover_images')!;
+  List<String> get coverImages => getListField<String>('cover_images');
   set coverImages(List<String> value) =>
       setListField<String>('cover_images', value);
 
-  dynamic? get contentBlocks => getField<dynamic>('content_blocks');
-  set contentBlocks(dynamic? value) =>
+  dynamic get contentBlocks => getField<dynamic>('content_blocks');
+  set contentBlocks(dynamic value) =>
       setField<dynamic>('content_blocks', value);
 
   bool get isPublished => getField<bool>('is_published')!;

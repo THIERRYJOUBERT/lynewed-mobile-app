@@ -9,7 +9,7 @@ class ContentTable extends SupabaseTable<ContentRow> {
 }
 
 class ContentRow extends SupabaseDataRow {
-  ContentRow(Map<String, dynamic> data) : super(data);
+  ContentRow(super.data);
 
   @override
   SupabaseTable get table => ContentTable();

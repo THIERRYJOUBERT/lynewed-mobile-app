@@ -1,17 +1,9 @@
 import 'dart:convert';
-import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'lat_lng.dart';
-import 'place.dart';
-import 'uploaded_file.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
-import '/auth/supabase_auth/auth_util.dart';
 
 String? professionToStyle(Profession? p) {
   /// Retourne le code couleur HEX associé à une profession.
@@ -93,7 +85,7 @@ String getCountryNameFromIso2(
   // Architect's note: The best practice is to fetch this data from a single
   // source of truth (like the 'countries' table in Supabase) and cache it
   // in the app state to avoid data duplication and maintenance issues.
-  const Map<String, Map<String, String>> _countries = {
+  const Map<String, Map<String, String>> countries = {
     'AF': {'fr': 'Afghanistan', 'en': 'Afghanistan'},
     'AL': {'fr': 'Albanie', 'en': 'Albania'},
     'DZ': {'fr': 'Algérie', 'en': 'Algeria'},
@@ -359,7 +351,7 @@ String getCountryNameFromIso2(
   final String normalizedLang = (lang?.toLowerCase() == 'fr') ? 'fr' : 'en';
 
   // Find the country data for the given iso2Code
-  final countryData = _countries[iso2Code.toUpperCase()];
+  final countryData = countries[iso2Code.toUpperCase()];
 
   // If the country code is not found, return the code itself for debugging
   if (countryData == null) {
@@ -672,8 +664,7 @@ String generateDefaultFiltersJson() {
 
   // 2. Duplication de la logique de `filtersToJsonString` ici :
   // ==========================================================
-  final double? budgetMaxClean = (defaultFilters.budgetMax != null &&
-          defaultFilters.budgetMax! >= 100000.0)
+  final double? budgetMaxClean = (defaultFilters.budgetMax >= 100000.0)
       ? null
       : defaultFilters.budgetMax;
 
@@ -691,12 +682,12 @@ String generateDefaultFiltersJson() {
 
   final Map<String, dynamic> jsonMap = {
     if (professionsTokens.isNotEmpty) 'professions': professionsTokens,
-    if (defaultFilters.budgetMin != null) 'budgetMin': defaultFilters.budgetMin,
+    'budgetMin': defaultFilters.budgetMin,
     if (budgetMaxClean != null) 'budgetMax': budgetMaxClean,
-    if (defaultFilters.currency != null && defaultFilters.currency!.isNotEmpty)
+    if (defaultFilters.currency.isNotEmpty)
       'currency': defaultFilters.currency,
     if (centerJson != null) 'center': centerJson,
-    if (defaultFilters.radiusKm != null) 'radiusKm': defaultFilters.radiusKm,
+    'radiusKm': defaultFilters.radiusKm,
     'showPros': defaultFilters.showPros,
     'showProRecent': defaultFilters.showProRecent,
     'showFixedLocations': defaultFilters.showFixedLocations,

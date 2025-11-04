@@ -1,28 +1,24 @@
 // Automatic FlutterFlow imports
-import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+// Imports custom actions
+// Imports custom functions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import '/custom_code/actions/index.dart'; // Imports other custom actions
+// Imports other custom actions
 
 import '/custom_code/actions/index.dart' as actions;
-import '/custom_code/widgets/index.dart'; // AudioRecorderWidget
-import 'dart:typed_data';
+// AudioRecorderWidget
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ChatComposerWidget extends StatefulWidget {
   const ChatComposerWidget({
-    Key? key,
+    super.key,
     this.width,
     this.height,
     this.viewerRole,
@@ -35,7 +31,7 @@ class ChatComposerWidget extends StatefulWidget {
     // Nouveaux paramètres pour la logique de premier contact
     this.isRoomEmpty,
     this.firstMessageTextOnly,
-  }) : super(key: key);
+  });
 
   final double? width;
   final double? height;
@@ -80,8 +76,9 @@ class _ChatComposerWidgetState extends State<ChatComposerWidget> {
   // OU si une demande de contact est en attente.
   bool get _locked {
     if (widget.isPublic && _role != UserRole.bride) return true;
-    if (widget.pendingRequestId != null && widget.pendingRequestId!.isNotEmpty)
+    if (widget.pendingRequestId != null && widget.pendingRequestId!.isNotEmpty) {
       return true;
+    }
     return false;
   }
 
@@ -202,9 +199,10 @@ class _ChatComposerWidgetState extends State<ChatComposerWidget> {
       if (_hasAudio) {
         final ok = await actions.uploadAndSendAudioAction(
             widget.roomId!, _audioPreviewFile!);
-        if (!ok)
+        if (!ok) {
           await _emitError(
               _i18n('Failed to send audio.', 'Échec de l’envoi de l’audio.'));
+        }
         _clearAfterSend(clearAudio: true);
         return;
       }
@@ -217,9 +215,10 @@ class _ChatComposerWidgetState extends State<ChatComposerWidget> {
           1440,
           _hasText ? _textCtl.text.trim() : null,
         );
-        if (!ok)
+        if (!ok) {
           await _emitError(
               _i18n('Failed to send images.', 'Échec de l’envoi des images.'));
+        }
         _clearAfterSend(clearText: true, clearImages: true);
         return;
       }
@@ -242,7 +241,7 @@ class _ChatComposerWidgetState extends State<ChatComposerWidget> {
                 .openOrPrepareContactAction(widget.targetProfileId!);
             // Si le statut est bien passé à `requestPending`...
             if (ctx.status == ChatEntryStatus.requestPending &&
-                (ctx.requestId?.isNotEmpty ?? false)) {
+                (ctx.requestId.isNotEmpty ?? false)) {
               // ...on notifie la page `ChatDetails` pour qu'elle se mette à jour.
               if (widget.onRoomCreated != null) {
                 await widget.onRoomCreated!(widget.roomId, ctx.requestId);
@@ -320,8 +319,9 @@ class _ChatComposerWidgetState extends State<ChatComposerWidget> {
   }
 
   Widget _buildAudioPreviewChip() {
-    if (_audioPreviewFile == null || _isRecordingAudio)
+    if (_audioPreviewFile == null || _isRecordingAudio) {
       return const SizedBox.shrink();
+    }
     final theme = FlutterFlowTheme.of(context);
     return Container(
       height: 52,

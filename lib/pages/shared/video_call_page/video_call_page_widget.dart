@@ -2,13 +2,9 @@ import '/auth/supabase_auth/auth_util.dart';
 import '/backend/schema/enums/enums.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'video_call_page_model.dart';
 export 'video_call_page_model.dart';
 
@@ -61,25 +57,25 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryText,
-        body: Container(
+        body: SizedBox(
           width: double.infinity,
           height: double.infinity,
           child: Stack(
             children: [
-              Container(
+              SizedBox(
                 width: double.infinity,
                 height: double.infinity,
                 child: custom_widgets.AgoraVideoView(
                   width: double.infinity,
                   height: double.infinity,
                   appId: FFAppConstants.agoraAppId,
-                  channelName: widget!.channelName!,
-                  token: widget!.agoraToken!,
+                  channelName: widget.channelName!,
+                  token: widget.agoraToken!,
                   userId: currentUserUid,
                   onCallEnd: () async {
                     _model.updateVideoSessionStatusActionEndCall =
                         await actions.updateVideoSessionStatusAction(
-                      widget!.videoSessionId!,
+                      widget.videoSessionId!,
                       VideoSessionStatus.completed,
                     );
                     context.safePop();
@@ -89,7 +85,7 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                 ),
               ),
               Align(
-                alignment: AlignmentDirectional(0.0, 1.0),
+                alignment: const AlignmentDirectional(0.0, 1.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -114,13 +110,13 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                             width: 72.0,
                             height: 72.0,
                             decoration: BoxDecoration(
-                              color: Color(0xCC4B4B4B),
+                              color: const Color(0xCC4B4B4B),
                               borderRadius: BorderRadius.circular(99.0),
                             ),
                             child: Stack(
                               children: [
                                 if (_model.isMuted == true)
-                                  Align(
+                                  const Align(
                                     alignment: AlignmentDirectional(0.0, 0.0),
                                     child: Icon(
                                       Icons.mic_off_rounded,
@@ -129,7 +125,7 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                                     ),
                                   ),
                                 if (_model.isMuted == false)
-                                  Align(
+                                  const Align(
                                     alignment: AlignmentDirectional(0.0, 0.0),
                                     child: Icon(
                                       Icons.mic,
@@ -157,13 +153,13 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                             width: 72.0,
                             height: 72.0,
                             decoration: BoxDecoration(
-                              color: Color(0xCC4B4B4B),
+                              color: const Color(0xCC4B4B4B),
                               borderRadius: BorderRadius.circular(99.0),
                             ),
                             child: Stack(
                               children: [
                                 if (_model.isCameraOff == true)
-                                  Align(
+                                  const Align(
                                     alignment: AlignmentDirectional(0.0, 0.0),
                                     child: Icon(
                                       Icons.videocam_off,
@@ -172,7 +168,7 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                                     ),
                                   ),
                                 if (_model.isCameraOff == false)
-                                  Align(
+                                  const Align(
                                     alignment: AlignmentDirectional(0.0, 0.0),
                                     child: Icon(
                                       Icons.videocam_sharp,
@@ -196,10 +192,10 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                             width: 72.0,
                             height: 72.0,
                             decoration: BoxDecoration(
-                              color: Color(0xCC4B4B4B),
+                              color: const Color(0xCC4B4B4B),
                               borderRadius: BorderRadius.circular(99.0),
                             ),
-                            child: Align(
+                            child: const Align(
                               alignment: AlignmentDirectional(0.0, 0.0),
                               child: Icon(
                                 Icons.flip_camera_ios,
@@ -218,7 +214,7 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                             await actions.agoraEndCall();
                             _model.updateVideoSessionStatusActionResult =
                                 await actions.updateVideoSessionStatusAction(
-                              widget!.videoSessionId!,
+                              widget.videoSessionId!,
                               VideoSessionStatus.completed,
                             );
                             context.safePop();
@@ -232,7 +228,7 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                               color: FlutterFlowTheme.of(context).accent2,
                               borderRadius: BorderRadius.circular(99.0),
                             ),
-                            child: Align(
+                            child: const Align(
                               alignment: AlignmentDirectional(0.0, 0.0),
                               child: Icon(
                                 Icons.call_end,
@@ -243,10 +239,10 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                           ),
                         ),
                       ]
-                          .addToStart(SizedBox(width: 10.0))
-                          .addToEnd(SizedBox(width: 10.0)),
+                          .addToStart(const SizedBox(width: 10.0))
+                          .addToEnd(const SizedBox(width: 10.0)),
                     ),
-                  ].addToEnd(SizedBox(height: 60.0)),
+                  ].addToEnd(const SizedBox(height: 60.0)),
                 ),
               ),
             ],

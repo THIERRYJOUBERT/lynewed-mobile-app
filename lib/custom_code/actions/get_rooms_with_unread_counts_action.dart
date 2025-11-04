@@ -1,13 +1,10 @@
 // Automatic FlutterFlow imports
+import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
+// Imports other custom actions
 import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -15,7 +12,7 @@ import 'package:flutter/material.dart';
 /// add the boilerplate code using the green button on the right!
 Future<InboxResultStruct?> getRoomsWithUnreadCountsAction(int? limit) async {
   // --- Helpers de parsing Enum ---
-  MessageType _messageTypeFromString(String? s) {
+  MessageType messageTypeFromString(String? s) {
     switch ((s ?? '').toLowerCase()) {
       case 'image':
         return MessageType.image;
@@ -27,7 +24,7 @@ Future<InboxResultStruct?> getRoomsWithUnreadCountsAction(int? limit) async {
     }
   }
 
-  UserRole? _userRoleFromString(String? s) {
+  UserRole? userRoleFromString(String? s) {
     switch ((s ?? '').toLowerCase()) {
       case 'professional':
         return UserRole.professional;
@@ -39,12 +36,12 @@ Future<InboxResultStruct?> getRoomsWithUnreadCountsAction(int? limit) async {
   }
 
   // CORRIGÉ: Helper pour l'Enum RoomType
-  RoomType _roomTypeFromString(String? s) {
+  RoomType roomTypeFromString(String? s) {
     return (s ?? 'private') == 'public' ? RoomType.public : RoomType.private;
   }
 
   // CORRIGÉ: Helper pour l'Enum ConversationStatus
-  ConversationStatus _conversationStatusFromString(String? s) {
+  ConversationStatus conversationStatusFromString(String? s) {
     switch (s) {
       case 'archived':
         return ConversationStatus.archived;
@@ -82,30 +79,30 @@ Future<InboxResultStruct?> getRoomsWithUnreadCountsAction(int? limit) async {
       items.add(
         ConversationListItemStruct(
           roomId: row['roomId']?.toString() ?? '',
-          roomType: _roomTypeFromString(row['roomType']?.toString()), // CORRIGÉ
-          conversationStatus: _conversationStatusFromString(
+          roomType: roomTypeFromString(row['roomType']?.toString()), // CORRIGÉ
+          conversationStatus: conversationStatusFromString(
               row['conversationStatus']?.toString()), // CORRIGÉ
           unreadCount: (row['unreadCount'] is num)
               ? (row['unreadCount'] as num).toInt()
               : 0,
           lastMessageType:
-              _messageTypeFromString(row['lastMessageType']?.toString()),
+              messageTypeFromString(row['lastMessageType']?.toString()),
           lastMessageText: row['lastMessageText']?.toString() ?? '',
           lastMessageAt: lastAt,
           otherProfileId: row['otherProfileId']?.toString(),
           otherFullName: row['otherFullName']?.toString(),
           otherAvatarUrl: otherAvatar,
-          otherRole: _userRoleFromString(row['otherRole']?.toString()),
+          otherRole: userRoleFromString(row['otherRole']?.toString()),
           publicTitle: row['publicTitle']?.toString(),
           publicCoverUrl: publicCover,
-          audienceRole: _userRoleFromString(row['audienceRole']?.toString()),
+          audienceRole: userRoleFromString(row['audienceRole']?.toString()),
         ),
       );
     }
 
     return InboxResultStruct(items: items);
   } catch (e) {
-    print('getRoomsWithUnreadCountsAction error: $e');
+    debugPrint('getRoomsWithUnreadCountsAction error: $e');
     return InboxResultStruct(items: []);
   }
 }

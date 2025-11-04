@@ -2,13 +2,10 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'sign_up_email_page_model.dart';
 export 'sign_up_email_page_model.dart';
 
@@ -73,9 +70,9 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                   children: [
                     Flexible(
                       child: Align(
-                        alignment: AlignmentDirectional(0.0, 0.0),
+                        alignment: const AlignmentDirectional(0.0, 0.0),
                         child: Stack(
-                          alignment: AlignmentDirectional(0.0, -1.0),
+                          alignment: const AlignmentDirectional(0.0, -1.0),
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(0.0),
@@ -87,9 +84,9 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                               ),
                             ),
                             Align(
-                              alignment: AlignmentDirectional(0.0, -1.0),
+                              alignment: const AlignmentDirectional(0.0, -1.0),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     32.0, 70.0, 32.0, 0.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
@@ -102,7 +99,7 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                                       children: [
                                         Align(
                                           alignment:
-                                              AlignmentDirectional(0.0, 0.0),
+                                              const AlignmentDirectional(0.0, 0.0),
                                           child: FlutterFlowIconButton(
                                             borderRadius: 100.0,
                                             borderWidth: 0.0,
@@ -110,7 +107,7 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                                             fillColor:
                                                 FlutterFlowTheme.of(context)
                                                     .backgroundIcons,
-                                            icon: Icon(
+                                            icon: const Icon(
                                               Icons.arrow_back_ios_rounded,
                                               color: Colors.white,
                                               size: 17.0,
@@ -139,7 +136,7 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                                         Container(
                                           width: 40.0,
                                           height: 40.0,
-                                          decoration: BoxDecoration(),
+                                          decoration: const BoxDecoration(),
                                         ),
                                       ],
                                     ),
@@ -156,7 +153,7 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                                             fontWeight: FontWeight.w500,
                                           ),
                                     ),
-                                  ].divide(SizedBox(height: 12.0)),
+                                  ].divide(const SizedBox(height: 12.0)),
                                 ),
                               ),
                             ),
@@ -168,7 +165,7 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(32.0, 0.0, 32.0, 0.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(32.0, 0.0, 32.0, 0.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -178,7 +175,7 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Align(
-                          alignment: AlignmentDirectional(-1.0, -1.0),
+                          alignment: const AlignmentDirectional(-1.0, -1.0),
                           child: Text(
                             'REGISTER',
                             style: FlutterFlowTheme.of(context)
@@ -203,9 +200,9 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                               ),
                         ),
                         Align(
-                          alignment: AlignmentDirectional(1.0, 1.0),
+                          alignment: const AlignmentDirectional(1.0, 1.0),
                           child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 12.0, 0.0, 0.0),
                             child: Text(
                               'Required fields*',
@@ -220,16 +217,16 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                             ),
                           ),
                         ),
-                      ].divide(SizedBox(height: 14.0)),
+                      ].divide(const SizedBox(height: 14.0)),
                     ),
                     Container(
                       width: double.infinity,
-                      decoration: BoxDecoration(),
+                      decoration: const BoxDecoration(),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
+                          SizedBox(
                             width: double.infinity,
                             child: TextFormField(
                               controller: _model.emailAddressTextController,
@@ -280,7 +277,7 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                                   ),
                                   borderRadius: BorderRadius.circular(0.0),
                                 ),
-                                contentPadding: EdgeInsetsDirectional.fromSTEB(
+                                contentPadding: const EdgeInsetsDirectional.fromSTEB(
                                     4.0, 12.0, 0.0, 12.0),
                               ),
                               style: FlutterFlowTheme.of(context)
@@ -298,7 +295,7 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                                   .asValidator(context),
                             ),
                           ),
-                          Container(
+                          SizedBox(
                             width: double.infinity,
                             child: TextFormField(
                               controller: _model.passwordTextController,
@@ -349,7 +346,7 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                                   ),
                                   borderRadius: BorderRadius.circular(0.0),
                                 ),
-                                contentPadding: EdgeInsetsDirectional.fromSTEB(
+                                contentPadding: const EdgeInsetsDirectional.fromSTEB(
                                     4.0, 12.0, 0.0, 12.0),
                                 suffixIcon: InkWell(
                                   onTap: () => safeSetState(
@@ -380,7 +377,7 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                                   .asValidator(context),
                             ),
                           ),
-                          Container(
+                          SizedBox(
                             width: double.infinity,
                             child: TextFormField(
                               controller: _model.confirmPasswordTextController,
@@ -431,7 +428,7 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                                   ),
                                   borderRadius: BorderRadius.circular(0.0),
                                 ),
-                                contentPadding: EdgeInsetsDirectional.fromSTEB(
+                                contentPadding: const EdgeInsetsDirectional.fromSTEB(
                                     4.0, 12.0, 0.0, 12.0),
                                 suffixIcon: InkWell(
                                   onTap: () => safeSetState(
@@ -492,7 +489,7 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                                       ? BorderSide(
                                           width: 2,
                                           color: FlutterFlowTheme.of(context)
-                                              .secondaryText!,
+                                              .secondaryText,
                                         )
                                       : null,
                                   activeColor:
@@ -525,7 +522,7 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                                             TextSpan(
                                               text:
                                                   'Terms and Conditions of Sale and Use',
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 fontSize: 13.0,
                                                 decoration:
                                                     TextDecoration.underline,
@@ -555,12 +552,12 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                               ),
                             ],
                           ),
-                        ].divide(SizedBox(height: 24.0)),
+                        ].divide(const SizedBox(height: 24.0)),
                       ),
                     ),
                     Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         children: [
@@ -587,7 +584,7 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                                               .primaryText,
                                         ),
                                       ),
-                                      duration: Duration(milliseconds: 2000),
+                                      duration: const Duration(milliseconds: 2000),
                                       backgroundColor:
                                           FlutterFlowTheme.of(context).error,
                                     ),
@@ -605,7 +602,7 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                                               .primaryText,
                                         ),
                                       ),
-                                      duration: Duration(milliseconds: 2000),
+                                      duration: const Duration(milliseconds: 2000),
                                       backgroundColor:
                                           FlutterFlowTheme.of(context).warning,
                                     ),
@@ -621,7 +618,7 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                                               .primaryText,
                                         ),
                                       ),
-                                      duration: Duration(milliseconds: 2000),
+                                      duration: const Duration(milliseconds: 2000),
                                       backgroundColor:
                                           FlutterFlowTheme.of(context).error,
                                     ),
@@ -635,9 +632,9 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 48.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   16.0, 0.0, 16.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
                               color: FlutterFlowTheme.of(context).primary,
                               textStyle: FlutterFlowTheme.of(context)
@@ -654,7 +651,7 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 12.0, 0.0, 0.0),
                             child: InkWell(
                               splashColor: Colors.transparent,
@@ -678,13 +675,13 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                               ),
                             ),
                           ),
-                        ].divide(SizedBox(height: 12.0)),
+                        ].divide(const SizedBox(height: 12.0)),
                       ),
                     ),
-                  ].divide(SizedBox(height: 32.0)),
+                  ].divide(const SizedBox(height: 32.0)),
                 ),
               ),
-            ].divide(SizedBox(height: 32.0)),
+            ].divide(const SizedBox(height: 32.0)),
           ),
         ),
       ),

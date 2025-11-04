@@ -3,15 +3,15 @@ import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
+import '/flutter_flow/profession_display_helper.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/scheduler.dart';
 import 'add_filter_sheet_model.dart';
 export 'add_filter_sheet_model.dart';
+import 'profession_checkbox_grid.dart';
 
 class AddFilterSheetWidget extends StatefulWidget {
   const AddFilterSheetWidget({
@@ -43,14 +43,14 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      _model.budgetMin = widget!.filtersOn?.budgetMin;
-      _model.budgetMax = widget!.filtersOn?.budgetMax;
+      _model.budgetMin = widget.filtersOn?.budgetMin;
+      _model.budgetMax = widget.filtersOn?.budgetMax;
       _model.selectedProfessions =
-          widget!.filtersOn!.professions.toList().cast<Profession>();
-      _model.showPros = widget!.filtersOn!.showPros;
-      _model.showProRecent = widget!.filtersOn!.showProRecent;
-      _model.showWeddingPins = widget!.filtersOn!.showWeddingPins;
-      _model.showProAlerts = widget!.filtersOn!.showProAlerts;
+          widget.filtersOn!.professions.toList().cast<Profession>();
+      _model.showPros = widget.filtersOn!.showPros;
+      _model.showProRecent = widget.filtersOn!.showProRecent;
+      _model.showWeddingPins = widget.filtersOn!.showWeddingPins;
+      _model.showProAlerts = widget.filtersOn!.showProAlerts;
       safeSetState(() {});
       await Future.wait([
         Future(() async {
@@ -74,8 +74,8 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
           });
         }),
       ]);
-      _model.budgetVisible = widget!.filtersOn!.budgetMax > 1.0;
-      _model.professionVisible = widget!.filtersOn!.professions.length >= 1;
+      _model.budgetVisible = widget.filtersOn!.budgetMax > 1.0;
+      _model.professionVisible = widget.filtersOn!.professions.isNotEmpty;
       _model.typeVisible = true;
       safeSetState(() {});
     });
@@ -96,7 +96,7 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
       width: MediaQuery.sizeOf(context).width * 1.0,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).primaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(0.0),
           bottomRight: Radius.circular(0.0),
           topLeft: Radius.circular(24.0),
@@ -104,7 +104,7 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
         ),
       ),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(20.0, 20.0, 20.0, 20.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(20.0, 20.0, 20.0, 20.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -126,7 +126,7 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
                         BoxShadow(
                           blurRadius: 10.0,
                           color: FlutterFlowTheme.of(context).secondary,
-                          offset: Offset(
+                          offset: const Offset(
                             0.0,
                             0.0,
                           ),
@@ -164,7 +164,7 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
                     _model.newDefaultFilters =
                         await actions.resetAndApplyDefaultFilters(
                       context,
-                      widget!.filtersOn!,
+                      widget.filtersOn!,
                     );
                     await widget.onFiltersApplied?.call(
                       _model.newDefaultFilters!,
@@ -178,7 +178,7 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
                     children: [
                       Padding(
                         padding:
-                            EdgeInsetsDirectional.fromSTEB(4.0, 4.0, 0.0, 4.0),
+                            const EdgeInsetsDirectional.fromSTEB(4.0, 4.0, 0.0, 4.0),
                         child: Text(
                           'Reset Filters',
                           style:
@@ -193,13 +193,13 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
                     ],
                   ),
                 ),
-              ].divide(SizedBox(width: 8.0)),
+              ].divide(const SizedBox(width: 8.0)),
             ),
             Column(
               mainAxisSize: MainAxisSize.max,
               children: [
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 6.0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 6.0),
                   child: InkWell(
                     splashColor: Colors.transparent,
                     focusColor: Colors.transparent,
@@ -236,7 +236,7 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
                 ),
                 if (_model.typeVisible == true)
                   Align(
-                    alignment: AlignmentDirectional(-1.0, 0.0),
+                    alignment: const AlignmentDirectional(-1.0, 0.0),
                     child: Wrap(
                       spacing: 10.0,
                       runSpacing: 2.0,
@@ -277,15 +277,11 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
                                     safeSetState(() {});
                                   }
                                 },
-                                side: (FlutterFlowTheme.of(context)
-                                            .secondaryText !=
-                                        null)
-                                    ? BorderSide(
-                                        width: 2,
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText!,
-                                      )
-                                    : null,
+                                side: BorderSide(
+                                  width: 2,
+                                  color: FlutterFlowTheme.of(context)
+                                      .secondaryText,
+                                ),
                                 activeColor:
                                     FlutterFlowTheme.of(context).primary,
                                 checkColor: FlutterFlowTheme.of(context).info,
@@ -333,78 +329,18 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
                                     safeSetState(() {});
                                   }
                                 },
-                                side: (FlutterFlowTheme.of(context)
-                                            .secondaryText !=
-                                        null)
-                                    ? BorderSide(
-                                        width: 2,
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText!,
-                                      )
-                                    : null,
-                                activeColor:
-                                    FlutterFlowTheme.of(context).primary,
-                                checkColor: FlutterFlowTheme.of(context).info,
-                              ),
-                            ),
-                            Text(
-                              'proRecent',
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    fontFamily: 'Haas Grot Text Trial',
-                                    fontSize: 12.0,
-                                    letterSpacing: 0.0,
-                                  ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Theme(
-                              data: ThemeData(
-                                checkboxTheme: CheckboxThemeData(
-                                  visualDensity: VisualDensity.compact,
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(0.0),
-                                  ),
+                                side: BorderSide(
+                                  width: 2,
+                                  color: FlutterFlowTheme.of(context)
+                                      .secondaryText,
                                 ),
-                                unselectedWidgetColor:
-                                    FlutterFlowTheme.of(context).secondaryText,
-                              ),
-                              child: Checkbox(
-                                value: _model.checkboxAlertValue ??=
-                                    _model.showProAlerts,
-                                onChanged: (newValue) async {
-                                  safeSetState(() =>
-                                      _model.checkboxAlertValue = newValue!);
-                                  if (newValue!) {
-                                    _model.showProAlerts = true;
-                                    safeSetState(() {});
-                                  } else {
-                                    _model.showProAlerts = false;
-                                    safeSetState(() {});
-                                  }
-                                },
-                                side: (FlutterFlowTheme.of(context)
-                                            .secondaryText !=
-                                        null)
-                                    ? BorderSide(
-                                        width: 2,
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText!,
-                                      )
-                                    : null,
                                 activeColor:
                                     FlutterFlowTheme.of(context).primary,
                                 checkColor: FlutterFlowTheme.of(context).info,
                               ),
                             ),
                             Text(
-                              'Alert',
+                              getMapMarkerTypeDisplayName(MapMarkerType.proRecent),
                               style: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
@@ -415,6 +351,64 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
                             ),
                           ],
                         ),
+                        // Masquer "Alert" pour les brides (uniquement visible pour les pros)
+                        if (FFAppState().selfPublicProfile.role == UserRole.professional)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Theme(
+                                data: ThemeData(
+                                  checkboxTheme: CheckboxThemeData(
+                                    visualDensity: VisualDensity.compact,
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(0.0),
+                                    ),
+                                  ),
+                                  unselectedWidgetColor:
+                                      FlutterFlowTheme.of(context).secondaryText,
+                                ),
+                                child: Checkbox(
+                                  value: _model.checkboxAlertValue ??=
+                                      _model.showProAlerts,
+                                  onChanged: (newValue) async {
+                                    safeSetState(() =>
+                                        _model.checkboxAlertValue = newValue!);
+                                    if (newValue!) {
+                                      _model.showProAlerts = true;
+                                      safeSetState(() {});
+                                    } else {
+                                      _model.showProAlerts = false;
+                                      safeSetState(() {});
+                                    }
+                                  },
+                                  side: (FlutterFlowTheme.of(context)
+                                              .secondaryText !=
+                                          null)
+                                      ? BorderSide(
+                                          width: 2,
+                                          color: FlutterFlowTheme.of(context)
+                                              .secondaryText,
+                                        )
+                                      : null,
+                                  activeColor:
+                                      FlutterFlowTheme.of(context).primary,
+                                  checkColor: FlutterFlowTheme.of(context).info,
+                                ),
+                              ),
+                              Text(
+                                'Alert',
+                                style: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .override(
+                                      fontFamily: 'Haas Grot Text Trial',
+                                      fontSize: 12.0,
+                                      letterSpacing: 0.0,
+                                    ),
+                              ),
+                            ],
+                          ),
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -445,22 +439,18 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
                                     safeSetState(() {});
                                   }
                                 },
-                                side: (FlutterFlowTheme.of(context)
-                                            .secondaryText !=
-                                        null)
-                                    ? BorderSide(
-                                        width: 2,
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText!,
-                                      )
-                                    : null,
+                                side: BorderSide(
+                                  width: 2,
+                                  color: FlutterFlowTheme.of(context)
+                                      .secondaryText,
+                                ),
                                 activeColor:
                                     FlutterFlowTheme.of(context).primary,
                                 checkColor: FlutterFlowTheme.of(context).info,
                               ),
                             ),
                             Text(
-                              'weddingPin',
+                              getMapMarkerTypeDisplayName(MapMarkerType.weddingPin),
                               style: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
@@ -474,7 +464,7 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
                       ],
                     ),
                   ),
-              ].divide(SizedBox(height: 6.0)),
+              ].divide(const SizedBox(height: 6.0)),
             ),
             Divider(
               height: 1.0,
@@ -483,12 +473,12 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
             ),
             Container(
               width: double.infinity,
-              decoration: BoxDecoration(),
+              decoration: const BoxDecoration(),
               child: Column(
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 6.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 6.0),
                     child: InkWell(
                       splashColor: Colors.transparent,
                       focusColor: Colors.transparent,
@@ -524,801 +514,18 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
                     ),
                   ),
                   if (_model.professionVisible == true)
-                    Align(
-                      alignment: AlignmentDirectional(-1.0, 0.0),
-                      child: Wrap(
-                        spacing: 4.0,
-                        runSpacing: 0.0,
-                        alignment: WrapAlignment.start,
-                        crossAxisAlignment: WrapCrossAlignment.start,
-                        direction: Axis.horizontal,
-                        runAlignment: WrapAlignment.start,
-                        verticalDirection: VerticalDirection.down,
-                        clipBehavior: Clip.none,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Theme(
-                                data: ThemeData(
-                                  checkboxTheme: CheckboxThemeData(
-                                    visualDensity: VisualDensity.compact,
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(0.0),
-                                    ),
-                                  ),
-                                  unselectedWidgetColor:
-                                      FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                ),
-                                child: Checkbox(
-                                  value: _model.checkboxPHOTOGRAPHERValue ??=
-                                      _model.selectedProfessions
-                                          .contains(Profession.PHOTOGRAPHER),
-                                  onChanged: (newValue) async {
-                                    safeSetState(() => _model
-                                        .checkboxPHOTOGRAPHERValue = newValue!);
-                                    if (newValue!) {
-                                      _model.addToSelectedProfessions(
-                                          Profession.PHOTOGRAPHER);
-                                      safeSetState(() {});
-                                    } else {
-                                      _model.removeFromSelectedProfessions(
-                                          Profession.PHOTOGRAPHER);
-                                      safeSetState(() {});
-                                    }
-                                  },
-                                  side: (FlutterFlowTheme.of(context)
-                                              .secondaryText !=
-                                          null)
-                                      ? BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText!,
-                                        )
-                                      : null,
-                                  activeColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  checkColor: FlutterFlowTheme.of(context).info,
-                                ),
-                              ),
-                              Text(
-                                'PHOTOGRAPHER',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Haas Grot Text Trial',
-                                      fontSize: 11.0,
-                                      letterSpacing: 0.0,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Theme(
-                                data: ThemeData(
-                                  checkboxTheme: CheckboxThemeData(
-                                    visualDensity: VisualDensity.compact,
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(0.0),
-                                    ),
-                                  ),
-                                  unselectedWidgetColor:
-                                      FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                ),
-                                child: Checkbox(
-                                  value: _model.checkboxFILMMAKERValue ??=
-                                      _model.selectedProfessions
-                                          .contains(Profession.FILMMAKER),
-                                  onChanged: (newValue) async {
-                                    safeSetState(() => _model
-                                        .checkboxFILMMAKERValue = newValue!);
-                                    if (newValue!) {
-                                      _model.addToSelectedProfessions(
-                                          Profession.FILMMAKER);
-                                      safeSetState(() {});
-                                    } else {
-                                      _model.removeFromSelectedProfessions(
-                                          Profession.FILMMAKER);
-                                      safeSetState(() {});
-                                    }
-                                  },
-                                  side: (FlutterFlowTheme.of(context)
-                                              .secondaryText !=
-                                          null)
-                                      ? BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText!,
-                                        )
-                                      : null,
-                                  activeColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  checkColor: FlutterFlowTheme.of(context).info,
-                                ),
-                              ),
-                              Text(
-                                'FILMMAKER',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Haas Grot Text Trial',
-                                      fontSize: 11.0,
-                                      letterSpacing: 0.0,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Theme(
-                                data: ThemeData(
-                                  checkboxTheme: CheckboxThemeData(
-                                    visualDensity: VisualDensity.compact,
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(0.0),
-                                    ),
-                                  ),
-                                  unselectedWidgetColor:
-                                      FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                ),
-                                child: Checkbox(
-                                  value: _model.checkboxHAIRDRESSERValue ??=
-                                      _model.selectedProfessions
-                                          .contains(Profession.HAIRDRESSER),
-                                  onChanged: (newValue) async {
-                                    safeSetState(() => _model
-                                        .checkboxHAIRDRESSERValue = newValue!);
-                                    if (newValue!) {
-                                      _model.addToSelectedProfessions(
-                                          Profession.HAIRDRESSER);
-                                      safeSetState(() {});
-                                    } else {
-                                      _model.removeFromSelectedProfessions(
-                                          Profession.HAIRDRESSER);
-                                      safeSetState(() {});
-                                    }
-                                  },
-                                  side: (FlutterFlowTheme.of(context)
-                                              .secondaryText !=
-                                          null)
-                                      ? BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText!,
-                                        )
-                                      : null,
-                                  activeColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  checkColor: FlutterFlowTheme.of(context).info,
-                                ),
-                              ),
-                              Text(
-                                'HAIRDRESSER',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Haas Grot Text Trial',
-                                      fontSize: 11.0,
-                                      letterSpacing: 0.0,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Theme(
-                                data: ThemeData(
-                                  checkboxTheme: CheckboxThemeData(
-                                    visualDensity: VisualDensity.compact,
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(0.0),
-                                    ),
-                                  ),
-                                  unselectedWidgetColor:
-                                      FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                ),
-                                child: Checkbox(
-                                  value: _model.checkboxBRIDALDESIGNERValue ??=
-                                      _model.selectedProfessions
-                                          .contains(Profession.BRIDALDESIGNER),
-                                  onChanged: (newValue) async {
-                                    safeSetState(() =>
-                                        _model.checkboxBRIDALDESIGNERValue =
-                                            newValue!);
-                                    if (newValue!) {
-                                      _model.addToSelectedProfessions(
-                                          Profession.BRIDALDESIGNER);
-                                      safeSetState(() {});
-                                    } else {
-                                      _model.removeFromSelectedProfessions(
-                                          Profession.BRIDALDESIGNER);
-                                      safeSetState(() {});
-                                    }
-                                  },
-                                  side: (FlutterFlowTheme.of(context)
-                                              .secondaryText !=
-                                          null)
-                                      ? BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText!,
-                                        )
-                                      : null,
-                                  activeColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  checkColor: FlutterFlowTheme.of(context).info,
-                                ),
-                              ),
-                              Text(
-                                'BRIDALDESIGNER',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Haas Grot Text Trial',
-                                      fontSize: 11.0,
-                                      letterSpacing: 0.0,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Theme(
-                                data: ThemeData(
-                                  checkboxTheme: CheckboxThemeData(
-                                    visualDensity: VisualDensity.compact,
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(0.0),
-                                    ),
-                                  ),
-                                  unselectedWidgetColor:
-                                      FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                ),
-                                child: Checkbox(
-                                  value: _model.checkboxMAKEUPValue ??= _model
-                                      .selectedProfessions
-                                      .contains(Profession.MAKEUP),
-                                  onChanged: (newValue) async {
-                                    safeSetState(() =>
-                                        _model.checkboxMAKEUPValue = newValue!);
-                                    if (newValue!) {
-                                      _model.addToSelectedProfessions(
-                                          Profession.MAKEUP);
-                                      safeSetState(() {});
-                                    } else {
-                                      _model.removeFromSelectedProfessions(
-                                          Profession.MAKEUP);
-                                      safeSetState(() {});
-                                    }
-                                  },
-                                  side: (FlutterFlowTheme.of(context)
-                                              .secondaryText !=
-                                          null)
-                                      ? BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText!,
-                                        )
-                                      : null,
-                                  activeColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  checkColor: FlutterFlowTheme.of(context).info,
-                                ),
-                              ),
-                              Text(
-                                'MAKE-UP',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Haas Grot Text Trial',
-                                      fontSize: 11.0,
-                                      letterSpacing: 0.0,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Theme(
-                                data: ThemeData(
-                                  checkboxTheme: CheckboxThemeData(
-                                    visualDensity: VisualDensity.compact,
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(0.0),
-                                    ),
-                                  ),
-                                  unselectedWidgetColor:
-                                      FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                ),
-                                child: Checkbox(
-                                  value: _model.checkboxFLORISTValue ??= _model
-                                      .selectedProfessions
-                                      .contains(Profession.FLORIST),
-                                  onChanged: (newValue) async {
-                                    safeSetState(() => _model
-                                        .checkboxFLORISTValue = newValue!);
-                                    if (newValue!) {
-                                      _model.addToSelectedProfessions(
-                                          Profession.FLORIST);
-                                      safeSetState(() {});
-                                    } else {
-                                      _model.removeFromSelectedProfessions(
-                                          Profession.FLORIST);
-                                      safeSetState(() {});
-                                    }
-                                  },
-                                  side: (FlutterFlowTheme.of(context)
-                                              .secondaryText !=
-                                          null)
-                                      ? BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText!,
-                                        )
-                                      : null,
-                                  activeColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  checkColor: FlutterFlowTheme.of(context).info,
-                                ),
-                              ),
-                              Text(
-                                'FLORIST',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Haas Grot Text Trial',
-                                      fontSize: 11.0,
-                                      letterSpacing: 0.0,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Theme(
-                                data: ThemeData(
-                                  checkboxTheme: CheckboxThemeData(
-                                    visualDensity: VisualDensity.compact,
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(0.0),
-                                    ),
-                                  ),
-                                  unselectedWidgetColor:
-                                      FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                ),
-                                child: Checkbox(
-                                  value: _model.checkboxPLANNERValue ??= _model
-                                      .selectedProfessions
-                                      .contains(Profession.PLANNER),
-                                  onChanged: (newValue) async {
-                                    safeSetState(() => _model
-                                        .checkboxPLANNERValue = newValue!);
-                                    if (newValue!) {
-                                      _model.addToSelectedProfessions(
-                                          Profession.PLANNER);
-                                      safeSetState(() {});
-                                    } else {
-                                      _model.removeFromSelectedProfessions(
-                                          Profession.PLANNER);
-                                      safeSetState(() {});
-                                    }
-                                  },
-                                  side: (FlutterFlowTheme.of(context)
-                                              .secondaryText !=
-                                          null)
-                                      ? BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText!,
-                                        )
-                                      : null,
-                                  activeColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  checkColor: FlutterFlowTheme.of(context).info,
-                                ),
-                              ),
-                              Text(
-                                'PLANNER',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Haas Grot Text Trial',
-                                      fontSize: 11.0,
-                                      letterSpacing: 0.0,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Theme(
-                                data: ThemeData(
-                                  checkboxTheme: CheckboxThemeData(
-                                    visualDensity: VisualDensity.compact,
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(0.0),
-                                    ),
-                                  ),
-                                  unselectedWidgetColor:
-                                      FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                ),
-                                child: Checkbox(
-                                  value: _model.checkboxPHOTOMOVIEValue ??=
-                                      _model.selectedProfessions
-                                          .contains(Profession.PHOTOMOVIE),
-                                  onChanged: (newValue) async {
-                                    safeSetState(() => _model
-                                        .checkboxPHOTOMOVIEValue = newValue!);
-                                    if (newValue!) {
-                                      _model.addToSelectedProfessions(
-                                          Profession.PHOTOMOVIE);
-                                      safeSetState(() {});
-                                    } else {
-                                      _model.removeFromSelectedProfessions(
-                                          Profession.PHOTOMOVIE);
-                                      safeSetState(() {});
-                                    }
-                                  },
-                                  side: (FlutterFlowTheme.of(context)
-                                              .secondaryText !=
-                                          null)
-                                      ? BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText!,
-                                        )
-                                      : null,
-                                  activeColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  checkColor: FlutterFlowTheme.of(context).info,
-                                ),
-                              ),
-                              Text(
-                                'PHOTOMOVIE',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Haas Grot Text Trial',
-                                      fontSize: 11.0,
-                                      letterSpacing: 0.0,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Theme(
-                                data: ThemeData(
-                                  checkboxTheme: CheckboxThemeData(
-                                    visualDensity: VisualDensity.compact,
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(0.0),
-                                    ),
-                                  ),
-                                  unselectedWidgetColor:
-                                      FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                ),
-                                child: Checkbox(
-                                  value: _model.checkboxDESIGNERValue ??= _model
-                                      .selectedProfessions
-                                      .contains(Profession.DESIGNER),
-                                  onChanged: (newValue) async {
-                                    safeSetState(() => _model
-                                        .checkboxDESIGNERValue = newValue!);
-                                    if (newValue!) {
-                                      _model.addToSelectedProfessions(
-                                          Profession.DESIGNER);
-                                      safeSetState(() {});
-                                    } else {
-                                      _model.removeFromSelectedProfessions(
-                                          Profession.DESIGNER);
-                                      safeSetState(() {});
-                                    }
-                                  },
-                                  side: (FlutterFlowTheme.of(context)
-                                              .secondaryText !=
-                                          null)
-                                      ? BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText!,
-                                        )
-                                      : null,
-                                  activeColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  checkColor: FlutterFlowTheme.of(context).info,
-                                ),
-                              ),
-                              Text(
-                                'DESIGNER',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Haas Grot Text Trial',
-                                      fontSize: 11.0,
-                                      letterSpacing: 0.0,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Theme(
-                                data: ThemeData(
-                                  checkboxTheme: CheckboxThemeData(
-                                    visualDensity: VisualDensity.compact,
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(0.0),
-                                    ),
-                                  ),
-                                  unselectedWidgetColor:
-                                      FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                ),
-                                child: Checkbox(
-                                  value: _model.checkboxVENUESValue ??= _model
-                                      .selectedProfessions
-                                      .contains(Profession.VENUE),
-                                  onChanged: (newValue) async {
-                                    safeSetState(() =>
-                                        _model.checkboxVENUESValue = newValue!);
-                                    if (newValue!) {
-                                      _model.addToSelectedProfessions(
-                                          Profession.VENUE);
-                                      safeSetState(() {});
-                                    } else {
-                                      _model.removeFromSelectedProfessions(
-                                          Profession.VENUE);
-                                      safeSetState(() {});
-                                    }
-                                  },
-                                  side: (FlutterFlowTheme.of(context)
-                                              .secondaryText !=
-                                          null)
-                                      ? BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText!,
-                                        )
-                                      : null,
-                                  activeColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  checkColor: FlutterFlowTheme.of(context).info,
-                                ),
-                              ),
-                              Text(
-                                'VENUES',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Haas Grot Text Trial',
-                                      fontSize: 11.0,
-                                      letterSpacing: 0.0,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Theme(
-                                data: ThemeData(
-                                  checkboxTheme: CheckboxThemeData(
-                                    visualDensity: VisualDensity.compact,
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(0.0),
-                                    ),
-                                  ),
-                                  unselectedWidgetColor:
-                                      FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                ),
-                                child: Checkbox(
-                                  value: _model.checkboxBRIDALValue ??= _model
-                                      .selectedProfessions
-                                      .contains(Profession.BRIDALSHOP),
-                                  onChanged: (newValue) async {
-                                    safeSetState(() =>
-                                        _model.checkboxBRIDALValue = newValue!);
-                                    if (newValue!) {
-                                      _model.addToSelectedProfessions(
-                                          Profession.BRIDALSHOP);
-                                      safeSetState(() {});
-                                    } else {
-                                      _model.removeFromSelectedProfessions(
-                                          Profession.BRIDALSHOP);
-                                      safeSetState(() {});
-                                    }
-                                  },
-                                  side: (FlutterFlowTheme.of(context)
-                                              .secondaryText !=
-                                          null)
-                                      ? BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText!,
-                                        )
-                                      : null,
-                                  activeColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  checkColor: FlutterFlowTheme.of(context).info,
-                                ),
-                              ),
-                              Text(
-                                'BRIDALSHOP',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Haas Grot Text Trial',
-                                      fontSize: 11.0,
-                                      letterSpacing: 0.0,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Theme(
-                                data: ThemeData(
-                                  checkboxTheme: CheckboxThemeData(
-                                    visualDensity: VisualDensity.compact,
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(0.0),
-                                    ),
-                                  ),
-                                  unselectedWidgetColor:
-                                      FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                ),
-                                child: Checkbox(
-                                  value: _model.checkboxMAKEUPARTISTValue ??=
-                                      _model.selectedProfessions
-                                          .contains(Profession.MAKEUPARTIST),
-                                  onChanged: (newValue) async {
-                                    safeSetState(() => _model
-                                        .checkboxMAKEUPARTISTValue = newValue!);
-                                    if (newValue!) {
-                                      _model.addToSelectedProfessions(
-                                          Profession.MAKEUPARTIST);
-                                      safeSetState(() {});
-                                    } else {
-                                      _model.removeFromSelectedProfessions(
-                                          Profession.MAKEUPARTIST);
-                                      safeSetState(() {});
-                                    }
-                                  },
-                                  side: (FlutterFlowTheme.of(context)
-                                              .secondaryText !=
-                                          null)
-                                      ? BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText!,
-                                        )
-                                      : null,
-                                  activeColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  checkColor: FlutterFlowTheme.of(context).info,
-                                ),
-                              ),
-                              Text(
-                                'MAKEUPARTIST',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Haas Grot Text Trial',
-                                      fontSize: 11.0,
-                                      letterSpacing: 0.0,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Theme(
-                                data: ThemeData(
-                                  checkboxTheme: CheckboxThemeData(
-                                    visualDensity: VisualDensity.compact,
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(0.0),
-                                    ),
-                                  ),
-                                  unselectedWidgetColor:
-                                      FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                ),
-                                child: Checkbox(
-                                  value: _model.checkboxEVENTDESIGNERValue ??=
-                                      _model.selectedProfessions
-                                          .contains(Profession.EVENTDESIGNER),
-                                  onChanged: (newValue) async {
-                                    safeSetState(() =>
-                                        _model.checkboxEVENTDESIGNERValue =
-                                            newValue!);
-                                    if (newValue!) {
-                                      _model.addToSelectedProfessions(
-                                          Profession.EVENTDESIGNER);
-                                      safeSetState(() {});
-                                    } else {
-                                      _model.removeFromSelectedProfessions(
-                                          Profession.EVENTDESIGNER);
-                                      safeSetState(() {});
-                                    }
-                                  },
-                                  side: (FlutterFlowTheme.of(context)
-                                              .secondaryText !=
-                                          null)
-                                      ? BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText!,
-                                        )
-                                      : null,
-                                  activeColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  checkColor: FlutterFlowTheme.of(context).info,
-                                ),
-                              ),
-                              Text(
-                                'EVENTDESIGNER',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Haas Grot Text Trial',
-                                      fontSize: 11.0,
-                                      letterSpacing: 0.0,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ],
+                    Padding(
+                      padding: const EdgeInsetsDirectional.fromSTEB(16.0, 8.0, 16.0, 0.0),
+                      child: ProfessionCheckboxGrid(
+                        selectedProfessions: _model.selectedProfessions,
+                        onProfessionChanged: (profession, isSelected) {
+                          if (isSelected) {
+                            _model.addToSelectedProfessions(profession);
+                          } else {
+                            _model.removeFromSelectedProfessions(profession);
+                          }
+                          safeSetState(() {});
+                        },
                       ),
                     ),
                 ],
@@ -1331,12 +538,12 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
             ),
             Container(
               width: double.infinity,
-              decoration: BoxDecoration(),
+              decoration: const BoxDecoration(),
               child: Column(
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 6.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 6.0),
                     child: InkWell(
                       splashColor: Colors.transparent,
                       focusColor: Colors.transparent,
@@ -1374,8 +581,8 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
                   if (_model.budgetVisible == true)
                     Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 0.0),
-                      child: Container(
+                          const EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 0.0),
+                      child: SizedBox(
                         width: double.infinity,
                         height: 100.0,
                         child: custom_widgets.CustomRangeSliderWidget(
@@ -1409,7 +616,7 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
             ),
             FFButtonWidget(
               onPressed: () async {
-                _model.newFiltersJson = await actions.filtersToJsonString(
+                _model.newFiltersJson = actions.filtersToJsonString(
                   QueryFiltersStruct(
                     professions: _model.selectedProfessions,
                     budgetMin: _model.budgetMin,
@@ -1419,13 +626,13 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
                     showProRecent: _model.showProRecent,
                     showWeddingPins: _model.showWeddingPins,
                     showProAlerts: _model.showProAlerts,
-                    center: widget!.filtersOn?.center,
-                    radiusKm: widget!.filtersOn?.radiusKm,
+                    center: widget.filtersOn?.center,
+                    radiusKm: widget.filtersOn?.radiusKm,
                     nearby: false,
                     showFixedLocations: _model.showPros,
-                    showBridePrivatePoi: widget!.filtersOn?.showBridePrivatePoi,
+                    showBridePrivatePoi: widget.filtersOn?.showBridePrivatePoi,
                     showOnlyMyProfessionPins:
-                        widget!.filtersOn?.showOnlyMyProfessionPins,
+                        widget.filtersOn?.showOnlyMyProfessionPins,
                   ),
                 );
                 _model.saveUserPreferencesSuccess =
@@ -1447,13 +654,13 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
                     showProRecent: _model.showProRecent,
                     showWeddingPins: _model.showWeddingPins,
                     showProAlerts: _model.showProAlerts,
-                    center: widget!.filtersOn?.center,
-                    radiusKm: widget!.filtersOn?.radiusKm,
+                    center: widget.filtersOn?.center,
+                    radiusKm: widget.filtersOn?.radiusKm,
                     nearby: false,
                     showFixedLocations: _model.showPros,
-                    showBridePrivatePoi: widget!.filtersOn?.showBridePrivatePoi,
+                    showBridePrivatePoi: widget.filtersOn?.showBridePrivatePoi,
                     showOnlyMyProfessionPins:
-                        widget!.filtersOn?.showOnlyMyProfessionPins,
+                        widget.filtersOn?.showOnlyMyProfessionPins,
                   ),
                 );
                 Navigator.pop(context);
@@ -1464,8 +671,8 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
               options: FFButtonOptions(
                 width: double.infinity,
                 height: 48.0,
-                padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-                iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                iconPadding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                 color: FlutterFlowTheme.of(context).primary,
                 textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                       fontFamily: 'Haas Grot Text Trial',
@@ -1478,7 +685,7 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
                 borderRadius: BorderRadius.circular(0.0),
               ),
             ),
-          ].divide(SizedBox(height: 20.0)),
+          ].divide(const SizedBox(height: 20.0)),
         ),
       ),
     );

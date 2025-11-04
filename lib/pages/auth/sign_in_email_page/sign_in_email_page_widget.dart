@@ -3,11 +3,8 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'sign_in_email_page_model.dart';
 export 'sign_in_email_page_model.dart';
 
@@ -69,9 +66,9 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                   children: [
                     Flexible(
                       child: Align(
-                        alignment: AlignmentDirectional(0.0, 0.0),
+                        alignment: const AlignmentDirectional(0.0, 0.0),
                         child: Stack(
-                          alignment: AlignmentDirectional(0.0, -1.0),
+                          alignment: const AlignmentDirectional(0.0, -1.0),
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(0.0),
@@ -83,9 +80,9 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                               ),
                             ),
                             Align(
-                              alignment: AlignmentDirectional(0.0, -1.0),
+                              alignment: const AlignmentDirectional(0.0, -1.0),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     32.0, 70.0, 32.0, 0.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
@@ -98,7 +95,7 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                                       children: [
                                         Align(
                                           alignment:
-                                              AlignmentDirectional(0.0, 0.0),
+                                              const AlignmentDirectional(0.0, 0.0),
                                           child: FlutterFlowIconButton(
                                             borderRadius: 100.0,
                                             borderWidth: 0.0,
@@ -106,7 +103,7 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                                             fillColor:
                                                 FlutterFlowTheme.of(context)
                                                     .backgroundIcons,
-                                            icon: Icon(
+                                            icon: const Icon(
                                               Icons.arrow_back_ios_rounded,
                                               color: Colors.white,
                                               size: 17.0,
@@ -135,7 +132,7 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                                         Container(
                                           width: 40.0,
                                           height: 30.0,
-                                          decoration: BoxDecoration(),
+                                          decoration: const BoxDecoration(),
                                         ),
                                       ],
                                     ),
@@ -152,7 +149,7 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                                             fontWeight: FontWeight.w500,
                                           ),
                                     ),
-                                  ].divide(SizedBox(height: 12.0)),
+                                  ].divide(const SizedBox(height: 12.0)),
                                 ),
                               ),
                             ),
@@ -164,7 +161,7 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(32.0, 0.0, 32.0, 0.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(32.0, 0.0, 32.0, 0.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -174,7 +171,7 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Align(
-                          alignment: AlignmentDirectional(-1.0, -1.0),
+                          alignment: const AlignmentDirectional(-1.0, -1.0),
                           child: Text(
                             'WE ARE DELIGHTED TO SEE YOU AGAIN',
                             style: FlutterFlowTheme.of(context)
@@ -200,9 +197,9 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                               ),
                         ),
                         Align(
-                          alignment: AlignmentDirectional(1.0, 1.0),
+                          alignment: const AlignmentDirectional(1.0, 1.0),
                           child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 12.0, 0.0, 0.0),
                             child: Text(
                               'Required fields*',
@@ -217,16 +214,16 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                             ),
                           ),
                         ),
-                      ].divide(SizedBox(height: 14.0)),
+                      ].divide(const SizedBox(height: 14.0)),
                     ),
                     Container(
                       width: double.infinity,
-                      decoration: BoxDecoration(),
+                      decoration: const BoxDecoration(),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
+                          SizedBox(
                             width: double.infinity,
                             child: TextFormField(
                               controller: _model.emailAddressTextController,
@@ -278,7 +275,7 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                                   ),
                                   borderRadius: BorderRadius.circular(0.0),
                                 ),
-                                contentPadding: EdgeInsetsDirectional.fromSTEB(
+                                contentPadding: const EdgeInsetsDirectional.fromSTEB(
                                     4.0, 12.0, 0.0, 12.0),
                               ),
                               style: FlutterFlowTheme.of(context)
@@ -296,7 +293,7 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                                   .asValidator(context),
                             ),
                           ),
-                          Container(
+                          SizedBox(
                             width: double.infinity,
                             child: TextFormField(
                               controller: _model.passwordTextController,
@@ -347,7 +344,7 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                                   ),
                                   borderRadius: BorderRadius.circular(0.0),
                                 ),
-                                contentPadding: EdgeInsetsDirectional.fromSTEB(
+                                contentPadding: const EdgeInsetsDirectional.fromSTEB(
                                     4.0, 12.0, 0.0, 12.0),
                                 suffixIcon: InkWell(
                                   onTap: () => safeSetState(
@@ -400,12 +397,12 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                                   ),
                             ),
                           ),
-                        ].divide(SizedBox(height: 24.0)),
+                        ].divide(const SizedBox(height: 24.0)),
                       ),
                     ),
                     Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         children: [
@@ -429,9 +426,9 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 48.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   16.0, 0.0, 16.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
                               color: FlutterFlowTheme.of(context).primary,
                               textStyle: FlutterFlowTheme.of(context)
@@ -448,7 +445,7 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 12.0, 0.0, 0.0),
                             child: InkWell(
                               splashColor: Colors.transparent,
@@ -472,13 +469,13 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                               ),
                             ),
                           ),
-                        ].divide(SizedBox(height: 12.0)),
+                        ].divide(const SizedBox(height: 12.0)),
                       ),
                     ),
-                  ].divide(SizedBox(height: 48.0)),
+                  ].divide(const SizedBox(height: 48.0)),
                 ),
               ),
-            ].divide(SizedBox(height: 32.0)),
+            ].divide(const SizedBox(height: 32.0)),
           ),
         ),
       ),

@@ -1,11 +1,8 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'auth_welcome_page_model.dart';
 export 'auth_welcome_page_model.dart';
 
@@ -47,7 +44,7 @@ class _AuthWelcomePageWidgetState extends State<AuthWelcomePageWidget> {
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        body: Container(
+        body: SizedBox(
           width: MediaQuery.sizeOf(context).width * 1.0,
           height: MediaQuery.sizeOf(context).height * 1.0,
           child: Stack(
@@ -66,10 +63,10 @@ class _AuthWelcomePageWidgetState extends State<AuthWelcomePageWidget> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Align(
-                    alignment: AlignmentDirectional(0.0, -1.0),
+                    alignment: const AlignmentDirectional(0.0, -1.0),
                     child: Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 60.0, 0.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(0.0, 60.0, 0.0, 0.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -112,13 +109,13 @@ class _AuthWelcomePageWidgetState extends State<AuthWelcomePageWidget> {
                               ),
                             ],
                           ),
-                        ].divide(SizedBox(height: 12.0)),
+                        ].divide(const SizedBox(height: 12.0)),
                       ),
                     ),
                   ),
                   Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(32.0, 0.0, 32.0, 80.0),
+                        const EdgeInsetsDirectional.fromSTEB(32.0, 0.0, 32.0, 80.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -130,9 +127,9 @@ class _AuthWelcomePageWidgetState extends State<AuthWelcomePageWidget> {
                           options: FFButtonOptions(
                             width: double.infinity,
                             height: 48.0,
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 16.0, 0.0, 16.0, 0.0),
-                            iconPadding: EdgeInsetsDirectional.fromSTEB(
+                            iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
                             color:
                                 FlutterFlowTheme.of(context).primaryBackground,
@@ -158,11 +155,11 @@ class _AuthWelcomePageWidgetState extends State<AuthWelcomePageWidget> {
                           options: FFButtonOptions(
                             width: double.infinity,
                             height: 48.0,
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 16.0, 0.0, 16.0, 0.0),
-                            iconPadding: EdgeInsetsDirectional.fromSTEB(
+                            iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
-                            color: Color(0x00FFFFFF),
+                            color: const Color(0x00FFFFFF),
                             textStyle: FlutterFlowTheme.of(context)
                                 .titleSmall
                                 .override(
@@ -182,7 +179,7 @@ class _AuthWelcomePageWidgetState extends State<AuthWelcomePageWidget> {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 14.0, 0.0, 0.0),
                           child: InkWell(
                             splashColor: Colors.transparent,
@@ -195,19 +192,19 @@ class _AuthWelcomePageWidgetState extends State<AuthWelcomePageWidget> {
                                         context: context,
                                         builder: (alertDialogContext) {
                                           return AlertDialog(
-                                            title: Text('Professional Access'),
-                                            content: Text(
+                                            title: const Text('Professional Access'),
+                                            content: const Text(
                                                 'To ensure the quality of our network, professional registration is handled exclusively through our website.If you already have an account, you can log in here.'),
                                             actions: [
                                               TextButton(
                                                 onPressed: () => Navigator.pop(
                                                     alertDialogContext, false),
-                                                child: Text('I Understand'),
+                                                child: const Text('I Understand'),
                                               ),
                                               TextButton(
                                                 onPressed: () => Navigator.pop(
                                                     alertDialogContext, true),
-                                                child: Text('Log In'),
+                                                child: const Text('Log In'),
                                               ),
                                             ],
                                           );
@@ -232,7 +229,7 @@ class _AuthWelcomePageWidgetState extends State<AuthWelcomePageWidget> {
                             ),
                           ),
                         ),
-                      ].divide(SizedBox(height: 14.0)),
+                      ].divide(const SizedBox(height: 14.0)),
                     ),
                   ),
                 ],

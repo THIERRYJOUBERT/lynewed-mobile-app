@@ -1,13 +1,8 @@
 // Automatic FlutterFlow imports
-import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
+import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -16,7 +11,7 @@ import '/auth/supabase_auth/auth_util.dart';
 
 Future<String?> uploadAvatar(String localPath) async {
   // Vérifie si l'utilisateur est connecté et si le chemin n'est pas vide
-  if (currentUserUid == null || currentUserUid.isEmpty || localPath.isEmpty) {
+  if (currentUserUid.isEmpty || localPath.isEmpty) {
     return null;
   }
 
@@ -44,7 +39,7 @@ Future<String?> uploadAvatar(String localPath) async {
 
     return publicUrl;
   } catch (e) {
-    print('Error in uploadAvatar action: $e');
+    debugPrint('Error in uploadAvatar action: $e');
     return null;
   }
 }

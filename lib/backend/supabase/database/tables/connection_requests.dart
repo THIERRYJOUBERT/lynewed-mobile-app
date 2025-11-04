@@ -10,7 +10,7 @@ class ConnectionRequestsTable extends SupabaseTable<ConnectionRequestsRow> {
 }
 
 class ConnectionRequestsRow extends SupabaseDataRow {
-  ConnectionRequestsRow(Map<String, dynamic> data) : super(data);
+  ConnectionRequestsRow(super.data);
 
   @override
   SupabaseTable get table => ConnectionRequestsTable();

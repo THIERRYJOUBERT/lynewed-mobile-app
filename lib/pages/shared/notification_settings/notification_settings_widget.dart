@@ -4,13 +4,10 @@ import '/backend/supabase/supabase.dart';
 import '/components/nav/header_bar/header_bar_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/scheduler.dart';
 import 'notification_settings_model.dart';
 export 'notification_settings_model.dart';
 
@@ -50,7 +47,7 @@ class _NotificationSettingsWidgetState
           _model.chatMessageBool = _model.userNotificationsSettings
                       ?.where((e) => e.notificationType == 'chatMessage')
                       .toList()
-                      ?.firstOrNull
+                      .firstOrNull
                       ?.inAppEnabled ==
                   true
               ? true
@@ -64,7 +61,7 @@ class _NotificationSettingsWidgetState
           _model.connectionRequestBool = _model.userNotificationsSettings
                       ?.where((e) => e.notificationType == 'connectionRequest')
                       .toList()
-                      ?.firstOrNull
+                      .firstOrNull
                       ?.inAppEnabled ==
                   true
               ? true
@@ -78,7 +75,7 @@ class _NotificationSettingsWidgetState
           _model.wishlistAddBool = _model.userNotificationsSettings
                       ?.where((e) => e.notificationType == 'wishlistAdd')
                       .toList()
-                      ?.firstOrNull
+                      .firstOrNull
                       ?.inAppEnabled ==
                   true
               ? true
@@ -94,7 +91,7 @@ class _NotificationSettingsWidgetState
                       ?.where((e) =>
                           e.notificationType == 'professionalAlertReminder24h')
                       .toList()
-                      ?.firstOrNull
+                      .firstOrNull
                       ?.inAppEnabled ==
                   true
               ? true
@@ -134,24 +131,24 @@ class _NotificationSettingsWidgetState
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         body: Align(
-          alignment: AlignmentDirectional(0.0, -1.0),
-          child: Container(
+          alignment: const AlignmentDirectional(0.0, -1.0),
+          child: SizedBox(
             width: MediaQuery.sizeOf(context).width * 1.0,
             height: MediaQuery.sizeOf(context).height * 1.0,
             child: Stack(
               children: [
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 130.0, 0.0, 0.0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 130.0, 0.0, 0.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       if (FFAppState().currentUserRole == UserRole.bride)
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               20.0, 0.0, 20.0, 0.0),
                           child: Container(
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
                               mainAxisAlignment: MainAxisAlignment.start,
@@ -194,15 +191,15 @@ class _NotificationSettingsWidgetState
                                                   letterSpacing: 0.0,
                                                 ),
                                           ),
-                                        ].divide(SizedBox(height: 10.0)),
+                                        ].divide(const SizedBox(height: 10.0)),
                                       ),
                                     ),
                                     Switch.adaptive(
                                       value: _model.switchMsgValue!,
                                       onChanged: (newValue) async {
                                         safeSetState(() =>
-                                            _model.switchMsgValue = newValue!);
-                                        if (newValue!) {
+                                            _model.switchMsgValue = newValue);
+                                        if (newValue) {
                                           _model.chatMessageOn = await actions
                                               .upsertNotificationSetting(
                                             'chatMessage',
@@ -233,18 +230,18 @@ class _NotificationSettingsWidgetState
                                           FlutterFlowTheme.of(context)
                                               .secondaryBackground,
                                     ),
-                                  ].divide(SizedBox(width: 14.0)),
+                                  ].divide(const SizedBox(width: 14.0)),
                                 ),
                                 Divider(
                                   thickness: 1.0,
                                   color: FlutterFlowTheme.of(context).secondary,
                                 ),
-                              ].divide(SizedBox(height: 14.0)),
+                              ].divide(const SizedBox(height: 14.0)),
                             ),
                           ),
                         ),
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
                             20.0, 14.0, 20.0, 14.0),
                         child: Row(
                           mainAxisSize: MainAxisSize.max,
@@ -281,15 +278,15 @@ class _NotificationSettingsWidgetState
                                           letterSpacing: 0.0,
                                         ),
                                   ),
-                                ].divide(SizedBox(height: 10.0)),
+                                ].divide(const SizedBox(height: 10.0)),
                               ),
                             ),
                             Switch.adaptive(
                               value: _model.switchContactRequestValue!,
                               onChanged: (newValue) async {
                                 safeSetState(() => _model
-                                    .switchContactRequestValue = newValue!);
-                                if (newValue!) {
+                                    .switchContactRequestValue = newValue);
+                                if (newValue) {
                                   _model.connectionRequestOn = await actions
                                       .upsertNotificationSettingsBatch(
                                     ([
@@ -325,15 +322,15 @@ class _NotificationSettingsWidgetState
                               inactiveThumbColor: FlutterFlowTheme.of(context)
                                   .secondaryBackground,
                             ),
-                          ].divide(SizedBox(width: 14.0)),
+                          ].divide(const SizedBox(width: 14.0)),
                         ),
                       ),
                       if (FFAppState().currentUserRole == UserRole.professional)
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               20.0, 0.0, 20.0, 0.0),
                           child: Container(
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
                               mainAxisAlignment: MainAxisAlignment.start,
@@ -393,15 +390,15 @@ class _NotificationSettingsWidgetState
                                                         letterSpacing: 0.0,
                                                       ),
                                             ),
-                                          ].divide(SizedBox(height: 10.0)),
+                                          ].divide(const SizedBox(height: 10.0)),
                                         ),
                                       ),
                                       Switch.adaptive(
                                         value: _model.switchWishlistValue!,
                                         onChanged: (newValue) async {
                                           safeSetState(() => _model
-                                              .switchWishlistValue = newValue!);
-                                          if (newValue!) {
+                                              .switchWishlistValue = newValue);
+                                          if (newValue) {
                                             _model.wishlistAddOn = await actions
                                                 .upsertNotificationSetting(
                                               'wishlistAdd',
@@ -435,7 +432,7 @@ class _NotificationSettingsWidgetState
                                             FlutterFlowTheme.of(context)
                                                 .secondaryBackground,
                                       ),
-                                    ].divide(SizedBox(width: 14.0)),
+                                    ].divide(const SizedBox(width: 14.0)),
                                   ),
                                 Divider(
                                   thickness: 1.0,
@@ -478,7 +475,7 @@ class _NotificationSettingsWidgetState
                                                   letterSpacing: 0.0,
                                                 ),
                                           ),
-                                        ].divide(SizedBox(height: 10.0)),
+                                        ].divide(const SizedBox(height: 10.0)),
                                       ),
                                     ),
                                     Switch.adaptive(
@@ -486,8 +483,8 @@ class _NotificationSettingsWidgetState
                                       onChanged: (newValue) async {
                                         safeSetState(() =>
                                             _model.switchAlertExpirationValue =
-                                                newValue!);
-                                        if (newValue!) {
+                                                newValue);
+                                        if (newValue) {
                                           _model.professionalAlertReminder24hOn =
                                               await actions
                                                   .upsertNotificationSetting(
@@ -520,9 +517,9 @@ class _NotificationSettingsWidgetState
                                           FlutterFlowTheme.of(context)
                                               .secondaryBackground,
                                     ),
-                                  ].divide(SizedBox(width: 14.0)),
+                                  ].divide(const SizedBox(width: 14.0)),
                                 ),
-                              ].divide(SizedBox(height: 14.0)),
+                              ].divide(const SizedBox(height: 14.0)),
                             ),
                           ),
                         ),
@@ -532,7 +529,7 @@ class _NotificationSettingsWidgetState
                 wrapWithModel(
                   model: _model.headerBarModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: HeaderBarWidget(
+                  child: const HeaderBarWidget(
                     title: 'NOTIFICATIONS',
                   ),
                 ),

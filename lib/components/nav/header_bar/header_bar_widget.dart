@@ -1,10 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'header_bar_model.dart';
 export 'header_bar_model.dart';
 
@@ -47,7 +43,7 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
     return Container(
       width: double.infinity,
       height: 110.0,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
       ),
       child: Column(
@@ -55,7 +51,7 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(20.0, 70.0, 20.0, 0.0),
+            padding: const EdgeInsetsDirectional.fromSTEB(20.0, 70.0, 20.0, 0.0),
             child: Row(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.start,
@@ -77,11 +73,11 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                         size: 24.0,
                       ),
                     ),
-                  ].divide(SizedBox(width: 14.0)),
+                  ].divide(const SizedBox(width: 14.0)),
                 ),
                 Text(
                   valueOrDefault<String>(
-                    widget!.title,
+                    widget.title,
                     'EDIT MY PROFILE',
                   ),
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -91,20 +87,20 @@ class _HeaderBarWidgetState extends State<HeaderBarWidget> {
                         fontWeight: FontWeight.w500,
                       ),
                 ),
-              ].divide(SizedBox(width: 14.0)),
+              ].divide(const SizedBox(width: 14.0)),
             ),
           ),
           Align(
-            alignment: AlignmentDirectional(0.0, 1.0),
+            alignment: const AlignmentDirectional(0.0, 1.0),
             child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0.0, 14.0, 0.0, 0.0),
+              padding: const EdgeInsetsDirectional.fromSTEB(0.0, 14.0, 0.0, 0.0),
               child: Container(
                 width: double.infinity,
                 height: 1.0,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondary,
                 ),
-                alignment: AlignmentDirectional(0.0, 1.0),
+                alignment: const AlignmentDirectional(0.0, 1.0),
               ),
             ),
           ),

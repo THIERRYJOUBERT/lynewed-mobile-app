@@ -2,11 +2,8 @@ import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'my_message_actions_sheet_model.dart';
 export 'my_message_actions_sheet_model.dart';
 
@@ -57,7 +54,7 @@ class _MyMessageActionsSheetWidgetState
         borderRadius: BorderRadius.circular(4.0),
       ),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(14.0, 14.0, 14.0, 14.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(14.0, 14.0, 14.0, 14.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,9 +86,9 @@ class _MyMessageActionsSheetWidgetState
                       width: double.infinity,
                       height: 38.0,
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
                       iconPadding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                       color: FlutterFlowTheme.of(context).primary,
                       textStyle:
                           FlutterFlowTheme.of(context).titleSmall.override(
@@ -111,7 +108,7 @@ class _MyMessageActionsSheetWidgetState
                     onPressed: () async {
                       _model.deleteMyMessageSuccess =
                           await actions.deleteOwnMessageAction(
-                        widget!.messageLongPressData!.messageId,
+                        widget.messageLongPressData!.messageId,
                       );
                       Navigator.pop(context);
 
@@ -122,9 +119,9 @@ class _MyMessageActionsSheetWidgetState
                       width: double.infinity,
                       height: 38.0,
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
                       iconPadding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                       color: Colors.white,
                       textStyle:
                           FlutterFlowTheme.of(context).titleSmall.override(
@@ -142,9 +139,9 @@ class _MyMessageActionsSheetWidgetState
                     ),
                   ),
                 ),
-              ].divide(SizedBox(width: 10.0)),
+              ].divide(const SizedBox(width: 10.0)),
             ),
-          ].divide(SizedBox(height: 10.0)),
+          ].divide(const SizedBox(height: 10.0)),
         ),
       ),
     );

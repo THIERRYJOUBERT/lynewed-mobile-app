@@ -1,13 +1,9 @@
 // Automatic FlutterFlow imports
-import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
+import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -18,13 +14,13 @@ Future<bool> insertLegalAcceptance() async {
     final client = SupaFlow.client;
     final userId = client.auth.currentUser?.id;
     if (userId == null) {
-      print('insertLegalAcceptance error: User is not authenticated.');
+      debugPrint('insertLegalAcceptance error: User is not authenticated.');
       return false;
     }
 
     // Récupère les versions depuis les constantes de l'app
-    final String tosVersion = FFAppConstants.tosVersion;
-    final String privacyVersion = FFAppConstants.privacyVersion;
+    const String tosVersion = FFAppConstants.tosVersion;
+    const String privacyVersion = FFAppConstants.privacyVersion;
 
     await client.from('user_legal_acceptances').insert({
       'profile_id': userId,
@@ -35,7 +31,7 @@ Future<bool> insertLegalAcceptance() async {
 
     return true;
   } catch (e) {
-    print('insertLegalAcceptance error: $e');
+    debugPrint('insertLegalAcceptance error: $e');
     return false;
   }
 }

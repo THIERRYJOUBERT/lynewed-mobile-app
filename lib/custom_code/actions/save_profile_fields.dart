@@ -1,13 +1,10 @@
 // Automatic FlutterFlow imports
+import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -18,7 +15,7 @@ Future<PublicProfileStruct?> saveProfileFields(
   String? avatarUrl,
 ) async {
   // CORRECTION : Le type de retour de la fonction est maintenant 'UserRole' (PascalCase).
-  UserRole _roleFromString(String? s) {
+  UserRole roleFromString(String? s) {
     switch (s) {
       case 'professional':
         // CORRECTION : La valeur retournée utilise 'UserRole' (PascalCase) pour l'Enum.
@@ -53,12 +50,12 @@ Future<PublicProfileStruct?> saveProfileFields(
 
     return PublicProfileStruct(
       id: userId,
-      role: _roleFromString(refreshedProfile['role']?.toString()),
+      role: roleFromString(refreshedProfile['role']?.toString()),
       fullName: refreshedProfile['full_name'] ?? fullName,
       avatarUrl: finalAvatarUrl,
     );
   } catch (e) {
-    print('saveProfileFields error: $e');
+    debugPrint('saveProfileFields error: $e');
     return null;
   }
 }

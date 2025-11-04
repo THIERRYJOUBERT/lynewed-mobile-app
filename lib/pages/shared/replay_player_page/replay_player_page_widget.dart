@@ -1,11 +1,8 @@
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'replay_player_page_model.dart';
 export 'replay_player_page_model.dart';
 
@@ -54,25 +51,25 @@ class _ReplayPlayerPageWidgetState extends State<ReplayPlayerPageWidget> {
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         body: Stack(
           children: [
-            Container(
+            SizedBox(
               width: double.infinity,
               height: double.infinity,
               child: custom_widgets.YoutubePlayerWidget(
                 width: double.infinity,
                 height: double.infinity,
-                youtubeUrl: widget!.videoUrl!,
+                youtubeUrl: widget.videoUrl!,
               ),
             ),
             Align(
-              alignment: AlignmentDirectional(1.0, -1.0),
+              alignment: const AlignmentDirectional(1.0, -1.0),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 70.0, 40.0, 0.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(0.0, 70.0, 40.0, 0.0),
                 child: FlutterFlowIconButton(
                   borderRadius: 100.0,
                   borderWidth: 0.0,
                   buttonSize: 40.0,
-                  fillColor: Color(0x7F141414),
-                  icon: Icon(
+                  fillColor: const Color(0x7F141414),
+                  icon: const Icon(
                     Icons.close,
                     color: Colors.white,
                     size: 17.0,

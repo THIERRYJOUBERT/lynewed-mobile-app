@@ -1,12 +1,9 @@
 // Automatic FlutterFlow imports
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+// Imports custom functions
 import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -55,7 +52,7 @@ Future<QueryFiltersStruct?> resetAndApplyDefaultFilters(
     // 3. Retourne le nouvel objet de filtres pour que l'UI puisse l'utiliser.
     return defaultFilters;
   } catch (e) {
-    print('Error in resetAndApplyDefaultFilters: $e');
+    debugPrint('Error in resetAndApplyDefaultFilters: $e');
     return null; // Retourne null en cas d'erreur.
   }
 }

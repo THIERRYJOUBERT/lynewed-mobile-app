@@ -9,7 +9,7 @@ class WeddingPinsTable extends SupabaseTable<WeddingPinsRow> {
 }
 
 class WeddingPinsRow extends SupabaseDataRow {
-  WeddingPinsRow(Map<String, dynamic> data) : super(data);
+  WeddingPinsRow(super.data);
 
   @override
   SupabaseTable get table => WeddingPinsTable();

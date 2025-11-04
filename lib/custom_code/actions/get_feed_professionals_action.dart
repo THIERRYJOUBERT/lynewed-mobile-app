@@ -1,13 +1,10 @@
 // Automatic FlutterFlow imports
+import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -44,7 +41,7 @@ Future<FeedResultStruct> getFeedProfessionalsAction(
   final client = SupaFlow.client;
   try {
     final double? budgetMaxClean =
-        (filters.budgetMax != null && filters.budgetMax! >= 100000.0)
+        (filters.budgetMax >= 100000.0)
             ? null
             : filters.budgetMax;
 
@@ -53,7 +50,7 @@ Future<FeedResultStruct> getFeedProfessionalsAction(
       'professions': filters.professions ?? [],
       'budgetMin': filters.budgetMin,
       'budgetMax': budgetMaxClean,
-      'currency': (filters.currency == null || filters.currency!.isEmpty)
+      'currency': (filters.currency.isEmpty)
           ? null
           : filters.currency,
       if (filters.center != null)
@@ -61,7 +58,7 @@ Future<FeedResultStruct> getFeedProfessionalsAction(
           'longitude': filters.center!.longitude,
           'latitude': filters.center!.latitude,
         },
-      'radiusKm': (filters.radiusKm == null || filters.radiusKm == 0.0)
+      'radiusKm': (filters.radiusKm == 0.0)
           ? null
           : filters.radiusKm,
     };
@@ -72,8 +69,9 @@ Future<FeedResultStruct> getFeedProfessionalsAction(
       'p_page_size': pageSize ?? 24,
     });
 
-    if (data is! Map<String, dynamic>)
+    if (data is! Map<String, dynamic>) {
       return FeedResultStruct(items: [], nextCursor: null);
+    }
 
     final items = <ProSummaryStruct>[];
     if (data['items'] is List) {
@@ -101,7 +99,7 @@ Future<FeedResultStruct> getFeedProfessionalsAction(
     return FeedResultStruct(
         items: items, nextCursor: data['nextCursor']?.toString());
   } catch (e) {
-    print('getFeedProfessionalsAction error: $e');
+    debugPrint('getFeedProfessionalsAction error: $e');
     return FeedResultStruct(items: [], nextCursor: null);
   }
 }

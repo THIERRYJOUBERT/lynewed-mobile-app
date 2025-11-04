@@ -1,10 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'item_wish_list_conv_model.dart';
 export 'item_wish_list_conv_model.dart';
 
@@ -46,7 +42,7 @@ class _ItemWishListConvWidgetState extends State<ItemWishListConvWidget> {
         borderRadius: BorderRadius.circular(2.0),
       ),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(12.0, 12.0, 14.0, 12.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(12.0, 12.0, 14.0, 12.0),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           children: [
@@ -82,18 +78,18 @@ class _ItemWishListConvWidgetState extends State<ItemWishListConvWidget> {
                           letterSpacing: 0.0,
                         ),
                   ),
-                ].divide(SizedBox(height: 4.0)),
+                ].divide(const SizedBox(height: 4.0)),
               ),
             ),
             Align(
-              alignment: AlignmentDirectional(1.0, 0.0),
+              alignment: const AlignmentDirectional(1.0, 0.0),
               child: Icon(
                 Icons.arrow_forward_ios,
                 color: FlutterFlowTheme.of(context).secondaryText,
                 size: 22.0,
               ),
             ),
-          ].divide(SizedBox(width: 10.0)),
+          ].divide(const SizedBox(width: 10.0)),
         ),
       ),
     );

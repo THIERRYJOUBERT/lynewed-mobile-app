@@ -9,7 +9,7 @@ class BrideDetailsTable extends SupabaseTable<BrideDetailsRow> {
 }
 
 class BrideDetailsRow extends SupabaseDataRow {
-  BrideDetailsRow(Map<String, dynamic> data) : super(data);
+  BrideDetailsRow(super.data);
 
   @override
   SupabaseTable get table => BrideDetailsTable();

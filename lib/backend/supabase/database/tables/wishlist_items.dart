@@ -10,7 +10,7 @@ class WishlistItemsTable extends SupabaseTable<WishlistItemsRow> {
 }
 
 class WishlistItemsRow extends SupabaseDataRow {
-  WishlistItemsRow(Map<String, dynamic> data) : super(data);
+  WishlistItemsRow(super.data);
 
   @override
   SupabaseTable get table => WishlistItemsTable();

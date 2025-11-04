@@ -1,21 +1,16 @@
 // Automatic FlutterFlow imports
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+// Imports other custom widgets
+// Imports custom actions
+// Imports custom functions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'package:flutter/painting.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 import 'package:http/http.dart' as http;
 
@@ -284,9 +279,9 @@ class _LynewedMiniMapState extends State<LynewedMiniMap> {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: _handleTap,
-                  splashColor: Theme.of(context).primaryColor.withOpacity(0.12),
+                  splashColor: Theme.of(context).primaryColor.withValues(alpha: 0.12),
                   highlightColor:
-                      Theme.of(context).primaryColor.withOpacity(0.06),
+                      Theme.of(context).primaryColor.withValues(alpha: 0.06),
                 ),
               ),
             ),

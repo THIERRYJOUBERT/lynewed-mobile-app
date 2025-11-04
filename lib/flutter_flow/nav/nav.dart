@@ -1,22 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
 
 import '/auth/base_auth_user_provider.dart';
 
-import '/main.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/lat_lng.dart';
-import '/flutter_flow/place.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'serialization_util.dart';
 
 import '/index.dart';
 
@@ -86,35 +77,35 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
       errorBuilder: (context, state) => appStateNotifier.loggedIn
-          ? StartupGateWidget()
-          : AuthWelcomePageWidget(),
+          ? const StartupGateWidget()
+          : const AuthWelcomePageWidget(),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
           builder: (context, _) => appStateNotifier.loggedIn
-              ? StartupGateWidget()
-              : AuthWelcomePageWidget(),
+              ? const StartupGateWidget()
+              : const AuthWelcomePageWidget(),
         ),
         FFRoute(
           name: SignUpEmailPageWidget.routeName,
           path: SignUpEmailPageWidget.routePath,
-          builder: (context, params) => SignUpEmailPageWidget(),
+          builder: (context, params) => const SignUpEmailPageWidget(),
         ),
         FFRoute(
           name: SignInEmailPageWidget.routeName,
           path: SignInEmailPageWidget.routePath,
-          builder: (context, params) => SignInEmailPageWidget(),
+          builder: (context, params) => const SignInEmailPageWidget(),
         ),
         FFRoute(
           name: ForgotPasswordPageWidget.routeName,
           path: ForgotPasswordPageWidget.routePath,
-          builder: (context, params) => ForgotPasswordPageWidget(),
+          builder: (context, params) => const ForgotPasswordPageWidget(),
         ),
         FFRoute(
           name: AuthWelcomePageWidget.routeName,
           path: AuthWelcomePageWidget.routePath,
-          builder: (context, params) => AuthWelcomePageWidget(),
+          builder: (context, params) => const AuthWelcomePageWidget(),
         ),
         FFRoute(
           name: ProDetailsWidget.routeName,
@@ -131,17 +122,17 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: HomeBridesWidget.routeName,
           path: HomeBridesWidget.routePath,
-          builder: (context, params) => HomeBridesWidget(),
+          builder: (context, params) => const HomeBridesWidget(),
         ),
         FFRoute(
           name: FeedBridesWidget.routeName,
           path: FeedBridesWidget.routePath,
-          builder: (context, params) => FeedBridesWidget(),
+          builder: (context, params) => const FeedBridesWidget(),
         ),
         FFRoute(
           name: MessagesBridesWidget.routeName,
           path: MessagesBridesWidget.routePath,
-          builder: (context, params) => MessagesBridesWidget(),
+          builder: (context, params) => const MessagesBridesWidget(),
         ),
         FFRoute(
           name: MapBridesLargeWidget.routeName,
@@ -156,37 +147,37 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: DashboardProWidget.routeName,
           path: DashboardProWidget.routePath,
-          builder: (context, params) => DashboardProWidget(),
+          builder: (context, params) => const DashboardProWidget(),
         ),
         FFRoute(
           name: ProfileBridesAndProWidget.routeName,
           path: ProfileBridesAndProWidget.routePath,
-          builder: (context, params) => ProfileBridesAndProWidget(),
+          builder: (context, params) => const ProfileBridesAndProWidget(),
         ),
         FFRoute(
           name: EditProfileBridesWidget.routeName,
           path: EditProfileBridesWidget.routePath,
-          builder: (context, params) => EditProfileBridesWidget(),
+          builder: (context, params) => const EditProfileBridesWidget(),
         ),
         FFRoute(
           name: NotificationSettingsWidget.routeName,
           path: NotificationSettingsWidget.routePath,
-          builder: (context, params) => NotificationSettingsWidget(),
+          builder: (context, params) => const NotificationSettingsWidget(),
         ),
         FFRoute(
           name: PreferenceWidget.routeName,
           path: PreferenceWidget.routePath,
-          builder: (context, params) => PreferenceWidget(),
+          builder: (context, params) => const PreferenceWidget(),
         ),
         FFRoute(
           name: SettingsPermissionsWidget.routeName,
           path: SettingsPermissionsWidget.routePath,
-          builder: (context, params) => SettingsPermissionsWidget(),
+          builder: (context, params) => const SettingsPermissionsWidget(),
         ),
         FFRoute(
           name: WeddingOfTheWeekWidget.routeName,
           path: WeddingOfTheWeekWidget.routePath,
-          builder: (context, params) => WeddingOfTheWeekWidget(),
+          builder: (context, params) => const WeddingOfTheWeekWidget(),
         ),
         FFRoute(
           name: MapProLargeWidget.routeName,
@@ -201,12 +192,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: OnboardingBridesWizardWidget.routeName,
           path: OnboardingBridesWizardWidget.routePath,
-          builder: (context, params) => OnboardingBridesWizardWidget(),
+          builder: (context, params) => const OnboardingBridesWizardWidget(),
         ),
         FFRoute(
           name: SupportWidget.routeName,
           path: SupportWidget.routePath,
-          builder: (context, params) => SupportWidget(),
+          builder: (context, params) => const SupportWidget(),
         ),
         FFRoute(
           name: ChatDetailsWidget.routeName,
@@ -245,7 +236,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: ContentReplayWidget.routeName,
           path: ContentReplayWidget.routePath,
-          builder: (context, params) => ContentReplayWidget(),
+          builder: (context, params) => const ContentReplayWidget(),
         ),
         FFRoute(
           name: ReplayPlayerPageWidget.routeName,
@@ -293,27 +284,27 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: MessagesProWidget.routeName,
           path: MessagesProWidget.routePath,
-          builder: (context, params) => MessagesProWidget(),
+          builder: (context, params) => const MessagesProWidget(),
         ),
         FFRoute(
           name: ResetPasswordNewPageWidget.routeName,
           path: ResetPasswordNewPageWidget.routePath,
-          builder: (context, params) => ResetPasswordNewPageWidget(),
+          builder: (context, params) => const ResetPasswordNewPageWidget(),
         ),
         FFRoute(
           name: SignInEmailPageProWidget.routeName,
           path: SignInEmailPageProWidget.routePath,
-          builder: (context, params) => SignInEmailPageProWidget(),
+          builder: (context, params) => const SignInEmailPageProWidget(),
         ),
         FFRoute(
           name: SetPasswordPageProWidget.routeName,
           path: SetPasswordPageProWidget.routePath,
-          builder: (context, params) => SetPasswordPageProWidget(),
+          builder: (context, params) => const SetPasswordPageProWidget(),
         ),
         FFRoute(
           name: StartupGateWidget.routeName,
           path: StartupGateWidget.routePath,
-          builder: (context, params) => StartupGateWidget(),
+          builder: (context, params) => const StartupGateWidget(),
         ),
         FFRoute(
           name: VideoCallPageWidget.routeName,
@@ -340,12 +331,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: FavProListWidget.routeName,
           path: FavProListWidget.routePath,
-          builder: (context, params) => FavProListWidget(),
+          builder: (context, params) => const FavProListWidget(),
         ),
         FFRoute(
           name: NotificationsPageWidget.routeName,
           path: NotificationsPageWidget.routePath,
-          builder: (context, params) => NotificationsPageWidget(),
+          builder: (context, params) => const NotificationsPageWidget(),
         ),
         FFRoute(
           name: PublicProProfileViewWidget.routeName,
@@ -616,7 +607,7 @@ class TransitionInfo {
   final Duration duration;
   final Alignment? alignment;
 
-  static TransitionInfo appDefault() => TransitionInfo(hasTransition: false);
+  static TransitionInfo appDefault() => const TransitionInfo(hasTransition: false);
 }
 
 class RootPageContext {

@@ -3,14 +3,11 @@ import '/backend/schema/structs/index.dart';
 import '/components/ui_system/empty_state/empty_state_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/scheduler.dart';
 import 'notifications_page_model.dart';
 export 'notifications_page_model.dart';
 
@@ -64,15 +61,15 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         body: Align(
-          alignment: AlignmentDirectional(0.0, -1.0),
-          child: Container(
+          alignment: const AlignmentDirectional(0.0, -1.0),
+          child: SizedBox(
             width: MediaQuery.sizeOf(context).width * 1.0,
             height: MediaQuery.sizeOf(context).height * 1.0,
             child: Stack(
               children: [
                 Padding(
                   padding:
-                      EdgeInsetsDirectional.fromSTEB(20.0, 130.0, 20.0, 40.0),
+                      const EdgeInsetsDirectional.fromSTEB(20.0, 130.0, 20.0, 40.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
@@ -93,7 +90,7 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
                                 ),
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 5.0, 5.0, 5.0, 5.0),
                             child: InkWell(
                               splashColor: Colors.transparent,
@@ -106,7 +103,7 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
                                 context.goNamed(
                                   NotificationsPageWidget.routeName,
                                   extra: <String, dynamic>{
-                                    kTransitionInfoKey: TransitionInfo(
+                                    kTransitionInfoKey: const TransitionInfo(
                                       hasTransition: true,
                                       transitionType: PageTransitionType.fade,
                                       duration: Duration(milliseconds: 0),
@@ -136,14 +133,14 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
                       ),
                       Flexible(
                         child: Align(
-                          alignment: AlignmentDirectional(0.0, -1.0),
+                          alignment: const AlignmentDirectional(0.0, -1.0),
                           child: Builder(
                             builder: (context) {
                               final listNotification =
                                   _model.listNotifications.toList();
                               if (listNotification.isEmpty) {
-                                return Center(
-                                  child: Container(
+                                return const Center(
+                                  child: SizedBox(
                                     height: 130.0,
                                     child: EmptyStateWidget(
                                       message: 'No notifications yet.',
@@ -159,12 +156,12 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
                                 scrollDirection: Axis.vertical,
                                 itemCount: listNotification.length,
                                 separatorBuilder: (_, __) =>
-                                    SizedBox(height: 10.0),
+                                    const SizedBox(height: 10.0),
                                 itemBuilder: (context, listNotificationIndex) {
                                   final listNotificationItem =
                                       listNotification[listNotificationIndex];
                                   return Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0.0, 0.0, 0.0, 1.0),
                                     child: InkWell(
                                       splashColor: Colors.transparent,
@@ -188,7 +185,7 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
                                         ),
                                         child: Padding(
                                           padding:
-                                              EdgeInsetsDirectional.fromSTEB(
+                                              const EdgeInsetsDirectional.fromSTEB(
                                                   6.0, 6.0, 16.0, 8.0),
                                           child: Row(
                                             mainAxisSize: MainAxisSize.max,
@@ -206,7 +203,7 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
                                               ),
                                               Flexible(
                                                 child: Padding(
-                                                  padding: EdgeInsetsDirectional
+                                                  padding: const EdgeInsetsDirectional
                                                       .fromSTEB(
                                                           4.0, 6.0, 0.0, 4.0),
                                                   child: Column(
@@ -228,7 +225,7 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
                                                           Flexible(
                                                             child: Align(
                                                               alignment:
-                                                                  AlignmentDirectional(
+                                                                  const AlignmentDirectional(
                                                                       1.0,
                                                                       -1.0),
                                                               child: Text(
@@ -294,7 +291,7 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
                                                           Flexible(
                                                             child: Padding(
                                                               padding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
                                                                           0.0,
                                                                           6.0,
@@ -336,7 +333,7 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
                                                           Flexible(
                                                             child: Padding(
                                                               padding:
-                                                                  EdgeInsetsDirectional
+                                                                  const EdgeInsetsDirectional
                                                                       .fromSTEB(
                                                                           0.0,
                                                                           6.0,
@@ -393,13 +390,13 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
                           ),
                         ),
                       ),
-                    ].divide(SizedBox(height: 16.0)),
+                    ].divide(const SizedBox(height: 16.0)),
                   ),
                 ),
                 Container(
                   width: double.infinity,
                   height: 110.0,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.white,
                   ),
                   child: Column(
@@ -407,7 +404,7 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
                             20.0, 70.0, 20.0, 0.0),
                         child: Row(
                           mainAxisSize: MainAxisSize.max,
@@ -438,7 +435,7 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
                                     size: 24.0,
                                   ),
                                 ),
-                              ].divide(SizedBox(width: 14.0)),
+                              ].divide(const SizedBox(width: 14.0)),
                             ),
                             Text(
                               'NOTIFICATIONS',
@@ -451,13 +448,13 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
                                     fontWeight: FontWeight.w500,
                                   ),
                             ),
-                          ].divide(SizedBox(width: 14.0)),
+                          ].divide(const SizedBox(width: 14.0)),
                         ),
                       ),
                       Align(
-                        alignment: AlignmentDirectional(0.0, 1.0),
+                        alignment: const AlignmentDirectional(0.0, 1.0),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 14.0, 0.0, 0.0),
                           child: Container(
                             width: double.infinity,
@@ -465,7 +462,7 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
                             decoration: BoxDecoration(
                               color: FlutterFlowTheme.of(context).secondary,
                             ),
-                            alignment: AlignmentDirectional(0.0, 1.0),
+                            alignment: const AlignmentDirectional(0.0, 1.0),
                           ),
                         ),
                       ),

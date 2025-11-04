@@ -1,12 +1,9 @@
 // Automatic FlutterFlow imports
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+// Imports other custom actions
+// Imports custom functions
 import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -42,7 +39,7 @@ Future<void> handleNotificationTap(
     case NotificationType.connectionRequest:
     case NotificationType.connectionRequestAccepted:
     case NotificationType.connectionRequestDeclined:
-      if (ref != null && ref.isNotEmpty) {
+      if (ref.isNotEmpty) {
         // Si on a un referenceId (qui sera le room_id), on va directement au chat.
         router.pushNamed(
           'ChatDetails',

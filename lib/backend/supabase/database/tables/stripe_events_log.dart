@@ -10,7 +10,7 @@ class StripeEventsLogTable extends SupabaseTable<StripeEventsLogRow> {
 }
 
 class StripeEventsLogRow extends SupabaseDataRow {
-  StripeEventsLogRow(Map<String, dynamic> data) : super(data);
+  StripeEventsLogRow(super.data);
 
   @override
   SupabaseTable get table => StripeEventsLogTable();

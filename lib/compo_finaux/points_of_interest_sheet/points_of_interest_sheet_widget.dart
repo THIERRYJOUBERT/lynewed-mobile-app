@@ -4,13 +4,10 @@ import '/compo_finaux/create_edit_point_of_interest_sheet/create_edit_point_of_i
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/random_data_util.dart' as random_data;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'points_of_interest_sheet_model.dart';
 export 'points_of_interest_sheet_model.dart';
 
@@ -64,7 +61,7 @@ class _PointsOfInterestSheetWidgetState
       width: MediaQuery.sizeOf(context).width * 1.0,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).primaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(0.0),
           bottomRight: Radius.circular(0.0),
           topLeft: Radius.circular(24.0),
@@ -72,7 +69,7 @@ class _PointsOfInterestSheetWidgetState
         ),
       ),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(20.0, 20.0, 20.0, 0.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(20.0, 20.0, 20.0, 0.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -94,7 +91,7 @@ class _PointsOfInterestSheetWidgetState
                         BoxShadow(
                           blurRadius: 10.0,
                           color: FlutterFlowTheme.of(context).secondary,
-                          offset: Offset(
+                          offset: const Offset(
                             0.0,
                             0.0,
                           ),
@@ -114,7 +111,7 @@ class _PointsOfInterestSheetWidgetState
                 ),
                 Expanded(
                   child: Text(
-                    'MY POINTS OF INTEREST',
+                    'MY WEDDING SPOT',
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                           fontFamily: 'Haas Grot Text Trial',
                           fontSize: 16.0,
@@ -137,7 +134,7 @@ class _PointsOfInterestSheetWidgetState
                     size: 24.0,
                   ),
                 ),
-              ].divide(SizedBox(width: 8.0)),
+              ].divide(const SizedBox(width: 8.0)),
             ),
             Builder(
               builder: (context) {
@@ -148,7 +145,7 @@ class _PointsOfInterestSheetWidgetState
                   shrinkWrap: true,
                   scrollDirection: Axis.vertical,
                   itemCount: itemWeddingList.length,
-                  separatorBuilder: (_, __) => SizedBox(height: 14.0),
+                  separatorBuilder: (_, __) => const SizedBox(height: 14.0),
                   itemBuilder: (context, itemWeddingListIndex) {
                     final itemWeddingListItem =
                         itemWeddingList[itemWeddingListIndex];
@@ -174,12 +171,12 @@ class _PointsOfInterestSheetWidgetState
                         Navigator.pop(context);
                       },
                       child: Container(
-                        decoration: BoxDecoration(),
+                        decoration: const BoxDecoration(),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 5.0, 0.0),
                               child: Row(
                                 mainAxisSize: MainAxisSize.max,
@@ -192,7 +189,7 @@ class _PointsOfInterestSheetWidgetState
                                       borderRadius: BorderRadius.circular(2.0),
                                     ),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           6.0, 0.0, 6.0, 0.0),
                                       child: Icon(
                                         Icons.pin_drop,
@@ -205,7 +202,7 @@ class _PointsOfInterestSheetWidgetState
                                   Expanded(
                                     child: Align(
                                       alignment:
-                                          AlignmentDirectional(-1.0, -1.0),
+                                          const AlignmentDirectional(-1.0, -1.0),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.max,
                                         crossAxisAlignment:
@@ -227,7 +224,7 @@ class _PointsOfInterestSheetWidgetState
                                           ),
                                           Align(
                                             alignment:
-                                                AlignmentDirectional(-1.0, 0.0),
+                                                const AlignmentDirectional(-1.0, 0.0),
                                             child: Text(
                                               dateTimeFormat(
                                                 "relative",
@@ -251,7 +248,7 @@ class _PointsOfInterestSheetWidgetState
                                                       ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(height: 2.0)),
+                                        ].divide(const SizedBox(height: 2.0)),
                                       ),
                                     ),
                                   ),
@@ -269,9 +266,9 @@ class _PointsOfInterestSheetWidgetState
                                                   builder:
                                                       (alertDialogContext) {
                                                     return AlertDialog(
-                                                      title: Text(
+                                                      title: const Text(
                                                           'Delete the point...'),
-                                                      content: Text(
+                                                      content: const Text(
                                                           'Do you really want to delete this point of interest ?'),
                                                       actions: [
                                                         TextButton(
@@ -279,7 +276,7 @@ class _PointsOfInterestSheetWidgetState
                                                               Navigator.pop(
                                                                   alertDialogContext,
                                                                   false),
-                                                          child: Text('Cancel'),
+                                                          child: const Text('Cancel'),
                                                         ),
                                                         TextButton(
                                                           onPressed: () =>
@@ -287,7 +284,7 @@ class _PointsOfInterestSheetWidgetState
                                                                   alertDialogContext,
                                                                   true),
                                                           child:
-                                                              Text('Confirm'),
+                                                              const Text('Confirm'),
                                                         ),
                                                       ],
                                                     );
@@ -314,7 +311,7 @@ class _PointsOfInterestSheetWidgetState
                                                 ),
                                               ),
                                               duration:
-                                                  Duration(milliseconds: 2000),
+                                                  const Duration(milliseconds: 2000),
                                               backgroundColor:
                                                   FlutterFlowTheme.of(context)
                                                       .success,
@@ -331,10 +328,10 @@ class _PointsOfInterestSheetWidgetState
                                         size: 14.0,
                                       ),
                                     ),
-                                ].divide(SizedBox(width: 10.0)),
+                                ].divide(const SizedBox(width: 10.0)),
                               ),
                             ),
-                          ].divide(SizedBox(height: 4.0)),
+                          ].divide(const SizedBox(height: 4.0)),
                         ),
                       ),
                     );
@@ -343,18 +340,18 @@ class _PointsOfInterestSheetWidgetState
               },
             ),
             Align(
-              alignment: AlignmentDirectional(0.0, 1.0),
+              alignment: const AlignmentDirectional(0.0, 1.0),
               child: Container(
                 width: double.infinity,
                 height: 80.0,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
                 ),
                 child: Stack(
                   children: [
                     Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 14.0, 0.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(0.0, 14.0, 0.0, 0.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -383,9 +380,9 @@ class _PointsOfInterestSheetWidgetState
                             options: FFButtonOptions(
                               width: double.infinity,
                               height: 48.0,
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   16.0, 0.0, 16.0, 0.0),
-                              iconPadding: EdgeInsetsDirectional.fromSTEB(
+                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 0.0, 0.0, 0.0),
                               color: FlutterFlowTheme.of(context).primary,
                               textStyle: FlutterFlowTheme.of(context)
@@ -405,7 +402,7 @@ class _PointsOfInterestSheetWidgetState
                       ),
                     ),
                     Align(
-                      alignment: AlignmentDirectional(0.0, -1.0),
+                      alignment: const AlignmentDirectional(0.0, -1.0),
                       child: Container(
                         width: double.infinity,
                         height: 1.0,
@@ -418,7 +415,7 @@ class _PointsOfInterestSheetWidgetState
                 ),
               ),
             ),
-          ].divide(SizedBox(height: 20.0)),
+          ].divide(const SizedBox(height: 20.0)),
         ),
       ),
     );

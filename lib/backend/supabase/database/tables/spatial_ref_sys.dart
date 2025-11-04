@@ -10,7 +10,7 @@ class SpatialRefSysTable extends SupabaseTable<SpatialRefSysRow> {
 }
 
 class SpatialRefSysRow extends SupabaseDataRow {
-  SpatialRefSysRow(Map<String, dynamic> data) : super(data);
+  SpatialRefSysRow(super.data);
 
   @override
   SupabaseTable get table => SpatialRefSysTable();

@@ -1,13 +1,10 @@
 // Automatic FlutterFlow imports
+import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
+// Imports other custom actions
 import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -15,7 +12,7 @@ import 'package:flutter/material.dart';
 /// add the boilerplate code using the green button on the right!
 Future<ChatRoomHeaderStruct?> getRoomHeaderAction(String roomId) async {
   // --- Helpers de parsing Enum ---
-  UserRole? _userRoleFromString(String? s) {
+  UserRole? userRoleFromString(String? s) {
     switch ((s ?? '').toLowerCase()) {
       case 'professional':
         return UserRole.professional;
@@ -27,7 +24,7 @@ Future<ChatRoomHeaderStruct?> getRoomHeaderAction(String roomId) async {
   }
 
   // CORRIGÉ: Helper pour l'Enum RoomType
-  RoomType _roomTypeFromString(String? s) {
+  RoomType roomTypeFromString(String? s) {
     return (s ?? 'private') == 'public' ? RoomType.public : RoomType.private;
   }
   // --- Fin des Helpers ---
@@ -40,7 +37,7 @@ Future<ChatRoomHeaderStruct?> getRoomHeaderAction(String roomId) async {
     if (res is! Map) return null;
 
     final roomTypeStr = res['roomType']?.toString() ?? 'private';
-    final roomTypeEnum = _roomTypeFromString(roomTypeStr); // CORRIGÉ
+    final roomTypeEnum = roomTypeFromString(roomTypeStr); // CORRIGÉ
 
     if (roomTypeEnum == RoomType.private) {
       return ChatRoomHeaderStruct(
@@ -49,7 +46,7 @@ Future<ChatRoomHeaderStruct?> getRoomHeaderAction(String roomId) async {
         otherFullName: res['otherFullName']?.toString(),
         otherAvatarUrl:
             stringToImagePath(res['otherAvatarUrl']?.toString() ?? ''),
-        otherRole: _userRoleFromString(res['otherRole']?.toString()),
+        otherRole: userRoleFromString(res['otherRole']?.toString()),
       );
     } else {
       return ChatRoomHeaderStruct(
@@ -57,11 +54,11 @@ Future<ChatRoomHeaderStruct?> getRoomHeaderAction(String roomId) async {
         publicTitle: res['publicTitle']?.toString(),
         publicCoverUrl:
             stringToImagePath(res['publicCoverUrl']?.toString() ?? ''),
-        audienceRole: _userRoleFromString(res['audienceRole']?.toString()),
+        audienceRole: userRoleFromString(res['audienceRole']?.toString()),
       );
     }
   } catch (e) {
-    print('getRoomHeaderAction error: $e');
+    debugPrint('getRoomHeaderAction error: $e');
     return null;
   }
 }

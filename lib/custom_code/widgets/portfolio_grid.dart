@@ -1,25 +1,22 @@
 // Automatic FlutterFlow imports
 import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+// Imports other custom widgets
+// Imports custom actions
+// Imports custom functions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 class PortfolioGrid extends StatelessWidget {
   const PortfolioGrid({
-    Key? key,
+    super.key,
     this.width,
     this.height,
     required this.portfolioImages,
     required this.proDetails,
-  }) : super(key: key);
+  });
 
   final double? width;
   final double? height;
@@ -30,7 +27,7 @@ class PortfolioGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final displayImages = portfolioImages.take(4).toList();
     if (displayImages.isEmpty) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
 
     // --- LOGIQUE DE CALCUL AUTOMATIQUE DE LA HAUTEUR ---
@@ -58,12 +55,12 @@ class PortfolioGrid extends StatelessWidget {
     // --- FIN DE LA LOGIQUE DE CALCUL ---
 
     // On enveloppe notre GridView dans un Container qui a la hauteur EXACTE que nous venons de calculer.
-    return Container(
+    return SizedBox(
       width: availableWidth,
       height: totalGridHeight,
       child: GridView.builder(
         padding: EdgeInsets.zero,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: crossAxisCount,
           crossAxisSpacing: crossAxisSpacing,
           mainAxisSpacing: mainAxisSpacing,
@@ -98,7 +95,7 @@ class PortfolioGrid extends StatelessWidget {
                   ),
                 }.withoutNulls,
                 extra: <String, dynamic>{
-                  kTransitionInfoKey: TransitionInfo(
+                  kTransitionInfoKey: const TransitionInfo(
                     hasTransition: true,
                     transitionType: PageTransitionType.fade,
                     duration: Duration(milliseconds: 0),

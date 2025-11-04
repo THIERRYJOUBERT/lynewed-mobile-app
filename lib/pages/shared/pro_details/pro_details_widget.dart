@@ -15,10 +15,9 @@ import '/index.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart'
     as smooth_page_indicator;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'pro_details_model.dart';
 export 'pro_details_model.dart';
 
@@ -49,7 +48,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      _model.fav = widget!.proDetails!.isFavorited;
+      _model.fav = widget.proDetails!.isFavorited;
       safeSetState(() {});
     });
   }
@@ -73,7 +72,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        body: Container(
+        body: SizedBox(
           width: double.infinity,
           height: MediaQuery.sizeOf(context).height * 1.0,
           child: Stack(
@@ -86,27 +85,27 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                     Container(
                       width: double.infinity,
                       height: 110.0,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Colors.white,
                       ),
                     ),
-                    Container(
+                    SizedBox(
                       width: MediaQuery.sizeOf(context).width * 1.0,
                       child: Stack(
-                        alignment: AlignmentDirectional(-1.0, 0.0),
+                        alignment: const AlignmentDirectional(-1.0, 0.0),
                         children: [
-                          if (widget!.proDetails?.profession !=
+                          if (widget.proDetails?.profession !=
                               Profession.FILMMAKER)
                             Builder(
                               builder: (context) {
-                                final portfolio = widget!
+                                final portfolio = widget
                                         .proDetails?.slideshowImages
-                                        ?.map((e) => e)
+                                        .map((e) => e)
                                         .toList()
-                                        ?.toList() ??
+                                        .toList() ??
                                     [];
 
-                                return Container(
+                                return SizedBox(
                                   width: MediaQuery.sizeOf(context).width * 1.0,
                                   height: 350.0,
                                   child: Stack(
@@ -137,7 +136,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                                   1.0,
                                               height: 350.0,
                                               fit: BoxFit.cover,
-                                              alignment: Alignment(0.0, -1.0),
+                                              alignment: const Alignment(0.0, -1.0),
                                               errorBuilder: (context, error,
                                                       stackTrace) =>
                                                   Image.asset(
@@ -148,7 +147,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                                         1.0,
                                                 height: 350.0,
                                                 fit: BoxFit.cover,
-                                                alignment: Alignment(0.0, -1.0),
+                                                alignment: const Alignment(0.0, -1.0),
                                               ),
                                             ),
                                           );
@@ -156,10 +155,10 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                       ),
                                       Align(
                                         alignment:
-                                            AlignmentDirectional(0.0, 1.0),
+                                            const AlignmentDirectional(0.0, 1.0),
                                         child: Padding(
                                           padding:
-                                              EdgeInsetsDirectional.fromSTEB(
+                                              const EdgeInsetsDirectional.fromSTEB(
                                                   0.0, 0.0, 0.0, 16.0),
                                           child: smooth_page_indicator
                                               .SmoothPageIndicator(
@@ -179,7 +178,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                                   .animateToPage(
                                                 i,
                                                 duration:
-                                                    Duration(milliseconds: 500),
+                                                    const Duration(milliseconds: 500),
                                                 curve: Curves.ease,
                                               );
                                               safeSetState(() {});
@@ -204,17 +203,17 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                 );
                               },
                             ),
-                          if (widget!.proDetails?.profession !=
+                          if (widget.proDetails?.profession !=
                               Profession.FILMMAKER)
                             Align(
-                              alignment: AlignmentDirectional(-1.0, 0.0),
+                              alignment: const AlignmentDirectional(-1.0, 0.0),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     14.0, 0.0, 0.0, 0.0),
                                 child: FlutterFlowIconButton(
                                   borderRadius: 99.0,
                                   buttonSize: 40.0,
-                                  fillColor: Color(0xE6F5F5F5),
+                                  fillColor: const Color(0xE6F5F5F5),
                                   icon: Icon(
                                     Icons.arrow_back_ios_outlined,
                                     color: FlutterFlowTheme.of(context)
@@ -224,24 +223,24 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                   onPressed: () async {
                                     await _model.pageViewController
                                         ?.previousPage(
-                                      duration: Duration(milliseconds: 300),
+                                      duration: const Duration(milliseconds: 300),
                                       curve: Curves.ease,
                                     );
                                   },
                                 ),
                               ),
                             ),
-                          if (widget!.proDetails?.profession !=
+                          if (widget.proDetails?.profession !=
                               Profession.FILMMAKER)
                             Align(
-                              alignment: AlignmentDirectional(1.0, 0.0),
+                              alignment: const AlignmentDirectional(1.0, 0.0),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     0.0, 0.0, 14.0, 0.0),
                                 child: FlutterFlowIconButton(
                                   borderRadius: 99.0,
                                   buttonSize: 40.0,
-                                  fillColor: Color(0xE6F5F5F5),
+                                  fillColor: const Color(0xE6F5F5F5),
                                   icon: Icon(
                                     Icons.arrow_forward_ios_sharp,
                                     color: FlutterFlowTheme.of(context)
@@ -250,29 +249,29 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                   ),
                                   onPressed: () async {
                                     await _model.pageViewController?.nextPage(
-                                      duration: Duration(milliseconds: 300),
+                                      duration: const Duration(milliseconds: 300),
                                       curve: Curves.ease,
                                     );
                                   },
                                 ),
                               ),
                             ),
-                          if (widget!.proDetails?.profession ==
+                          if (widget.proDetails?.profession ==
                               Profession.FILMMAKER)
-                            Container(
+                            SizedBox(
                               width: double.infinity,
                               height: 250.0,
                               child: custom_widgets.VideoplayerFilmmaker(
                                 width: double.infinity,
                                 height: 250.0,
-                                videoUrl: widget!.proDetails!.profileVideoUrl,
+                                videoUrl: widget.proDetails!.profileVideoUrl,
                               ),
                             ),
                         ],
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(
+                      padding: const EdgeInsetsDirectional.fromSTEB(
                           20.0, 24.0, 20.0, 110.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -285,7 +284,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                 borderRadius: BorderRadius.circular(100.0),
                                 child: Image.network(
                                   valueOrDefault<String>(
-                                    widget!.proDetails?.avatarUrl,
+                                    widget.proDetails?.avatarUrl,
                                     'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/lynewed-alpha-du4al1/assets/egport4rt4rg/person_15429777_1.png',
                                   ),
                                   width: 40.0,
@@ -299,7 +298,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                 children: [
                                   Text(
                                     valueOrDefault<String>(
-                                      widget!.proDetails?.fullName,
+                                      widget.proDetails?.fullName,
                                       'Name...',
                                     ),
                                     style: FlutterFlowTheme.of(context)
@@ -312,7 +311,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                   ),
                                   Text(
                                     valueOrDefault<String>(
-                                      widget!.proDetails?.profession?.name,
+                                      widget.proDetails?.profession?.name,
                                       'Profession...',
                                     ),
                                     style: FlutterFlowTheme.of(context)
@@ -326,7 +325,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                   ),
                                 ],
                               ),
-                            ].divide(SizedBox(width: 10.0)),
+                            ].divide(const SizedBox(width: 10.0)),
                           ),
                           Row(
                             mainAxisSize: MainAxisSize.max,
@@ -334,7 +333,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                               Flexible(
                                 child: Text(
                                   valueOrDefault<String>(
-                                    widget!.proDetails?.description,
+                                    widget.proDetails?.description,
                                     'Description...',
                                   ),
                                   style: FlutterFlowTheme.of(context)
@@ -354,20 +353,19 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                             color: FlutterFlowTheme.of(context).secondary,
                           ),
                           Container(
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: Visibility(
                               visible:
-                                  widget!.proDetails!.portfolioImages.length >=
-                                      1,
-                              child: Container(
+                                  widget.proDetails!.portfolioImages.isNotEmpty,
+                              child: SizedBox(
                                 width: MediaQuery.sizeOf(context).width * 1.0,
                                 height: 446.0,
                                 child: custom_widgets.PortfolioGrid(
                                   width: MediaQuery.sizeOf(context).width * 1.0,
                                   height: 446.0,
                                   portfolioImages:
-                                      widget!.proDetails!.portfolioImages,
-                                  proDetails: widget!.proDetails!,
+                                      widget.proDetails!.portfolioImages,
+                                  proDetails: widget.proDetails!,
                                 ),
                               ),
                             ),
@@ -376,7 +374,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                             thickness: 1.0,
                             color: FlutterFlowTheme.of(context).secondary,
                           ),
-                          if (widget!.proDetails!.fixedLocations.length >= 1)
+                          if (widget.proDetails!.fixedLocations.isNotEmpty)
                             Column(
                               mainAxisSize: MainAxisSize.max,
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -394,8 +392,8 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                 Container(
                                   width: MediaQuery.sizeOf(context).width * 1.0,
                                   height: 300.0,
-                                  decoration: BoxDecoration(),
-                                  child: Container(
+                                  decoration: const BoxDecoration(),
+                                  child: SizedBox(
                                     width:
                                         MediaQuery.sizeOf(context).width * 1.0,
                                     height:
@@ -408,14 +406,14 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                               1.0,
                                       initialZoom: 14.0,
                                       borderRadius: 0.0,
-                                      center: widget!.proDetails!.fixedLocations
+                                      center: widget.proDetails!.fixedLocations
                                           .firstOrNull!,
                                       markerStyle: MarkerStyleInfoStruct(
                                         avatarUrl:
-                                            widget!.proDetails?.avatarUrl,
+                                            widget.proDetails?.avatarUrl,
                                         borderColorHex:
                                             functions.professionToStyle(
-                                                widget!.proDetails?.profession),
+                                                widget.proDetails?.profession),
                                         isOwn: false,
                                       ),
                                       useLiteMode: false,
@@ -426,10 +424,10 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                             MapBridesLargeWidget.routeName,
                                             queryParameters: {
                                               'initialCenter': serializeParam(
-                                                widget!
+                                                widget
                                                     .proDetails
                                                     ?.fixedLocations
-                                                    ?.firstOrNull,
+                                                    .firstOrNull,
                                                 ParamType.LatLng,
                                               ),
                                             }.withoutNulls,
@@ -439,10 +437,10 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                             MapProLargeWidget.routeName,
                                             queryParameters: {
                                               'initialCenter': serializeParam(
-                                                widget!
+                                                widget
                                                     .proDetails
                                                     ?.fixedLocations
-                                                    ?.firstOrNull,
+                                                    .firstOrNull,
                                                 ParamType.LatLng,
                                               ),
                                             }.withoutNulls,
@@ -452,10 +450,10 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                     ),
                                   ),
                                 ),
-                              ].divide(SizedBox(height: 14.0)),
+                              ].divide(const SizedBox(height: 14.0)),
                             ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 12.0, 0.0, 0.0),
                             child: Row(
                               mainAxisSize: MainAxisSize.max,
@@ -465,7 +463,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                   borderRadius: BorderRadius.circular(100.0),
                                   child: Image.network(
                                     valueOrDefault<String>(
-                                      widget!.proDetails?.avatarUrl,
+                                      widget.proDetails?.avatarUrl,
                                       'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/lynewed-alpha-du4al1/assets/egport4rt4rg/person_15429777_1.png',
                                     ),
                                     width: 40.0,
@@ -481,7 +479,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                     children: [
                                       Text(
                                         valueOrDefault<String>(
-                                          widget!.proDetails?.fullName,
+                                          widget.proDetails?.fullName,
                                           'Name...',
                                         ),
                                         style: FlutterFlowTheme.of(context)
@@ -495,7 +493,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                       ),
                                       Text(
                                         valueOrDefault<String>(
-                                          widget!.proDetails?.profession?.name,
+                                          widget.proDetails?.profession?.name,
                                           'Profession...',
                                         ),
                                         style: FlutterFlowTheme.of(context)
@@ -515,9 +513,9 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                 Row(
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
-                                    if (widget!.proDetails?.instagramUrl !=
+                                    if (widget.proDetails?.instagramUrl !=
                                             null &&
-                                        widget!.proDetails?.instagramUrl != '')
+                                        widget.proDetails?.instagramUrl != '')
                                       FlutterFlowIconButton(
                                         borderRadius: 100.0,
                                         buttonSize: 40.0,
@@ -532,14 +530,14 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                         onPressed: () async {
                                           await launchURL(
                                               valueOrDefault<String>(
-                                            widget!.proDetails?.instagramUrl,
+                                            widget.proDetails?.instagramUrl,
                                             'https://www.lynewed.com/',
                                           ));
                                         },
                                       ),
-                                    if (widget!.proDetails?.websiteUrl !=
+                                    if (widget.proDetails?.websiteUrl !=
                                             null &&
-                                        widget!.proDetails?.websiteUrl != '')
+                                        widget.proDetails?.websiteUrl != '')
                                       FlutterFlowIconButton(
                                         borderRadius: 100.0,
                                         buttonSize: 40.0,
@@ -554,32 +552,32 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                         onPressed: () async {
                                           await launchURL(
                                               valueOrDefault<String>(
-                                            widget!.proDetails?.websiteUrl,
+                                            widget.proDetails?.websiteUrl,
                                             'https://www.lynewed.com/',
                                           ));
                                         },
                                       ),
-                                  ].divide(SizedBox(width: 10.0)),
+                                  ].divide(const SizedBox(width: 10.0)),
                                 ),
-                              ].divide(SizedBox(width: 10.0)),
+                              ].divide(const SizedBox(width: 10.0)),
                             ),
                           ),
-                        ].divide(SizedBox(height: 14.0)),
+                        ].divide(const SizedBox(height: 14.0)),
                       ),
                     ),
-                  ].divide(SizedBox(height: 0.0)),
+                  ].divide(const SizedBox(height: 0.0)),
                 ),
               ),
               Align(
-                alignment: AlignmentDirectional(0.0, -1.0),
+                alignment: const AlignmentDirectional(0.0, -1.0),
                 child: Container(
                   width: double.infinity,
                   height: 110.0,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Color(0x65FFFFFF),
                   ),
                   child: Align(
-                    alignment: AlignmentDirectional(0.0, 0.0),
+                    alignment: const AlignmentDirectional(0.0, 0.0),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(0.0),
                       child: BackdropFilter(
@@ -590,18 +588,18 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                         child: Container(
                           width: double.infinity,
                           height: 110.0,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: Color(0x67FFFFFF),
                           ),
                           child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 14.0),
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       20.0, 0.0, 20.0, 0.0),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.max,
@@ -614,7 +612,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                           Container(
                                             width: 40.0,
                                             height: 40.0,
-                                            decoration: BoxDecoration(),
+                                            decoration: const BoxDecoration(),
                                             child: InkWell(
                                               splashColor: Colors.transparent,
                                               focusColor: Colors.transparent,
@@ -633,7 +631,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 14.0)),
+                                        ].divide(const SizedBox(width: 14.0)),
                                       ),
                                       Text(
                                         'LYNEWED',
@@ -652,26 +650,30 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                         children: [
                                           Align(
                                             alignment:
-                                                AlignmentDirectional(0.0, 0.0),
+                                                const AlignmentDirectional(0.0, 0.0),
                                             child: Container(
                                               width: 40.0,
                                               height: 40.0,
-                                              decoration: BoxDecoration(),
+                                              decoration: const BoxDecoration(),
                                               child: ToggleIcon(
                                                 onPressed: () async {
+                                                  // Toggle optimiste pour UI réactive
                                                   safeSetState(() =>
                                                       _model.fav = !_model.fav);
+                                                  
                                                   _model.toggleResult =
                                                       await actions
                                                           .toggleWishlistAction(
-                                                    widget!.proDetails!
+                                                    widget.proDetails!
                                                         .proProfileId,
                                                   );
-                                                  _model.fav =
-                                                      _model.toggleResult!;
-                                                  safeSetState(() {});
-
-                                                  safeSetState(() {});
+                                                  
+                                                  // Mettre à jour avec le résultat réel du serveur
+                                                  if (_model.toggleResult != null) {
+                                                    _model.fav =
+                                                        _model.toggleResult!;
+                                                    safeSetState(() {});
+                                                  }
                                                 },
                                                 value: _model.fav,
                                                 onIcon: Icon(
@@ -691,7 +693,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                               ),
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 14.0)),
+                                        ].divide(const SizedBox(width: 14.0)),
                                       ),
                                     ],
                                   ),
@@ -706,44 +708,44 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                 ),
               ),
               Align(
-                alignment: AlignmentDirectional(0.0, 1.0),
+                alignment: const AlignmentDirectional(0.0, 1.0),
                 child: Container(
                   width: double.infinity,
                   height: 90.0,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.white,
                   ),
                   child: Stack(
                     children: [
                       Padding(
                         padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 14.0, 0.0, 0.0),
+                            const EdgeInsetsDirectional.fromSTEB(0.0, 14.0, 0.0, 0.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            if ((widget!.proDetails?.canBeContactedByBride ==
+                            if ((widget.proDetails?.canBeContactedByBride ==
                                     true) ||
-                                (widget!.proDetails?.proProfileId ==
+                                (widget.proDetails?.proProfileId ==
                                     currentUserUid))
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     20.0, 0.0, 20.0, 0.0),
                                 child: FFButtonWidget(
                                   onPressed: () async {
                                     await action_blocks.contactChatRoom(
                                       context,
                                       targetProfileID:
-                                          widget!.proDetails?.proProfileId,
+                                          widget.proDetails?.proProfileId,
                                     );
                                   },
                                   text: 'Contact',
                                   options: FFButtonOptions(
                                     width: double.infinity,
                                     height: 48.0,
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         16.0, 0.0, 16.0, 0.0),
-                                    iconPadding: EdgeInsetsDirectional.fromSTEB(
+                                    iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                         0.0, 0.0, 0.0, 0.0),
                                     color: FlutterFlowTheme.of(context).primary,
                                     textStyle: FlutterFlowTheme.of(context)
@@ -764,7 +766,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                         ),
                       ),
                       Align(
-                        alignment: AlignmentDirectional(0.0, -1.0),
+                        alignment: const AlignmentDirectional(0.0, -1.0),
                         child: Container(
                           width: double.infinity,
                           height: 1.0,

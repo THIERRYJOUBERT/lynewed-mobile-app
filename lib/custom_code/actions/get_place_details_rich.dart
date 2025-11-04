@@ -1,13 +1,10 @@
 // Automatic FlutterFlow imports
+import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
+import '/utils/secure_logger.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -15,7 +12,6 @@ import 'package:flutter/material.dart';
 // and then add the boilerplate code using the green button on the right!
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '/flutter_flow/lat_lng.dart';
 
 Future<PlaceDetailsDataStruct?> getPlaceDetailsRich(
   String placeId,
@@ -25,7 +21,7 @@ Future<PlaceDetailsDataStruct?> getPlaceDetailsRich(
   // CORRECTION : Utilise FFAppConstants au lieu de FFAppState pour la clé API.
   final apiKey = FFAppConstants.googlePlacesApiKey;
   if (apiKey.isEmpty) {
-    print('Google Places API Key is not set in App Constants.');
+    SecureLogger.warning('Google Places API Key is not configured');
     return null;
   }
   final lang = (locale ?? 'en').substring(0, 2);
@@ -73,7 +69,7 @@ Future<PlaceDetailsDataStruct?> getPlaceDetailsRich(
     }
     return null;
   } catch (e) {
-    print('getPlaceDetailsRich error: $e');
+    debugPrint('getPlaceDetailsRich error: $e');
     return null;
   }
 }

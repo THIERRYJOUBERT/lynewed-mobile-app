@@ -9,7 +9,7 @@ class ReplayGuestsTable extends SupabaseTable<ReplayGuestsRow> {
 }
 
 class ReplayGuestsRow extends SupabaseDataRow {
-  ReplayGuestsRow(Map<String, dynamic> data) : super(data);
+  ReplayGuestsRow(super.data);
 
   @override
   SupabaseTable get table => ReplayGuestsTable();

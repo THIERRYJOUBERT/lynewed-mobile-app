@@ -1,24 +1,17 @@
 // Automatic FlutterFlow imports
-import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+// Imports other custom widgets
+// Imports custom actions
+// Imports custom functions
+import '/utils/secure_logger.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import '/custom_code/widgets/index.dart';
-import '/custom_code/actions/index.dart';
-import '/flutter_flow/custom_functions.dart';
 
 import 'dart:async';
 import 'dart:io';
-import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
@@ -126,7 +119,7 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
       _filePath = file;
       _startTicker();
     } catch (e) {
-      debugPrint('AudioRecorderWidget start error: $e');
+      SecureLogger.error('Audio recorder start failed', error: e);
       if (mounted && widget.onCancel != null) await widget.onCancel!();
     }
   }
@@ -158,7 +151,7 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
         if (widget.onCancel != null) await widget.onCancel!();
       }
     } catch (e) {
-      debugPrint('AudioRecorderWidget stop error: $e');
+      SecureLogger.error('Audio recorder stop failed', error: e);
       if (widget.onCancel != null) await widget.onCancel!();
     }
   }

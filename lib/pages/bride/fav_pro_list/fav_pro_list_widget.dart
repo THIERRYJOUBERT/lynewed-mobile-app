@@ -2,14 +2,10 @@ import '/backend/schema/structs/index.dart';
 import '/components/nav/header_bar/header_bar_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'fav_pro_list_model.dart';
 export 'fav_pro_list_model.dart';
 
@@ -35,10 +31,14 @@ class _FavProListWidgetState extends State<FavProListWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      _model.result = await actions.getFavoritedProfessionalsAction();
-      _model.favoritedPros = _model.result!.toList().cast<ProDetailsStruct>();
-      safeSetState(() {});
+      await _refreshFavoritedPros();
     });
+  }
+
+  Future<void> _refreshFavoritedPros() async {
+    _model.result = await actions.getFavoritedProfessionalsAction();
+    _model.favoritedPros = _model.result!.toList().cast<ProDetailsStruct>();
+    safeSetState(() {});
   }
 
   @override
@@ -59,15 +59,15 @@ class _FavProListWidgetState extends State<FavProListWidget> {
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         body: Align(
-          alignment: AlignmentDirectional(0.0, -1.0),
-          child: Container(
+          alignment: const AlignmentDirectional(0.0, -1.0),
+          child: SizedBox(
             width: MediaQuery.sizeOf(context).width * 1.0,
             height: MediaQuery.sizeOf(context).height * 1.0,
             child: Stack(
               children: [
                 Padding(
                   padding:
-                      EdgeInsetsDirectional.fromSTEB(20.0, 130.0, 20.0, 40.0),
+                      const EdgeInsetsDirectional.fromSTEB(20.0, 130.0, 20.0, 40.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
@@ -99,7 +99,7 @@ class _FavProListWidgetState extends State<FavProListWidget> {
                               scrollDirection: Axis.vertical,
                               itemCount: listFav.length,
                               separatorBuilder: (_, __) =>
-                                  SizedBox(height: 10.0),
+                                  const SizedBox(height: 10.0),
                               itemBuilder: (context, listFavIndex) {
                                 final listFavItem = listFav[listFavIndex];
                                 return InkWell(
@@ -127,7 +127,7 @@ class _FavProListWidgetState extends State<FavProListWidget> {
                                       borderRadius: BorderRadius.circular(4.0),
                                     ),
                                     child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
                                           14.0, 12.0, 8.0, 12.0),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.max,
@@ -136,7 +136,7 @@ class _FavProListWidgetState extends State<FavProListWidget> {
                                             width: 46.0,
                                             height: 46.0,
                                             clipBehavior: Clip.antiAlias,
-                                            decoration: BoxDecoration(
+                                            decoration: const BoxDecoration(
                                               shape: BoxShape.circle,
                                             ),
                                             child: Image.network(
@@ -232,7 +232,7 @@ class _FavProListWidgetState extends State<FavProListWidget> {
                                                                       0.0,
                                                                 ),
                                                           ),
-                                                        ].divide(SizedBox(
+                                                        ].divide(const SizedBox(
                                                             width: 10.0)),
                                                       ),
                                                       Row(
@@ -244,7 +244,7 @@ class _FavProListWidgetState extends State<FavProListWidget> {
                                                         children: [
                                                           Padding(
                                                             padding:
-                                                                EdgeInsetsDirectional
+                                                                const EdgeInsetsDirectional
                                                                     .fromSTEB(
                                                                         0.0,
                                                                         2.0,
@@ -276,16 +276,16 @@ class _FavProListWidgetState extends State<FavProListWidget> {
                                                         ],
                                                       ),
                                                     ].divide(
-                                                        SizedBox(height: 2.0)),
+                                                        const SizedBox(height: 2.0)),
                                                   ),
                                                 ),
                                                 Align(
                                                   alignment:
-                                                      AlignmentDirectional(
+                                                      const AlignmentDirectional(
                                                           1.0, -1.0),
                                                   child: Stack(
                                                     alignment:
-                                                        AlignmentDirectional(
+                                                        const AlignmentDirectional(
                                                             1.0, -1.0),
                                                     children: [
                                                       if (_model.favoritedPros
@@ -305,10 +305,10 @@ class _FavProListWidgetState extends State<FavProListWidget> {
                                                             _model.toggleResultOn =
                                                                 await actions
                                                                     .toggleWishlistAction(
-                                                              'id',
+                                                              listFavItem.proProfileId,
                                                             );
 
-                                                            safeSetState(() {});
+                                                            await _refreshFavoritedPros();
                                                           },
                                                           child: Icon(
                                                             Icons
@@ -336,10 +336,10 @@ class _FavProListWidgetState extends State<FavProListWidget> {
                                                             _model.toggleResultOff =
                                                                 await actions
                                                                     .toggleWishlistAction(
-                                                              'id',
+                                                              listFavItem.proProfileId,
                                                             );
 
-                                                            safeSetState(() {});
+                                                            await _refreshFavoritedPros();
                                                           },
                                                           child: Icon(
                                                             Icons
@@ -356,7 +356,7 @@ class _FavProListWidgetState extends State<FavProListWidget> {
                                               ],
                                             ),
                                           ),
-                                        ].divide(SizedBox(width: 12.0)),
+                                        ].divide(const SizedBox(width: 12.0)),
                                       ),
                                     ),
                                   ),
@@ -366,13 +366,13 @@ class _FavProListWidgetState extends State<FavProListWidget> {
                           },
                         ),
                       ),
-                    ].divide(SizedBox(height: 16.0)),
+                    ].divide(const SizedBox(height: 16.0)),
                   ),
                 ),
                 wrapWithModel(
                   model: _model.headerBarModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: HeaderBarWidget(
+                  child: const HeaderBarWidget(
                     title: 'FAVORIS PROFESSIONAL',
                   ),
                 ),

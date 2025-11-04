@@ -11,7 +11,7 @@ class ReplayGuestAssignmentsTable
 }
 
 class ReplayGuestAssignmentsRow extends SupabaseDataRow {
-  ReplayGuestAssignmentsRow(Map<String, dynamic> data) : super(data);
+  ReplayGuestAssignmentsRow(super.data);
 
   @override
   SupabaseTable get table => ReplayGuestAssignmentsTable();

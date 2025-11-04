@@ -10,17 +10,14 @@ import '/components/ui_system/empty_state/empty_state_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/random_data_util.dart' as random_data;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'map_pro_large_model.dart';
 export 'map_pro_large_model.dart';
 
@@ -53,8 +50,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       _model.psQueryFilters =
-          FFAppState().currentUserPreferences.lastFiltersJson != null &&
-                  FFAppState().currentUserPreferences.lastFiltersJson != ''
+          FFAppState().currentUserPreferences.lastFiltersJson != ''
               ? functions.jsonToQueryFilters(
                   FFAppState().currentUserPreferences.lastFiltersJson)
               : QueryFiltersStruct(
@@ -83,7 +79,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
       safeSetState(() {});
     });
 
-    getCurrentUserLocation(defaultLocation: LatLng(0.0, 0.0), cached: true)
+    getCurrentUserLocation(defaultLocation: const LatLng(0.0, 0.0), cached: true)
         .then((loc) => safeSetState(() => currentUserLocationValue = loc));
   }
 
@@ -122,7 +118,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        body: Container(
+        body: SizedBox(
           width: MediaQuery.sizeOf(context).width * 1.0,
           height: MediaQuery.sizeOf(context).height * 1.0,
           child: Stack(
@@ -130,13 +126,13 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
               Container(
                 width: MediaQuery.sizeOf(context).width * 1.0,
                 height: MediaQuery.sizeOf(context).height * 1.0,
-                decoration: BoxDecoration(),
+                decoration: const BoxDecoration(),
                 child: Align(
-                  alignment: AlignmentDirectional(0.0, 0.0),
+                  alignment: const AlignmentDirectional(0.0, 0.0),
                   child: Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 150.0),
-                    child: Container(
+                        const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 150.0),
+                    child: SizedBox(
                       width: MediaQuery.sizeOf(context).width * 1.0,
                       height: MediaQuery.sizeOf(context).height * 1.0,
                       child: custom_widgets.LynewedInteractiveMap(
@@ -145,16 +141,14 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                         initialZoom: 12.0,
                         enableMyLocationLayer: true,
                         userRole: FFAppState().currentUserRole,
-                        initialCenter: widget!.initialCenter != null
-                            ? widget!.initialCenter
-                            : currentUserLocationValue,
+                        initialCenter: widget.initialCenter ?? currentUserLocationValue,
                         markers: _model.psMapData?.markers,
                         weddingPinOverlays: _model.psMapData?.weddingPins,
                         filters: _model.psQueryFilters,
                         command: _model.psMapCommand,
                         searchTargetMarker: _model.psSearchTargetMarker,
                         debounceMs: 500,
-                        mapStyle: MapStyleType.normal,
+                        mapStyle: _model.mapStyle,
                         enableClustering: true,
                         clusterRadiusPx: 56.0,
                         onDataLoaded: (data) async {
@@ -162,7 +156,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                           safeSetState(() {});
                         },
                         onMarkerTap: (marker) async {
-                          var _shouldSetState = false;
+                          var shouldSetState = false;
                           if ((marker.type == MapMarkerType.professional) ||
                               (marker.type == MapMarkerType.fixedLocation) ||
                               (marker.type == MapMarkerType.proRecent)) {
@@ -170,7 +164,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                 await actions.getProItemDetailsAction(
                               marker.id,
                             );
-                            _shouldSetState = true;
+                            shouldSetState = true;
                             if (_model.proDetailsFromAction != null) {
                               await showModalBottomSheet(
                                 isScrollControlled: true,
@@ -195,7 +189,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                 },
                               ).then((value) => safeSetState(() {}));
 
-                              if (_shouldSetState) safeSetState(() {});
+                              if (shouldSetState) safeSetState(() {});
                               return;
                             }
                           } else {
@@ -204,7 +198,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                   await actions.getPoiItemDetails(
                                 marker.id,
                               );
-                              _shouldSetState = true;
+                              shouldSetState = true;
                               if (_model.poiDetailsData != null) {
                                 await showModalBottomSheet(
                                   isScrollControlled: true,
@@ -229,7 +223,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                   },
                                 ).then((value) => safeSetState(() {}));
 
-                                if (_shouldSetState) safeSetState(() {});
+                                if (shouldSetState) safeSetState(() {});
                                 return;
                               }
                             } else {
@@ -238,7 +232,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                     await actions.getWeddingPinItemDetailsRpc(
                                   marker.id,
                                 );
-                                _shouldSetState = true;
+                                shouldSetState = true;
                                 if (_model.weddingPinDetailsData != null) {
                                   await showModalBottomSheet(
                                     isScrollControlled: true,
@@ -264,7 +258,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                     },
                                   ).then((value) => safeSetState(() {}));
 
-                                  if (_shouldSetState) safeSetState(() {});
+                                  if (shouldSetState) safeSetState(() {});
                                   return;
                                 }
                               } else {
@@ -274,7 +268,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                       await actions.getAlertItemDetailsRpc(
                                     marker.id,
                                   );
-                                  _shouldSetState = true;
+                                  shouldSetState = true;
                                   if (_model.alertDetailsPro != null) {
                                     await showModalBottomSheet(
                                       isScrollControlled: true,
@@ -300,7 +294,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                       },
                                     ).then((value) => safeSetState(() {}));
 
-                                    if (_shouldSetState) safeSetState(() {});
+                                    if (shouldSetState) safeSetState(() {});
                                     return;
                                   }
                                 } else {
@@ -308,20 +302,20 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                     context: context,
                                     builder: (alertDialogContext) {
                                       return AlertDialog(
-                                        title: Text('An error has occurred'),
-                                        content: Text(
+                                        title: const Text('An error has occurred'),
+                                        content: const Text(
                                             'Unable to open the information for this item. Please try again.'),
                                         actions: [
                                           TextButton(
                                             onPressed: () => Navigator.pop(
                                                 alertDialogContext),
-                                            child: Text('Ok'),
+                                            child: const Text('Ok'),
                                           ),
                                         ],
                                       );
                                     },
                                   );
-                                  if (_shouldSetState) safeSetState(() {});
+                                  if (shouldSetState) safeSetState(() {});
                                   return;
                                 }
                               }
@@ -337,12 +331,12 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                       FlutterFlowTheme.of(context).primaryText,
                                 ),
                               ),
-                              duration: Duration(milliseconds: 2000),
+                              duration: const Duration(milliseconds: 2000),
                               backgroundColor:
                                   FlutterFlowTheme.of(context).error,
                             ),
                           );
-                          if (_shouldSetState) safeSetState(() {});
+                          if (shouldSetState) safeSetState(() {});
                         },
                       ),
                     ),
@@ -350,9 +344,9 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                 ),
               ),
               Align(
-                alignment: AlignmentDirectional(1.0, -1.0),
+                alignment: const AlignmentDirectional(1.0, -1.0),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 80.0, 20.0, 0.0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(0.0, 80.0, 20.0, 0.0),
                   child: FlutterFlowIconButton(
                     borderRadius: 4.0,
                     buttonSize: 40.0,
@@ -379,10 +373,10 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                 ),
               ),
               Align(
-                alignment: AlignmentDirectional(1.0, -1.0),
+                alignment: const AlignmentDirectional(1.0, -1.0),
                 child: Padding(
                   padding:
-                      EdgeInsetsDirectional.fromSTEB(0.0, 160.0, 20.0, 0.0),
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 160.0, 20.0, 0.0),
                   child: FlutterFlowIconButton(
                     borderRadius: 8.0,
                     buttonSize: 40.0,
@@ -408,10 +402,10 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                 ),
               ),
               Align(
-                alignment: AlignmentDirectional(1.0, -1.0),
+                alignment: const AlignmentDirectional(1.0, -1.0),
                 child: Padding(
                   padding:
-                      EdgeInsetsDirectional.fromSTEB(0.0, 210.0, 20.0, 0.0),
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 210.0, 20.0, 0.0),
                   child: FlutterFlowIconButton(
                     borderRadius: 8.0,
                     buttonSize: 40.0,
@@ -437,15 +431,15 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                 ),
               ),
               Align(
-                alignment: AlignmentDirectional(-1.0, -1.0),
+                alignment: const AlignmentDirectional(-1.0, -1.0),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(20.0, 70.0, 0.0, 0.0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(20.0, 70.0, 0.0, 0.0),
                   child: FlutterFlowIconButton(
                     borderRadius: 100.0,
                     borderWidth: 0.0,
                     buttonSize: 40.0,
                     fillColor: FlutterFlowTheme.of(context).primary,
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.arrow_back_ios_rounded,
                       color: Colors.white,
                       size: 17.0,
@@ -457,10 +451,10 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                 ),
               ),
               Align(
-                alignment: AlignmentDirectional(1.0, -1.0),
+                alignment: const AlignmentDirectional(1.0, -1.0),
                 child: Padding(
                   padding:
-                      EdgeInsetsDirectional.fromSTEB(0.0, 136.0, 25.0, 0.0),
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 136.0, 25.0, 0.0),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -477,31 +471,31 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                 ),
               ),
               Align(
-                alignment: AlignmentDirectional(0.0, 1.0),
+                alignment: const AlignmentDirectional(0.0, 1.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Align(
-                      alignment: AlignmentDirectional(0.0, 1.0),
-                      child: Container(
+                      alignment: const AlignmentDirectional(0.0, 1.0),
+                      child: SizedBox(
                         width: MediaQuery.sizeOf(context).width * 1.0,
                         child: Stack(
-                          alignment: AlignmentDirectional(0.0, 1.0),
+                          alignment: const AlignmentDirectional(0.0, 1.0),
                           children: [
                             Align(
-                              alignment: AlignmentDirectional(1.0, 1.0),
+                              alignment: const AlignmentDirectional(1.0, 1.0),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     20.0, 0.0, 20.0, 0.0),
-                                child: Container(
+                                child: SizedBox(
                                   width: 40.0,
                                   height: 90.0,
                                   child: Stack(
-                                    alignment: AlignmentDirectional(1.0, 1.0),
+                                    alignment: const AlignmentDirectional(1.0, 1.0),
                                     children: [
                                       if (_model.viewMapStyle == true)
                                         Container(
-                                          decoration: BoxDecoration(),
+                                          decoration: const BoxDecoration(),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
@@ -534,13 +528,13 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                                   ),
                                                   child: Padding(
                                                     padding:
-                                                        EdgeInsets.all(2.0),
+                                                        const EdgeInsets.all(2.0),
                                                     child: Container(
                                                       width: 40.0,
                                                       height: 40.0,
                                                       clipBehavior:
                                                           Clip.antiAlias,
-                                                      decoration: BoxDecoration(
+                                                      decoration: const BoxDecoration(
                                                         shape: BoxShape.circle,
                                                       ),
                                                       child: Image.asset(
@@ -579,13 +573,13 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                                   ),
                                                   child: Padding(
                                                     padding:
-                                                        EdgeInsets.all(2.0),
+                                                        const EdgeInsets.all(2.0),
                                                     child: Container(
                                                       width: 40.0,
                                                       height: 40.0,
                                                       clipBehavior:
                                                           Clip.antiAlias,
-                                                      decoration: BoxDecoration(
+                                                      decoration: const BoxDecoration(
                                                         shape: BoxShape.circle,
                                                       ),
                                                       child: Image.asset(
@@ -596,13 +590,13 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                                   ),
                                                 ),
                                               ),
-                                            ].divide(SizedBox(height: 8.0)),
+                                            ].divide(const SizedBox(height: 8.0)),
                                           ),
                                         ),
                                       if (_model.viewMapStyle == false)
                                         Align(
                                           alignment:
-                                              AlignmentDirectional(1.0, 1.0),
+                                              const AlignmentDirectional(1.0, 1.0),
                                           child: FlutterFlowIconButton(
                                             borderRadius: 100.0,
                                             buttonSize: 40.0,
@@ -628,9 +622,9 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                               ),
                             ),
                             Align(
-                              alignment: AlignmentDirectional(-1.0, 1.0),
+                              alignment: const AlignmentDirectional(-1.0, 1.0),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     20.0, 0.0, 20.0, 0.0),
                                 child: FlutterFlowIconButton(
                                   borderRadius: 100.0,
@@ -658,7 +652,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                           child: Padding(
                                             padding: MediaQuery.viewInsetsOf(
                                                 context),
-                                            child: CreateEditAlertSheetWidget(),
+                                            child: const CreateEditAlertSheetWidget(),
                                           ),
                                         );
                                       },
@@ -672,12 +666,12 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                       ),
                     ),
                     Align(
-                      alignment: AlignmentDirectional(0.0, 1.0),
+                      alignment: const AlignmentDirectional(0.0, 1.0),
                       child: Container(
                         width: MediaQuery.sizeOf(context).width * 1.0,
                         decoration: BoxDecoration(
                           color: FlutterFlowTheme.of(context).primaryBackground,
-                          borderRadius: BorderRadius.only(
+                          borderRadius: const BorderRadius.only(
                             bottomLeft: Radius.circular(0.0),
                             bottomRight: Radius.circular(0.0),
                             topLeft: Radius.circular(24.0),
@@ -685,13 +679,13 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                           ),
                         ),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               20.0, 20.0, 20.0, 50.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Align(
-                                alignment: AlignmentDirectional(-1.0, 0.0),
+                                alignment: const AlignmentDirectional(-1.0, 0.0),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
                                   mainAxisAlignment:
@@ -699,7 +693,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                   children: [
                                     Align(
                                       alignment:
-                                          AlignmentDirectional(-1.0, -1.0),
+                                          const AlignmentDirectional(-1.0, -1.0),
                                       child: InkWell(
                                         splashColor: Colors.transparent,
                                         focusColor: Colors.transparent,
@@ -753,7 +747,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                           ),
                                           child: Padding(
                                             padding:
-                                                EdgeInsetsDirectional.fromSTEB(
+                                                const EdgeInsetsDirectional.fromSTEB(
                                                     12.0, 0.0, 12.0, 0.0),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.max,
@@ -780,13 +774,13 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                                         letterSpacing: 0.0,
                                                       ),
                                                 ),
-                                              ].divide(SizedBox(width: 6.0)),
+                                              ].divide(const SizedBox(width: 6.0)),
                                             ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                    if (_model.psPlaceSuggestions.length != 0)
+                                    if (_model.psPlaceSuggestions.isNotEmpty)
                                       InkWell(
                                         splashColor: Colors.transparent,
                                         focusColor: Colors.transparent,
@@ -823,7 +817,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                           size: 24.0,
                                         ),
                                       ),
-                                  ].divide(SizedBox(width: 12.0)),
+                                  ].divide(const SizedBox(width: 12.0)),
                                 ),
                               ),
                               Row(
@@ -832,14 +826,14 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                 children: [
                                   Expanded(
                                     child: Align(
-                                      alignment: AlignmentDirectional(1.0, 0.0),
-                                      child: Container(
+                                      alignment: const AlignmentDirectional(1.0, 0.0),
+                                      child: SizedBox(
                                         height: 45.0,
                                         child: Stack(
                                           alignment:
-                                              AlignmentDirectional(0.0, 1.0),
+                                              const AlignmentDirectional(0.0, 1.0),
                                           children: [
-                                            Container(
+                                            SizedBox(
                                               width: MediaQuery.sizeOf(context)
                                                       .width *
                                                   1.0,
@@ -887,18 +881,18 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                       ),
                                     ),
                                   ),
-                                ].divide(SizedBox(width: 8.0)),
+                                ].divide(const SizedBox(width: 8.0)),
                               ),
-                              if (_model.psPlaceSuggestions.length != 0)
+                              if (_model.psPlaceSuggestions.isNotEmpty)
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       10.0, 0.0, 10.0, 0.0),
                                   child: Builder(
                                     builder: (context) {
                                       final placeSuggestionList =
                                           _model.psPlaceSuggestions.toList();
                                       if (placeSuggestionList.isEmpty) {
-                                        return Center(
+                                        return const Center(
                                           child: EmptyStateWidget(
                                             message:
                                                 'Aucune adresse trouvée...',
@@ -913,7 +907,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                         scrollDirection: Axis.vertical,
                                         itemCount: placeSuggestionList.length,
                                         separatorBuilder: (_, __) =>
-                                            SizedBox(height: 10.0),
+                                            const SizedBox(height: 10.0),
                                         itemBuilder: (context,
                                             placeSuggestionListIndex) {
                                           final placeSuggestionListItem =
@@ -1020,12 +1014,12 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                     },
                                   ),
                                 ),
-                            ].divide(SizedBox(height: 14.0)),
+                            ].divide(const SizedBox(height: 14.0)),
                           ),
                         ),
                       ),
                     ),
-                  ].divide(SizedBox(height: 24.0)),
+                  ].divide(const SizedBox(height: 24.0)),
                 ),
               ),
             ],

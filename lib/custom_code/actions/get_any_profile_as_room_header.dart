@@ -1,13 +1,10 @@
 // Automatic FlutterFlow imports
+import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
+// Imports other custom actions
 import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -33,7 +30,7 @@ Future<ChatRoomHeaderStruct?> getAnyProfileAsRoomHeader(
     }
 
     // Helper pour parser le rôle
-    UserRole? _userRoleFromString(String? s) {
+    UserRole? userRoleFromString(String? s) {
       switch ((s ?? '').toLowerCase()) {
         case 'professional':
           return UserRole.professional;
@@ -51,10 +48,10 @@ Future<ChatRoomHeaderStruct?> getAnyProfileAsRoomHeader(
       otherFullName: profileData['full_name']?.toString(),
       otherAvatarUrl:
           stringToImagePath(profileData['avatar_url']?.toString() ?? ''),
-      otherRole: _userRoleFromString(profileData['role']?.toString()),
+      otherRole: userRoleFromString(profileData['role']?.toString()),
     );
   } catch (e) {
-    print('getAnyProfileAsRoomHeader error: $e');
+    debugPrint('getAnyProfileAsRoomHeader error: $e');
     return null;
   }
 }

@@ -2,7 +2,6 @@
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom widgets
@@ -13,7 +12,7 @@ import 'package:flutter/material.dart';
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'dart:async';
-import 'package:intl/intl.dart';
+import '/utils/secure_logger.dart';
 
 class _ChatCacheEntry {
   List<_ChatMsg> messages;
@@ -206,8 +205,9 @@ class _ChatMessageListState extends State<ChatMessageList>
 
   // ---------- REQUEST MODE ----------
   Future<void> _loadRequestMeta() async {
-    if (widget.pendingRequestId == null || widget.pendingRequestId!.isEmpty)
+    if (widget.pendingRequestId == null || widget.pendingRequestId!.isEmpty) {
       return;
+    }
     setState(() => _loadingRequestMeta = true);
     try {
       final resp = await SupaFlow.client
@@ -217,7 +217,7 @@ class _ChatMessageListState extends State<ChatMessageList>
           .eq('id', widget.pendingRequestId!)
           .maybeSingle();
 
-      if (resp != null && resp is Map) {
+      if (resp != null) {
         _reqRow = Map<String, dynamic>.from(resp);
       }
 
@@ -236,7 +236,7 @@ class _ChatMessageListState extends State<ChatMessageList>
             .select('id, full_name, avatar_url, role')
             .eq('id', otherId)
             .maybeSingle();
-        if (pr != null && pr is Map) {
+        if (pr != null) {
           _reqHeader = ChatRoomHeaderStruct(
             roomType: RoomType.private,
             otherProfileId: pr['id']?.toString(),
@@ -250,15 +250,16 @@ class _ChatMessageListState extends State<ChatMessageList>
         }
       }
     } catch (e) {
-      debugPrint('_loadRequestMeta error: $e');
+      SecureLogger.error('Chat request metadata loading failed', error: e);
     } finally {
       if (mounted) setState(() => _loadingRequestMeta = false);
     }
   }
 
   Future<void> _acceptRequest() async {
-    if (widget.pendingRequestId == null || widget.pendingRequestId!.isEmpty)
+    if (widget.pendingRequestId == null || widget.pendingRequestId!.isEmpty) {
       return;
+    }
     try {
       final res =
           await SupaFlow.client.rpc('accept_connection_request', params: {
@@ -275,18 +276,19 @@ class _ChatMessageListState extends State<ChatMessageList>
         await _resetAndReload();
       }
     } catch (e) {
-      debugPrint('_acceptRequest error: $e');
+      SecureLogger.error('Chat request acceptance failed', error: e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to accept. Please retry.')),
+          const SnackBar(content: Text('Failed to accept. Please retry.')),
         );
       }
     }
   }
 
   Future<void> _declineRequest() async {
-    if (widget.pendingRequestId == null || widget.pendingRequestId!.isEmpty)
+    if (widget.pendingRequestId == null || widget.pendingRequestId!.isEmpty) {
       return;
+    }
     try {
       await SupaFlow.client.rpc('decline_connection_request', params: {
         'p_request_id': widget.pendingRequestId,
@@ -296,10 +298,10 @@ class _ChatMessageListState extends State<ChatMessageList>
       }
       if (mounted) Navigator.of(context).maybePop();
     } catch (e) {
-      debugPrint('_declineRequest error: $e');
+      SecureLogger.error('Chat request decline failed', error: e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to decline. Please retry.')),
+          const SnackBar(content: Text('Failed to decline. Please retry.')),
         );
       }
     }
@@ -370,23 +372,19 @@ class _ChatMessageListState extends State<ChatMessageList>
           .select('id, full_name, avatar_url')
           .inFilter('id', ids.toList());
       bool updated = false;
-      if (res is List) {
-        for (final r in res) {
-          if (r is Map) {
-            final id = (r['id'] ?? '').toString();
-            if (id.isNotEmpty) {
-              _authors[id] = _ProfileInfo(
-                id: id,
-                fullName: (r['full_name'] ?? '').toString(),
-                avatarUrl:
-                    stringToImagePath((r['avatar_url'] ?? '').toString()),
-              );
-              updated = true;
-            }
-          }
+      for (final r in res) {
+        final id = (r['id'] ?? '').toString();
+        if (id.isNotEmpty) {
+          _authors[id] = _ProfileInfo(
+            id: id,
+            fullName: (r['full_name'] ?? '').toString(),
+            avatarUrl:
+                stringToImagePath((r['avatar_url'] ?? '').toString()),
+          );
+          updated = true;
         }
-      }
-      if (updated && mounted) setState(() {});
+            }
+          if (updated && mounted) setState(() {});
       _InMemoryChatCache.update(_roomId, (e) => e.authors.addAll(_authors));
     } catch (_) {}
   }
@@ -394,14 +392,16 @@ class _ChatMessageListState extends State<ChatMessageList>
   Future<void> _ensureAuthor(String profileId) async {
     if (!widget.isPublic ||
         profileId.isEmpty ||
-        _authors.containsKey(profileId)) return;
+        _authors.containsKey(profileId)) {
+      return;
+    }
     try {
       final r = await SupaFlow.client
           .from('profiles')
           .select('id, full_name, avatar_url')
           .eq('id', profileId)
           .maybeSingle();
-      if (mounted && r != null && r is Map) {
+      if (mounted && r != null) {
         _authors[profileId] = _ProfileInfo(
           id: profileId,
           fullName: (r['full_name'] ?? '').toString(),
@@ -428,17 +428,13 @@ class _ChatMessageListState extends State<ChatMessageList>
           .limit(_pageSize);
 
       final List<_ChatMsg> msgsDesc = [];
-      if (res is List) {
-        for (final r in res) {
-          if (r is Map) {
-            final m = _ChatMsg.fromRow(Map<String, dynamic>.from(r));
-            if (_seenMsgIds.add(m.id)) {
-              msgsDesc.add(m);
-            }
-          }
+      for (final r in res) {
+        final m = _ChatMsg.fromRow(Map<String, dynamic>.from(r));
+        if (_seenMsgIds.add(m.id)) {
+          msgsDesc.add(m);
         }
-      }
-
+            }
+    
       _messages
         ..clear()
         ..addAll(msgsDesc);
@@ -461,7 +457,7 @@ class _ChatMessageListState extends State<ChatMessageList>
       _prefetchMediaForVisibleRange();
       await _warmProfilesForMessages(_messages);
     } catch (e) {
-      debugPrint('_loadInitial error: $e');
+      SecureLogger.error('Initial chat messages loading failed', error: e);
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -481,15 +477,11 @@ class _ChatMessageListState extends State<ChatMessageList>
           .order('created_at', ascending: true);
 
       final List<_ChatMsg> newer = [];
-      if (res is List) {
-        for (final r in res) {
-          if (r is Map) {
-            final m = _ChatMsg.fromRow(Map<String, dynamic>.from(r));
-            if (_seenMsgIds.add(m.id)) newer.add(m);
-          }
-        }
-      }
-      if (newer.isNotEmpty) {
+      for (final r in res) {
+        final m = _ChatMsg.fromRow(Map<String, dynamic>.from(r));
+        if (_seenMsgIds.add(m.id)) newer.add(m);
+            }
+          if (newer.isNotEmpty) {
         for (final m in newer.reversed) {
           _messages.insert(0, m);
         }
@@ -500,7 +492,7 @@ class _ChatMessageListState extends State<ChatMessageList>
         await _warmProfilesForMessages(newer);
       }
     } catch (e) {
-      debugPrint('_fetchNewerThanCurrentHead error: $e');
+      SecureLogger.error('Fetching newer chat messages failed', error: e);
     }
   }
 
@@ -519,15 +511,11 @@ class _ChatMessageListState extends State<ChatMessageList>
           .limit(_pageSize);
 
       final List<_ChatMsg> olderDesc = [];
-      if (res is List) {
-        for (final r in res) {
-          if (r is Map) {
-            final m = _ChatMsg.fromRow(Map<String, dynamic>.from(r));
-            if (_seenMsgIds.add(m.id)) olderDesc.add(m);
-          }
-        }
-      }
-
+      for (final r in res) {
+        final m = _ChatMsg.fromRow(Map<String, dynamic>.from(r));
+        if (_seenMsgIds.add(m.id)) olderDesc.add(m);
+            }
+    
       if (olderDesc.isNotEmpty) {
         _messages.addAll(olderDesc);
         _oldestAt = _messages.last.createdAt;
@@ -548,7 +536,7 @@ class _ChatMessageListState extends State<ChatMessageList>
         }
       }
     } catch (e) {
-      debugPrint('_loadOlder error: $e');
+      SecureLogger.error('Loading older chat messages failed', error: e);
       if (mounted) setState(() => _isLoadingOlder = false);
     }
   }
@@ -570,7 +558,6 @@ class _ChatMessageListState extends State<ChatMessageList>
           ),
           callback: (payload) async {
             final newRec = payload.newRecord;
-            if (newRec == null || newRec is! Map) return;
 
             final msg = _ChatMsg.fromRow(Map<String, dynamic>.from(newRec));
             if (msg.roomId != rid || !_seenMsgIds.add(msg.id)) return;
@@ -602,7 +589,6 @@ class _ChatMessageListState extends State<ChatMessageList>
           ),
           callback: (payload) async {
             final newRec = payload.newRecord;
-            if (newRec == null || newRec is! Map) return;
 
             final updated = _ChatMsg.fromRow(Map<String, dynamic>.from(newRec));
             final idx = _messages.indexWhere((m) => m.id == updated.id);
@@ -626,7 +612,6 @@ class _ChatMessageListState extends State<ChatMessageList>
           ),
           callback: (payload) {
             final oldRec = payload.oldRecord;
-            if (oldRec == null || oldRec is! Map) return;
 
             final id = (oldRec['id'] as num?)?.toInt();
             if (id == null) return;
@@ -640,7 +625,7 @@ class _ChatMessageListState extends State<ChatMessageList>
           },
         ).subscribe();
     } catch (e) {
-      debugPrint('subscribeRealtime error: $e');
+      SecureLogger.error('Chat realtime subscription failed', error: e);
     }
   }
 
@@ -731,11 +716,11 @@ class _ChatMessageListState extends State<ChatMessageList>
       future: _getSignedUrlForPath(path),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
+          return const Padding(
+            padding: EdgeInsets.all(8.0),
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              children: const [
+              children: [
                 SizedBox(
                     width: 16,
                     height: 16,
@@ -914,7 +899,7 @@ class _ChatMessageListState extends State<ChatMessageList>
                 bottom: 0,
                 child: Container(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
@@ -923,7 +908,7 @@ class _ChatMessageListState extends State<ChatMessageList>
                         offset: Offset(0, -2),
                       )
                     ],
-                    borderRadius: const BorderRadius.only(
+                    borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(16),
                         topRight: Radius.circular(16)),
                   ),
@@ -1204,8 +1189,7 @@ class _MessageBubble extends StatelessWidget {
 
 class _FullScreenImageViewerWithDownload extends StatelessWidget {
   final String imageUrl;
-  const _FullScreenImageViewerWithDownload({Key? key, required this.imageUrl})
-      : super(key: key);
+  const _FullScreenImageViewerWithDownload({required this.imageUrl});
 
   @override
   Widget build(BuildContext context) {

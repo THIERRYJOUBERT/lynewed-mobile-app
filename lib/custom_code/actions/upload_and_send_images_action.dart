@@ -1,18 +1,12 @@
 // Automatic FlutterFlow imports
-import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
+import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import 'dart:math';
-import 'dart:typed_data';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 
@@ -51,9 +45,9 @@ Future<bool> uploadAndSendImagesAction(
           ? 80
           : jpegQuality;
       final maxDim = (maxSide == null || maxSide <= 0) ? 1440 : maxSide;
-      final uuid = const Uuid();
+      const uuid = Uuid();
 
-      Future<Uint8List> _maybeCompress(
+      Future<Uint8List> maybeCompress(
         Uint8List bytes,
         int? w,
         int? h,
@@ -84,7 +78,7 @@ Future<bool> uploadAndSendImagesAction(
       for (final file in files) {
         if (file.bytes == null || file.bytes!.isEmpty) continue;
 
-        final compressed = await _maybeCompress(
+        final compressed = await maybeCompress(
           file.bytes!,
           file.width?.round(),
           file.height?.round(),
@@ -113,7 +107,7 @@ Future<bool> uploadAndSendImagesAction(
             'attachment_url': 'chat-images/$storagePath',
           });
         } catch (e) {
-          print('upload image failed: $e');
+          debugPrint('upload image failed: $e');
           // Si un upload échoue, on retourne false comme avant
           return false;
         }
@@ -128,7 +122,7 @@ Future<bool> uploadAndSendImagesAction(
 
     return true;
   } catch (e) {
-    print('uploadAndSendImagesAction error: $e');
+    debugPrint('uploadAndSendImagesAction error: $e');
     return false;
   }
 }

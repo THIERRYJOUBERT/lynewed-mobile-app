@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
-import 'backend/supabase/supabase.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:csv/csv.dart';
 import 'package:synchronized/synchronized.dart';
 import 'flutter_flow/flutter_flow_util.dart';
-import 'dart:convert';
 
 class FFAppState extends ChangeNotifier {
   static FFAppState _instance = FFAppState._internal();
@@ -22,7 +20,7 @@ class FFAppState extends ChangeNotifier {
   }
 
   Future initializePersistedState() async {
-    secureStorage = FlutterSecureStorage();
+    secureStorage = const FlutterSecureStorage();
     await _safeInitAsync(() async {
       if (await secureStorage.read(key: 'ff_currentUserPreferences') != null) {
         try {
@@ -32,7 +30,7 @@ class FFAppState extends ChangeNotifier {
           _currentUserPreferences = UserPreferencesStruct.fromSerializableMap(
               jsonDecode(serializedData));
         } catch (e) {
-          print("Can't decode persisted data type. Error: $e.");
+          debugPrint("Can't decode persisted data type. Error: $e.");
         }
       }
     });
@@ -60,7 +58,7 @@ class FFAppState extends ChangeNotifier {
 
   UserPreferencesStruct _currentUserPreferences =
       UserPreferencesStruct.fromSerializableMap(jsonDecode(
-          '{\"distanceUnit\":\"km\",\"mapToggles\":\"{\\\"showPros\\\":\\\"true\\\",\\\"showProRecent\\\":\\\"true\\\",\\\"showFixedLocations\\\":\\\"true\\\",\\\"showBridePrivatePoi\\\":\\\"true\\\",\\\"showWeddingPins\\\":\\\"true\\\",\\\"showProAlerts\\\":\\\"true\\\",\\\"showSearchTarget\\\":\\\"true\\\"}\"}'));
+          '{"distanceUnit":"km","mapToggles":"{\\"showPros\\":\\"true\\",\\"showProRecent\\":\\"true\\",\\"showFixedLocations\\":\\"true\\",\\"showBridePrivatePoi\\":\\"true\\",\\"showWeddingPins\\":\\"true\\",\\"showProAlerts\\":\\"true\\",\\"showSearchTarget\\":\\"true\\"}"}'));
   UserPreferencesStruct get currentUserPreferences => _currentUserPreferences;
   set currentUserPreferences(UserPreferencesStruct value) {
     _currentUserPreferences = value;
@@ -80,7 +78,7 @@ class FFAppState extends ChangeNotifier {
 
   PublicProfileStruct _selfPublicProfile =
       PublicProfileStruct.fromSerializableMap(jsonDecode(
-          '{\"role\":\"bride\",\"avatarUrl\":\"https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/lynewed-alpha-du4al1/assets/egport4rt4rg/person_15429777_1.png\"}'));
+          '{"role":"bride","avatarUrl":"https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/lynewed-alpha-du4al1/assets/egport4rt4rg/person_15429777_1.png"}'));
   PublicProfileStruct get selfPublicProfile => _selfPublicProfile;
   set selfPublicProfile(PublicProfileStruct value) {
     _selfPublicProfile = value;
@@ -193,12 +191,12 @@ extension FlutterSecureStorageExtensions on FlutterSecureStorage {
         if (result == null || result.isEmpty) {
           return null;
         }
-        return CsvToListConverter()
+        return const CsvToListConverter()
             .convert(result)
             .first
             .map((e) => e.toString())
             .toList();
       });
   Future<void> setStringList(String key, List<String> value) async =>
-      await writeSync(key: key, value: ListToCsvConverter().convert([value]));
+      await writeSync(key: key, value: const ListToCsvConverter().convert([value]));
 }

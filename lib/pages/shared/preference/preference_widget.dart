@@ -1,17 +1,13 @@
 import '/backend/schema/enums/enums.dart';
-import '/backend/schema/structs/index.dart';
 import '/components/nav/header_bar/header_bar_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/scheduler.dart';
 import 'preference_model.dart';
 export 'preference_model.dart';
 
@@ -66,8 +62,8 @@ class _PreferenceWidgetState extends State<PreferenceWidget> {
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         body: Align(
-          alignment: AlignmentDirectional(0.0, -1.0),
-          child: Container(
+          alignment: const AlignmentDirectional(0.0, -1.0),
+          child: SizedBox(
             width: MediaQuery.sizeOf(context).width * 1.0,
             height: MediaQuery.sizeOf(context).height * 1.0,
             child: Stack(
@@ -77,7 +73,7 @@ class _PreferenceWidgetState extends State<PreferenceWidget> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(
+                      padding: const EdgeInsetsDirectional.fromSTEB(
                           20.0, 130.0, 20.0, 0.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
@@ -85,7 +81,7 @@ class _PreferenceWidgetState extends State<PreferenceWidget> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 24.0, 0.0, 0.0),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -126,7 +122,7 @@ class _PreferenceWidgetState extends State<PreferenceWidget> {
                                       'USD',
                                     ),
                                   ),
-                                  options: ['USD', 'EUR', 'GBP', 'CAD', 'CHF'],
+                                  options: const ['USD', 'EUR', 'GBP', 'CAD', 'CHF'],
                                   onChanged: (val) async {
                                     safeSetState(() =>
                                         _model.dropDownCurrencyValue = val);
@@ -151,7 +147,7 @@ class _PreferenceWidgetState extends State<PreferenceWidget> {
                                                 .primaryText,
                                           ),
                                         ),
-                                        duration: Duration(milliseconds: 2000),
+                                        duration: const Duration(milliseconds: 2000),
                                         backgroundColor:
                                             FlutterFlowTheme.of(context)
                                                 .success,
@@ -178,13 +174,13 @@ class _PreferenceWidgetState extends State<PreferenceWidget> {
                                   borderColor: Colors.transparent,
                                   borderWidth: 1.0,
                                   borderRadius: 0.0,
-                                  margin: EdgeInsetsDirectional.fromSTEB(
+                                  margin: const EdgeInsetsDirectional.fromSTEB(
                                       4.0, 0.0, 12.0, 10.0),
                                   isOverButton: false,
                                   isSearchable: false,
                                   isMultiSelect: false,
                                 ),
-                              ].divide(SizedBox(height: 10.0)),
+                              ].divide(const SizedBox(height: 10.0)),
                             ),
                           ),
                           Divider(
@@ -231,7 +227,7 @@ class _PreferenceWidgetState extends State<PreferenceWidget> {
                                     'km',
                                   ),
                                 ),
-                                options: ['km', 'miles'],
+                                options: const ['km', 'miles'],
                                 onChanged: (val) async {
                                   safeSetState(
                                       () => _model.dropDownDistanceValue = val);
@@ -258,7 +254,7 @@ class _PreferenceWidgetState extends State<PreferenceWidget> {
                                               .primaryText,
                                         ),
                                       ),
-                                      duration: Duration(milliseconds: 2000),
+                                      duration: const Duration(milliseconds: 2000),
                                       backgroundColor:
                                           FlutterFlowTheme.of(context).success,
                                     ),
@@ -284,19 +280,19 @@ class _PreferenceWidgetState extends State<PreferenceWidget> {
                                 borderColor: Colors.transparent,
                                 borderWidth: 1.0,
                                 borderRadius: 0.0,
-                                margin: EdgeInsetsDirectional.fromSTEB(
+                                margin: const EdgeInsetsDirectional.fromSTEB(
                                     4.0, 0.0, 12.0, 10.0),
                                 isOverButton: false,
                                 isSearchable: false,
                                 isMultiSelect: false,
                               ),
-                            ].divide(SizedBox(height: 10.0)),
+                            ].divide(const SizedBox(height: 10.0)),
                           ),
                           Divider(
                             thickness: 1.0,
                             color: FlutterFlowTheme.of(context).secondary,
                           ),
-                        ].divide(SizedBox(height: 14.0)),
+                        ].divide(const SizedBox(height: 14.0)),
                       ),
                     ),
                   ],
@@ -304,7 +300,7 @@ class _PreferenceWidgetState extends State<PreferenceWidget> {
                 wrapWithModel(
                   model: _model.headerBarModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: HeaderBarWidget(
+                  child: const HeaderBarWidget(
                     title: 'PREFERENCE',
                   ),
                 ),

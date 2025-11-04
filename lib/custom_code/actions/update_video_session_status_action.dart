@@ -1,13 +1,9 @@
 // Automatic FlutterFlow imports
-import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
+import '/utils/secure_logger.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -17,8 +13,11 @@ Future<bool> updateVideoSessionStatusAction(
   String sessionId,
   VideoSessionStatus newStatus,
 ) async {
-  debugPrint(
-      '[DEBUG] updateVideoSessionStatus: session=$sessionId, status=${newStatus.name}');
+  SecureLogger.functionStart('updateVideoSessionStatusAction', params: {
+    'sessionId': '***REDACTED***',
+    'newStatus': newStatus.name
+  });
+  
   try {
     final client = SupaFlow.client;
 
@@ -32,15 +31,14 @@ Future<bool> updateVideoSessionStatusAction(
 
     // Si la réponse n'est pas nulle, cela signifie que la ligne a été trouvée et mise à jour.
     if (response != null) {
-      debugPrint('[DEBUG] updateVideoSessionStatus: Success.');
+      SecureLogger.info('Video session status updated successfully');
       return true;
     } else {
-      debugPrint(
-          '[DEBUG] updateVideoSessionStatus: Failed. Session ID not found or RLS issue.');
+      SecureLogger.warning('Video session status update failed: Session not found or RLS issue');
       return false;
     }
   } catch (e) {
-    debugPrint('[DEBUG] updateVideoSessionStatus CRITICAL EXCEPTION: $e');
+    SecureLogger.error('Video session status update exception', error: e);
     return false;
   }
 }

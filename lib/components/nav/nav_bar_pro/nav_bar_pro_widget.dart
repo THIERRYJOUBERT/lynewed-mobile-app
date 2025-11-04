@@ -1,14 +1,9 @@
 import '/auth/supabase_auth/auth_util.dart';
-import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'nav_bar_pro_model.dart';
 export 'nav_bar_pro_model.dart';
 
@@ -16,7 +11,7 @@ class NavBarProWidget extends StatefulWidget {
   const NavBarProWidget({
     super.key,
     int? number,
-  }) : this.number = number ?? 1;
+  }) : number = number ?? 1;
 
   final int number;
 
@@ -48,13 +43,13 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 84.0,
       child: Stack(
-        alignment: AlignmentDirectional(0.0, 1.0),
+        alignment: const AlignmentDirectional(0.0, 1.0),
         children: [
           Align(
-            alignment: AlignmentDirectional(0.0, 1.0),
+            alignment: const AlignmentDirectional(0.0, 1.0),
             child: Container(
               width: double.infinity,
               height: 84.0,
@@ -63,7 +58,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                 borderRadius: BorderRadius.circular(0.0),
               ),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(24.0, 12.0, 24.0, 0.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(24.0, 12.0, 24.0, 0.0),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -81,7 +76,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         context.goNamed(
                           DashboardProWidget.routeName,
                           extra: <String, dynamic>{
-                            kTransitionInfoKey: TransitionInfo(
+                            kTransitionInfoKey: const TransitionInfo(
                               hasTransition: true,
                               transitionType: PageTransitionType.fade,
                               duration: Duration(milliseconds: 0),
@@ -95,13 +90,13 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         children: [
                           Icon(
                             Icons.home_outlined,
-                            color: widget!.number == 1
+                            color: widget.number == 1
                                 ? FlutterFlowTheme.of(context).primaryText
                                 : FlutterFlowTheme.of(context).alternate,
                             size: 23.0,
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 5.0, 0.0, 0.0),
                             child: Text(
                               'Home',
@@ -109,7 +104,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                                   .bodyLarge
                                   .override(
                                     fontFamily: 'Haas Grot Text Trial',
-                                    color: widget!.number == 1
+                                    color: widget.number == 1
                                         ? FlutterFlowTheme.of(context)
                                             .primaryText
                                         : FlutterFlowTheme.of(context)
@@ -135,7 +130,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         context.goNamed(
                           WeddingOfTheWeekWidget.routeName,
                           extra: <String, dynamic>{
-                            kTransitionInfoKey: TransitionInfo(
+                            kTransitionInfoKey: const TransitionInfo(
                               hasTransition: true,
                               transitionType: PageTransitionType.fade,
                               duration: Duration(milliseconds: 0),
@@ -149,13 +144,13 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         children: [
                           Icon(
                             Icons.star_border,
-                            color: widget!.number == 2
+                            color: widget.number == 2
                                 ? FlutterFlowTheme.of(context).primaryText
                                 : FlutterFlowTheme.of(context).alternate,
                             size: 23.0,
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 5.0, 0.0, 0.0),
                             child: Text(
                               'Wedding',
@@ -163,7 +158,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                                   .bodyLarge
                                   .override(
                                     fontFamily: 'Haas Grot Text Trial',
-                                    color: widget!.number == 2
+                                    color: widget.number == 2
                                         ? FlutterFlowTheme.of(context)
                                             .primaryText
                                         : FlutterFlowTheme.of(context)
@@ -189,7 +184,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         context.goNamed(
                           ContentReplayWidget.routeName,
                           extra: <String, dynamic>{
-                            kTransitionInfoKey: TransitionInfo(
+                            kTransitionInfoKey: const TransitionInfo(
                               hasTransition: true,
                               transitionType: PageTransitionType.fade,
                               duration: Duration(milliseconds: 0),
@@ -203,13 +198,13 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         children: [
                           Icon(
                             Icons.mic_none,
-                            color: widget!.number == 3
+                            color: widget.number == 3
                                 ? FlutterFlowTheme.of(context).primaryText
                                 : FlutterFlowTheme.of(context).alternate,
                             size: 23.0,
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 5.0, 0.0, 0.0),
                             child: Text(
                               'Replay',
@@ -217,7 +212,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                                   .bodyLarge
                                   .override(
                                     fontFamily: 'Haas Grot Text Trial',
-                                    color: widget!.number == 3
+                                    color: widget.number == 3
                                         ? FlutterFlowTheme.of(context)
                                             .primaryText
                                         : FlutterFlowTheme.of(context)
@@ -253,7 +248,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                             ),
                           }.withoutNulls,
                           extra: <String, dynamic>{
-                            kTransitionInfoKey: TransitionInfo(
+                            kTransitionInfoKey: const TransitionInfo(
                               hasTransition: true,
                               transitionType: PageTransitionType.fade,
                               duration: Duration(milliseconds: 0),
@@ -269,13 +264,13 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         children: [
                           Icon(
                             Icons.person_outlined,
-                            color: widget!.number == 4
+                            color: widget.number == 4
                                 ? FlutterFlowTheme.of(context).primaryText
                                 : FlutterFlowTheme.of(context).alternate,
                             size: 23.0,
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 5.0, 0.0, 0.0),
                             child: Text(
                               'Profil',
@@ -283,7 +278,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                                   .bodyLarge
                                   .override(
                                     fontFamily: 'Haas Grot Text Trial',
-                                    color: widget!.number == 4
+                                    color: widget.number == 4
                                         ? FlutterFlowTheme.of(context)
                                             .primaryText
                                         : FlutterFlowTheme.of(context)
@@ -309,7 +304,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         context.goNamed(
                           ProfileBridesAndProWidget.routeName,
                           extra: <String, dynamic>{
-                            kTransitionInfoKey: TransitionInfo(
+                            kTransitionInfoKey: const TransitionInfo(
                               hasTransition: true,
                               transitionType: PageTransitionType.fade,
                               duration: Duration(milliseconds: 0),
@@ -323,13 +318,13 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         children: [
                           Icon(
                             Icons.settings_outlined,
-                            color: widget!.number == 5
+                            color: widget.number == 5
                                 ? FlutterFlowTheme.of(context).primaryText
                                 : FlutterFlowTheme.of(context).alternate,
                             size: 23.0,
                           ),
                           Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 5.0, 0.0, 0.0),
                             child: Text(
                               'Settings',
@@ -337,7 +332,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                                   .bodyLarge
                                   .override(
                                     fontFamily: 'Haas Grot Text Trial',
-                                    color: widget!.number == 5
+                                    color: widget.number == 5
                                         ? FlutterFlowTheme.of(context)
                                             .primaryText
                                         : FlutterFlowTheme.of(context)
@@ -357,7 +352,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
             ),
           ),
           Align(
-            alignment: AlignmentDirectional(0.0, -1.0),
+            alignment: const AlignmentDirectional(0.0, -1.0),
             child: Container(
               width: double.infinity,
               height: 1.0,

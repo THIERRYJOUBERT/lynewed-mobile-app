@@ -10,7 +10,7 @@ class ProfessionalDetailsTable extends SupabaseTable<ProfessionalDetailsRow> {
 }
 
 class ProfessionalDetailsRow extends SupabaseDataRow {
-  ProfessionalDetailsRow(Map<String, dynamic> data) : super(data);
+  ProfessionalDetailsRow(super.data);
 
   @override
   SupabaseTable get table => ProfessionalDetailsTable();
@@ -24,7 +24,7 @@ class ProfessionalDetailsRow extends SupabaseDataRow {
   String? get description => getField<String>('description');
   set description(String? value) => setField<String>('description', value);
 
-  List<String> get portfolioImages => getListField<String>('portfolio_images')!;
+  List<String> get portfolioImages => getListField<String>('portfolio_images');
   set portfolioImages(List<String> value) =>
       setListField<String>('portfolio_images', value);
 
@@ -78,7 +78,7 @@ class ProfessionalDetailsRow extends SupabaseDataRow {
   double? get budgetMaxEur => getField<double>('budget_max_eur');
   set budgetMaxEur(double? value) => setField<double>('budget_max_eur', value);
 
-  List<String> get slideshowImages => getListField<String>('slideshow_images')!;
+  List<String> get slideshowImages => getListField<String>('slideshow_images');
   set slideshowImages(List<String> value) =>
       setListField<String>('slideshow_images', value);
 }

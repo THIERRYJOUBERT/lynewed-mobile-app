@@ -1,21 +1,17 @@
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/schema/structs/index.dart';
 import '/backend/supabase/supabase.dart';
 import '/conversation_sheet/my_message_actions_sheet/my_message_actions_sheet_widget.dart';
 import '/conversation_sheet/other_message_actions_sheet/other_message_actions_sheet_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/scheduler.dart';
 import 'chat_details_model.dart';
 export 'chat_details_model.dart';
 
@@ -29,10 +25,10 @@ class ChatDetailsWidget extends StatefulWidget {
     bool? isRoomEmpty,
     bool? firstMessageTextOnly,
     bool? viewerIsReviewer,
-  })  : this.isPublic = isPublic ?? false,
-        this.isRoomEmpty = isRoomEmpty ?? false,
-        this.firstMessageTextOnly = firstMessageTextOnly ?? false,
-        this.viewerIsReviewer = viewerIsReviewer ?? false;
+  })  : isPublic = isPublic ?? false,
+        isRoomEmpty = isRoomEmpty ?? false,
+        firstMessageTextOnly = firstMessageTextOnly ?? false,
+        viewerIsReviewer = viewerIsReviewer ?? false;
 
   final String? roomId;
   final bool isPublic;
@@ -63,27 +59,27 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       _model.validateParameters = await actions.validateChatDetailsParams(
         context,
-        widget!.roomId,
+        widget.roomId,
         FFAppState().currentUserRole,
       );
       if (_model.validateParameters == true) {
-        _model.psRoomId = widget!.roomId;
+        _model.psRoomId = widget.roomId;
         _model.psIsPublic = valueOrDefault<bool>(
-          widget!.isPublic,
+          widget.isPublic,
           false,
         );
-        _model.psRequestId = widget!.requestId;
-        _model.psOtherProfileId = widget!.otherProfileId;
+        _model.psRequestId = widget.requestId;
+        _model.psOtherProfileId = widget.otherProfileId;
         _model.psReviewMode = valueOrDefault<bool>(
-          widget!.viewerIsReviewer,
+          widget.viewerIsReviewer,
           false,
         );
         _model.psIsRoomEmpty = valueOrDefault<bool>(
-          widget!.isRoomEmpty,
+          widget.isRoomEmpty,
           false,
         );
         _model.psFirstMessageTextOnly = valueOrDefault<bool>(
-          widget!.firstMessageTextOnly,
+          widget.firstMessageTextOnly,
           false,
         );
         safeSetState(() {});
@@ -160,18 +156,18 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Align(
-                  alignment: AlignmentDirectional(0.0, -1.0),
+                  alignment: const AlignmentDirectional(0.0, -1.0),
                   child: Container(
                     width: double.infinity,
                     height: 110.0,
                     decoration: BoxDecoration(
                       color: _model.psIsPublic == false
                           ? FlutterFlowTheme.of(context).primaryBackground
-                          : Color(0xFF040404),
+                          : const Color(0xFF040404),
                     ),
                     child: Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 20.0),
+                          const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 20.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -180,7 +176,7 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                             children: [
                               if (_model.psIsPublic == false)
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       20.0, 0.0, 20.0, 0.0),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.max,
@@ -196,7 +192,7 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                                         },
                                         child: Icon(
                                           Icons.arrow_back_ios_new,
-                                          color: widget!.isPublic == false
+                                          color: widget.isPublic == false
                                               ? FlutterFlowTheme.of(context)
                                                   .primary
                                               : Colors.white,
@@ -241,7 +237,7 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                                                           .override(
                                                             fontFamily:
                                                                 'Haas Grot Text Trial',
-                                                            color: widget!
+                                                            color: widget
                                                                         .isPublic ==
                                                                     false
                                                                 ? FlutterFlowTheme.of(
@@ -266,7 +262,7 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                                                           .override(
                                                             fontFamily:
                                                                 'Haas Grot Text Trial',
-                                                            color: widget!
+                                                            color: widget
                                                                         .isPublic ==
                                                                     false
                                                                 ? FlutterFlowTheme.of(
@@ -278,9 +274,9 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                                                             letterSpacing: 0.0,
                                                           ),
                                                 ),
-                                              ].divide(SizedBox(height: 1.0)),
+                                              ].divide(const SizedBox(height: 1.0)),
                                             ),
-                                          ].divide(SizedBox(width: 14.0)),
+                                          ].divide(const SizedBox(width: 14.0)),
                                         ),
                                       ),
                                       Row(
@@ -288,10 +284,10 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                                         children: [
                                           if (_model.psIsPublic == false)
                                             Align(
-                                              alignment: AlignmentDirectional(
+                                              alignment: const AlignmentDirectional(
                                                   1.0, 0.0),
                                               child: Padding(
-                                                padding: EdgeInsetsDirectional
+                                                padding: const EdgeInsetsDirectional
                                                     .fromSTEB(
                                                         4.0, 0.0, 4.0, 0.0),
                                                 child: InkWell(
@@ -326,14 +322,14 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                                                               context)
                                                           .showSnackBar(
                                                         SnackBar(
-                                                          content: Text(
+                                                          content: const Text(
                                                             'Les permissions caméra et microphone sont nécessaires pour passer un appel vidéo.',
                                                             style: TextStyle(
                                                               color:
                                                                   Colors.white,
                                                             ),
                                                           ),
-                                                          duration: Duration(
+                                                          duration: const Duration(
                                                               milliseconds:
                                                                   4000),
                                                           backgroundColor:
@@ -362,14 +358,14 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                                                               context)
                                                           .showSnackBar(
                                                         SnackBar(
-                                                          content: Text(
+                                                          content: const Text(
                                                             'Impossible de créer la session vidéo. Vérifiez votre connexion.',
                                                             style: TextStyle(
                                                               color:
                                                                   Colors.white,
                                                             ),
                                                           ),
-                                                          duration: Duration(
+                                                          duration: const Duration(
                                                               milliseconds:
                                                                   4000),
                                                           backgroundColor:
@@ -393,14 +389,14 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                                                               context)
                                                           .showSnackBar(
                                                         SnackBar(
-                                                          content: Text(
+                                                          content: const Text(
                                                             'Session vidéo invalide. Veuillez réessayer.',
                                                             style: TextStyle(
                                                               color:
                                                                   Colors.white,
                                                             ),
                                                           ),
-                                                          duration: Duration(
+                                                          duration: const Duration(
                                                               milliseconds:
                                                                   4000),
                                                           backgroundColor:
@@ -435,14 +431,14 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                                                               context)
                                                           .showSnackBar(
                                                         SnackBar(
-                                                          content: Text(
+                                                          content: const Text(
                                                             'Impossible d\'obtenir le token Agora. Veuillez réessayer.',
                                                             style: TextStyle(
                                                               color:
                                                                   Colors.white,
                                                             ),
                                                           ),
-                                                          duration: Duration(
+                                                          duration: const Duration(
                                                               milliseconds:
                                                                   4000),
                                                           backgroundColor:
@@ -491,7 +487,7 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                                                   },
                                                   child: Icon(
                                                     Icons.videocam,
-                                                    color: widget!.isPublic ==
+                                                    color: widget.isPublic ==
                                                             false
                                                         ? FlutterFlowTheme.of(
                                                                 context)
@@ -502,14 +498,14 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                                                 ),
                                               ),
                                             ),
-                                        ].divide(SizedBox(width: 4.0)),
+                                        ].divide(const SizedBox(width: 4.0)),
                                       ),
-                                    ].divide(SizedBox(width: 14.0)),
+                                    ].divide(const SizedBox(width: 14.0)),
                                   ),
                                 ),
                               if (_model.psIsPublic == true)
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       20.0, 0.0, 20.0, 0.0),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.max,
@@ -523,7 +519,7 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                                         onTap: () async {
                                           context.safePop();
                                         },
-                                        child: Icon(
+                                        child: const Icon(
                                           Icons.arrow_back_ios_new,
                                           color: Colors.white,
                                           size: 24.0,
@@ -535,6 +531,20 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.start,
                                           children: [
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(100.0),
+                                              child: Image.network(
+                                                valueOrDefault<String>(
+                                                  _model.psRoomHeader
+                                                      ?.publicCoverUrl,
+                                                  'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/lynewed-alpha-du4al1/assets/egport4rt4rg/person_15429777_1.png',
+                                                ),
+                                                width: 40.0,
+                                                height: 40.0,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
                                             Column(
                                               mainAxisSize: MainAxisSize.max,
                                               crossAxisAlignment:
@@ -573,12 +583,12 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                                                         letterSpacing: 0.0,
                                                       ),
                                                 ),
-                                              ].divide(SizedBox(height: 1.0)),
+                                              ].divide(const SizedBox(height: 1.0)),
                                             ),
-                                          ].divide(SizedBox(width: 14.0)),
+                                          ].divide(const SizedBox(width: 14.0)),
                                         ),
                                       ),
-                                    ].divide(SizedBox(width: 14.0)),
+                                    ].divide(const SizedBox(width: 14.0)),
                                   ),
                                 ),
                             ],
@@ -591,12 +601,12 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                 Flexible(
                   child: Padding(
                     padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 100.0),
+                        const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 100.0),
                     child: Container(
                       width: MediaQuery.sizeOf(context).width * 1.0,
                       height: MediaQuery.sizeOf(context).height * 1.0,
-                      decoration: BoxDecoration(),
-                      child: Container(
+                      decoration: const BoxDecoration(),
+                      child: SizedBox(
                         width: MediaQuery.sizeOf(context).width * 1.0,
                         height: MediaQuery.sizeOf(context).height * 1.0,
                         child: custom_widgets.ChatMessageList(
@@ -708,8 +718,8 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
               ],
             ),
             Align(
-              alignment: AlignmentDirectional(0.0, 1.0),
-              child: Container(
+              alignment: const AlignmentDirectional(0.0, 1.0),
+              child: SizedBox(
                 width: MediaQuery.sizeOf(context).width * 1.0,
                 height: 280.0,
                 child: custom_widgets.ChatComposerWidget(
@@ -733,14 +743,14 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                       context: context,
                       builder: (alertDialogContext) {
                         return AlertDialog(
-                          title: Text('Error...'),
-                          content: Text(
+                          title: const Text('Error...'),
+                          content: const Text(
                               'An error has occurred. Please try again by refreshing the page or contacting support. '),
                           actions: [
                             TextButton(
                               onPressed: () =>
                                   Navigator.pop(alertDialogContext),
-                              child: Text('Ok'),
+                              child: const Text('Ok'),
                             ),
                           ],
                         );

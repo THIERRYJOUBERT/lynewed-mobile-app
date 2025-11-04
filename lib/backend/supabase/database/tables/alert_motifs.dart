@@ -9,7 +9,7 @@ class AlertMotifsTable extends SupabaseTable<AlertMotifsRow> {
 }
 
 class AlertMotifsRow extends SupabaseDataRow {
-  AlertMotifsRow(Map<String, dynamic> data) : super(data);
+  AlertMotifsRow(super.data);
 
   @override
   SupabaseTable get table => AlertMotifsTable();

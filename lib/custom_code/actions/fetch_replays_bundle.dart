@@ -1,13 +1,9 @@
 // Automatic FlutterFlow imports
+import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -33,11 +29,6 @@ Future<List<ReplayItemStruct>?> fetchReplaysBundle() async {
         )
       )
     ''').order('published_at', ascending: false);
-
-    if (response == null) {
-      print('fetchReplaysBundle: response is null');
-      return null;
-    }
 
     final List<dynamic> data = response as List<dynamic>? ?? [];
     final List<ReplayItemStruct> replays = [];
@@ -75,7 +66,7 @@ Future<List<ReplayItemStruct>?> fetchReplaysBundle() async {
 
     return replays;
   } catch (e) {
-    print('fetchReplaysBundle exception: $e');
+    debugPrint('fetchReplaysBundle exception: $e');
     return null;
   }
 }

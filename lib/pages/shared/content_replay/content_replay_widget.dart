@@ -3,16 +3,15 @@ import '/backend/schema/structs/index.dart';
 import '/components/nav/nav_bar_brides/nav_bar_brides_widget.dart';
 import '/components/nav/nav_bar_pro/nav_bar_pro_widget.dart';
 import '/components/ui_system/empty_state/empty_state_widget.dart';
+import '/compo_finaux/replay_guest_card/replay_guest_card_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/scheduler.dart';
 import 'content_replay_model.dart';
 export 'content_replay_model.dart';
 
@@ -68,7 +67,7 @@ class _ContentReplayWidgetState extends State<ContentReplayWidget> {
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        body: Container(
+        body: SizedBox(
           width: double.infinity,
           height: double.infinity,
           child: Stack(
@@ -76,68 +75,91 @@ class _ContentReplayWidgetState extends State<ContentReplayWidget> {
               if (_model.featuredReplay != null)
                 Padding(
                   padding:
-                      EdgeInsetsDirectional.fromSTEB(20.0, 106.0, 20.0, 84.0),
+                      const EdgeInsetsDirectional.fromSTEB(20.0, 106.0, 20.0, 84.0),
                   child: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         Column(
                           mainAxisSize: MainAxisSize.max,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              decoration: BoxDecoration(),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Text(
-                                        'LATEST MASTERCLASS',
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily:
-                                                  'Haas Grot Text Trial',
-                                              fontSize: 16.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.w500,
-                                            ),
+                            // Header section
+                            Column(
+                              mainAxisSize: MainAxisSize.max,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'LATEST MASTERCLASS',
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        fontFamily: 'Haas Grot Text Trial',
+                                        fontSize: 16.0,
+                                        letterSpacing: 0.0,
+                                        fontWeight: FontWeight.w500,
                                       ),
-                                    ],
-                                  ),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Text(
-                                        'Replay from ${dateTimeFormat(
-                                          "MMMMEEEEd",
-                                          _model.featuredReplay?.publishedAt,
-                                          locale: FFLocalizations.of(context)
-                                              .languageCode,
-                                        )}',
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily:
-                                                  'Haas Grot Text Trial',
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .secondaryText,
-                                              letterSpacing: 0.0,
-                                            ),
+                                ),
+                                const SizedBox(height: 4.0),
+                                Text(
+                                  'Replay from ${dateTimeFormat(
+                                    "MMMM d, y",
+                                    _model.featuredReplay?.publishedAt,
+                                    locale: FFLocalizations.of(context)
+                                        .languageCode,
+                                  )}',
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        fontFamily: 'Haas Grot Text Trial',
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondaryText,
+                                        fontSize: 14.0,
+                                        letterSpacing: 0.0,
                                       ),
-                                    ],
-                                  ),
-                                ].divide(SizedBox(height: 4.0)),
-                              ),
+                                ),
+                              ],
                             ),
-                            InkWell(
-                              splashColor: Colors.transparent,
-                              focusColor: Colors.transparent,
-                              hoverColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              onTap: () async {
+                            const SizedBox(height: 16.0),
+                            // Titre du replay actif
+                            Text(
+                              _model.featuredReplay?.title ?? '',
+                              style: FlutterFlowTheme.of(context)
+                                  .headlineMedium
+                                  .override(
+                                    fontFamily: 'Haas Grot Text Trial',
+                                    fontSize: 18.0,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                            const SizedBox(height: 16.0),
+                            // Grid des guests 2x2
+                            Builder(
+                              builder: (context) {
+                                final guestsList = _model.featuredReplay?.guests ?? [];
+                                final guestsCount = guestsList.length;
+                                
+                                // Calculer le nombre de lignes nécessaires
+                                final rowCount = (guestsCount / 2).ceil();
+                                final isScrollable = rowCount > 2;
+                                final containerHeight = isScrollable ? 380.0 : (rowCount * 190.0);
+                                
+                                return Container(
+                                  height: containerHeight,
+                                  decoration: const BoxDecoration(),
+                                  child: isScrollable
+                                      ? SingleChildScrollView(
+                                          child: _buildGuestsGrid(guestsList),
+                                        )
+                                      : _buildGuestsGrid(guestsList),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 16.0),
+                            // Bouton WATCH THIS PODCAST
+                            FFButtonWidget(
+                              onPressed: () async {
                                 context.pushNamed(
                                   ReplayPlayerPageWidget.routeName,
                                   queryParameters: {
@@ -148,427 +170,213 @@ class _ContentReplayWidgetState extends State<ContentReplayWidget> {
                                   }.withoutNulls,
                                 );
                               },
-                              child: Container(
-                                width: MediaQuery.sizeOf(context).width * 1.0,
-                                height: 200.0,
-                                child: Stack(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(0.0),
-                                      child: Image.network(
-                                        valueOrDefault<String>(
-                                          _model.featuredReplay?.thumbnailUrl,
-                                          'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/lynewed-alpha-du4al1/assets/vq6j64n8aqw5/SCR-20250923-knqk.png',
-                                        ),
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
-                                        height: 200.0,
-                                        fit: BoxFit.cover,
-                                      ),
+                              text: 'WATCH THIS PODCAST',
+                              options: FFButtonOptions(
+                                width: double.infinity,
+                                height: 48.0,
+                                padding: const EdgeInsetsDirectional.fromSTEB(
+                                    16.0, 0.0, 16.0, 0.0),
+                                iconPadding: const EdgeInsetsDirectional.fromSTEB(
+                                    0.0, 0.0, 0.0, 0.0),
+                                color: FlutterFlowTheme.of(context).primary,
+                                textStyle: FlutterFlowTheme.of(context)
+                                    .titleSmall
+                                    .override(
+                                      fontFamily: 'Haas Grot Text Trial',
+                                      color: Colors.white,
+                                      fontSize: 14.0,
+                                      letterSpacing: 0.0,
+                                      fontWeight: FontWeight.w500,
                                     ),
-                                    Align(
-                                      alignment: AlignmentDirectional(0.0, 0.0),
-                                      child: Container(
-                                        width: 50.0,
-                                        height: 50.0,
-                                        decoration: BoxDecoration(
-                                          color: Color(0xBAFFFFFF),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Icon(
-                                          Icons.play_arrow,
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                          size: 24.0,
-                                        ),
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment:
-                                          AlignmentDirectional(-1.0, 1.0),
-                                      child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            10.0, 0.0, 0.0, 6.0),
-                                        child: Builder(
-                                          builder: (context) {
-                                            final guestList = _model
-                                                    .featuredReplay?.guests
-                                                    ?.toList() ??
-                                                [];
-
-                                            return SingleChildScrollView(
-                                              scrollDirection: Axis.horizontal,
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: List.generate(
-                                                    guestList.length,
-                                                    (guestListIndex) {
-                                                  final guestListItem =
-                                                      guestList[guestListIndex];
-                                                  return Container(
-                                                    decoration: BoxDecoration(),
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        Container(
-                                                          width: 30.0,
-                                                          height: 30.0,
-                                                          clipBehavior:
-                                                              Clip.antiAlias,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            shape:
-                                                                BoxShape.circle,
-                                                          ),
-                                                          child: Image.network(
-                                                            valueOrDefault<
-                                                                String>(
-                                                              guestListItem
-                                                                  .avatarUrl,
-                                                              'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/lynewed-alpha-du4al1/assets/egport4rt4rg/person_15429777_1.png',
-                                                            ),
-                                                            fit: BoxFit.cover,
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                          valueOrDefault<
-                                                              String>(
-                                                            guestListItem
-                                                                .fullName,
-                                                            'Name...',
-                                                          ),
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                fontFamily:
-                                                                    'Haas Grot Text Trial',
-                                                                fontSize: 12.0,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                              ),
-                                                        ),
-                                                      ].divide(
-                                                          SizedBox(width: 6.0)),
-                                                    ),
-                                                  );
-                                                }).divide(
-                                                    SizedBox(width: 10.0)),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                elevation: 0.0,
+                                borderRadius: BorderRadius.circular(0.0),
                               ),
                             ),
-                            Align(
-                              alignment: AlignmentDirectional(0.0, 0.0),
-                              child: FFButtonWidget(
-                                onPressed: () async {
-                                  context.pushNamed(
-                                    ReplayPlayerPageWidget.routeName,
-                                    queryParameters: {
-                                      'videoUrl': serializeParam(
-                                        _model.featuredReplay?.youtubeUrl,
-                                        ParamType.String,
-                                      ),
-                                    }.withoutNulls,
-                                  );
-                                },
-                                text: 'WATCH THIS PODCAST',
-                                options: FFButtonOptions(
-                                  width: double.infinity,
-                                  height: 48.0,
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      16.0, 0.0, 16.0, 0.0),
-                                  iconPadding: EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 0.0),
-                                  color: FlutterFlowTheme.of(context).primary,
-                                  textStyle: FlutterFlowTheme.of(context)
-                                      .titleSmall
+                          ],
+                        ),
+                        const SizedBox(height: 32.0),
+                        // Section MORE REPLAY
+                        Column(
+                          mainAxisSize: MainAxisSize.max,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Column(
+                              mainAxisSize: MainAxisSize.max,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'MORE REPLAY ?',
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
                                       .override(
                                         fontFamily: 'Haas Grot Text Trial',
-                                        color: Colors.white,
+                                        fontSize: 16.0,
+                                        letterSpacing: 0.0,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                ),
+                                const SizedBox(height: 4.0),
+                                Text(
+                                  'Watch our latest podcasts without limits',
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        fontFamily: 'Haas Grot Text Trial',
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondaryText,
                                         fontSize: 14.0,
                                         letterSpacing: 0.0,
-                                        fontWeight: FontWeight.normal,
                                       ),
-                                  elevation: 0.0,
-                                  borderRadius: BorderRadius.circular(0.0),
                                 ),
-                              ),
+                              ],
                             ),
-                          ].divide(SizedBox(height: 16.0)),
-                        ),
-                        Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              0.0, 0.0, 0.0, 20.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              Column(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Text(
-                                        'MORE REPLAY ?',
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily:
-                                                  'Haas Grot Text Trial',
-                                              fontSize: 16.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Text(
-                                        'Watch our latest podcasts without limits',
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily:
-                                                  'Haas Grot Text Trial',
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .secondaryText,
-                                              letterSpacing: 0.0,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ].divide(SizedBox(height: 8.0)),
-                              ),
-                              Builder(
-                                builder: (context) {
-                                  final otherReplay =
-                                      _model.otherReplays.toList();
+                            const SizedBox(height: 16.0),
+                            Builder(
+                              builder: (context) {
+                                final otherReplays = _model.otherReplays.toList();
 
-                                  return ListView.separated(
-                                    padding: EdgeInsets.zero,
-                                    primary: false,
-                                    shrinkWrap: true,
-                                    scrollDirection: Axis.vertical,
-                                    itemCount: otherReplay.length,
-                                    separatorBuilder: (_, __) =>
-                                        SizedBox(height: 14.0),
-                                    itemBuilder: (context, otherReplayIndex) {
-                                      final otherReplayItem =
-                                          otherReplay[otherReplayIndex];
-                                      return InkWell(
-                                        splashColor: Colors.transparent,
-                                        focusColor: Colors.transparent,
-                                        hoverColor: Colors.transparent,
-                                        highlightColor: Colors.transparent,
-                                        onTap: () async {
-                                          context.pushNamed(
-                                            ReplayPlayerPageWidget.routeName,
-                                            queryParameters: {
-                                              'videoUrl': serializeParam(
-                                                otherReplayItem.youtubeUrl,
-                                                ParamType.String,
+                                return ListView.separated(
+                                  padding: EdgeInsets.zero,
+                                  primary: false,
+                                  shrinkWrap: true,
+                                  scrollDirection: Axis.vertical,
+                                  itemCount: otherReplays.length,
+                                  separatorBuilder: (_, __) =>
+                                      const SizedBox(height: 12.0),
+                                  itemBuilder: (context, index) {
+                                    final replayItem = otherReplays[index];
+                                    return InkWell(
+                                      splashColor: Colors.transparent,
+                                      focusColor: Colors.transparent,
+                                      hoverColor: Colors.transparent,
+                                      highlightColor: Colors.transparent,
+                                      onTap: () async {
+                                        context.pushNamed(
+                                          ReplayPlayerPageWidget.routeName,
+                                          queryParameters: {
+                                            'videoUrl': serializeParam(
+                                              replayItem.youtubeUrl,
+                                              ParamType.String,
+                                            ),
+                                          }.withoutNulls,
+                                        );
+                                      },
+                                      child: Container(
+                                        width: double.infinity,
+                                        decoration: BoxDecoration(
+                                          color: FlutterFlowTheme.of(context).primary,
+                                          borderRadius:
+                                              BorderRadius.circular(0.0),
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsetsDirectional.fromSTEB(
+                                              8.0, 12.0, 8.0, 12.0),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.max,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(0.0),
+                                                child: Image.network(
+                                                  valueOrDefault<String>(
+                                                    replayItem.thumbnailUrl,
+                                                    'https://images.unsplash.com/photo-1519741497674-611481863552?w=800',
+                                                  ),
+                                                  width: 60.0,
+                                                  height: 60.0,
+                                                  fit: BoxFit.cover,
+                                                ),
                                               ),
-                                            }.withoutNulls,
-                                          );
-                                        },
-                                        child: Container(
-                                          width: double.infinity,
-                                          height: 80.0,
-                                          decoration: BoxDecoration(
-                                            color: FlutterFlowTheme.of(context)
-                                                .primary,
-                                            borderRadius:
-                                                BorderRadius.circular(2.0),
-                                          ),
-                                          child: Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    14.0, 12.0, 14.0, 12.0),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          2.0),
-                                                  child: Image.network(
-                                                    valueOrDefault<String>(
-                                                      otherReplayItem
-                                                          .thumbnailUrl,
-                                                      'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/lynewed-alpha-du4al1/assets/egport4rt4rg/person_15429777_1.png',
+                                              const SizedBox(width: 12.0),
+                                              Expanded(
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      valueOrDefault<String>(
+                                                        replayItem.title,
+                                                        'Title...',
+                                                      ),
+                                                      style: FlutterFlowTheme.of(
+                                                              context)
+                                                          .bodyMedium
+                                                          .override(
+                                                            fontFamily:
+                                                                'Haas Grot Text Trial',
+                                                            color: Colors.white,
+                                                            fontSize: 14.0,
+                                                            letterSpacing: 0.0,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                          ),
                                                     ),
-                                                    width: 56.0,
-                                                    height: double.infinity,
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                ),
-                                                Flexible(
-                                                  child: Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Flexible(
-                                                            child: Text(
-                                                              valueOrDefault<
-                                                                  String>(
-                                                                otherReplayItem
-                                                                    .title,
-                                                                'Title...',
-                                                              ),
-                                                              style: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .bodyMedium
-                                                                  .override(
-                                                                    fontFamily:
-                                                                        'Haas Grot Text Trial',
-                                                                    color: Colors
-                                                                        .white,
-                                                                    letterSpacing:
-                                                                        0.0,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500,
-                                                                  ),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      Builder(
-                                                        builder: (context) {
-                                                          final gestNameList =
-                                                              otherReplayItem
-                                                                  .guests
-                                                                  .map((e) => e
-                                                                      .fullName)
-                                                                  .toList();
-
-                                                          return SingleChildScrollView(
-                                                            scrollDirection:
-                                                                Axis.horizontal,
-                                                            child: Row(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .min,
-                                                              children: List.generate(
-                                                                  gestNameList
-                                                                      .length,
-                                                                  (gestNameListIndex) {
-                                                                final gestNameListItem =
-                                                                    gestNameList[
-                                                                        gestNameListIndex];
-                                                                return Text(
-                                                                  valueOrDefault<
-                                                                      String>(
-                                                                    gestNameListItem,
-                                                                    'Name...',
-                                                                  ),
-                                                                  style: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .override(
-                                                                        fontFamily:
-                                                                            'Haas Grot Text Trial',
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .secondary,
-                                                                        fontSize:
-                                                                            12.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                      ),
-                                                                );
-                                                              }).divide(
-                                                                  SizedBox(
-                                                                      width:
-                                                                          8.0)),
-                                                            ),
-                                                          );
-                                                        },
-                                                      ),
-                                                      Flexible(
-                                                        child: Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(
-                                                                      0.0,
-                                                                      2.0,
-                                                                      0.0,
-                                                                      0.0),
-                                                          child: Text(
-                                                            dateTimeFormat(
-                                                              "MMMMEEEEd",
-                                                              otherReplayItem
-                                                                  .publishedAt!,
-                                                              locale: FFLocalizations
-                                                                      .of(context)
-                                                                  .languageCode,
-                                                            ),
-                                                            style: FlutterFlowTheme
+                                                    const SizedBox(height: 4.0),
+                                                    Text(
+                                                      replayItem.guests
+                                                          .map((e) => e.fullName)
+                                                          .join(', '),
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: FlutterFlowTheme.of(
+                                                              context)
+                                                          .bodyMedium
+                                                          .override(
+                                                            fontFamily:
+                                                                'Haas Grot Text Trial',
+                                                            color: FlutterFlowTheme
                                                                     .of(context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'Haas Grot Text Trial',
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .alternate,
-                                                                  fontSize:
-                                                                      10.0,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                ),
+                                                                .accent1,
+                                                            fontSize: 12.0,
+                                                            letterSpacing: 0.0,
                                                           ),
-                                                        ),
-                                                      ),
-                                                    ].divide(
-                                                        SizedBox(height: 4.0)),
-                                                  ),
+                                                    ),
+                                                  ],
                                                 ),
-                                              ].divide(SizedBox(width: 12.0)),
-                                            ),
+                                              ),
+                                              const SizedBox(width: 12.0),
+                                              Text(
+                                                dateTimeFormat(
+                                                  "MM/dd/y",
+                                                  replayItem.publishedAt!,
+                                                  locale:
+                                                      FFLocalizations.of(context)
+                                                          .languageCode,
+                                                ),
+                                                style: FlutterFlowTheme.of(context)
+                                                    .bodyMedium
+                                                    .override(
+                                                      fontFamily:
+                                                          'Haas Grot Text Trial',
+                                                      color: FlutterFlowTheme.of(
+                                                              context)
+                                                          .accent1,
+                                                      fontSize: 12.0,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                            ].divide(SizedBox(height: 16.0)),
-                          ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ],
                         ),
-                      ].divide(SizedBox(height: 32.0)),
+                        const SizedBox(height: 20.0),
+                      ],
                     ),
                   ),
                 ),
               Align(
-                alignment: AlignmentDirectional(0.0, -1.0),
+                alignment: const AlignmentDirectional(0.0, -1.0),
                 child: Container(
                   width: double.infinity,
                   height: 90.0,
@@ -580,7 +388,7 @@ class _ContentReplayWidgetState extends State<ContentReplayWidget> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
                             20.0, 0.0, 20.0, 0.0),
                         child: Row(
                           mainAxisSize: MainAxisSize.max,
@@ -601,9 +409,9 @@ class _ContentReplayWidgetState extends State<ContentReplayWidget> {
                         ),
                       ),
                       Align(
-                        alignment: AlignmentDirectional(0.0, 1.0),
+                        alignment: const AlignmentDirectional(0.0, 1.0),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 14.0, 0.0, 0.0),
                           child: Container(
                             width: double.infinity,
@@ -611,7 +419,7 @@ class _ContentReplayWidgetState extends State<ContentReplayWidget> {
                             decoration: BoxDecoration(
                               color: FlutterFlowTheme.of(context).secondary,
                             ),
-                            alignment: AlignmentDirectional(0.0, 1.0),
+                            alignment: const AlignmentDirectional(0.0, 1.0),
                           ),
                         ),
                       ),
@@ -620,17 +428,17 @@ class _ContentReplayWidgetState extends State<ContentReplayWidget> {
                 ),
               ),
               Align(
-                alignment: AlignmentDirectional(0.0, 1.0),
+                alignment: const AlignmentDirectional(0.0, 1.0),
                 child: Stack(
-                  alignment: AlignmentDirectional(0.0, 1.0),
+                  alignment: const AlignmentDirectional(0.0, 1.0),
                   children: [
                     if (FFAppState().currentUserRole == UserRole.bride)
                       Align(
-                        alignment: AlignmentDirectional(0.0, 1.0),
+                        alignment: const AlignmentDirectional(0.0, 1.0),
                         child: wrapWithModel(
                           model: _model.navBarBridesModel,
                           updateCallback: () => safeSetState(() {}),
-                          child: NavBarBridesWidget(
+                          child: const NavBarBridesWidget(
                             number: 4,
                           ),
                         ),
@@ -639,7 +447,7 @@ class _ContentReplayWidgetState extends State<ContentReplayWidget> {
                       wrapWithModel(
                         model: _model.navBarProModel,
                         updateCallback: () => safeSetState(() {}),
-                        child: NavBarProWidget(
+                        child: const NavBarProWidget(
                           number: 3,
                         ),
                       ),
@@ -648,11 +456,11 @@ class _ContentReplayWidgetState extends State<ContentReplayWidget> {
               ),
               if (_model.featuredReplay == null)
                 Align(
-                  alignment: AlignmentDirectional(0.0, 0.0),
+                  alignment: const AlignmentDirectional(0.0, 0.0),
                   child: wrapWithModel(
                     model: _model.emptyStateModel,
                     updateCallback: () => safeSetState(() {}),
-                    child: EmptyStateWidget(
+                    child: const EmptyStateWidget(
                       message: 'No replies this month ',
                     ),
                   ),
@@ -661,6 +469,58 @@ class _ContentReplayWidgetState extends State<ContentReplayWidget> {
           ),
         ),
       ),
+    );
+  }
+
+  // Helper method to build the guests grid (2x2)
+  Widget _buildGuestsGrid(List<ReplayGuestItemStruct> guests) {
+    final guestsCount = guests.length;
+    final rows = <Widget>[];
+    
+    for (int i = 0; i < guestsCount; i += 2) {
+      final leftGuest = guests[i];
+      final rightGuest = i + 1 < guestsCount ? guests[i + 1] : null;
+      
+      rows.add(
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Expanded(
+              child: ReplayGuestCardWidget(
+                guestName: leftGuest.fullName,
+                profession: leftGuest.profession,
+                avatarUrl: leftGuest.avatarUrl,
+              ),
+            ),
+            const SizedBox(width: 10.0),
+            Expanded(
+              child: rightGuest != null
+                  ? ReplayGuestCardWidget(
+                      guestName: rightGuest.fullName,
+                      profession: rightGuest.profession,
+                      avatarUrl: rightGuest.avatarUrl,
+                    )
+                  : Container(
+                      width: MediaQuery.sizeOf(context).width * 0.5,
+                      height: 180.0,
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(4.0),
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      );
+      
+      if (i + 2 < guestsCount) {
+        rows.add(const SizedBox(height: 10.0));
+      }
+    }
+    
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: rows,
     );
   }
 }

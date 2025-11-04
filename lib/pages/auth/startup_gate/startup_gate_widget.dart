@@ -1,17 +1,14 @@
-import '/auth/base_auth_user_provider.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/custom_functions.dart' as functions;
+import '/utils/secure_logger.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/scheduler.dart';
 import 'startup_gate_model.dart';
 export 'startup_gate_model.dart';
 
@@ -43,7 +40,7 @@ class _StartupGateWidgetState extends State<StartupGateWidget> {
       // ✅ Vérifier si le deeplink contient "reset-password" (path spécifique)
       if (_model.initialLinkUrl != null && 
           _model.initialLinkUrl!.contains('reset-password')) {
-        print('🔑 Deeplink reset-password détecté: ${_model.initialLinkUrl}');
+        SecureLogger.debug('Password reset deeplink detected, redirecting to reset page');
         
         // Rediriger immédiatement vers la page de reset password
         context.goNamedAuth(
@@ -53,7 +50,9 @@ class _StartupGateWidgetState extends State<StartupGateWidget> {
       
       // Backup: Vérifier aussi avec la fonction isRecoveryLink (type=recovery dans fragment)
       if (functions.isRecoveryLink(_model.initialLinkUrl) == true) {
-        print('🔑 Lien de récupération détecté (type=recovery): ${_model.initialLinkUrl}');
+        SecureLogger.debug('Recovery link detected, redirecting to reset page');
+        
+        // Rediriger immédiatement vers la page de reset passwordNewPageWidget.routeName, context.mounted);
         context.goNamedAuth(
             ResetPasswordNewPageWidget.routeName, context.mounted);
         return;
@@ -68,7 +67,7 @@ class _StartupGateWidgetState extends State<StartupGateWidget> {
           FFAppState().selfPublicProfile = _model.sessionData!.profile;
           FFAppState().currentUserPreferences =
               _model.sessionData!.preferences;
-          FFAppState().currentUserRole = _model.sessionData?.profile?.role;
+          FFAppState().currentUserRole = _model.sessionData?.profile.role;
           FFAppState().userPrefsLastSyncedAt = getCurrentTimestamp;
           FFAppState().updateSelfProSubscriptionStruct(
             (e) => e
@@ -81,11 +80,8 @@ class _StartupGateWidgetState extends State<StartupGateWidget> {
           );
           _model.tosAccepted = await actions.checkTosAccepted();
           if ((FFAppState().currentUserRole == UserRole.bride) &&
-              ((FFAppState().selfPublicProfile.fullName == null ||
-                      FFAppState().selfPublicProfile.fullName == '') ||
+              ((FFAppState().selfPublicProfile.fullName == '') ||
                   (FFAppState().currentUserPreferences.defaultLocale ==
-                          null ||
-                      FFAppState().currentUserPreferences.defaultLocale ==
                           '') ||
                   (_model.tosAccepted == false))) {
             context.goNamedAuth(
@@ -112,7 +108,7 @@ class _StartupGateWidgetState extends State<StartupGateWidget> {
                   color: FlutterFlowTheme.of(context).primaryText,
                 ),
               ),
-              duration: Duration(milliseconds: 2000),
+              duration: const Duration(milliseconds: 2000),
               backgroundColor: FlutterFlowTheme.of(context).accent2,
             ),
           );
@@ -148,7 +144,7 @@ class _StartupGateWidgetState extends State<StartupGateWidget> {
         body: Container(
           width: double.infinity,
           height: double.infinity,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.white,
           ),
         ),

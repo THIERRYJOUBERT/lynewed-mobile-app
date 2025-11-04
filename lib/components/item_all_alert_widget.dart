@@ -2,12 +2,9 @@ import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'item_all_alert_model.dart';
 export 'item_all_alert_model.dart';
 
@@ -48,7 +45,7 @@ class _ItemAllAlertWidgetState extends State<ItemAllAlertWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(4.0, 0.0, 4.0, 0.0),
+      padding: const EdgeInsetsDirectional.fromSTEB(4.0, 0.0, 4.0, 0.0),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
@@ -59,7 +56,7 @@ class _ItemAllAlertWidgetState extends State<ItemAllAlertWidget> {
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(12.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -77,7 +74,7 @@ class _ItemAllAlertWidgetState extends State<ItemAllAlertWidget> {
                           color: FlutterFlowTheme.of(context).accent2,
                           borderRadius: BorderRadius.circular(100.0),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.crisis_alert,
                           color: Colors.white,
                           size: 14.0,
@@ -86,7 +83,7 @@ class _ItemAllAlertWidgetState extends State<ItemAllAlertWidget> {
                       Expanded(
                         child: Text(
                           valueOrDefault<String>(
-                            widget!.alertInfos?.motifLabel,
+                            widget.alertInfos?.motifLabel,
                             'Reason...',
                           ),
                           style:
@@ -97,10 +94,10 @@ class _ItemAllAlertWidgetState extends State<ItemAllAlertWidget> {
                                   ),
                         ),
                       ),
-                    ].divide(SizedBox(width: 10.0)),
+                    ].divide(const SizedBox(width: 10.0)),
                   ),
                   Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(2.0, 2.0, 2.0, 2.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(2.0, 2.0, 2.0, 2.0),
                     child: Row(
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -114,7 +111,7 @@ class _ItemAllAlertWidgetState extends State<ItemAllAlertWidget> {
                             children: [
                               Text(
                                 valueOrDefault<String>(
-                                  widget!.alertInfos?.message,
+                                  widget.alertInfos?.message,
                                   'Message...',
                                 ),
                                 maxLines: 2,
@@ -128,13 +125,13 @@ class _ItemAllAlertWidgetState extends State<ItemAllAlertWidget> {
                                       letterSpacing: 0.0,
                                     ),
                               ),
-                            ].divide(SizedBox(height: 10.0)),
+                            ].divide(const SizedBox(height: 10.0)),
                           ),
                         ),
-                      ].divide(SizedBox(width: 8.0)),
+                      ].divide(const SizedBox(width: 8.0)),
                     ),
                   ),
-                ].divide(SizedBox(height: 10.0)),
+                ].divide(const SizedBox(height: 10.0)),
               ),
               Row(
                 mainAxisSize: MainAxisSize.max,
@@ -143,7 +140,7 @@ class _ItemAllAlertWidgetState extends State<ItemAllAlertWidget> {
                   Text(
                     'Posted ${dateTimeFormat(
                       "M/d H:mm",
-                      widget!.alertInfos?.startAt,
+                      widget.alertInfos?.startAt,
                       locale: FFLocalizations.of(context).languageCode,
                     )}',
                     style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -155,12 +152,12 @@ class _ItemAllAlertWidgetState extends State<ItemAllAlertWidget> {
                   ),
                   Stack(
                     children: [
-                      if (widget!.alertInfos?.isOwn == true)
+                      if (widget.alertInfos?.isOwn == true)
                         FFButtonWidget(
                           onPressed: () async {
                             _model.deleteAlert =
                                 await actions.cancelProfessionalAlertAction(
-                              widget!.alertInfos!.alertId,
+                              widget.alertInfos!.alertId,
                             );
                             if (_model.deleteAlert == true) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -172,7 +169,7 @@ class _ItemAllAlertWidgetState extends State<ItemAllAlertWidget> {
                                           .primaryText,
                                     ),
                                   ),
-                                  duration: Duration(milliseconds: 2000),
+                                  duration: const Duration(milliseconds: 2000),
                                   backgroundColor:
                                       FlutterFlowTheme.of(context).success,
                                 ),
@@ -187,7 +184,7 @@ class _ItemAllAlertWidgetState extends State<ItemAllAlertWidget> {
                                           .primaryText,
                                     ),
                                   ),
-                                  duration: Duration(milliseconds: 2000),
+                                  duration: const Duration(milliseconds: 2000),
                                   backgroundColor:
                                       FlutterFlowTheme.of(context).error,
                                 ),
@@ -199,9 +196,9 @@ class _ItemAllAlertWidgetState extends State<ItemAllAlertWidget> {
                           text: 'Delete',
                           options: FFButtonOptions(
                             height: 30.0,
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 14.0, 0.0, 14.0, 0.0),
-                            iconPadding: EdgeInsetsDirectional.fromSTEB(
+                            iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
                             color:
                                 FlutterFlowTheme.of(context).primaryBackground,
@@ -221,17 +218,16 @@ class _ItemAllAlertWidgetState extends State<ItemAllAlertWidget> {
                             borderRadius: BorderRadius.circular(0.0),
                           ),
                         ),
-                      if (widget!.alertInfos?.isOwn == false)
+                      if (widget.alertInfos?.isOwn == false)
                         FFButtonWidget(
                           onPressed: () async {
                             _model.getProDetails =
                                 await actions.getProItemDetailsAction(
-                              widget!.alertInfos!.authorProfileId,
+                              widget.alertInfos!.authorProfileId,
                             );
                             if ((_model.getProDetails?.proProfileId != null &&
                                     _model.getProDetails?.proProfileId != '') &&
-                                (_model.getProDetails!.portfolioImages.length >=
-                                    1)) {
+                                (_model.getProDetails!.portfolioImages.isNotEmpty)) {
                               context.pushNamed(
                                 ProDetailsWidget.routeName,
                                 queryParameters: {
@@ -251,7 +247,7 @@ class _ItemAllAlertWidgetState extends State<ItemAllAlertWidget> {
                                           .primaryText,
                                     ),
                                   ),
-                                  duration: Duration(milliseconds: 2000),
+                                  duration: const Duration(milliseconds: 2000),
                                   backgroundColor:
                                       FlutterFlowTheme.of(context).error,
                                 ),
@@ -263,9 +259,9 @@ class _ItemAllAlertWidgetState extends State<ItemAllAlertWidget> {
                           text: 'View profil',
                           options: FFButtonOptions(
                             height: 30.0,
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 14.0, 0.0, 14.0, 0.0),
-                            iconPadding: EdgeInsetsDirectional.fromSTEB(
+                            iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
                             color:
                                 FlutterFlowTheme.of(context).primaryBackground,

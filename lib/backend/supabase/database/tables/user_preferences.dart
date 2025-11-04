@@ -10,7 +10,7 @@ class UserPreferencesTable extends SupabaseTable<UserPreferencesRow> {
 }
 
 class UserPreferencesRow extends SupabaseDataRow {
-  UserPreferencesRow(Map<String, dynamic> data) : super(data);
+  UserPreferencesRow(super.data);
 
   @override
   SupabaseTable get table => UserPreferencesTable();
@@ -50,10 +50,10 @@ class UserPreferencesRow extends SupabaseDataRow {
   set defaultTimezone(String? value) =>
       setField<String>('default_timezone', value);
 
-  dynamic? get lastFilters => getField<dynamic>('last_filters');
-  set lastFilters(dynamic? value) => setField<dynamic>('last_filters', value);
+  dynamic get lastFilters => getField<dynamic>('last_filters');
+  set lastFilters(dynamic value) => setField<dynamic>('last_filters', value);
 
-  dynamic? get lastFeedFilters => getField<dynamic>('last_feed_filters');
-  set lastFeedFilters(dynamic? value) =>
+  dynamic get lastFeedFilters => getField<dynamic>('last_feed_filters');
+  set lastFeedFilters(dynamic value) =>
       setField<dynamic>('last_feed_filters', value);
 }

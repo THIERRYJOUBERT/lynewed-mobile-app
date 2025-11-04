@@ -10,7 +10,7 @@ class UserLegalAcceptancesTable extends SupabaseTable<UserLegalAcceptancesRow> {
 }
 
 class UserLegalAcceptancesRow extends SupabaseDataRow {
-  UserLegalAcceptancesRow(Map<String, dynamic> data) : super(data);
+  UserLegalAcceptancesRow(super.data);
 
   @override
   SupabaseTable get table => UserLegalAcceptancesTable();

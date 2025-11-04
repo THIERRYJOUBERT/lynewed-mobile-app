@@ -1,22 +1,18 @@
 // Automatic FlutterFlow imports
+import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'dart:convert';
-import '/flutter_flow/lat_lng.dart';
 
 Future<SessionDataBundleStruct?> loadInitialSessionData() async {
   // --- Fonctions Helper internes pour le parsing ---
-  UserRole _roleFromString(String? s) {
+  UserRole roleFromString(String? s) {
     switch (s) {
       case 'professional':
         return UserRole.professional;
@@ -26,13 +22,13 @@ Future<SessionDataBundleStruct?> loadInitialSessionData() async {
     }
   }
 
-  DistanceUnit _distanceUnitFromString(String? s) {
+  DistanceUnit distanceUnitFromString(String? s) {
     return (s?.toString() ?? 'km') == 'miles'
         ? DistanceUnit.miles
         : DistanceUnit.km;
   }
 
-  SubscriptionTierType _tierFromString(String? s) {
+  SubscriptionTierType tierFromString(String? s) {
     switch (s) {
       case 'trial':
         return SubscriptionTierType.trial;
@@ -48,7 +44,7 @@ Future<SessionDataBundleStruct?> loadInitialSessionData() async {
     }
   }
 
-  Profession? _professionFromString(String? s) {
+  Profession? professionFromString(String? s) {
     if (s == null) return null;
     try {
       return Profession.values
@@ -63,7 +59,7 @@ Future<SessionDataBundleStruct?> loadInitialSessionData() async {
     final client = SupaFlow.client;
     final userId = client.auth.currentUser?.id;
     if (userId == null) {
-      print('loadInitialSessionData: No authenticated user found.');
+      debugPrint('loadInitialSessionData: No authenticated user found.');
       return null;
     }
 
@@ -76,7 +72,7 @@ Future<SessionDataBundleStruct?> loadInitialSessionData() async {
 
     final PublicProfileStruct profile = PublicProfileStruct(
       id: profResponse['id']?.toString() ?? '',
-      role: _roleFromString(profResponse['role']?.toString()),
+      role: roleFromString(profResponse['role']?.toString()),
       fullName: profResponse['full_name']?.toString() ?? '',
       avatarUrl: profResponse['avatar_url']?.toString() ?? '',
     );
@@ -102,7 +98,7 @@ Future<SessionDataBundleStruct?> loadInitialSessionData() async {
         : null;
 
     final userPrefs = UserPreferencesStruct(
-      distanceUnit: _distanceUnitFromString(prefsResponse['distance_unit']),
+      distanceUnit: distanceUnitFromString(prefsResponse['distance_unit']),
       currency: prefsResponse['currency']?.toString() ?? 'EUR',
       defaultRadiusKm:
           (prefsResponse['default_radius_km'] as num?)?.toInt() ?? 20,
@@ -153,14 +149,14 @@ Future<SessionDataBundleStruct?> loadInitialSessionData() async {
 
         proSubscription = ProSubscriptionSummaryStruct(
           profileId: userId,
-          subscriptionTier: _tierFromString(subscriptionTierString),
+          subscriptionTier: tierFromString(subscriptionTierString),
           trialEndsAt:
               trialEndsAtStr != null ? DateTime.tryParse(trialEndsAtStr) : null,
           fixedLocationsQuota: fixedLocationsQuota,
-          profession: _professionFromString(professionString),
+          profession: professionFromString(professionString),
         );
       } catch (e) {
-        print(
+        debugPrint(
             'Error fetching professional subscription/quota, defaulting. Error: $e');
         proSubscription = ProSubscriptionSummaryStruct(
           profileId: userId,
@@ -178,7 +174,7 @@ Future<SessionDataBundleStruct?> loadInitialSessionData() async {
       proSubscription: proSubscription,
     );
   } catch (e) {
-    print('loadInitialSessionData critical error: $e');
+    debugPrint('loadInitialSessionData critical error: $e');
     return null;
   }
 }

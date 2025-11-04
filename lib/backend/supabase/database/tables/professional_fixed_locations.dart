@@ -11,7 +11,7 @@ class ProfessionalFixedLocationsTable
 }
 
 class ProfessionalFixedLocationsRow extends SupabaseDataRow {
-  ProfessionalFixedLocationsRow(Map<String, dynamic> data) : super(data);
+  ProfessionalFixedLocationsRow(super.data);
 
   @override
   SupabaseTable get table => ProfessionalFixedLocationsTable();

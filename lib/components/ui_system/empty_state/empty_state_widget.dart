@@ -1,10 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'empty_state_model.dart';
 export 'empty_state_model.dart';
 
@@ -49,10 +45,10 @@ class _EmptyStateWidgetState extends State<EmptyStateWidget> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Padding(
-          padding: EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 0.0),
+          padding: const EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 0.0),
           child: Text(
             valueOrDefault<String>(
-              widget!.message,
+              widget.message,
               'null',
             ),
             style: FlutterFlowTheme.of(context).labelMedium.override(

@@ -4,13 +4,10 @@ import '/components/nav/nav_bar_brides/nav_bar_brides_widget.dart';
 import '/components/nav/nav_bar_pro/nav_bar_pro_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'profile_brides_and_pro_model.dart';
 export 'profile_brides_and_pro_model.dart';
 
@@ -55,13 +52,13 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        body: Container(
+        body: SizedBox(
           width: double.infinity,
           height: double.infinity,
           child: Stack(
             children: [
               Align(
-                alignment: AlignmentDirectional(0.0, -1.0),
+                alignment: const AlignmentDirectional(0.0, -1.0),
                 child: Container(
                   width: double.infinity,
                   height: 110.0,
@@ -73,7 +70,7 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
                             20.0, 0.0, 20.0, 0.0),
                         child: Row(
                           mainAxisSize: MainAxisSize.max,
@@ -94,9 +91,9 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                         ),
                       ),
                       Align(
-                        alignment: AlignmentDirectional(0.0, 1.0),
+                        alignment: const AlignmentDirectional(0.0, 1.0),
                         child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 14.0, 0.0, 0.0),
                           child: Container(
                             width: double.infinity,
@@ -104,7 +101,7 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                             decoration: BoxDecoration(
                               color: FlutterFlowTheme.of(context).secondary,
                             ),
-                            alignment: AlignmentDirectional(0.0, 1.0),
+                            alignment: const AlignmentDirectional(0.0, 1.0),
                           ),
                         ),
                       ),
@@ -114,7 +111,7 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
               ),
               Padding(
                 padding:
-                    EdgeInsetsDirectional.fromSTEB(20.0, 110.0, 20.0, 100.0),
+                    const EdgeInsetsDirectional.fromSTEB(20.0, 110.0, 20.0, 100.0),
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -122,12 +119,12 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                     children: [
                       Padding(
                         padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
+                            const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             Align(
-                              alignment: AlignmentDirectional(0.0, 0.0),
+                              alignment: const AlignmentDirectional(0.0, 0.0),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
@@ -176,12 +173,12 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                                           ),
                                         ],
                                       ),
-                                    ].divide(SizedBox(height: 4.0)),
+                                    ].divide(const SizedBox(height: 4.0)),
                                   ),
-                                ].divide(SizedBox(height: 14.0)),
+                                ].divide(const SizedBox(height: 14.0)),
                               ),
                             ),
-                          ].divide(SizedBox(height: 14.0)),
+                          ].divide(const SizedBox(height: 14.0)),
                         ),
                       ),
                       Column(
@@ -220,12 +217,12 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                             },
                             child: Container(
                               width: double.infinity,
-                              decoration: BoxDecoration(),
+                              decoration: const BoxDecoration(),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0.0, 12.0, 0.0, 12.0),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
@@ -290,12 +287,12 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                             },
                             child: Container(
                               width: double.infinity,
-                              decoration: BoxDecoration(),
+                              decoration: const BoxDecoration(),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0.0, 12.0, 0.0, 12.0),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
@@ -344,12 +341,12 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                             },
                             child: Container(
                               width: double.infinity,
-                              decoration: BoxDecoration(),
+                              decoration: const BoxDecoration(),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0.0, 12.0, 0.0, 12.0),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
@@ -398,12 +395,12 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                             },
                             child: Container(
                               width: double.infinity,
-                              decoration: BoxDecoration(),
+                              decoration: const BoxDecoration(),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0.0, 12.0, 0.0, 12.0),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
@@ -441,7 +438,7 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                               ),
                             ),
                           ),
-                        ].divide(SizedBox(height: 14.0)),
+                        ].divide(const SizedBox(height: 14.0)),
                       ),
                       Column(
                         mainAxisSize: MainAxisSize.max,
@@ -464,12 +461,12 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                             ],
                           ),
                           Container(
-                            decoration: BoxDecoration(),
+                            decoration: const BoxDecoration(),
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0.0, 12.0, 0.0, 12.0),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.max,
@@ -515,12 +512,12 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                               context.pushNamed(SupportWidget.routeName);
                             },
                             child: Container(
-                              decoration: BoxDecoration(),
+                              decoration: const BoxDecoration(),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0.0, 12.0, 0.0, 12.0),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
@@ -568,12 +565,12 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                                   'https://www.lynewed.com/terms-of-service');
                             },
                             child: Container(
-                              decoration: BoxDecoration(),
+                              decoration: const BoxDecoration(),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0.0, 12.0, 0.0, 12.0),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
@@ -626,12 +623,12 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                                   context.mounted);
                             },
                             child: Container(
-                              decoration: BoxDecoration(),
+                              decoration: const BoxDecoration(),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                    padding: const EdgeInsetsDirectional.fromSTEB(
                                         0.0, 12.0, 0.0, 12.0),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
@@ -669,16 +666,16 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                               ),
                             ),
                           ),
-                        ].divide(SizedBox(height: 14.0)),
+                        ].divide(const SizedBox(height: 14.0)),
                       ),
                       Align(
-                        alignment: AlignmentDirectional(0.0, 0.0),
+                        alignment: const AlignmentDirectional(0.0, 0.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Align(
-                              alignment: AlignmentDirectional(0.0, 0.0),
+                              alignment: const AlignmentDirectional(0.0, 0.0),
                               child: Row(
                                 mainAxisSize: MainAxisSize.max,
                                 mainAxisAlignment: MainAxisAlignment.start,
@@ -703,28 +700,28 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                                           letterSpacing: 0.0,
                                         ),
                                   ),
-                                ].divide(SizedBox(width: 12.0)),
+                                ].divide(const SizedBox(width: 12.0)),
                               ),
                             ),
-                          ].divide(SizedBox(height: 24.0)),
+                          ].divide(const SizedBox(height: 24.0)),
                         ),
                       ),
-                    ].divide(SizedBox(height: 24.0)),
+                    ].divide(const SizedBox(height: 24.0)),
                   ),
                 ),
               ),
               Align(
-                alignment: AlignmentDirectional(0.0, 1.0),
+                alignment: const AlignmentDirectional(0.0, 1.0),
                 child: Stack(
-                  alignment: AlignmentDirectional(0.0, 1.0),
+                  alignment: const AlignmentDirectional(0.0, 1.0),
                   children: [
                     if (FFAppState().currentUserRole == UserRole.bride)
                       Align(
-                        alignment: AlignmentDirectional(0.0, 1.0),
+                        alignment: const AlignmentDirectional(0.0, 1.0),
                         child: wrapWithModel(
                           model: _model.navBarBridesModel,
                           updateCallback: () => safeSetState(() {}),
-                          child: NavBarBridesWidget(
+                          child: const NavBarBridesWidget(
                             number: 5,
                           ),
                         ),
@@ -733,7 +730,7 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                       wrapWithModel(
                         model: _model.navBarProModel,
                         updateCallback: () => safeSetState(() {}),
-                        child: NavBarProWidget(
+                        child: const NavBarProWidget(
                           number: 5,
                         ),
                       ),

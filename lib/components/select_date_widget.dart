@@ -1,11 +1,8 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'select_date_model.dart';
 export 'select_date_model.dart';
 
@@ -41,17 +38,11 @@ class _SelectDateWidgetState extends State<SelectDateWidget> {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       if (dateTimeFormat(
                 "EEEE",
-                widget!.initialDate,
-                locale: FFLocalizations.of(context).languageCode,
-              ) !=
-              null &&
-          dateTimeFormat(
-                "EEEE",
-                widget!.initialDate,
+                widget.initialDate,
                 locale: FFLocalizations.of(context).languageCode,
               ) !=
               '') {
-        _model.endTime = widget!.initialDate;
+        _model.endTime = widget.initialDate;
         safeSetState(() {});
       } else {
         _model.endTime = getCurrentTimestamp;
@@ -76,7 +67,7 @@ class _SelectDateWidgetState extends State<SelectDateWidget> {
         color: FlutterFlowTheme.of(context).secondaryBackground,
         borderRadius: BorderRadius.circular(2.0),
       ),
-      child: Container(
+      child: SizedBox(
         width: MediaQuery.sizeOf(context).width * 1.0,
         height: 250.0,
         child: custom_widgets.CustomCalendarWidget(

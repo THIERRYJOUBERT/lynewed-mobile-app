@@ -10,7 +10,7 @@ class GeometryColumnsTable extends SupabaseTable<GeometryColumnsRow> {
 }
 
 class GeometryColumnsRow extends SupabaseDataRow {
-  GeometryColumnsRow(Map<String, dynamic> data) : super(data);
+  GeometryColumnsRow(super.data);
 
   @override
   SupabaseTable get table => GeometryColumnsTable();

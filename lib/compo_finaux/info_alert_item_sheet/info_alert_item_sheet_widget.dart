@@ -2,12 +2,9 @@ import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/actions/actions.dart' as action_blocks;
 import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'info_alert_item_sheet_model.dart';
 export 'info_alert_item_sheet_model.dart';
 
@@ -52,7 +49,7 @@ class _InfoAlertItemSheetWidgetState extends State<InfoAlertItemSheetWidget> {
       width: MediaQuery.sizeOf(context).width * 1.0,
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).primaryBackground,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(0.0),
           bottomRight: Radius.circular(0.0),
           topLeft: Radius.circular(24.0),
@@ -60,15 +57,15 @@ class _InfoAlertItemSheetWidgetState extends State<InfoAlertItemSheetWidget> {
         ),
       ),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(20.0, 14.0, 20.0, 20.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(20.0, 14.0, 20.0, 20.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Align(
-              alignment: AlignmentDirectional(0.0, 1.0),
+              alignment: const AlignmentDirectional(0.0, 1.0),
               child: Container(
                 width: double.infinity,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
                 ),
                 child: Column(
@@ -111,7 +108,7 @@ class _InfoAlertItemSheetWidgetState extends State<InfoAlertItemSheetWidget> {
                         ),
                         Text(
                           valueOrDefault<String>(
-                            widget!.alertDetails?.authorProfession?.name,
+                            widget.alertDetails?.authorProfession?.name,
                             'Profession...',
                           ),
                           style:
@@ -131,7 +128,7 @@ class _InfoAlertItemSheetWidgetState extends State<InfoAlertItemSheetWidget> {
                     ),
                     Padding(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(2.0, 2.0, 2.0, 2.0),
+                          const EdgeInsetsDirectional.fromSTEB(2.0, 2.0, 2.0, 2.0),
                       child: Row(
                         mainAxisSize: MainAxisSize.max,
                         children: [
@@ -147,12 +144,12 @@ class _InfoAlertItemSheetWidgetState extends State<InfoAlertItemSheetWidget> {
                                       width: 36.0,
                                       height: 36.0,
                                       clipBehavior: Clip.antiAlias,
-                                      decoration: BoxDecoration(
+                                      decoration: const BoxDecoration(
                                         shape: BoxShape.circle,
                                       ),
                                       child: Image.network(
                                         valueOrDefault<String>(
-                                          widget!.alertDetails?.authorAvatarUrl,
+                                          widget.alertDetails?.authorAvatarUrl,
                                           'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/lynewed-alpha-du4al1/assets/egport4rt4rg/person_15429777_1.png',
                                         ),
                                         fit: BoxFit.cover,
@@ -168,7 +165,7 @@ class _InfoAlertItemSheetWidgetState extends State<InfoAlertItemSheetWidget> {
                                           children: [
                                             Text(
                                               'Reason: ${valueOrDefault<String>(
-                                                widget!
+                                                widget
                                                     .alertDetails?.motifLabel,
                                                 'Label...',
                                               )}',
@@ -191,7 +188,7 @@ class _InfoAlertItemSheetWidgetState extends State<InfoAlertItemSheetWidget> {
                                           children: [
                                             Text(
                                               valueOrDefault<String>(
-                                                widget!.alertDetails
+                                                widget.alertDetails
                                                     ?.locationLabel,
                                                 'Label...',
                                               ),
@@ -209,13 +206,13 @@ class _InfoAlertItemSheetWidgetState extends State<InfoAlertItemSheetWidget> {
                                             ),
                                           ],
                                         ),
-                                      ].divide(SizedBox(height: 4.0)),
+                                      ].divide(const SizedBox(height: 4.0)),
                                     ),
-                                  ].divide(SizedBox(width: 10.0)),
+                                  ].divide(const SizedBox(width: 10.0)),
                                 ),
                                 Text(
                                   valueOrDefault<String>(
-                                    widget!.alertDetails?.message,
+                                    widget.alertDetails?.message,
                                     'message...',
                                   ),
                                   maxLines: 2,
@@ -238,7 +235,7 @@ class _InfoAlertItemSheetWidgetState extends State<InfoAlertItemSheetWidget> {
                                       valueOrDefault<String>(
                                         dateTimeFormat(
                                           "M/d h:mm a",
-                                          widget!.alertDetails?.startAt,
+                                          widget.alertDetails?.startAt,
                                           locale: FFLocalizations.of(context)
                                               .languageCode,
                                         ),
@@ -257,7 +254,7 @@ class _InfoAlertItemSheetWidgetState extends State<InfoAlertItemSheetWidget> {
                                     Text(
                                       'Ends: ${dateTimeFormat(
                                         "MEd",
-                                        widget!.alertDetails?.endAt,
+                                        widget.alertDetails?.endAt,
                                         locale: FFLocalizations.of(context)
                                             .languageCode,
                                       )}',
@@ -273,18 +270,18 @@ class _InfoAlertItemSheetWidgetState extends State<InfoAlertItemSheetWidget> {
                                     ),
                                   ],
                                 ),
-                              ].divide(SizedBox(height: 10.0)),
+                              ].divide(const SizedBox(height: 10.0)),
                             ),
                           ),
-                        ].divide(SizedBox(width: 8.0)),
+                        ].divide(const SizedBox(width: 8.0)),
                       ),
                     ),
                     FFButtonWidget(
                       onPressed: () async {
-                        if (widget!.alertDetails?.isOwn == true) {
+                        if (widget.alertDetails?.isOwn == true) {
                           _model.wasCancelled =
                               await actions.cancelProfessionalAlertAction(
-                            widget!.alertDetails!.alertId,
+                            widget.alertDetails!.alertId,
                           );
                           if (_model.wasCancelled == true) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -296,7 +293,7 @@ class _InfoAlertItemSheetWidgetState extends State<InfoAlertItemSheetWidget> {
                                         .primaryText,
                                   ),
                                 ),
-                                duration: Duration(milliseconds: 2000),
+                                duration: const Duration(milliseconds: 2000),
                                 backgroundColor:
                                     FlutterFlowTheme.of(context).success,
                               ),
@@ -312,18 +309,18 @@ class _InfoAlertItemSheetWidgetState extends State<InfoAlertItemSheetWidget> {
                                         .primaryText,
                                   ),
                                 ),
-                                duration: Duration(milliseconds: 2000),
+                                duration: const Duration(milliseconds: 2000),
                                 backgroundColor:
                                     FlutterFlowTheme.of(context).warning,
                               ),
                             );
                           }
                         } else {
-                          if (widget!.alertDetails?.isContactable == true) {
+                          if (widget.alertDetails?.isContactable == true) {
                             await action_blocks.contactChatRoom(
                               context,
                               targetProfileID:
-                                  widget!.alertDetails?.authorProfileId,
+                                  widget.alertDetails?.authorProfileId,
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -335,7 +332,7 @@ class _InfoAlertItemSheetWidgetState extends State<InfoAlertItemSheetWidget> {
                                         .primaryText,
                                   ),
                                 ),
-                                duration: Duration(milliseconds: 2000),
+                                duration: const Duration(milliseconds: 2000),
                                 backgroundColor:
                                     FlutterFlowTheme.of(context).warning,
                               ),
@@ -345,17 +342,17 @@ class _InfoAlertItemSheetWidgetState extends State<InfoAlertItemSheetWidget> {
 
                         safeSetState(() {});
                       },
-                      text: widget!.alertDetails?.isOwn == true
+                      text: widget.alertDetails?.isOwn == true
                           ? 'Cancel the alert'
                           : 'Contact',
                       options: FFButtonOptions(
                         width: double.infinity,
                         height: 48.0,
-                        padding: EdgeInsetsDirectional.fromSTEB(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
                             16.0, 0.0, 16.0, 0.0),
                         iconPadding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                        color: widget!.alertDetails?.isOwn == true
+                            const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                        color: widget.alertDetails?.isOwn == true
                             ? FlutterFlowTheme.of(context).error
                             : FlutterFlowTheme.of(context).primary,
                         textStyle:
@@ -370,11 +367,11 @@ class _InfoAlertItemSheetWidgetState extends State<InfoAlertItemSheetWidget> {
                         borderRadius: BorderRadius.circular(0.0),
                       ),
                     ),
-                  ].divide(SizedBox(height: 8.0)),
+                  ].divide(const SizedBox(height: 8.0)),
                 ),
               ),
             ),
-          ].divide(SizedBox(height: 10.0)),
+          ].divide(const SizedBox(height: 10.0)),
         ),
       ),
     );

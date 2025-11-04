@@ -1,13 +1,9 @@
 // Automatic FlutterFlow imports
-import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+// Imports other custom widgets
+// Imports custom actions
+// Imports custom functions
+import '/utils/secure_logger.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -57,10 +53,10 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
       await _player.setAudioSource(source);
       await _player.setSpeed(_speed);
     } catch (e) {
-      debugPrint('AudioPlayerWidget setUrl error: $e');
+      SecureLogger.error('Audio player URL loading failed', error: e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not load audio.')),
+          const SnackBar(content: Text('Could not load audio.')),
         );
       }
     }
@@ -123,7 +119,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                       await _player.play();
                     }
                   } catch (e) {
-                    debugPrint('Player action failed: $e');
+                    SecureLogger.error('Audio player action failed', error: e);
                   }
                 },
               ),

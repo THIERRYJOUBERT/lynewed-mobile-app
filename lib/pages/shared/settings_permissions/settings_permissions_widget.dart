@@ -4,15 +4,12 @@ import '/backend/supabase/supabase.dart';
 import '/components/nav/header_bar/header_bar_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/permissions_util.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/scheduler.dart';
 import 'settings_permissions_model.dart';
 export 'settings_permissions_model.dart';
 
@@ -72,21 +69,21 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         body: Align(
-          alignment: AlignmentDirectional(0.0, -1.0),
-          child: Container(
+          alignment: const AlignmentDirectional(0.0, -1.0),
+          child: SizedBox(
             width: MediaQuery.sizeOf(context).width * 1.0,
             height: MediaQuery.sizeOf(context).height * 1.0,
             child: Stack(
               children: [
                 Padding(
                   padding:
-                      EdgeInsetsDirectional.fromSTEB(0.0, 130.0, 0.0, 20.0),
+                      const EdgeInsetsDirectional.fromSTEB(0.0, 130.0, 0.0, 20.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
                             20.0, 0.0, 20.0, 0.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
@@ -109,7 +106,7 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                               ],
                             ),
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
                                   0.0, 16.0, 0.0, 0.0),
                               child: InkWell(
                                 splashColor: Colors.transparent,
@@ -124,13 +121,13 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                   if (_model.permissionResult == 'granted') {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(
+                                        content: const Text(
                                           'Location access is enabled',
                                           style: TextStyle(
                                             color: Colors.white,
                                           ),
                                         ),
-                                        duration: Duration(milliseconds: 4000),
+                                        duration: const Duration(milliseconds: 4000),
                                         backgroundColor:
                                             FlutterFlowTheme.of(context)
                                                 .success,
@@ -142,14 +139,14 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         SnackBar(
-                                          content: Text(
+                                          content: const Text(
                                             'Enable location in settings',
                                             style: TextStyle(
                                               color: Colors.white,
                                             ),
                                           ),
                                           duration:
-                                              Duration(milliseconds: 4000),
+                                              const Duration(milliseconds: 4000),
                                           backgroundColor:
                                               FlutterFlowTheme.of(context)
                                                   .primary,
@@ -159,14 +156,14 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         SnackBar(
-                                          content: Text(
+                                          content: const Text(
                                             'Enable location in settings',
                                             style: TextStyle(
                                               color: Colors.white,
                                             ),
                                           ),
                                           duration:
-                                              Duration(milliseconds: 4000),
+                                              const Duration(milliseconds: 4000),
                                           backgroundColor:
                                               FlutterFlowTheme.of(context)
                                                   .primary,
@@ -214,7 +211,7 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                                   letterSpacing: 0.0,
                                                 ),
                                           ),
-                                        ].divide(SizedBox(height: 8.0)),
+                                        ].divide(const SizedBox(height: 8.0)),
                                       ),
                                     ),
                                     Icon(
@@ -223,7 +220,7 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                           .primaryText,
                                       size: 24.0,
                                     ),
-                                  ].divide(SizedBox(width: 14.0)),
+                                  ].divide(const SizedBox(width: 14.0)),
                                 ),
                               ),
                             ),
@@ -244,13 +241,13 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                 if (_model.permissionResult == 'granted') {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text(
+                                      content: const Text(
                                         'Notifications are enabled',
                                         style: TextStyle(
                                           color: Colors.white,
                                         ),
                                       ),
-                                      duration: Duration(milliseconds: 4000),
+                                      duration: const Duration(milliseconds: 4000),
                                       backgroundColor:
                                           FlutterFlowTheme.of(context).success,
                                     ),
@@ -260,13 +257,13 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                       'permanently_denied') {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(
+                                        content: const Text(
                                           'Enable notifications in settings',
                                           style: TextStyle(
                                             color: Colors.white,
                                           ),
                                         ),
-                                        duration: Duration(milliseconds: 4000),
+                                        duration: const Duration(milliseconds: 4000),
                                         backgroundColor:
                                             FlutterFlowTheme.of(context)
                                                 .primary,
@@ -275,13 +272,13 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(
+                                        content: const Text(
                                           'Enable notifications in settings',
                                           style: TextStyle(
                                             color: Colors.white,
                                           ),
                                         ),
-                                        duration: Duration(milliseconds: 4000),
+                                        duration: const Duration(milliseconds: 4000),
                                         backgroundColor:
                                             FlutterFlowTheme.of(context)
                                                 .primary,
@@ -329,7 +326,7 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                                 letterSpacing: 0.0,
                                               ),
                                         ),
-                                      ].divide(SizedBox(height: 8.0)),
+                                      ].divide(const SizedBox(height: 8.0)),
                                     ),
                                   ),
                                   Icon(
@@ -338,7 +335,7 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                         .primaryText,
                                     size: 24.0,
                                   ),
-                                ].divide(SizedBox(width: 14.0)),
+                                ].divide(const SizedBox(width: 14.0)),
                               ),
                             ),
                             Divider(
@@ -358,13 +355,13 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                 if (_model.permissionResult == 'granted') {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text(
+                                      content: const Text(
                                         'Camera access permission is enabled',
                                         style: TextStyle(
                                           color: Colors.white,
                                         ),
                                       ),
-                                      duration: Duration(milliseconds: 4000),
+                                      duration: const Duration(milliseconds: 4000),
                                       backgroundColor:
                                           FlutterFlowTheme.of(context).success,
                                     ),
@@ -374,13 +371,13 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                       'permanently_denied') {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(
+                                        content: const Text(
                                           'Allow camera access in settings',
                                           style: TextStyle(
                                             color: Colors.white,
                                           ),
                                         ),
-                                        duration: Duration(milliseconds: 4000),
+                                        duration: const Duration(milliseconds: 4000),
                                         backgroundColor:
                                             FlutterFlowTheme.of(context)
                                                 .primary,
@@ -389,13 +386,13 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(
+                                        content: const Text(
                                           'Allow camera access in settings',
                                           style: TextStyle(
                                             color: Colors.white,
                                           ),
                                         ),
-                                        duration: Duration(milliseconds: 4000),
+                                        duration: const Duration(milliseconds: 4000),
                                         backgroundColor:
                                             FlutterFlowTheme.of(context)
                                                 .primary,
@@ -443,7 +440,7 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                                 letterSpacing: 0.0,
                                               ),
                                         ),
-                                      ].divide(SizedBox(height: 8.0)),
+                                      ].divide(const SizedBox(height: 8.0)),
                                     ),
                                   ),
                                   Icon(
@@ -452,7 +449,7 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                         .primaryText,
                                     size: 24.0,
                                   ),
-                                ].divide(SizedBox(width: 14.0)),
+                                ].divide(const SizedBox(width: 14.0)),
                               ),
                             ),
                             Divider(
@@ -472,13 +469,13 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                 if (_model.permissionResult == 'granted') {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text(
+                                      content: const Text(
                                         'Photo access permission is enabled',
                                         style: TextStyle(
                                           color: Colors.white,
                                         ),
                                       ),
-                                      duration: Duration(milliseconds: 4000),
+                                      duration: const Duration(milliseconds: 4000),
                                       backgroundColor:
                                           FlutterFlowTheme.of(context).success,
                                     ),
@@ -488,13 +485,13 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                       'permanently_denied') {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(
+                                        content: const Text(
                                           'Allow access to the camera in the settings',
                                           style: TextStyle(
                                             color: Colors.white,
                                           ),
                                         ),
-                                        duration: Duration(milliseconds: 4000),
+                                        duration: const Duration(milliseconds: 4000),
                                         backgroundColor:
                                             FlutterFlowTheme.of(context)
                                                 .primary,
@@ -503,13 +500,13 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(
+                                        content: const Text(
                                           'Allow access to the camera in the settings',
                                           style: TextStyle(
                                             color: Colors.white,
                                           ),
                                         ),
-                                        duration: Duration(milliseconds: 4000),
+                                        duration: const Duration(milliseconds: 4000),
                                         backgroundColor:
                                             FlutterFlowTheme.of(context)
                                                 .primary,
@@ -557,7 +554,7 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                                 letterSpacing: 0.0,
                                               ),
                                         ),
-                                      ].divide(SizedBox(height: 8.0)),
+                                      ].divide(const SizedBox(height: 8.0)),
                                     ),
                                   ),
                                   Icon(
@@ -566,7 +563,7 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                         .primaryText,
                                     size: 24.0,
                                   ),
-                                ].divide(SizedBox(width: 14.0)),
+                                ].divide(const SizedBox(width: 14.0)),
                               ),
                             ),
                             Divider(
@@ -586,13 +583,13 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                 if (_model.permissionResult == 'granted') {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text(
+                                      content: const Text(
                                         'Microphone access is already enabled.',
                                         style: TextStyle(
                                           color: Colors.white,
                                         ),
                                       ),
-                                      duration: Duration(milliseconds: 4000),
+                                      duration: const Duration(milliseconds: 4000),
                                       backgroundColor:
                                           FlutterFlowTheme.of(context).success,
                                     ),
@@ -602,13 +599,13 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                       'permanently_denied') {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(
+                                        content: const Text(
                                           'Allow access to your microphone in the settings',
                                           style: TextStyle(
                                             color: Colors.white,
                                           ),
                                         ),
-                                        duration: Duration(milliseconds: 4000),
+                                        duration: const Duration(milliseconds: 4000),
                                         backgroundColor:
                                             FlutterFlowTheme.of(context)
                                                 .primary,
@@ -617,13 +614,13 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(
+                                        content: const Text(
                                           'Allow access to your microphone in the settings',
                                           style: TextStyle(
                                             color: Colors.white,
                                           ),
                                         ),
-                                        duration: Duration(milliseconds: 4000),
+                                        duration: const Duration(milliseconds: 4000),
                                         backgroundColor:
                                             FlutterFlowTheme.of(context)
                                                 .primary,
@@ -671,7 +668,7 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                                 letterSpacing: 0.0,
                                               ),
                                         ),
-                                      ].divide(SizedBox(height: 8.0)),
+                                      ].divide(const SizedBox(height: 8.0)),
                                     ),
                                   ),
                                   Icon(
@@ -680,15 +677,15 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                         .primaryText,
                                     size: 24.0,
                                   ),
-                                ].divide(SizedBox(width: 14.0)),
+                                ].divide(const SizedBox(width: 14.0)),
                               ),
                             ),
-                          ].divide(SizedBox(height: 8.0)),
+                          ].divide(const SizedBox(height: 8.0)),
                         ),
                       ),
                       if (FFAppState().currentUserRole == UserRole.professional)
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               20.0, 0.0, 20.0, 0.0),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
@@ -711,7 +708,7 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                 ],
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     0.0, 16.0, 0.0, 0.0),
                                 child: InkWell(
                                   splashColor: Colors.transparent,
@@ -764,15 +761,15 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                                         letterSpacing: 0.0,
                                                       ),
                                             ),
-                                          ].divide(SizedBox(height: 8.0)),
+                                          ].divide(const SizedBox(height: 8.0)),
                                         ),
                                       ),
                                       Switch.adaptive(
                                         value: _model.switchValue!,
                                         onChanged: (newValue) async {
                                           safeSetState(() =>
-                                              _model.switchValue = newValue!);
-                                          if (newValue!) {
+                                              _model.switchValue = newValue);
+                                          if (newValue) {
                                             _model.upsertProRecentOptInOn =
                                                 await actions
                                                     .upsertProRecentOptIn(
@@ -803,18 +800,18 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                             FlutterFlowTheme.of(context)
                                                 .secondaryBackground,
                                       ),
-                                    ].divide(SizedBox(width: 14.0)),
+                                    ].divide(const SizedBox(width: 14.0)),
                                   ),
                                 ),
                               ),
-                            ].divide(SizedBox(height: 14.0)),
+                            ].divide(const SizedBox(height: 14.0)),
                           ),
                         ),
                       Flexible(
                         child: Align(
-                          alignment: AlignmentDirectional(0.0, 1.0),
+                          alignment: const AlignmentDirectional(0.0, 1.0),
                           child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 32.0),
                             child: Column(
                               mainAxisSize: MainAxisSize.max,
@@ -833,9 +830,9 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                                 context: context,
                                                 builder: (alertDialogContext) {
                                                   return AlertDialog(
-                                                    title: Text(
+                                                    title: const Text(
                                                         'Delete my account?'),
-                                                    content: Text(
+                                                    content: const Text(
                                                         'Please note that you are about to delete your account. This action is permanent. Are you sure you want to proceed?'),
                                                     actions: [
                                                       TextButton(
@@ -843,14 +840,14 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                                             Navigator.pop(
                                                                 alertDialogContext,
                                                                 false),
-                                                        child: Text('Cancel'),
+                                                        child: const Text('Cancel'),
                                                       ),
                                                       TextButton(
                                                         onPressed: () =>
                                                             Navigator.pop(
                                                                 alertDialogContext,
                                                                 true),
-                                                        child: Text(
+                                                        child: const Text(
                                                             'Delete my account'),
                                                       ),
                                                     ],
@@ -876,16 +873,16 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                             context: context,
                                             builder: (alertDialogContext) {
                                               return AlertDialog(
-                                                title: Text(
+                                                title: const Text(
                                                     'An error has occurred'),
-                                                content: Text(
+                                                content: const Text(
                                                     'We are unable to delete your account. Please try again later or contact support.'),
                                                 actions: [
                                                   TextButton(
                                                     onPressed: () =>
                                                         Navigator.pop(
                                                             alertDialogContext),
-                                                    child: Text('Ok'),
+                                                    child: const Text('Ok'),
                                                   ),
                                                 ],
                                               );
@@ -898,14 +895,14 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                         context: context,
                                         builder: (alertDialogContext) {
                                           return AlertDialog(
-                                            title: Text('Contact support'),
-                                            content: Text(
+                                            title: const Text('Contact support'),
+                                            content: const Text(
                                                 'If you wish to delete your account, please contact professional support.'),
                                             actions: [
                                               TextButton(
                                                 onPressed: () => Navigator.pop(
                                                     alertDialogContext),
-                                                child: Text('Ok'),
+                                                child: const Text('Ok'),
                                               ),
                                             ],
                                           );
@@ -925,18 +922,18 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                         ),
                                   ),
                                 ),
-                              ].divide(SizedBox(height: 32.0)),
+                              ].divide(const SizedBox(height: 32.0)),
                             ),
                           ),
                         ),
                       ),
-                    ].divide(SizedBox(height: 56.0)),
+                    ].divide(const SizedBox(height: 56.0)),
                   ),
                 ),
                 wrapWithModel(
                   model: _model.headerBarModel,
                   updateCallback: () => safeSetState(() {}),
-                  child: HeaderBarWidget(
+                  child: const HeaderBarWidget(
                     title: 'SETTINGS',
                   ),
                 ),

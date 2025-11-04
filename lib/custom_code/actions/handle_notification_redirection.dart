@@ -1,17 +1,14 @@
 // Automatic FlutterFlow imports
-import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+// Imports other custom actions
+// Imports custom functions
+import '/utils/secure_logger.dart';
 import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import '/index.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/custom_code/actions/index.dart' as actions;
 
@@ -19,22 +16,25 @@ Future<void> handleNotificationRedirection(
   BuildContext context,
   dynamic data,
 ) async {
+  SecureLogger.functionStart('handleNotificationRedirection');
+  
   if (data is! Map<String, dynamic>) {
-    debugPrint('[DEBUG] handleNotificationRedirection: data is not a Map.');
+    SecureLogger.warning('Notification redirection data is not a Map');
     return;
   }
 
   final type = data['type'] as String?;
   if (type == null) {
-    debugPrint(
-        '[DEBUG] handleNotificationRedirection: "type" field is missing in data.');
+    SecureLogger.warning('Notification redirection missing "type" field');
     return;
   }
 
   final router = GoRouter.of(context);
   final userRole = FFAppState().currentUserRole;
-  debugPrint(
-      '--- [DEBUG] Redirecting for type=$type | role=$userRole | data=$data');
+  SecureLogger.debugSanitized(
+    'Processing notification redirection',
+    sensitiveKeys: ['token', 'session_id', 'video_session_id', 'agora_channel_name', 'room_id', 'user_id']
+  );
 
   switch (type) {
     case 'videoIncoming':
@@ -42,8 +42,7 @@ Future<void> handleNotificationRedirection(
         final sessionId = data['video_session_id'] as String?;
         final channelName = data['agora_channel_name'] as String?;
         if (sessionId == null || channelName == null) {
-          debugPrint(
-              '[DEBUG] videoIncoming redirection ERROR: missing session or channel name.');
+          SecureLogger.error('videoIncoming redirection missing session or channel name');
           return;
         }
 

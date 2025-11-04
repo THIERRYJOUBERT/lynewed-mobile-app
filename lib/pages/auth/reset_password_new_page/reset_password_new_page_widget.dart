@@ -3,11 +3,8 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'reset_password_new_page_model.dart';
 export 'reset_password_new_page_model.dart';
 
@@ -71,9 +68,9 @@ class _ResetPasswordNewPageWidgetState
                   children: [
                     Flexible(
                       child: Align(
-                        alignment: AlignmentDirectional(0.0, 0.0),
+                        alignment: const AlignmentDirectional(0.0, 0.0),
                         child: Stack(
-                          alignment: AlignmentDirectional(0.0, -1.0),
+                          alignment: const AlignmentDirectional(0.0, -1.0),
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(0.0),
@@ -85,16 +82,16 @@ class _ResetPasswordNewPageWidgetState
                               ),
                             ),
                             Align(
-                              alignment: AlignmentDirectional(0.0, -1.0),
+                              alignment: const AlignmentDirectional(0.0, -1.0),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     32.0, 70.0, 32.0, 0.0),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.max,
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Align(
-                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      alignment: const AlignmentDirectional(0.0, 0.0),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.max,
                                         mainAxisAlignment:
@@ -102,7 +99,7 @@ class _ResetPasswordNewPageWidgetState
                                         children: [
                                           Align(
                                             alignment:
-                                                AlignmentDirectional(0.0, 0.0),
+                                                const AlignmentDirectional(0.0, 0.0),
                                             child: FlutterFlowIconButton(
                                               borderRadius: 100.0,
                                               borderWidth: 0.0,
@@ -110,7 +107,7 @@ class _ResetPasswordNewPageWidgetState
                                               fillColor:
                                                   FlutterFlowTheme.of(context)
                                                       .backgroundIcons,
-                                              icon: Icon(
+                                              icon: const Icon(
                                                 Icons.arrow_back_ios_rounded,
                                                 color: Colors.white,
                                                 size: 17.0,
@@ -143,7 +140,7 @@ class _ResetPasswordNewPageWidgetState
                                           Container(
                                             width: 40.0,
                                             height: 30.0,
-                                            decoration: BoxDecoration(),
+                                            decoration: const BoxDecoration(),
                                           ),
                                         ],
                                       ),
@@ -161,7 +158,7 @@ class _ResetPasswordNewPageWidgetState
                                             fontWeight: FontWeight.w500,
                                           ),
                                     ),
-                                  ].divide(SizedBox(height: 12.0)),
+                                  ].divide(const SizedBox(height: 12.0)),
                                 ),
                               ),
                             ),
@@ -173,7 +170,7 @@ class _ResetPasswordNewPageWidgetState
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(32.0, 0.0, 32.0, 0.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(32.0, 0.0, 32.0, 0.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -183,7 +180,7 @@ class _ResetPasswordNewPageWidgetState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Align(
-                          alignment: AlignmentDirectional(-1.0, -1.0),
+                          alignment: const AlignmentDirectional(-1.0, -1.0),
                           child: Text(
                             'SET A NEW PASSWORD',
                             style: FlutterFlowTheme.of(context)
@@ -208,9 +205,9 @@ class _ResetPasswordNewPageWidgetState
                               ),
                         ),
                         Align(
-                          alignment: AlignmentDirectional(1.0, 1.0),
+                          alignment: const AlignmentDirectional(1.0, 1.0),
                           child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 12.0, 0.0, 0.0),
                             child: Text(
                               'Required fields*',
@@ -225,16 +222,16 @@ class _ResetPasswordNewPageWidgetState
                             ),
                           ),
                         ),
-                      ].divide(SizedBox(height: 14.0)),
+                      ].divide(const SizedBox(height: 14.0)),
                     ),
                     Container(
                       width: double.infinity,
-                      decoration: BoxDecoration(),
+                      decoration: const BoxDecoration(),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
+                          SizedBox(
                             width: double.infinity,
                             child: TextFormField(
                               controller: _model.newPasswordTextController,
@@ -285,7 +282,7 @@ class _ResetPasswordNewPageWidgetState
                                   ),
                                   borderRadius: BorderRadius.circular(0.0),
                                 ),
-                                contentPadding: EdgeInsetsDirectional.fromSTEB(
+                                contentPadding: const EdgeInsetsDirectional.fromSTEB(
                                     4.0, 12.0, 0.0, 12.0),
                                 suffixIcon: InkWell(
                                   onTap: () => safeSetState(
@@ -317,7 +314,7 @@ class _ResetPasswordNewPageWidgetState
                                   .asValidator(context),
                             ),
                           ),
-                          Container(
+                          SizedBox(
                             width: double.infinity,
                             child: TextFormField(
                               controller: _model.confirmPasswordTextController,
@@ -368,7 +365,7 @@ class _ResetPasswordNewPageWidgetState
                                   ),
                                   borderRadius: BorderRadius.circular(0.0),
                                 ),
-                                contentPadding: EdgeInsetsDirectional.fromSTEB(
+                                contentPadding: const EdgeInsetsDirectional.fromSTEB(
                                     4.0, 12.0, 0.0, 12.0),
                                 suffixIcon: InkWell(
                                   onTap: () => safeSetState(
@@ -400,7 +397,7 @@ class _ResetPasswordNewPageWidgetState
                                   .asValidator(context),
                             ),
                           ),
-                        ].divide(SizedBox(height: 24.0)),
+                        ].divide(const SizedBox(height: 24.0)),
                       ),
                     ),
                     Column(
@@ -409,12 +406,8 @@ class _ResetPasswordNewPageWidgetState
                         FFButtonWidget(
                           onPressed: () async {
                             if ((_model.newPasswordTextController.text !=
-                                        null &&
-                                    _model.newPasswordTextController.text !=
                                         '') &&
                                 (_model.confirmPasswordTextController.text !=
-                                        null &&
-                                    _model.confirmPasswordTextController.text !=
                                         '')) {
                               if (_model.newPasswordTextController.text ==
                                   _model.confirmPasswordTextController.text) {
@@ -430,13 +423,13 @@ class _ResetPasswordNewPageWidgetState
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(
+                                    content: const Text(
                                       'Passwords do not match.',
                                       style: TextStyle(
                                         color: Colors.white,
                                       ),
                                     ),
-                                    duration: Duration(milliseconds: 4000),
+                                    duration: const Duration(milliseconds: 4000),
                                     backgroundColor:
                                         FlutterFlowTheme.of(context).accent2,
                                   ),
@@ -445,13 +438,13 @@ class _ResetPasswordNewPageWidgetState
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(
+                                  content: const Text(
                                     'The fields are not filled in.',
                                     style: TextStyle(
                                       color: Colors.white,
                                     ),
                                   ),
-                                  duration: Duration(milliseconds: 4000),
+                                  duration: const Duration(milliseconds: 4000),
                                   backgroundColor:
                                       FlutterFlowTheme.of(context).accent2,
                                 ),
@@ -462,9 +455,9 @@ class _ResetPasswordNewPageWidgetState
                           options: FFButtonOptions(
                             width: double.infinity,
                             height: 48.0,
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 16.0, 0.0, 16.0, 0.0),
-                            iconPadding: EdgeInsetsDirectional.fromSTEB(
+                            iconPadding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 0.0, 0.0),
                             color: FlutterFlowTheme.of(context).primary,
                             textStyle: FlutterFlowTheme.of(context)
@@ -480,12 +473,12 @@ class _ResetPasswordNewPageWidgetState
                             borderRadius: BorderRadius.circular(0.0),
                           ),
                         ),
-                      ].divide(SizedBox(height: 12.0)),
+                      ].divide(const SizedBox(height: 12.0)),
                     ),
-                  ].divide(SizedBox(height: 48.0)),
+                  ].divide(const SizedBox(height: 48.0)),
                 ),
               ),
-            ].divide(SizedBox(height: 32.0)),
+            ].divide(const SizedBox(height: 32.0)),
           ),
         ),
       ),

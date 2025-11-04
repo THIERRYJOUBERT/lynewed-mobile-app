@@ -1,33 +1,28 @@
 // Automatic FlutterFlow imports
-import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+// Imports other custom widgets
+// Imports custom actions
+// Imports custom functions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 // Fichier: custom_code/widgets/agora_video_view.dart
-// VERSION FINALE ET STABILISÉE POUR AGORA 5.3.1
+// VERSION CORRIGÉE POUR AGORA 5.3.1 - API OFFICIELLE
 
-import 'package:agora_rtc_engine/rtc_engine.dart' as rtc_engine;
+import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:agora_rtc_engine/rtc_local_view.dart' as RtcLocalView;
 import 'package:agora_rtc_engine/rtc_remote_view.dart' as RtcRemoteView;
 import 'package:permission_handler/permission_handler.dart';
+import '/utils/secure_logger.dart';
 
 // Logique de contrôle statique pour être appelée depuis les Custom Actions
 class _AgoraManager {
-  static rtc_engine.RtcEngine? _engine;
+  static RtcEngine? _engine;
 
   static Future<void> agoraToggleMute(bool isMuted) async =>
       await _engine?.muteLocalAudioStream(isMuted);
   static Future<void> agoraToggleCamera(bool isCameraOff) async =>
-      await _engine?.enableLocalVideo(!isCameraOff);
+      await _engine?.muteLocalVideoStream(isCameraOff);
   static Future<void> agoraSwitchCamera() async =>
       await _engine?.switchCamera();
   static Future<void> agoraEndCall() async {
@@ -35,8 +30,9 @@ class _AgoraManager {
       try {
         await _engine!.leaveChannel();
         await _engine!.destroy();
+        SecureLogger.info('Agora engine destroyed successfully');
       } catch (e) {
-        debugPrint('[AGORA 5.3] Error during agoraEndCall: $e');
+        SecureLogger.error('Error during agora end call', error: e);
       } finally {
         _engine = null;
       }
@@ -79,6 +75,7 @@ class AgoraVideoView extends StatefulWidget {
 class _AgoraVideoViewState extends State<AgoraVideoView> {
   int? _remoteUid;
   bool _localUserJoined = false;
+  bool _isInitialized = false;
 
   @override
   void initState() {
@@ -93,61 +90,128 @@ class _AgoraVideoViewState extends State<AgoraVideoView> {
   }
 
   Future<void> initAgora() async {
-    debugPrint('[AGORA 5.3] Initializing Agora...');
-    await [Permission.microphone, Permission.camera].request();
+    SecureLogger.functionStart('initAgora', params: {
+      'channelName': '***REDACTED***'
+    });
+    
+    // Vérifier les permissions sans les redemander (déjà fait dans chat_details)
+    final cameraStatus = await Permission.camera.status;
+    final micStatus = await Permission.microphone.status;
+    
+    if (!cameraStatus.isGranted || !micStatus.isGranted) {
+      SecureLogger.warning('Agora permissions not granted - camera: $cameraStatus, mic: $micStatus');
+      if (mounted) widget.onCallEnd();
+      return;
+    }
 
     try {
-      // Version recommandée pour 5.3.x : createWithContext
-      _AgoraManager._engine = await rtc_engine.RtcEngine.createWithContext(
-        rtc_engine.RtcEngineContext(widget.appId),
-      );
-
-      // Profil Communication pour les appels 1-1 (plus simple et fiable)
-      await _AgoraManager._engine!
-          .setChannelProfile(rtc_engine.ChannelProfile.Communication);
+      // ✅ API OFFICIELLE AGORA 5.3.1 - CORRECTION CRITIQUE
+      _AgoraManager._engine = await RtcEngine.create(widget.appId);
+      
+      SecureLogger.info('Agora engine created successfully');
+      
+      // Configuration pour appels 1-1
       await _AgoraManager._engine!.enableVideo();
+      await _AgoraManager._engine!.setChannelProfile(ChannelProfile.Communication);
+      await _AgoraManager._engine!.setClientRole(ClientRole.Broadcaster);
+      
+      // ✅ CORRECTION: T majuscule dans ToSpeakerphone
       await _AgoraManager._engine!.setDefaultAudioRouteToSpeakerphone(true);
 
       _AgoraManager._engine!.setEventHandler(
-        rtc_engine.RtcEngineEventHandler(
+        RtcEngineEventHandler(
           joinChannelSuccess: (String channel, int uid, int elapsed) {
-            debugPrint(
-                '[AGORA 5.3] ✅ joinChannelSuccess: channel=$channel, uid=$uid');
+            SecureLogger.debugSanitized(
+              'Agora join channel success',
+              sensitiveKeys: ['channel', 'uid']
+            );
             if (mounted) setState(() => _localUserJoined = true);
           },
           userJoined: (int uid, int elapsed) {
-            debugPrint('[AGORA 5.3] 🤝 userJoined: remoteUid=$uid');
+            SecureLogger.debugSanitized(
+              'Agora remote user joined',
+              sensitiveKeys: ['uid']
+            );
             if (mounted) setState(() => _remoteUid = uid);
           },
-          userOffline: (int uid, rtc_engine.UserOfflineReason reason) {
-            debugPrint('[AGORA 5.3] 👋 userOffline: uid=$uid, reason=$reason');
-            if (mounted) setState(() => _remoteUid = null);
-            widget.onCallEnd();
+          userOffline: (int uid, UserOfflineReason reason) {
+            SecureLogger.debugSanitized(
+              'Agora remote user offline',
+              sensitiveKeys: ['uid']
+            );
+            if (mounted) {
+              setState(() => _remoteUid = null);
+              widget.onCallEnd();
+            }
           },
-          error: (rtc_engine.ErrorCode err) {
-            debugPrint('[AGORA 5.3] 🛑 onError: code=$err');
-            widget.onCallEnd();
+          error: (ErrorCode err) {
+            SecureLogger.error('Agora engine error', error: err);
+            if (mounted) widget.onCallEnd();
+          },
+          leaveChannel: (RtcStats stats) {
+            SecureLogger.performance('Agora leave channel completed');
           },
         ),
       );
 
+      // Conversion userId (String) → UID Agora (Int)
       final localUidInt = widget.userId.hashCode & 0x7FFFFFFF;
-      debugPrint(
-          '[AGORA 5.3] Joining channel "${widget.channelName}" with uid $localUidInt');
+      SecureLogger.debugSanitized(
+        'Joining Agora channel',
+        sensitiveKeys: ['channelName', 'uid', 'token']
+      );
 
-      await _AgoraManager._engine!
-          .joinChannel(widget.token, widget.channelName, null, localUidInt);
-    } catch (e) {
-      debugPrint('[AGORA 5.3] 🛑 CRITICAL in initAgora: $e');
-      widget.onCallEnd();
+      await _AgoraManager._engine!.joinChannel(
+        widget.token, 
+        widget.channelName, 
+        null,  // optionalInfo
+        localUidInt
+      );
+      
+      if (mounted) {
+        setState(() => _isInitialized = true);
+        SecureLogger.info('Agora initialization completed successfully');
+      }
+      
+    } catch (e, stackTrace) {
+      SecureLogger.error('Critical error in Agora initialization', error: e, stackTrace: stackTrace);
+      if (mounted) widget.onCallEnd();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return Container(
+        color: Colors.black,
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 3,
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Connecting to video call...',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Stack(
       children: [
+        // Remote video (full screen)
         Center(child: _remoteVideo()),
+        
+        // Local video (small window - bottom right)
         Align(
           alignment: Alignment.bottomRight,
           child: Padding(
@@ -157,14 +221,23 @@ class _AgoraVideoViewState extends State<AgoraVideoView> {
               height: 150,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8.0),
-                child: _localUserJoined
-                    ? RtcLocalView.SurfaceView()
-                    : Container(
-                        color: Colors.black54,
-                        child: Center(
-                            child: Text('Connecting...',
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 10)))),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white, width: 2),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: _localUserJoined
+                      ? const RtcLocalView.SurfaceView()
+                      : Container(
+                          color: Colors.black87,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        ),
+                ),
               ),
             ),
           ),
@@ -180,8 +253,40 @@ class _AgoraVideoViewState extends State<AgoraVideoView> {
         channelId: widget.channelName,
       );
     } else {
-      return const Text('Waiting for the other person...',
-          textAlign: TextAlign.center, style: TextStyle(color: Colors.white));
+      return Container(
+        color: Colors.black,
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.videocam_off,
+                color: Colors.white54,
+                size: 64,
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Waiting for the other person...',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'They will join shortly',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
     }
   }
 }

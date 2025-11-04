@@ -1,20 +1,17 @@
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
+import '/components/select_date_widget.dart';
 import '/components/ui_system/empty_state/empty_state_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
-import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/random_data_util.dart' as random_data;
-import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'create_edit_point_of_interest_sheet_model.dart';
 export 'create_edit_point_of_interest_sheet_model.dart';
 
@@ -50,10 +47,10 @@ class _CreateEditPointOfInterestSheetWidgetState
 
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      _model.budgetMin = widget!.filtersOn?.budgetMin;
-      _model.budgetMax = widget!.filtersOn?.budgetMax;
+      _model.budgetMin = widget.filtersOn?.budgetMin;
+      _model.budgetMax = widget.filtersOn?.budgetMax;
       _model.professions =
-          widget!.filtersOn!.professions.toList().cast<Profession>();
+          widget.filtersOn!.professions.toList().cast<Profession>();
       safeSetState(() {});
     });
 
@@ -79,7 +76,7 @@ class _CreateEditPointOfInterestSheetWidgetState
         Container(
           decoration: BoxDecoration(
             color: FlutterFlowTheme.of(context).primaryBackground,
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(0.0),
               bottomRight: Radius.circular(0.0),
               topLeft: Radius.circular(24.0),
@@ -87,7 +84,7 @@ class _CreateEditPointOfInterestSheetWidgetState
             ),
           ),
           child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(20.0, 20.0, 20.0, 20.0),
+            padding: const EdgeInsetsDirectional.fromSTEB(20.0, 20.0, 20.0, 20.0),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -111,7 +108,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                               BoxShadow(
                                 blurRadius: 10.0,
                                 color: FlutterFlowTheme.of(context).secondary,
-                                offset: Offset(
+                                offset: const Offset(
                                   0.0,
                                   0.0,
                                 ),
@@ -132,7 +129,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                       ),
                       Expanded(
                         child: Text(
-                          'MY POINT OF INTEREST',
+                          'MY WEDDING SPOT',
                           style:
                               FlutterFlowTheme.of(context).bodyMedium.override(
                                     fontFamily: 'Haas Grot Text Trial',
@@ -156,11 +153,11 @@ class _CreateEditPointOfInterestSheetWidgetState
                           size: 24.0,
                         ),
                       ),
-                    ].divide(SizedBox(width: 8.0)),
+                    ].divide(const SizedBox(width: 8.0)),
                   ),
                   Container(
                     width: double.infinity,
-                    decoration: BoxDecoration(),
+                    decoration: const BoxDecoration(),
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
                       children: [
@@ -183,13 +180,13 @@ class _CreateEditPointOfInterestSheetWidgetState
                           ],
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
+                          padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 14.0, 0.0, 10.0),
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
                             children: [
                               Flexible(
-                                child: Container(
+                                child: SizedBox(
                                   width: MediaQuery.sizeOf(context).width * 1.0,
                                   height: 50.0,
                                   child: custom_widgets.InstantSearchTextField(
@@ -227,9 +224,9 @@ class _CreateEditPointOfInterestSheetWidgetState
                             ],
                           ),
                         ),
-                        if (_model.psPlaceSuggestions.length != 0)
+                        if (_model.psPlaceSuggestions.isNotEmpty)
                           Align(
-                            alignment: AlignmentDirectional(0.0, -0.4),
+                            alignment: const AlignmentDirectional(0.0, -0.4),
                             child: Material(
                               color: Colors.transparent,
                               elevation: 0.0,
@@ -244,14 +241,14 @@ class _CreateEditPointOfInterestSheetWidgetState
                                   borderRadius: BorderRadius.circular(2.0),
                                 ),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       16.0, 14.0, 16.0, 14.0),
                                   child: Builder(
                                     builder: (context) {
                                       final placeSuggestionList =
                                           _model.psPlaceSuggestions.toList();
                                       if (placeSuggestionList.isEmpty) {
-                                        return Center(
+                                        return const Center(
                                           child: EmptyStateWidget(
                                             message:
                                                 'Aucune adresse trouvée...',
@@ -266,7 +263,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                                         scrollDirection: Axis.vertical,
                                         itemCount: placeSuggestionList.length,
                                         separatorBuilder: (_, __) =>
-                                            SizedBox(height: 10.0),
+                                            const SizedBox(height: 10.0),
                                         itemBuilder: (context,
                                             placeSuggestionListIndex) {
                                           final placeSuggestionListItem =
@@ -358,7 +355,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                               ),
                             ),
                           ),
-                      ].divide(SizedBox(height: 0.0)),
+                      ].divide(const SizedBox(height: 0.0)),
                     ),
                   ),
                   Divider(
@@ -395,14 +392,10 @@ class _CreateEditPointOfInterestSheetWidgetState
                               safeSetState(() {});
                             }
                           },
-                          side: (FlutterFlowTheme.of(context).secondaryText !=
-                                  null)
-                              ? BorderSide(
-                                  width: 2,
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryText!,
-                                )
-                              : null,
+                          side: BorderSide(
+                            width: 2,
+                            color: FlutterFlowTheme.of(context).secondaryText,
+                          ),
                           activeColor: FlutterFlowTheme.of(context).primary,
                           checkColor: FlutterFlowTheme.of(context).info,
                         ),
@@ -419,7 +412,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                   if (_model.isPublic == true)
                     Container(
                       width: double.infinity,
-                      decoration: BoxDecoration(),
+                      decoration: const BoxDecoration(),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         children: [
@@ -456,7 +449,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                                 ),
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     0.0, 14.0, 0.0, 0.0),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.max,
@@ -522,7 +515,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                                                         color:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .secondaryText!,
+                                                                .secondaryText,
                                                       )
                                                     : null,
                                                 activeColor:
@@ -599,7 +592,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                                                         color:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .secondaryText!,
+                                                                .secondaryText,
                                                       )
                                                     : null,
                                                 activeColor:
@@ -676,7 +669,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                                                         color:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .secondaryText!,
+                                                                .secondaryText,
                                                       )
                                                     : null,
                                                 activeColor:
@@ -759,7 +752,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                                                         color:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .secondaryText!,
+                                                                .secondaryText,
                                                       )
                                                     : null,
                                                 activeColor:
@@ -835,7 +828,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                                                         color:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .secondaryText!,
+                                                                .secondaryText,
                                                       )
                                                     : null,
                                                 activeColor:
@@ -911,7 +904,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                                                         color:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .secondaryText!,
+                                                                .secondaryText,
                                                       )
                                                     : null,
                                                 activeColor:
@@ -995,7 +988,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                                                         color:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .secondaryText!,
+                                                                .secondaryText,
                                                       )
                                                     : null,
                                                 activeColor:
@@ -1071,7 +1064,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                                                         color:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .secondaryText!,
+                                                                .secondaryText,
                                                       )
                                                     : null,
                                                 activeColor:
@@ -1146,7 +1139,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                                                         color:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .secondaryText!,
+                                                                .secondaryText,
                                                       )
                                                     : null,
                                                 activeColor:
@@ -1177,9 +1170,9 @@ class _CreateEditPointOfInterestSheetWidgetState
                                 ),
                               ),
                               Align(
-                                alignment: AlignmentDirectional(0.0, -1.0),
+                                alignment: const AlignmentDirectional(0.0, -1.0),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0.0, 20.0, 0.0, 0.0),
                                   child: Container(
                                     width: double.infinity,
@@ -1215,9 +1208,9 @@ class _CreateEditPointOfInterestSheetWidgetState
                                 ],
                               ),
                               Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                     0.0, 14.0, 0.0, 0.0),
-                                child: Container(
+                                child: SizedBox(
                                   width: double.infinity,
                                   height: 100.0,
                                   child: custom_widgets.CustomRangeSliderWidget(
@@ -1265,110 +1258,77 @@ class _CreateEditPointOfInterestSheetWidgetState
                                 ],
                               ),
                               Align(
-                                alignment: AlignmentDirectional(-1.0, 0.0),
+                                alignment: const AlignmentDirectional(-1.0, 0.0),
                                 child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
                                       0.0, 14.0, 0.0, 0.0),
+                                  child: InkWell(
+                                    splashColor: Colors.transparent,
+                                    focusColor: Colors.transparent,
+                                    hoverColor: Colors.transparent,
+                                    highlightColor: Colors.transparent,
+                                    onTap: () async {
+                                    await showModalBottomSheet(
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      enableDrag: false,
+                                      context: context,
+                                      builder: (context) {
+                                        return Padding(
+                                          padding: MediaQuery.viewInsetsOf(context),
+                                          child: SelectDateWidget(
+                                            initialDate: _model.eventStartDate != null
+                                                ? _model.eventStartDate!
+                                                : getCurrentTimestamp,
+                                            actionDate: (selectedDate) async {
+                                              _model.eventStartDate = selectedDate;
+                                              safeSetState(() {});
+                                            },
+                                          ),
+                                        );
+                                      },
+                                    ).then((value) => safeSetState(() {}));
+                                  },
                                   child: Container(
                                     width: 140.0,
-                                    child: TextFormField(
-                                      controller:
-                                          _model.textFieldDateTextController,
-                                      focusNode: _model.textFieldDateFocusNode,
-                                      onChanged: (_) => EasyDebounce.debounce(
-                                        '_model.textFieldDateTextController',
-                                        Duration(milliseconds: 2000),
-                                        () async {
-                                          _model.eventStartDate =
-                                              functions.stringToDateTime(_model
-                                                  .textFieldDateTextController
-                                                  .text);
-                                          safeSetState(() {});
-                                        },
+                                    height: 40.0,
+                                    decoration: BoxDecoration(
+                                      color: FlutterFlowTheme.of(context)
+                                          .secondaryBackground,
+                                      borderRadius: BorderRadius.circular(4.0),
+                                      border: Border.all(
+                                        color: FlutterFlowTheme.of(context).tertiary,
                                       ),
-                                      autofocus: false,
-                                      textInputAction: TextInputAction.done,
-                                      obscureText: false,
-                                      decoration: InputDecoration(
-                                        isDense: true,
-                                        labelStyle: FlutterFlowTheme.of(context)
-                                            .labelMedium
-                                            .override(
-                                              fontFamily:
-                                                  'Haas Grot Text Trial',
-                                              letterSpacing: 0.0,
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.max,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsetsDirectional.fromSTEB(
+                                              8.0, 0.0, 0.0, 0.0),
+                                          child: Text(
+                                            valueOrDefault<String>(
+                                              dateTimeFormat(
+                                                "d/M/y",
+                                                _model.eventStartDate,
+                                                locale: FFLocalizations.of(context)
+                                                    .languageCode,
+                                              ),
+                                              'Date...',
                                             ),
-                                        hintText: '01/01/2028',
-                                        hintStyle: FlutterFlowTheme.of(context)
-                                            .labelMedium
-                                            .override(
-                                              fontFamily:
-                                                  'Haas Grot Text Trial',
-                                              letterSpacing: 0.0,
-                                            ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
-                                                .secondaryText,
-                                            width: 1.0,
+                                            style: FlutterFlowTheme.of(context)
+                                                .bodyMedium
+                                                .override(
+                                                  fontFamily: 'Haas Grot Text Trial',
+                                                  letterSpacing: 0.0,
+                                                ),
                                           ),
-                                          borderRadius:
-                                              BorderRadius.circular(2.0),
                                         ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color: Color(0x00000000),
-                                            width: 1.0,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(2.0),
-                                        ),
-                                        errorBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
-                                                .error,
-                                            width: 1.0,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(2.0),
-                                        ),
-                                        focusedErrorBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
-                                                .error,
-                                            width: 1.0,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(2.0),
-                                        ),
-                                        filled: true,
-                                        fillColor: FlutterFlowTheme.of(context)
-                                            .primaryBackground,
-                                        suffixIcon: Icon(
-                                          Icons.date_range_outlined,
-                                          color: FlutterFlowTheme.of(context)
-                                              .alternate,
-                                          size: 20.0,
-                                        ),
-                                      ),
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Haas Grot Text Trial',
-                                            letterSpacing: 0.0,
-                                          ),
-                                      keyboardType: TextInputType.datetime,
-                                      cursorColor: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      enableInteractiveSelection: true,
-                                      validator: _model
-                                          .textFieldDateTextControllerValidator
-                                          .asValidator(context),
-                                      inputFormatters: [
-                                        _model.textFieldDateMask
                                       ],
                                     ),
                                   ),
+                                ),
                                 ),
                               ),
                             ],
@@ -1378,7 +1338,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                     ),
                   FFButtonWidget(
                     onPressed: () async {
-                      var _shouldSetState = false;
+                      var shouldSetState = false;
                       if (_model.isPublic == true) {
                         if (_model.placeLatLng != null) {
                           _model.newPinId = await actions.upsertWeddingPin(
@@ -1393,7 +1353,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                                 ?.add(const Duration(days: 30)),
                             '${_model.selectedPlace?.city} ${_model.selectedPlace?.country}',
                           );
-                          _shouldSetState = true;
+                          shouldSetState = true;
                           if (_model.newPinId != null &&
                               _model.newPinId != '') {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -1405,7 +1365,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                                         .primaryText,
                                   ),
                                 ),
-                                duration: Duration(milliseconds: 2000),
+                                duration: const Duration(milliseconds: 2000),
                                 backgroundColor:
                                     FlutterFlowTheme.of(context).success,
                               ),
@@ -1437,7 +1397,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                                         .primaryText,
                                   ),
                                 ),
-                                duration: Duration(milliseconds: 2000),
+                                duration: const Duration(milliseconds: 2000),
                                 backgroundColor:
                                     FlutterFlowTheme.of(context).error,
                               ),
@@ -1455,12 +1415,12 @@ class _CreateEditPointOfInterestSheetWidgetState
                                       FlutterFlowTheme.of(context).primaryText,
                                 ),
                               ),
-                              duration: Duration(milliseconds: 2000),
+                              duration: const Duration(milliseconds: 2000),
                               backgroundColor:
                                   FlutterFlowTheme.of(context).error,
                             ),
                           );
-                          if (_shouldSetState) safeSetState(() {});
+                          if (shouldSetState) safeSetState(() {});
                           return;
                         }
                       } else {
@@ -1476,7 +1436,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                           getCurrentTimestamp,
                           '',
                         );
-                        _shouldSetState = true;
+                        shouldSetState = true;
                         if (_model.newPoiId != null && _model.newPoiId != '') {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -1487,7 +1447,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                                       FlutterFlowTheme.of(context).primaryText,
                                 ),
                               ),
-                              duration: Duration(milliseconds: 2000),
+                              duration: const Duration(milliseconds: 2000),
                               backgroundColor:
                                   FlutterFlowTheme.of(context).success,
                             ),
@@ -1502,7 +1462,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                                       FlutterFlowTheme.of(context).primaryText,
                                 ),
                               ),
-                              duration: Duration(milliseconds: 2000),
+                              duration: const Duration(milliseconds: 2000),
                               backgroundColor:
                                   FlutterFlowTheme.of(context).error,
                             ),
@@ -1512,16 +1472,16 @@ class _CreateEditPointOfInterestSheetWidgetState
                         Navigator.pop(context);
                       }
 
-                      if (_shouldSetState) safeSetState(() {});
+                      if (shouldSetState) safeSetState(() {});
                     },
                     text: 'Add this point',
                     options: FFButtonOptions(
                       width: double.infinity,
                       height: 48.0,
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
                       iconPadding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                          const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                       color: FlutterFlowTheme.of(context).primary,
                       textStyle:
                           FlutterFlowTheme.of(context).titleSmall.override(
@@ -1535,7 +1495,7 @@ class _CreateEditPointOfInterestSheetWidgetState
                       borderRadius: BorderRadius.circular(0.0),
                     ),
                   ),
-                ].divide(SizedBox(height: 20.0)),
+                ].divide(const SizedBox(height: 20.0)),
               ),
             ),
           ),

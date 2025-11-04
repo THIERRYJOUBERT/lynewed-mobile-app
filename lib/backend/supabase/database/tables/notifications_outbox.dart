@@ -10,7 +10,7 @@ class NotificationsOutboxTable extends SupabaseTable<NotificationsOutboxRow> {
 }
 
 class NotificationsOutboxRow extends SupabaseDataRow {
-  NotificationsOutboxRow(Map<String, dynamic> data) : super(data);
+  NotificationsOutboxRow(super.data);
 
   @override
   SupabaseTable get table => NotificationsOutboxTable();

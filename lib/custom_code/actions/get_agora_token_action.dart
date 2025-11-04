@@ -1,13 +1,8 @@
 // Automatic FlutterFlow imports
-import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
+import '/utils/secure_logger.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -17,8 +12,10 @@ Future<String?> getAgoraTokenAction(
   String channelName,
   String userId, // On garde le String pour la simplicité d'appel
 ) async {
-  debugPrint(
-      '[DEBUG] getAgoraTokenAction: Requesting token for channel "$channelName" with userId "$userId"');
+  SecureLogger.functionStart('getAgoraTokenAction', params: {
+    'channelName': '***REDACTED***',
+    'userId': '***REDACTED***'
+  });
 
   try {
     final client = SupaFlow.client;
@@ -35,14 +32,14 @@ Future<String?> getAgoraTokenAction(
     );
 
     if (response.data != null && response.data['token'] != null) {
-      debugPrint('[DEBUG] getAgoraTokenAction: Token received successfully.');
+      SecureLogger.info('Agora token received successfully');
       return response.data['token'] as String;
     } else {
-      debugPrint('[DEBUG] getAgoraTokenAction ERROR: ${response.data}');
+      SecureLogger.error('Agora token request failed', error: response.data);
       return null;
     }
   } catch (e) {
-    debugPrint('[DEBUG] getAgoraTokenAction EXCEPTION: $e');
+    SecureLogger.error('Agora token request exception', error: e);
     return null;
   }
 }

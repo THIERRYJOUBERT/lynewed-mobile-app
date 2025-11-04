@@ -1,10 +1,8 @@
-import 'package:flutter/material.dart';
-import 'flutter_flow/flutter_flow_util.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 abstract class FFAppConstants {
-  static const String googlePlacesApiKey =
-      'AIzaSyCLOe2yCKXS-yoxq4E4pHt2NTxG8OUbhuY';
+  static String get googlePlacesApiKey => dotenv.env['GOOGLE_PLACES_API_KEY'] ?? '';
   static const String tosVersion = 'v1.0.0';
   static const String privacyVersion = 'v1.0.0';
-  static const String agoraAppId = 'ddfcd5a017564aebb138e985fdf30bcd';
+  static String get agoraAppId => dotenv.env['AGORA_APP_ID'] ?? '';
 }

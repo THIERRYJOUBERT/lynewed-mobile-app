@@ -1,12 +1,9 @@
 import '/components/incoming_call_sheet_widget.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/instant_timer.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/scheduler.dart';
 import 'global_call_listener_widget_model.dart';
 export 'global_call_listener_widget_model.dart';
 
@@ -36,7 +33,7 @@ class _GlobalCallListenerWidgetWidgetState
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       _model.instantTimer = InstantTimer.periodic(
-        duration: Duration(milliseconds: 1000),
+        duration: const Duration(milliseconds: 1000),
         callback: (timer) async {
           if (FFAppState().incomingVideoCallData != null) {
             await showModalBottomSheet(
@@ -92,7 +89,7 @@ class _GlobalCallListenerWidgetWidgetState
     return Container(
       width: 0.0,
       height: 0.0,
-      decoration: BoxDecoration(),
+      decoration: const BoxDecoration(),
     );
   }
 }

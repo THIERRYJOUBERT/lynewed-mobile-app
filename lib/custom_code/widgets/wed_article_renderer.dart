@@ -1,20 +1,14 @@
 // Automatic FlutterFlow imports
 import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+// Imports other custom widgets
+// Imports custom actions
+// Imports custom functions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import '/custom_code/widgets/index.dart';
-import '/custom_code/actions/index.dart';
-import '/flutter_flow/custom_functions.dart';
 
 import 'package:smooth_page_indicator/smooth_page_indicator.dart'
     as smooth_page_indicator;
@@ -126,52 +120,51 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
         _buildCoverCarousel(context, article.coverImages),
 
         // --- MODIFICATION 3 : Alignement à gauche du nom du pro et de sa profession ---
-        if (article.professional != null)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(100), // Cercle parfait
-                  child: Image.network(
-                    article.professional!.avatarUrl ?? '',
-                    width: 40,
-                    height: 40,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.person, size: 40),
-                  ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(100), // Cercle parfait
+                child: Image.network(
+                  article.professional.avatarUrl ?? '',
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      const Icon(Icons.person, size: 40),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        article.professional!.fullName ?? 'Name...',
-                        style:
-                            FlutterFlowTheme.of(context).titleMedium.override(
-                                  fontFamily: 'Haas Grot Text Trial',
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: 14,
-                                ),
-                      ),
-                      Text(
-                        article.professional!.profession?.name ??
-                            'profession...',
-                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                              fontFamily: 'Haas Grot Text Trial',
-                              color: FlutterFlowTheme.of(context).secondaryText,
-                              fontSize: 14,
-                            ),
-                      ),
-                    ],
-                  ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      article.professional.fullName ?? 'Name...',
+                      style:
+                          FlutterFlowTheme.of(context).titleMedium.override(
+                                fontFamily: 'Haas Grot Text Trial',
+                                fontWeight: FontWeight.normal,
+                                fontSize: 14,
+                              ),
+                    ),
+                    Text(
+                      article.professional.profession?.name ??
+                          'profession...',
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            fontFamily: 'Haas Grot Text Trial',
+                            color: FlutterFlowTheme.of(context).secondaryText,
+                            fontSize: 14,
+                          ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
+        ),
 
         // Blocs de contenu
         ListView.separated(
@@ -186,11 +179,10 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
         ),
 
         // Section Pro
-        if (article.professional != null)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-            child: _buildProfessionalSection(context, article.professional!),
-          ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+          child: _buildProfessionalSection(context, article.professional),
+        ),
       ],
     );
   }
@@ -385,22 +377,22 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
                 ],
               ),
             ),
-            if (pro.instagramUrl != null && pro.instagramUrl!.isNotEmpty)
+            if (pro.instagramUrl.isNotEmpty)
               IconButton(
                 style: IconButton.styleFrom(
                     backgroundColor: theme.primary,
                     foregroundColor: Colors.black),
                 icon: const FaIcon(FontAwesomeIcons.instagram, size: 22),
-                onPressed: () => launchURL(pro.instagramUrl!),
+                onPressed: () => launchURL(pro.instagramUrl),
               ),
             const SizedBox(width: 10),
-            if (pro.websiteUrl != null && pro.websiteUrl!.isNotEmpty)
+            if (pro.websiteUrl.isNotEmpty)
               IconButton(
                 style: IconButton.styleFrom(
                     backgroundColor: theme.primary,
                     foregroundColor: Colors.white),
                 icon: const Icon(Icons.travel_explore_rounded, size: 22),
-                onPressed: () => launchURL(pro.websiteUrl!),
+                onPressed: () => launchURL(pro.websiteUrl),
               ),
           ],
         ),
@@ -469,10 +461,11 @@ class _VideoBlockState extends State<_VideoBlock> {
     if (_controller == null) return;
     setState(() {
       _isPlaying = !_controller!.value.isPlaying;
-      if (_isPlaying)
+      if (_isPlaying) {
         _controller!.play();
-      else
+      } else {
         _controller!.pause();
+      }
     });
   }
 

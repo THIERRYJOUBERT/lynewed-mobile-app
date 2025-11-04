@@ -11,7 +11,7 @@ class ProfessionalSubscriptionsTable
 }
 
 class ProfessionalSubscriptionsRow extends SupabaseDataRow {
-  ProfessionalSubscriptionsRow(Map<String, dynamic> data) : super(data);
+  ProfessionalSubscriptionsRow(super.data);
 
   @override
   SupabaseTable get table => ProfessionalSubscriptionsTable();

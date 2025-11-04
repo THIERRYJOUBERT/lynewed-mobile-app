@@ -10,7 +10,7 @@ class WeddingPinsHistoryTable extends SupabaseTable<WeddingPinsHistoryRow> {
 }
 
 class WeddingPinsHistoryRow extends SupabaseDataRow {
-  WeddingPinsHistoryRow(Map<String, dynamic> data) : super(data);
+  WeddingPinsHistoryRow(super.data);
 
   @override
   SupabaseTable get table => WeddingPinsHistoryTable();
@@ -24,11 +24,11 @@ class WeddingPinsHistoryRow extends SupabaseDataRow {
   String get action => getField<String>('action')!;
   set action(String value) => setField<String>('action', value);
 
-  dynamic? get oldValues => getField<dynamic>('old_values');
-  set oldValues(dynamic? value) => setField<dynamic>('old_values', value);
+  dynamic get oldValues => getField<dynamic>('old_values');
+  set oldValues(dynamic value) => setField<dynamic>('old_values', value);
 
-  dynamic? get newValues => getField<dynamic>('new_values');
-  set newValues(dynamic? value) => setField<dynamic>('new_values', value);
+  dynamic get newValues => getField<dynamic>('new_values');
+  set newValues(dynamic value) => setField<dynamic>('new_values', value);
 
   String? get changedBy => getField<String>('changed_by');
   set changedBy(String? value) => setField<String>('changed_by', value);

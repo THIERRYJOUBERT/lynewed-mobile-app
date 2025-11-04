@@ -2,7 +2,6 @@ import '/auth/supabase_auth/auth_util.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
@@ -17,13 +16,13 @@ Future contactChatRoom(
   contactContext = await actions.openOrPrepareContactAction(
     targetProfileID!,
   );
-  if ((contactContext?.status == ChatEntryStatus.roomReady) ||
-      (contactContext?.status == ChatEntryStatus.requestPending)) {
+  if ((contactContext.status == ChatEntryStatus.roomReady) ||
+      (contactContext.status == ChatEntryStatus.requestPending)) {
     context.pushNamed(
       ChatDetailsWidget.routeName,
       queryParameters: {
         'roomId': serializeParam(
-          contactContext?.roomId,
+          contactContext.roomId,
           ParamType.String,
         ),
         'isPublic': serializeParam(
@@ -31,23 +30,23 @@ Future contactChatRoom(
           ParamType.bool,
         ),
         'requestId': serializeParam(
-          contactContext?.requestId,
+          contactContext.requestId,
           ParamType.String,
         ),
         'otherProfileId': serializeParam(
-          contactContext?.otherProfileId,
+          contactContext.otherProfileId,
           ParamType.String,
         ),
         'isRoomEmpty': serializeParam(
-          contactContext?.isRoomEmpty,
+          contactContext.isRoomEmpty,
           ParamType.bool,
         ),
         'firstMessageTextOnly': serializeParam(
-          contactContext?.firstMessageTextOnly,
+          contactContext.firstMessageTextOnly,
           ParamType.bool,
         ),
         'viewerIsReviewer': serializeParam(
-          contactContext?.viewerIsReviewer,
+          contactContext.viewerIsReviewer,
           ParamType.bool,
         ),
       }.withoutNulls,
@@ -57,12 +56,12 @@ Future contactChatRoom(
       context: context,
       builder: (alertDialogContext) {
         return AlertDialog(
-          title: Text('Error'),
+          title: const Text('Error'),
           content: Text(contactContext!.reason),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(alertDialogContext),
-              child: Text('Ok'),
+              child: const Text('Ok'),
             ),
           ],
         );
@@ -81,8 +80,8 @@ Future contactRoomChatMessagerie(
   contactContextMessagerie = await actions.openOrPrepareContactAction(
     otherProfileId!,
   );
-  if ((contactContextMessagerie?.status == ChatEntryStatus.roomReady) ||
-      (contactContextMessagerie?.status == ChatEntryStatus.requestPending)) {
+  if ((contactContextMessagerie.status == ChatEntryStatus.roomReady) ||
+      (contactContextMessagerie.status == ChatEntryStatus.requestPending)) {
     await ChatRoomParticipantsTable().update(
       data: {
         'last_read_at': supaSerialize<DateTime>(getCurrentTimestamp),
@@ -102,7 +101,7 @@ Future contactRoomChatMessagerie(
       ChatDetailsWidget.routeName,
       queryParameters: {
         'roomId': serializeParam(
-          contactContextMessagerie?.roomId,
+          contactContextMessagerie.roomId,
           ParamType.String,
         ),
         'isPublic': serializeParam(
@@ -110,23 +109,23 @@ Future contactRoomChatMessagerie(
           ParamType.bool,
         ),
         'requestId': serializeParam(
-          contactContextMessagerie?.requestId,
+          contactContextMessagerie.requestId,
           ParamType.String,
         ),
         'otherProfileId': serializeParam(
-          contactContextMessagerie?.otherProfileId,
+          contactContextMessagerie.otherProfileId,
           ParamType.String,
         ),
         'isRoomEmpty': serializeParam(
-          contactContextMessagerie?.isRoomEmpty,
+          contactContextMessagerie.isRoomEmpty,
           ParamType.bool,
         ),
         'firstMessageTextOnly': serializeParam(
-          contactContextMessagerie?.firstMessageTextOnly,
+          contactContextMessagerie.firstMessageTextOnly,
           ParamType.bool,
         ),
         'viewerIsReviewer': serializeParam(
-          contactContextMessagerie?.viewerIsReviewer,
+          contactContextMessagerie.viewerIsReviewer,
           ParamType.bool,
         ),
       }.withoutNulls,
@@ -136,7 +135,7 @@ Future contactRoomChatMessagerie(
       context: context,
       builder: (alertDialogContext) {
         return AlertDialog(
-          title: Text('Error'),
+          title: const Text('Error'),
           content: Text(valueOrDefault<String>(
             contactContextMessagerie?.reason,
             'An error has occurred. Please try again by refreshing the page or contacting support. ',
@@ -144,7 +143,7 @@ Future contactRoomChatMessagerie(
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(alertDialogContext),
-              child: Text('Ok'),
+              child: const Text('Ok'),
             ),
           ],
         );

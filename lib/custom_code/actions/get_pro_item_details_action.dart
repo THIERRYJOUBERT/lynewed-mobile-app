@@ -1,13 +1,10 @@
 // Automatic FlutterFlow imports
+import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -17,7 +14,7 @@ import 'dart:convert';
 
 Future<ProDetailsStruct?> getProItemDetailsAction(String proProfileId) async {
   // --- Start of Helper Functions ---
-  LatLng? _geoJsonToLatLng(dynamic geojson) {
+  LatLng? geoJsonToLatLng(dynamic geojson) {
     if (geojson is Map<String, dynamic>) {
       try {
         if (geojson['type'] == 'Point' &&
@@ -39,7 +36,7 @@ Future<ProDetailsStruct?> getProItemDetailsAction(String proProfileId) async {
     return null;
   }
 
-  Profession _professionFromString(String? s) {
+  Profession professionFromString(String? s) {
     try {
       if (s == null) return Profession.PHOTOGRAPHER;
       return Profession.values.firstWhere((e) => e.name == s);
@@ -48,7 +45,7 @@ Future<ProDetailsStruct?> getProItemDetailsAction(String proProfileId) async {
     }
   }
 
-  SubscriptionTierType _tierFromString(String? s) {
+  SubscriptionTierType tierFromString(String? s) {
     switch (s) {
       case 'premiumVisibility':
         return SubscriptionTierType.premiumVisibility;
@@ -85,7 +82,7 @@ Future<ProDetailsStruct?> getProItemDetailsAction(String proProfileId) async {
     final fixedLocs = <LatLng>[];
     if (data['fixedLocations'] is List) {
       for (final g in (data['fixedLocations'] as List)) {
-        final p = _geoJsonToLatLng(g);
+        final p = geoJsonToLatLng(g);
         if (p != null) fixedLocs.add(p);
       }
     }
@@ -95,11 +92,11 @@ Future<ProDetailsStruct?> getProItemDetailsAction(String proProfileId) async {
       fullName: data['fullName']?.toString() ?? '',
       avatarUrl: data['avatarUrl']?.toString() ?? '',
       businessName: data['businessName']?.toString() ?? '',
-      profession: _professionFromString(data['profession']?.toString()),
+      profession: professionFromString(data['profession']?.toString()),
       budgetMin: (data['budgetMin'] as num?)?.toInt() ?? 0,
       budgetMax: (data['budgetMax'] as num?)?.toInt() ?? 0,
       currency: data['currency']?.toString() ?? 'EUR',
-      subscriptionTier: _tierFromString(data['subscriptionTier']?.toString()),
+      subscriptionTier: tierFromString(data['subscriptionTier']?.toString()),
       distanceKm: (data['distanceKm'] as num?)?.toDouble(),
       locationLabel: data['locationLabel']?.toString() ?? '',
       coverImageUrl: data['coverImageUrl']?.toString() ?? '',
@@ -122,7 +119,7 @@ Future<ProDetailsStruct?> getProItemDetailsAction(String proProfileId) async {
       canContactBride: data['canContactBride'] == true,
     );
   } catch (e) {
-    print('getProItemDetailsAction error: $e');
+    debugPrint('getProItemDetailsAction error: $e');
     return null;
   }
 }

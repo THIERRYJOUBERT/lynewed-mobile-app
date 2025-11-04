@@ -1,13 +1,10 @@
 // Automatic FlutterFlow imports
+import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
-import 'package:flutter/material.dart';
+// Imports other custom actions
+// Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -54,7 +51,7 @@ List<LatLng> _fixedLocationsFromJson(dynamic json) {
             return LatLng(lat, lng);
           }
         }
-        return LatLng(0, 0); // Fallback
+        return const LatLng(0, 0); // Fallback
       })
       .where((ll) => ll.latitude != 0 && ll.longitude != 0)
       .toList();
@@ -70,7 +67,7 @@ Future<List<ProDetailsStruct>> getFavoritedProfessionalsAction() async {
         response is! Map<String, dynamic> ||
         response['items'] == null ||
         response['items'] is! List) {
-      print('getFavoritedProfessionalsAction: Invalid RPC response format.');
+      debugPrint('getFavoritedProfessionalsAction: Invalid RPC response format.');
       return [];
     }
 
@@ -101,6 +98,11 @@ Future<List<ProDetailsStruct>> getFavoritedProfessionalsAction() async {
                 (itemData['portfolioImages'] as List?)
                         ?.map((e) => e.toString()) ??
                     []),
+            slideshowImages: List<String>.from(
+                (itemData['slideshowImages'] as List?)
+                        ?.map((e) => e.toString()) ??
+                    []),
+            profileVideoUrl: itemData['profileVideoUrl']?.toString(),
             fixedLocations: _fixedLocationsFromJson(itemData['fixedLocations']),
             instagramUrl: itemData['instagramUrl']?.toString(),
             websiteUrl: itemData['websiteUrl']?.toString(),
@@ -114,7 +116,7 @@ Future<List<ProDetailsStruct>> getFavoritedProfessionalsAction() async {
 
     return proDetailsList;
   } catch (e) {
-    print('getFavoritedProfessionalsAction error: $e');
+    debugPrint('getFavoritedProfessionalsAction error: $e');
     return []; // Retourne une liste vide en cas d'erreur
   }
 }

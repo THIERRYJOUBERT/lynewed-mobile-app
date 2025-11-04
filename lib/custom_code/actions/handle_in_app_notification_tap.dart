@@ -1,20 +1,14 @@
 // Automatic FlutterFlow imports
 import '/backend/schema/structs/index.dart';
-import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/actions/actions.dart' as action_blocks;
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom actions
-import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+// Imports custom functions
+import '/utils/secure_logger.dart';
 import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 // Set your action name, define your arguments and return parameter,
 // and then add the boilerplate code using the green button on the right!
-import '/custom_code/actions/handle_notification_redirection.dart';
-import '/custom_code/actions/mark_notification_as_read.dart';
 
 Future handleInAppNotificationTap(
   BuildContext context,
@@ -29,8 +23,7 @@ Future handleInAppNotificationTap(
   // 2. Préparer les données pour la redirection
   // On crée une Map qui ressemble au payload d'un push FCM
   if (notificationItem.notificationType == null) {
-    debugPrint(
-        'handleInAppNotificationTap: notificationType is null, cannot redirect.');
+    SecureLogger.warning('In-app notification tap failed: notificationType is null, cannot redirect');
     return;
   }
 

@@ -2,14 +2,10 @@ import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:smooth_page_indicator/smooth_page_indicator.dart'
     as smooth_page_indicator;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'wow_viewer_carrousel_model.dart';
 export 'wow_viewer_carrousel_model.dart';
 
@@ -64,12 +60,12 @@ class _WowViewerCarrouselWidgetState extends State<WowViewerCarrouselWidget> {
         body: Stack(
           children: [
             Align(
-              alignment: AlignmentDirectional(0.0, 0.0),
+              alignment: const AlignmentDirectional(0.0, 0.0),
               child: Builder(
                 builder: (context) {
-                  final pageViewImage = widget!.portfolioImages!.toList();
+                  final pageViewImage = widget.portfolioImages!.toList();
 
-                  return Container(
+                  return SizedBox(
                     width: double.infinity,
                     height: double.infinity,
                     child: Stack(
@@ -81,7 +77,7 @@ class _WowViewerCarrouselWidgetState extends State<WowViewerCarrouselWidget> {
                                       0,
                                       min(
                                           valueOrDefault<int>(
-                                            widget!.initialIndex,
+                                            widget.initialIndex,
                                             0,
                                           ),
                                           pageViewImage.length - 1))),
@@ -102,9 +98,9 @@ class _WowViewerCarrouselWidgetState extends State<WowViewerCarrouselWidget> {
                           },
                         ),
                         Align(
-                          alignment: AlignmentDirectional(1.0, 0.0),
+                          alignment: const AlignmentDirectional(1.0, 0.0),
                           child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 0.0, 20.0, 16.0),
                             child: smooth_page_indicator.SmoothPageIndicator(
                               controller: _model.pageViewController ??=
@@ -113,7 +109,7 @@ class _WowViewerCarrouselWidgetState extends State<WowViewerCarrouselWidget> {
                                           0,
                                           min(
                                               valueOrDefault<int>(
-                                                widget!.initialIndex,
+                                                widget.initialIndex,
                                                 0,
                                               ),
                                               pageViewImage.length - 1))),
@@ -122,7 +118,7 @@ class _WowViewerCarrouselWidgetState extends State<WowViewerCarrouselWidget> {
                               onDotClicked: (i) async {
                                 await _model.pageViewController!.animateToPage(
                                   i,
-                                  duration: Duration(milliseconds: 500),
+                                  duration: const Duration(milliseconds: 500),
                                   curve: Curves.ease,
                                 );
                                 safeSetState(() {});
@@ -132,7 +128,7 @@ class _WowViewerCarrouselWidgetState extends State<WowViewerCarrouselWidget> {
                                 radius: 8.0,
                                 dotWidth: 8.0,
                                 dotHeight: 8.0,
-                                dotColor: Color(0xB3D9D9D9),
+                                dotColor: const Color(0xB3D9D9D9),
                                 activeDotColor: FlutterFlowTheme.of(context)
                                     .primaryBackground,
                                 paintStyle: PaintingStyle.fill,
@@ -147,9 +143,9 @@ class _WowViewerCarrouselWidgetState extends State<WowViewerCarrouselWidget> {
               ),
             ),
             Align(
-              alignment: AlignmentDirectional(-1.0, -1.0),
+              alignment: const AlignmentDirectional(-1.0, -1.0),
               child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(20.0, 70.0, 0.0, 0.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(20.0, 70.0, 0.0, 0.0),
                 child: FlutterFlowIconButton(
                   borderRadius: 100.0,
                   borderWidth: 0.0,
@@ -167,13 +163,13 @@ class _WowViewerCarrouselWidgetState extends State<WowViewerCarrouselWidget> {
               ),
             ),
             Align(
-              alignment: AlignmentDirectional(0.0, 1.0),
+              alignment: const AlignmentDirectional(0.0, 1.0),
               child: Container(
                 width: double.infinity,
                 height: 100.0,
                 decoration: BoxDecoration(
                   color: FlutterFlowTheme.of(context).secondaryBackground,
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(0.0),
                     bottomRight: Radius.circular(0.0),
                     topLeft: Radius.circular(24.0),
@@ -182,7 +178,7 @@ class _WowViewerCarrouselWidgetState extends State<WowViewerCarrouselWidget> {
                 ),
                 child: Padding(
                   padding:
-                      EdgeInsetsDirectional.fromSTEB(20.0, 16.0, 20.0, 0.0),
+                      const EdgeInsetsDirectional.fromSTEB(20.0, 16.0, 20.0, 0.0),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -191,7 +187,7 @@ class _WowViewerCarrouselWidgetState extends State<WowViewerCarrouselWidget> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(100.0),
                         child: Image.network(
-                          widget!.proInfo!.avatarUrl,
+                          widget.proInfo!.avatarUrl,
                           width: 50.0,
                           height: 50.0,
                           fit: BoxFit.cover,
@@ -200,7 +196,7 @@ class _WowViewerCarrouselWidgetState extends State<WowViewerCarrouselWidget> {
                       Flexible(
                         child: Container(
                           height: 50.0,
-                          decoration: BoxDecoration(),
+                          decoration: const BoxDecoration(),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -208,7 +204,7 @@ class _WowViewerCarrouselWidgetState extends State<WowViewerCarrouselWidget> {
                             children: [
                               Text(
                                 valueOrDefault<String>(
-                                  widget!.proInfo?.fullName,
+                                  widget.proInfo?.fullName,
                                   'Pro name',
                                 ),
                                 style: FlutterFlowTheme.of(context)
@@ -226,7 +222,7 @@ class _WowViewerCarrouselWidgetState extends State<WowViewerCarrouselWidget> {
                                 children: [
                                   Text(
                                     valueOrDefault<String>(
-                                      widget!.proInfo?.profession?.name,
+                                      widget.proInfo?.profession?.name,
                                       'Profession',
                                     ),
                                     style: FlutterFlowTheme.of(context)
@@ -240,7 +236,7 @@ class _WowViewerCarrouselWidgetState extends State<WowViewerCarrouselWidget> {
                                   ),
                                   Text(
                                     valueOrDefault<String>(
-                                      widget!.proInfo?.locationLabel,
+                                      widget.proInfo?.locationLabel,
                                       'USA',
                                     ),
                                     style: FlutterFlowTheme.of(context)
@@ -254,11 +250,11 @@ class _WowViewerCarrouselWidgetState extends State<WowViewerCarrouselWidget> {
                                   ),
                                 ],
                               ),
-                            ].divide(SizedBox(height: 1.0)),
+                            ].divide(const SizedBox(height: 1.0)),
                           ),
                         ),
                       ),
-                    ].divide(SizedBox(width: 14.0)),
+                    ].divide(const SizedBox(width: 14.0)),
                   ),
                 ),
               ),
