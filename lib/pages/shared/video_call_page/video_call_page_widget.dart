@@ -5,6 +5,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'video_call_page_model.dart';
 export 'video_call_page_model.dart';
 
@@ -33,15 +34,54 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
   late VideoCallPageModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  
+  // Listener Realtime pour détecter quand l'autre raccroche
+  RealtimeChannel? _sessionChannel;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => VideoCallPageModel());
+    _setupRealtimeListener();
+  }
+  
+  void _setupRealtimeListener() {
+    debugPrint('🔔 Setting up Realtime listener for session: ${widget.videoSessionId}');
+    
+    _sessionChannel = Supabase.instance.client.channel('video_session_${widget.videoSessionId}')
+      ..onPostgresChanges(
+        event: PostgresChangeEvent.update,
+        schema: 'public',
+        table: 'video_sessions',
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: 'id',
+          value: widget.videoSessionId,
+        ),
+        callback: (payload) {
+          debugPrint('🔔 Realtime update received: ${payload.toString()}');
+          final newStatus = payload.newRecord['status'] as String?;
+          debugPrint('🔔 New status: $newStatus');
+          
+          if (newStatus == 'completed' && mounted) {
+            debugPrint('🔔 Other user hung up - navigating to home');
+            // Navigation vers la home page en fonction du rôle
+            final userRole = FFAppState().currentUserRole;
+            if (userRole == UserRole.professional) {
+              context.goNamed('DashboardPro');
+            } else {
+              context.goNamed('HomeBrides');
+            }
+          }
+        },
+      )
+      ..subscribe();
   }
 
   @override
   void dispose() {
+    debugPrint('🔔 Disposing video call page - unsubscribing from Realtime');
+    _sessionChannel?.unsubscribe();
     _model.dispose();
 
     super.dispose();
@@ -65,7 +105,7 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
               SizedBox(
                 width: double.infinity,
                 height: double.infinity,
-                child: custom_widgets.AgoraVideoView(
+                child: custom_widgets.AgoraVideoViewWidget(
                   width: double.infinity,
                   height: double.infinity,
                   appId: FFAppConstants.agoraAppId,
@@ -78,7 +118,14 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                       widget.videoSessionId!,
                       VideoSessionStatus.completed,
                     );
-                    context.safePop();
+                    
+                    // Navigation vers la home page en fonction du rôle
+                    final userRole = FFAppState().currentUserRole;
+                    if (userRole == UserRole.professional) {
+                      context.goNamed('DashboardPro');
+                    } else {
+                      context.goNamed('HomeBrides');
+                    }
 
                     safeSetState(() {});
                   },
@@ -211,15 +258,31 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                           hoverColor: Colors.transparent,
                           highlightColor: Colors.transparent,
                           onTap: () async {
-                            await actions.agoraEndCall();
-                            _model.updateVideoSessionStatusActionResult =
-                                await actions.updateVideoSessionStatusAction(
+                            print('🔴 HANGUP BUTTON TAPPED');
+                            
+                            // 1. Naviguer vers home IMMÉDIATEMENT
+                            if (mounted) {
+                              final userRole = FFAppState().currentUserRole;
+                              if (userRole == UserRole.professional) {
+                                context.goNamed('DashboardPro');
+                              } else {
+                                context.goNamed('HomeBrides');
+                              }
+                              print('🔴 Navigated to home page');
+                            }
+                            
+                            // 2. Nettoyer Agora en arrière-plan (non bloquant)
+                            actions.agoraEndCall().catchError((e) {
+                              print('⚠️ Error ending Agora call: $e');
+                            });
+                            
+                            // 3. Mettre à jour le status en arrière-plan (non bloquant)
+                            actions.updateVideoSessionStatusAction(
                               widget.videoSessionId!,
                               VideoSessionStatus.completed,
-                            );
-                            context.safePop();
-
-                            safeSetState(() {});
+                            ).catchError((e) {
+                              print('⚠️ Error updating session status: $e');
+                            });
                           },
                           child: Container(
                             width: 72.0,

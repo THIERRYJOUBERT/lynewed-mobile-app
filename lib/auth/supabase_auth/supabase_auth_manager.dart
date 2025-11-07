@@ -12,7 +12,18 @@ export '/auth/base_auth_user_provider.dart';
 
 class SupabaseAuthManager extends AuthManager with EmailSignInManager {
   @override
-  Future signOut() {
+  Future signOut() async {
+    // CRITICAL: Supprimer le device token AVANT la déconnexion
+    // Car une fois déconnecté, auth.uid() sera NULL et la RLS empêchera la suppression
+    try {
+      if (loggedIn) {
+        await SupaFlow.client.rpc('delete_my_device_tokens');
+      }
+    } catch (e) {
+      debugPrint('Warning: Failed to delete device tokens before signout: $e');
+      // On continue quand même avec la déconnexion
+    }
+    
     return SupaFlow.client.auth.signOut();
   }
 

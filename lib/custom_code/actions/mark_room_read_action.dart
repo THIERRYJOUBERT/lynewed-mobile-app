@@ -1,6 +1,7 @@
 // Automatic FlutterFlow imports
 import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_util.dart';
 // Imports other custom actions
 // Imports custom functions
 // Begin custom action code
@@ -21,6 +22,12 @@ Future<bool> markRoomReadAction(String roomId) async {
       'p_room_id': roomId,
       'p_profile_id': userId,
       'p_read_at': nowIso
+    });
+
+    // Rafraîchir le compteur de messages non lus
+    final unreadCount = await client.rpc('get_unread_messages_count');
+    FFAppState().update(() {
+      FFAppState().unreadMessagesCount = unreadCount as int? ?? 0;
     });
 
     return true;

@@ -1,5 +1,6 @@
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
+import '/backend/supabase/supabase.dart';
 import '/components/ui_system/empty_state/empty_state_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -34,10 +35,16 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       _model.allNotifications = await actions.getNotificationsAction();
+      if (!mounted) return;
       _model.listNotifications =
           _model.allNotifications!.toList().cast<AppNotificationStruct>();
-      safeSetState(() {});
+      // La RPC retourne déjà les notifications triées DESC (plus récentes en premier)
+      // Pas besoin de .reversed !
+      if (mounted) {
+        safeSetState(() {});
+      }
     });
   }
 
@@ -151,7 +158,6 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
 
                               return ListView.separated(
                                 padding: EdgeInsets.zero,
-                                reverse: true,
                                 shrinkWrap: true,
                                 scrollDirection: Axis.vertical,
                                 itemCount: listNotification.length,
@@ -169,11 +175,35 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
                                       hoverColor: Colors.transparent,
                                       highlightColor: Colors.transparent,
                                       onTap: () async {
-                                        await actions
-                                            .handleInAppNotificationTap(
-                                          context,
-                                          listNotificationItem,
-                                        );
+                                        // Marquer comme lu
+                                        if (listNotificationItem.notificationId.isNotEmpty) {
+                                          await actions.markNotificationAsRead(
+                                            listNotificationItem.notificationId,
+                                          );
+                                        }
+                                        
+                                        // Récupérer le payload complet et rediriger
+                                        if (listNotificationItem.notificationType != null) {
+                                          try {
+                                            final client = SupaFlow.client;
+                                            final response = await client
+                                                .from('notifications')
+                                                .select('payload')
+                                                .eq('id', listNotificationItem.notificationId)
+                                                .single();
+                                            
+                                            final payload = response['payload'] as Map<String, dynamic>?;
+                                            
+                                            if (payload != null) {
+                                              final dataForRedirection = Map<String, dynamic>.from(payload);
+                                              dataForRedirection['type'] = listNotificationItem.notificationType!.name;
+                                              
+                                              await actions.handleNotificationRedirection(context, dataForRedirection);
+                                            }
+                                          } catch (e) {
+                                            debugPrint('Error handling notification tap: $e');
+                                          }
+                                        }
                                       },
                                       child: Container(
                                         width: double.infinity,
@@ -419,14 +449,7 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
                                   hoverColor: Colors.transparent,
                                   highlightColor: Colors.transparent,
                                   onTap: () async {
-                                    if (FFAppState().currentUserRole ==
-                                        UserRole.bride) {
-                                      context
-                                          .goNamed(HomeBridesWidget.routeName);
-                                    } else {
-                                      context.goNamed(
-                                          DashboardProWidget.routeName);
-                                    }
+                                    context.safePop();
                                   },
                                   child: Icon(
                                     Icons.arrow_back_ios_new,

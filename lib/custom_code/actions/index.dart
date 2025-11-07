@@ -72,6 +72,7 @@ export 'init_push_notifications.dart' show initPushNotifications;
 export 'mark_notification_as_read.dart' show markNotificationAsRead;
 export 'mark_all_notifications_as_read.dart' show markAllNotificationsAsRead;
 export 'get_unread_notifications_count.dart' show getUnreadNotificationsCount;
+export 'get_unread_messages_count_action.dart' show getUnreadMessagesCountAction;
 export 'get_initial_deep_link.dart' show getInitialDeepLink;
 export 'check_and_request_permission.dart' show checkAndRequestPermission;
 export 'get_bride_interest_items_action.dart' show getBrideInterestItemsAction;
@@ -81,7 +82,7 @@ export 'upload_avatar.dart' show uploadAvatar;
 export 'open_or_prepare_contact_action.dart' show openOrPrepareContactAction;
 export 'handle_notification_redirection.dart'
     show handleNotificationRedirection;
-export 'handle_notification_tap.dart' show handleNotificationTap;
-export 'handle_in_app_notification_tap.dart' show handleInAppNotificationTap;
 export 'validate_chat_details_params.dart' show validateChatDetailsParams;
 export 'setup_deeplink_listener.dart' show setupDeeplinkListener, cancelDeeplinkListener;
+export 'refresh_notification_badge.dart' show refreshNotificationBadge;
+export 'refresh_unread_counts.dart' show refreshUnreadCounts;

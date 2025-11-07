@@ -35,6 +35,9 @@ class ReplaysRow extends SupabaseDataRow {
   bool get isFeatured => getField<bool>('is_featured')!;
   set isFeatured(bool value) => setField<bool>('is_featured', value);
 
+  bool get isPublished => getField<bool>('is_published')!;
+  set isPublished(bool value) => setField<bool>('is_published', value);
+
   DateTime get createdAt => getField<DateTime>('created_at')!;
   set createdAt(DateTime value) => setField<DateTime>('created_at', value);
 }

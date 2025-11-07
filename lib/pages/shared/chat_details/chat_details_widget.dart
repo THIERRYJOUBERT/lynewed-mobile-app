@@ -57,11 +57,13 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       _model.validateParameters = await actions.validateChatDetailsParams(
         context,
         widget.roomId,
         FFAppState().currentUserRole,
       );
+      if (!mounted) return;
       if (_model.validateParameters == true) {
         _model.psRoomId = widget.roomId;
         _model.psIsPublic = valueOrDefault<bool>(
@@ -82,14 +84,18 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
           widget.firstMessageTextOnly,
           false,
         );
-        safeSetState(() {});
+        if (mounted) {
+          safeSetState(() {});
+        }
         if (_model.psIsPublic == true) {
           _model.joinSuccess = await actions.joinPublicRoomIfNeededAction(
             _model.psRoomId!,
           );
+          if (!mounted) return;
           _model.publicRoomHeader = await actions.getRoomHeaderAction(
             _model.psRoomId!,
           );
+          if (!mounted) return;
           _model.psRoomHeader = _model.publicRoomHeader;
           await ChatRoomParticipantsTable().update(
             data: {
@@ -105,11 +111,14 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                   currentUserUid,
                 ),
           );
-          safeSetState(() {});
+          if (mounted) {
+            safeSetState(() {});
+          }
         } else {
           _model.roomHeaderResult = await actions.getRoomHeaderAction(
             _model.psRoomId!,
           );
+          if (!mounted) return;
           _model.psRoomHeader = _model.roomHeaderResult;
           await ChatRoomParticipantsTable().update(
             data: {
@@ -125,7 +134,9 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                   currentUserUid,
                 ),
           );
-          safeSetState(() {});
+          if (mounted) {
+            safeSetState(() {});
+          }
         }
       }
     });
@@ -167,7 +178,7 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                     ),
                     child: Padding(
                       padding:
-                          const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 20.0),
+                          const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 20.0),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -416,10 +427,7 @@ class _ChatDetailsWidgetState extends State<ChatDetailsWidget> {
                                                       _model
                                                           .createdVideoSession!
                                                           .agoraChannelName,
-                                                      functions
-                                                          .generateAgoraUid(
-                                                              currentUserUid)
-                                                          .toString(),
+                                                      currentUserUid, // Passer le UUID directement
                                                     );
 
                                                     // Étape 6: Vérifier le token

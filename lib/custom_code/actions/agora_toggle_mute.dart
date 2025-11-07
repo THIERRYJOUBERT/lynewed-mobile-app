@@ -7,7 +7,7 @@
 import '/custom_code/widgets/index.dart';
 
 Future agoraToggleMute(bool isMuted) async {
-  await AgoraVideoView.agoraToggleMute(isMuted);
+  await AgoraVideoViewWidget.agoraToggleMute(isMuted);
 }
 // Set your action name, define your arguments and return parameter,
 // and then add the boilerplate code using the green button on the right!

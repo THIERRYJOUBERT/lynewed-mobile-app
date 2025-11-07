@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:crypto/crypto.dart';
 
 import 'lat_lng.dart';
 import '/backend/schema/structs/index.dart';
@@ -703,5 +704,21 @@ String generateDefaultFiltersJson() {
 
 int generateAgoraUid(String uid) {
   if (uid.isEmpty) return 0;
-  return uid.hashCode & 0x7FFFFFFF;
+  
+  // Utiliser MD5 pour garantir la cohérence avec l'Edge Function TypeScript
+  // MD5 du userId pour obtenir un hash déterministe
+  final bytes = utf8.encode(uid);
+  final digest = md5.convert(bytes);
+  
+  // Prendre les 4 premiers octets du hash MD5
+  final hashBytes = digest.bytes;
+  
+  // Convertir en int 32-bit non signé
+  int agoraUid = (hashBytes[0] << 24) |
+                 (hashBytes[1] << 16) |
+                 (hashBytes[2] << 8) |
+                 hashBytes[3];
+  
+  // S'assurer que c'est un nombre positif (masque 0x7FFFFFFF)
+  return agoraUid & 0x7FFFFFFF;
 }

@@ -20,8 +20,12 @@ import '/custom_code/firebase_options.dart';
 import '/custom_code/actions/handle_notification_redirection.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/utils/secure_logger.dart';
+import '/flutter_flow/nav/nav.dart'; // Pour appNavigatorKey
 
 StreamSubscription<AuthState>? _authStateSubscription;
+
+// Guard pour éviter la double navigation sur notification vidéo
+bool _initialVideoNotificationHandled = false;
 
 Future<void> initPushNotifications(BuildContext context) async {
   SecureLogger.functionStart('initPushNotifications');
@@ -60,20 +64,30 @@ Future<void> initPushNotifications(BuildContext context) async {
         final platform =
             Platform.isIOS ? 'ios' : (Platform.isAndroid ? 'android' : 'web');
         if (currentUserUid.isNotEmpty && token != null && token.isNotEmpty) {
+          // UPSERT du token avec le nouveau profile_id
+          // Cela met à jour ou crée le token pour l'utilisateur actuel
           await SupaFlow.client.from('device_tokens').upsert({
             'token': token,
             'profile_id': currentUserUid,
             'platform': platform,
             'last_seen_at': DateTime.now().toUtc().toIso8601String(),
           }, onConflict: 'token');
+          SecureLogger.info('Device token registered for user');
         }
       } else if (event == AuthChangeEvent.signedOut) {
+        // BACKUP : Suppression du token à la déconnexion
+        // Note: Le token devrait déjà être supprimé par signOut() dans auth_manager
+        // mais on garde ce code comme backup au cas où
         final token = await FirebaseMessaging.instance.getToken();
         if (token != null && token.isNotEmpty) {
-          await SupaFlow.client
-              .from('device_tokens')
-              .delete()
-              .eq('token', token);
+          try {
+            await SupaFlow.client.rpc('delete_current_device_token', params: {
+              'device_token': token,
+            });
+            SecureLogger.info('Device token deleted on signout (backup)');
+          } catch (e) {
+            SecureLogger.warning('Failed to delete device token on signout: $e');
+          }
         }
       }
     });
@@ -84,8 +98,10 @@ Future<void> initPushNotifications(BuildContext context) async {
         final resp =
             await SupaFlow.client.rpc('get_unread_notifications_count');
         final count = resp as int? ?? 0;
-        FFAppState()
-            .update(() => FFAppState().hasUnreadNotifications = count > 0);
+        FFAppState().update(() {
+          FFAppState().unreadNotificationsCount = count;
+          FFAppState().hasUnreadNotifications = count > 0;
+        });
       } catch (e) {
         SecureLogger.error('Badge refresh error', error: e);
       }
@@ -99,10 +115,9 @@ Future<void> initPushNotifications(BuildContext context) async {
       );
       final data = message.data;
       final type = data['type'] as String?;
-      if (type == 'videoIncoming') {
-        FFAppState().update(() => FFAppState().incomingVideoCallData =
-            Map<String, dynamic>.from(data));
-      } else {
+      // Les notifications videoIncoming sont gérées par handleNotificationRedirection
+      // Pas besoin de stocker dans AppState
+      if (type != 'videoIncoming') {
         await refreshUnreadBadge();
       }
     });
@@ -114,10 +129,21 @@ Future<void> initPushNotifications(BuildContext context) async {
         sensitiveKeys: ['token', 'session_id', 'user_id', 'video_session_id']
       );
       final data = message.data;
-      // IMPORTANT : On ne gère pas 'videoIncoming' ici car le widget listener va s'en charger.
-      // On appelle directement la redirection pour tous les autres types.
-      if (context.mounted) {
-        await handleNotificationRedirection(context, data);
+      final type = data['type'] as String?;
+      
+      // Guard: si c'est une notif vidéo et qu'elle a déjà été traitée par getInitialMessage, ignorer
+      if (type == 'videoIncoming' && _initialVideoNotificationHandled) {
+        SecureLogger.info('⚠️ Video notification already handled by getInitialMessage - skipping');
+        await refreshUnreadBadge();
+        return;
+      }
+      
+      // Utiliser le context du navigatorKey global
+      final navContext = appNavigatorKey.currentContext;
+      if (navContext != null && navContext.mounted) {
+        await handleNotificationRedirection(navContext, data);
+      } else {
+        SecureLogger.error('Navigator context is null or not mounted');
       }
       await refreshUnreadBadge();
     });
@@ -129,10 +155,20 @@ Future<void> initPushNotifications(BuildContext context) async {
         'getInitialMessage (Terminated) app launched from notification',
         sensitiveKeys: ['token', 'session_id', 'user_id', 'video_session_id']
       );
+      
+      final type = initialMsg.data['type'] as String?;
+      if (type == 'videoIncoming') {
+        _initialVideoNotificationHandled = true;
+        SecureLogger.info('✅ Marking video notification as handled (from getInitialMessage)');
+      }
+      
       // On attend un peu que l'UI soit prête
       Future.delayed(const Duration(milliseconds: 2000), () async {
-        if (context.mounted) {
-          await handleNotificationRedirection(context, initialMsg.data);
+        final navContext = appNavigatorKey.currentContext;
+        if (navContext != null && navContext.mounted) {
+          await handleNotificationRedirection(navContext, initialMsg.data);
+        } else {
+          SecureLogger.error('Navigator context is null or not mounted (initial message)');
         }
         await refreshUnreadBadge();
       });
@@ -150,6 +186,7 @@ Future<void> initPushNotifications(BuildContext context) async {
           'platform': platform,
           'last_seen_at': DateTime.now().toUtc().toIso8601String(),
         }, onConflict: 'token');
+        SecureLogger.info('Device token registered at startup for logged-in user');
       }
     }
 

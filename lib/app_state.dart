@@ -115,16 +115,16 @@ class FFAppState extends ChangeNotifier {
     secureStorage.delete(key: 'ff_userPrefsLastSyncedAt');
   }
 
-  dynamic _incomingVideoCallData = jsonDecode('null');
-  dynamic get incomingVideoCallData => _incomingVideoCallData;
-  set incomingVideoCallData(dynamic value) {
-    _incomingVideoCallData = value;
-  }
-
   int _unreadMessagesCount = 0;
   int get unreadMessagesCount => _unreadMessagesCount;
   set unreadMessagesCount(int value) {
     _unreadMessagesCount = value;
+  }
+
+  int _unreadNotificationsCount = 0;
+  int get unreadNotificationsCount => _unreadNotificationsCount;
+  set unreadNotificationsCount(int value) {
+    _unreadNotificationsCount = value;
   }
 
   bool _hasUnreadNotifications = false;

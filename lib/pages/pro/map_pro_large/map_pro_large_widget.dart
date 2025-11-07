@@ -49,6 +49,7 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       _model.psQueryFilters =
           FFAppState().currentUserPreferences.lastFiltersJson != ''
               ? functions.jsonToQueryFilters(
@@ -76,7 +77,9 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
         weddingPins: <WeddingPinOverlayStruct>[],
         debugStats: 'Initialized on page load',
       );
-      safeSetState(() {});
+      if (mounted) {
+        safeSetState(() {});
+      }
     });
 
     getCurrentUserLocation(defaultLocation: const LatLng(0.0, 0.0), cached: true)

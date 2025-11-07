@@ -1,32 +1,44 @@
 PODS:
-  - agora_rtc_engine (5.3.1):
-    - AgoraIrisRTC_iOS (= 3.7.0.3)
-    - AgoraRtcEngine_iOS (= 3.7.0.3)
+  - agora_rtc_engine (6.3.2):
+    - AgoraIrisRTC_iOS (= 4.3.2-build.1)
+    - AgoraRtcEngine_iOS (= 4.3.2)
     - Flutter
-  - AgoraIrisRTC_iOS (3.7.0.3)
-  - AgoraRtcEngine_iOS (3.7.0.3):
-    - AgoraRtcEngine_iOS/AINS (= 3.7.0.3)
-    - AgoraRtcEngine_iOS/AV1Dec (= 3.7.0.3)
-    - AgoraRtcEngine_iOS/ContentInspect (= 3.7.0.3)
-    - AgoraRtcEngine_iOS/FullAudioFormat (= 3.7.0.3)
-    - AgoraRtcEngine_iOS/ReplayKit (= 3.7.0.3)
-    - AgoraRtcEngine_iOS/ROIEnc (= 3.7.0.3)
-    - AgoraRtcEngine_iOS/RtcBasic (= 3.7.0.3)
-    - AgoraRtcEngine_iOS/SpatialAudio (= 3.7.0.3)
-    - AgoraRtcEngine_iOS/SuperResolution (= 3.7.0.3)
-    - AgoraRtcEngine_iOS/VideoPreprocess (= 3.7.0.3)
-    - AgoraRtcEngine_iOS/VirtualBackground (= 3.7.0.3)
-  - AgoraRtcEngine_iOS/AINS (3.7.0.3)
-  - AgoraRtcEngine_iOS/AV1Dec (3.7.0.3)
-  - AgoraRtcEngine_iOS/ContentInspect (3.7.0.3)
-  - AgoraRtcEngine_iOS/FullAudioFormat (3.7.0.3)
-  - AgoraRtcEngine_iOS/ReplayKit (3.7.0.3)
-  - AgoraRtcEngine_iOS/ROIEnc (3.7.0.3)
-  - AgoraRtcEngine_iOS/RtcBasic (3.7.0.3)
-  - AgoraRtcEngine_iOS/SpatialAudio (3.7.0.3)
-  - AgoraRtcEngine_iOS/SuperResolution (3.7.0.3)
-  - AgoraRtcEngine_iOS/VideoPreprocess (3.7.0.3)
-  - AgoraRtcEngine_iOS/VirtualBackground (3.7.0.3)
+  - AgoraIrisRTC_iOS (4.3.2-build.1)
+  - AgoraRtcEngine_iOS (4.3.2):
+    - AgoraRtcEngine_iOS/AIAEC (= 4.3.2)
+    - AgoraRtcEngine_iOS/AINS (= 4.3.2)
+    - AgoraRtcEngine_iOS/AudioBeauty (= 4.3.2)
+    - AgoraRtcEngine_iOS/ClearVision (= 4.3.2)
+    - AgoraRtcEngine_iOS/ContentInspect (= 4.3.2)
+    - AgoraRtcEngine_iOS/FaceCapture (= 4.3.2)
+    - AgoraRtcEngine_iOS/FaceDetection (= 4.3.2)
+    - AgoraRtcEngine_iOS/LipSync (= 4.3.2)
+    - AgoraRtcEngine_iOS/ReplayKit (= 4.3.2)
+    - AgoraRtcEngine_iOS/RtcBasic (= 4.3.2)
+    - AgoraRtcEngine_iOS/SpatialAudio (= 4.3.2)
+    - AgoraRtcEngine_iOS/VideoAv1CodecDec (= 4.3.2)
+    - AgoraRtcEngine_iOS/VideoAv1CodecEnc (= 4.3.2)
+    - AgoraRtcEngine_iOS/VideoCodecDec (= 4.3.2)
+    - AgoraRtcEngine_iOS/VideoCodecEnc (= 4.3.2)
+    - AgoraRtcEngine_iOS/VirtualBackground (= 4.3.2)
+    - AgoraRtcEngine_iOS/VQA (= 4.3.2)
+  - AgoraRtcEngine_iOS/AIAEC (4.3.2)
+  - AgoraRtcEngine_iOS/AINS (4.3.2)
+  - AgoraRtcEngine_iOS/AudioBeauty (4.3.2)
+  - AgoraRtcEngine_iOS/ClearVision (4.3.2)
+  - AgoraRtcEngine_iOS/ContentInspect (4.3.2)
+  - AgoraRtcEngine_iOS/FaceCapture (4.3.2)
+  - AgoraRtcEngine_iOS/FaceDetection (4.3.2)
+  - AgoraRtcEngine_iOS/LipSync (4.3.2)
+  - AgoraRtcEngine_iOS/ReplayKit (4.3.2)
+  - AgoraRtcEngine_iOS/RtcBasic (4.3.2)
+  - AgoraRtcEngine_iOS/SpatialAudio (4.3.2)
+  - AgoraRtcEngine_iOS/VideoAv1CodecDec (4.3.2)
+  - AgoraRtcEngine_iOS/VideoAv1CodecEnc (4.3.2)
+  - AgoraRtcEngine_iOS/VideoCodecDec (4.3.2)
+  - AgoraRtcEngine_iOS/VideoCodecEnc (4.3.2)
+  - AgoraRtcEngine_iOS/VirtualBackground (4.3.2)
+  - AgoraRtcEngine_iOS/VQA (4.3.2)
   - app_links (0.0.2):
     - Flutter
   - audio_session (0.0.1):
@@ -126,6 +138,8 @@ PODS:
     - GoogleUtilities/Privacy
   - image_picker_ios (0.0.1):
     - Flutter
+  - iris_method_channel (0.0.1):
+    - Flutter
   - just_audio (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -200,6 +214,7 @@ DEPENDENCIES:
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/darwin`)
   - google_maps_flutter_ios (from `.symlinks/plugins/google_maps_flutter_ios/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - iris_method_channel (from `.symlinks/plugins/iris_method_channel/ios`)
   - just_audio (from `.symlinks/plugins/just_audio/darwin`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
@@ -263,6 +278,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/google_maps_flutter_ios/ios"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
+  iris_method_channel:
+    :path: ".symlinks/plugins/iris_method_channel/ios"
   just_audio:
     :path: ".symlinks/plugins/just_audio/darwin"
   package_info_plus:
@@ -289,9 +306,9 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/webview_flutter_wkwebview/darwin"
 
 SPEC CHECKSUMS:
-  agora_rtc_engine: ada3667d9ad86f9abb350c0f532f5fe21858e576
-  AgoraIrisRTC_iOS: d802443ae16f043e7b2805c978880eb62ee8154c
-  AgoraRtcEngine_iOS: 549bb3853d5afb18fabca4197786f39f31141da8
+  agora_rtc_engine: d9fb22143ddb09a917b610b7e41f96166a6e0ea2
+  AgoraIrisRTC_iOS: 3cb15344a503a1a35ab6d60481732a8beeda98fe
+  AgoraRtcEngine_iOS: eaa97751fcfe1b50d9b067e0df92752a6a5f899f
   app_links: 3da4c36b46cac3bf24eb897f1a6ce80bda109874
   audio_session: 9bb7f6c970f21241b19f5a3658097ae459681ba0
   device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
@@ -314,6 +331,7 @@ SPEC CHECKSUMS:
   GoogleMaps: 8939898920281c649150e0af74aa291c60f2e77d
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   image_picker_ios: 7fe1ff8e34c1790d6fff70a32484959f563a928a
+  iris_method_channel: b9db2053dac3dc84e256c8792eff6f11323a53bd
   just_audio: 4e391f57b79cad2b0674030a00453ca5ce817eed
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
   Mantle: c5aa8794a29a022dfbbfc9799af95f477a69b62d

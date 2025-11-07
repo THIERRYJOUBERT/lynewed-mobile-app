@@ -50,12 +50,13 @@ fi
 
 echo "✅ App trouvée: $APP_PATH"
 
-# 5. Signature des frameworks
-echo "🔏 Signature des frameworks Agora..."
+# 5. Signature de TOUS les frameworks
+echo "🔏 Signature de tous les frameworks..."
 cd "$APP_PATH/Frameworks"
-for framework in Agora*.framework; do
+for framework in *.framework; do
   if [ -d "$framework" ]; then
-    codesign --force --sign - --timestamp=none "$framework" > /dev/null 2>&1
+    echo "  → Signing: $framework"
+    codesign --force --sign - --timestamp=none "$framework" > /dev/null 2>&1 || true
   fi
 done
 

@@ -108,8 +108,15 @@ async function sendFcmV1(token, title, body, data, isHighPriority = false, ttlSe
               title,
               body
             },
-            sound: "default"
+            sound: "default",
+            "mutable-content": 1
+          },
+          fcm_options: {
+            image: "AppIcon"
           }
+        },
+        fcm_options: {
+          image: "AppIcon"
         }
       }
     }
@@ -226,9 +233,13 @@ async function getNotificationSetting(profileId, type) {
 }
 // --- EXECUTION HELPERS ---
 async function executeInAppInserts(actions) {
-  if (!actions.length) return;
-  const { error } = await supabase.from("notifications").insert(actions);
-  if (error) console.error("executeInAppInserts error", error);
+  if (!actions.length) return [];
+  const { data, error } = await supabase.from("notifications").insert(actions).select("id, profile_id");
+  if (error) {
+    console.error("executeInAppInserts error", error);
+    return [];
+  }
+  return data || [];
 }
 async function executePushSends(actions) {
   if (!actions.length) return;
@@ -480,7 +491,9 @@ async function processVideoIncoming(ev) {
       payload: {
         video_session_id: sessionId,
         agora_channel_name: channelName,
-        sender_profile_id: senderId
+        sender_profile_id: senderId,
+        sender_full_name: senderProfile.full_name || "",
+        sender_avatar_url: senderProfile.avatar_url || ""
       }
     });
   }
@@ -547,7 +560,24 @@ serve(async (_req)=>{
           default:
             console.warn(`Unknown event_type: ${ev.event_type}`);
         }
-        await executeInAppInserts(actions.inApp);
+        const createdNotifications = await executeInAppInserts(actions.inApp);
+        
+        // Ajouter notification_id aux payloads push
+        const notificationIdMap = new Map(createdNotifications.map(n => [n.profile_id, n.id]));
+        actions.push.forEach(pushAction => {
+          const recipientId = actions.inApp.find(ia => 
+            ia.payload.room_id === pushAction.data.room_id || 
+            ia.payload.request_id === pushAction.data.request_id ||
+            ia.payload.video_session_id === pushAction.data.video_session_id ||
+            ia.payload.bride_profile_id === pushAction.data.bride_profile_id ||
+            ia.payload.alert_id === pushAction.data.alert_id
+          )?.profile_id;
+          
+          if (recipientId && notificationIdMap.has(recipientId)) {
+            pushAction.data.notification_id = String(notificationIdMap.get(recipientId));
+          }
+        });
+        
         await executePushSends(actions.push);
         await markProcessed(ev.id);
       } catch (e) {

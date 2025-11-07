@@ -37,21 +37,23 @@ class _HomeBridesWidgetState extends State<HomeBridesWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       await Future.wait([
         Future(() async {
           _model.publicRoomsResult =
               await actions.getPublicChatRoomsForBridesAction();
         }),
         Future(() async {
-          _model.getUnreadNotifBrides =
-              await actions.getUnreadNotificationsCount();
+          await actions.refreshUnreadCounts();
         }),
       ]);
+      if (!mounted) return;
       _model.psPublicRooms = _model.publicRoomsResult!.items
           .toList()
           .cast<PublicChatRoomItemStruct>();
-      _model.unreadNotificationsCount = _model.getUnreadNotifBrides!;
-      safeSetState(() {});
+      if (mounted) {
+        safeSetState(() {});
+      }
     });
 
     getCurrentUserLocation(defaultLocation: const LatLng(0.0, 0.0), cached: true)
@@ -63,6 +65,17 @@ class _HomeBridesWidgetState extends State<HomeBridesWidget> {
     _model.dispose();
 
     super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // Rafraîchir les compteurs quand on revient sur cette page
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      await actions.refreshUnreadCounts();
+      if (mounted) {
+        safeSetState(() {});
+      }
+    });
   }
 
   @override
@@ -616,12 +629,9 @@ class _HomeBridesWidgetState extends State<HomeBridesWidget> {
                                               alignment: const AlignmentDirectional(
                                                   0.0, 0.0),
                                               child: Text(
-                                                valueOrDefault<String>(
-                                                  _model
-                                                      .unreadNotificationsCount
-                                                      .toString(),
-                                                  '0',
-                                                ),
+                                                FFAppState()
+                                                    .unreadNotificationsCount
+                                                    .toString(),
                                                 style:
                                                     FlutterFlowTheme.of(context)
                                                         .bodyMedium
@@ -631,6 +641,8 @@ class _HomeBridesWidgetState extends State<HomeBridesWidget> {
                                                           color: Colors.white,
                                                           fontSize: 11.0,
                                                           letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              FontWeight.bold,
                                                         ),
                                               ),
                                             ),

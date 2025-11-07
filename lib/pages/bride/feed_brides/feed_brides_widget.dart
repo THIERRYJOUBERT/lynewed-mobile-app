@@ -38,6 +38,7 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       _model.psQueryFilters = QueryFiltersStruct(
         radiusKm: 100.0,
         professions: Profession.values,
@@ -50,7 +51,9 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
         budgetMin: 0.0,
         budgetMax: 40000.0,
       );
-      safeSetState(() {});
+      if (mounted) {
+        safeSetState(() {});
+      }
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));

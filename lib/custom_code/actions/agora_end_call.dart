@@ -7,7 +7,7 @@
 import '/custom_code/widgets/index.dart';
 
 Future agoraEndCall() async {
-  await AgoraVideoView.agoraEndCall();
+  await AgoraVideoViewWidget.agoraEndCall();
 }
 // Set your action name, define your arguments and return parameter,
 // and then add the boilerplate code using the green button on the right!

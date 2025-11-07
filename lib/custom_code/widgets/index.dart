@@ -8,7 +8,7 @@ export 'feed_portfolio_grid.dart' show FeedPortfolioGrid;
 export 'chat_message_list.dart' show ChatMessageList;
 export 'audio_recorder_widget.dart' show AudioRecorderWidget;
 export 'audio_player_widget.dart' show AudioPlayerWidget;
-export 'agora_video_view.dart' show AgoraVideoView;
+export 'agora_video_view.dart' show AgoraVideoViewWidget;
 export 'wed_article_renderer.dart' show WedArticleRenderer;
 export 'videoplayer_filmmaker.dart' show VideoplayerFilmmaker;
 export 'chat_composer_widget.dart' show ChatComposerWidget;

@@ -38,8 +38,11 @@ class _FeedDetailViewerWidgetState extends State<FeedDetailViewerWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       _model.fav = widget.feedInfosPro!.isFavorited;
-      safeSetState(() {});
+      if (mounted) {
+        safeSetState(() {});
+      }
     });
   }
 

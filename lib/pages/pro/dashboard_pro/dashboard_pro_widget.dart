@@ -44,19 +44,21 @@ class _DashboardProWidgetState extends State<DashboardProWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       await Future.wait([
         Future(() async {
           _model.bridesList = await actions.getWishlistedByBridesAction();
         }),
         Future(() async {
-          _model.getUndeadNotifPro =
-              await actions.getUnreadNotificationsCount();
+          await actions.refreshUnreadCounts();
         }),
       ]);
+      if (!mounted) return;
       _model.wishlistedByBrides =
           _model.bridesList!.toList().cast<WishlistedByBrideItemStruct>();
-      _model.unreadNotificationsCount = _model.getUndeadNotifPro!;
-      safeSetState(() {});
+      if (mounted) {
+        safeSetState(() {});
+      }
     });
 
     getCurrentUserLocation(defaultLocation: const LatLng(0.0, 0.0), cached: true)
@@ -68,6 +70,17 @@ class _DashboardProWidgetState extends State<DashboardProWidget> {
     _model.dispose();
 
     super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // Rafraîchir les compteurs quand on revient sur cette page
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      await actions.refreshUnreadCounts();
+      if (mounted) {
+        safeSetState(() {});
+      }
+    });
   }
 
   @override
@@ -700,12 +713,9 @@ class _DashboardProWidgetState extends State<DashboardProWidget> {
                                               alignment: const AlignmentDirectional(
                                                   0.0, 0.0),
                                               child: Text(
-                                                valueOrDefault<String>(
-                                                  _model
-                                                      .unreadNotificationsCount
-                                                      .toString(),
-                                                  '0',
-                                                ),
+                                                FFAppState()
+                                                    .unreadNotificationsCount
+                                                    .toString(),
                                                 style:
                                                     FlutterFlowTheme.of(context)
                                                         .bodyMedium
@@ -715,6 +725,8 @@ class _DashboardProWidgetState extends State<DashboardProWidget> {
                                                           color: Colors.white,
                                                           fontSize: 11.0,
                                                           letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              FontWeight.bold,
                                                         ),
                                               ),
                                             ),

@@ -263,7 +263,7 @@ class _ChatComposerWidgetState extends State<ChatComposerWidget> {
   Widget _buildPendingImagesStrip() {
     if (_pendingImages.isEmpty) return const SizedBox.shrink();
     return SizedBox(
-      height: 108,
+      height: 118,
       child: Align(
         alignment: Alignment.centerLeft,
         child: ListView.separated(
@@ -408,7 +408,7 @@ class _ChatComposerWidgetState extends State<ChatComposerWidget> {
                       const SizedBox(height: 8),
                       _buildAudioPreviewChip(),
                     ],
-                    const SizedBox(height: 8),
+                    SizedBox(height: _pendingImages.isNotEmpty ? 0 : 8),
                     if (!_locked) // On cache tout le composer si la conversation est verrouillée
                       Stack(
                         alignment: Alignment.center,

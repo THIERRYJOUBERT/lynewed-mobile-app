@@ -22,6 +22,7 @@ export 'tables/bride_details.dart';
 export 'tables/user_pois_history.dart';
 export 'tables/alert_motifs.dart';
 export 'tables/stripe_events_log.dart';
+export 'tables/support_tickets.dart';
 export 'tables/profiles.dart';
 export 'tables/professional_details.dart';
 export 'tables/wishlist_items.dart';

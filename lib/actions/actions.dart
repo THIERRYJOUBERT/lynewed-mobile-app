@@ -82,20 +82,23 @@ Future contactRoomChatMessagerie(
   );
   if ((contactContextMessagerie.status == ChatEntryStatus.roomReady) ||
       (contactContextMessagerie.status == ChatEntryStatus.requestPending)) {
-    await ChatRoomParticipantsTable().update(
-      data: {
-        'last_read_at': supaSerialize<DateTime>(getCurrentTimestamp),
-      },
-      matchingRows: (rows) => rows
-          .eqOrNull(
-            'room_id',
-            contactContextMessagerie?.roomId,
-          )
-          .eqOrNull(
-            'profile_id',
-            currentUserUid,
-          ),
-    );
+    // ❌ NE PAS mettre à jour last_read_at ici!
+    // Cela marque les messages comme lus AVANT d'ouvrir la conversation
+    // last_read_at sera mis à jour dans ChatDetails quand la conversation est ouverte
+    // await ChatRoomParticipantsTable().update(
+    //   data: {
+    //     'last_read_at': supaSerialize<DateTime>(getCurrentTimestamp),
+    //   },
+    //   matchingRows: (rows) => rows
+    //       .eqOrNull(
+    //         'room_id',
+    //         contactContextMessagerie?.roomId,
+    //       )
+    //       .eqOrNull(
+    //         'profile_id',
+    //         currentUserUid,
+    //       ),
+    // );
 
     context.pushNamed(
       ChatDetailsWidget.routeName,

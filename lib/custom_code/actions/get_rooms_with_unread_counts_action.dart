@@ -65,6 +65,7 @@ Future<InboxResultStruct?> getRoomsWithUnreadCountsAction(int? limit) async {
     final list = (res is Map && res['items'] is List)
         ? (res['items'] as List)
         : const [];
+    
     for (final row in list) {
       if (row is! Map) continue;
 

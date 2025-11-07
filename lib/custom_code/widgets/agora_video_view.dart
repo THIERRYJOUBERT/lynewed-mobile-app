@@ -7,17 +7,31 @@ import 'package:flutter/material.dart';
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 // Fichier: custom_code/widgets/agora_video_view.dart
-// VERSION CORRIGÉE POUR AGORA 5.3.1 - API OFFICIELLE
+// VERSION CORRIGÉE POUR AGORA 6.3.2 - API OFFICIELLE
 
-import 'package:agora_rtc_engine/rtc_engine.dart';
-import 'package:agora_rtc_engine/rtc_local_view.dart' as RtcLocalView;
-import 'package:agora_rtc_engine/rtc_remote_view.dart' as RtcRemoteView;
+import 'dart:async';
+import 'dart:math';
+import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '/utils/secure_logger.dart';
+import '/flutter_flow/custom_functions.dart' as functions;
+import 'package:lynewed_alpha/services/agora_engine_manager.dart';
+
+// Import du widget Agora avec alias pour éviter le conflit de nom
+import 'package:agora_rtc_engine/agora_rtc_engine.dart' as agora;
 
 // Logique de contrôle statique pour être appelée depuis les Custom Actions
 class _AgoraManager {
+  static final AgoraEngineManager _engineManager = AgoraEngineManager.instance;
   static RtcEngine? _engine;
+  static bool _initializing = false;
+  static String? _currentChannel;
+
+  static Future<RtcEngine> ensureEngineInitialized(String appId) async {
+    final engine = await _engineManager.ensureInitialized(appId: appId);
+    _engine = engine;
+    return engine;
+  }
 
   static Future<void> agoraToggleMute(bool isMuted) async =>
       await _engine?.muteLocalAudioStream(isMuted);
@@ -26,21 +40,36 @@ class _AgoraManager {
   static Future<void> agoraSwitchCamera() async =>
       await _engine?.switchCamera();
   static Future<void> agoraEndCall() async {
-    if (_engine != null) {
+    SecureLogger.info('🔴 agoraEndCall called - Engine status: ${_engine != null ? "ACTIVE" : "NULL"}');
+    print('🎥 [AGORA] === CLEANUP: agoraEndCall() ===');
+    print('🎥 [AGORA] Engine status: ${_engine != null ? "ACTIVE" : "NULL"}');
+    final engine = _engine;
+    if (engine != null) {
       try {
-        await _engine!.leaveChannel();
-        await _engine!.destroy();
-        SecureLogger.info('Agora engine destroyed successfully');
+        SecureLogger.info('Stopping preview...');
+        print('🎥 [AGORA] Stopping preview...');
+        await engine.stopPreview();
+        print('🎥 [AGORA] ✅ Preview stopped');
+        SecureLogger.info('Leaving Agora channel...');
+        print('🎥 [AGORA] Leaving channel...');
+        await engine.leaveChannel();
+        print('🎥 [AGORA] ✅ Channel left');
       } catch (e) {
-        SecureLogger.error('Error during agora end call', error: e);
+        SecureLogger.error('❌ Error during agora end call', error: e);
+        print('🎥 [AGORA] ❌ Error during cleanup: $e');
       } finally {
-        _engine = null;
+        _currentChannel = null;
+        SecureLogger.info('Current channel cleared');
+        print('🎥 [AGORA] Current channel cleared');
       }
+    } else {
+      SecureLogger.warning('⚠️ agoraEndCall called but engine is NULL');
+      print('🎥 [AGORA] ⚠️ agoraEndCall called but engine is NULL');
     }
   }
 }
 
-class AgoraVideoView extends StatefulWidget {
+class AgoraVideoViewWidget extends StatefulWidget {
   // Exposition des méthodes statiques pour les Custom Actions de FF
   static Future<void> agoraToggleMute(bool isMuted) =>
       _AgoraManager.agoraToggleMute(isMuted);
@@ -49,7 +78,7 @@ class AgoraVideoView extends StatefulWidget {
   static Future<void> agoraSwitchCamera() => _AgoraManager.agoraSwitchCamera();
   static Future<void> agoraEndCall() => _AgoraManager.agoraEndCall();
 
-  const AgoraVideoView({
+  const AgoraVideoViewWidget({
     super.key,
     this.width,
     this.height,
@@ -69,112 +98,340 @@ class AgoraVideoView extends StatefulWidget {
   final Future<dynamic> Function() onCallEnd;
 
   @override
-  State<AgoraVideoView> createState() => _AgoraVideoViewState();
+  State<AgoraVideoViewWidget> createState() => _AgoraVideoViewWidgetState();
 }
 
-class _AgoraVideoViewState extends State<AgoraVideoView> {
+class _AgoraVideoViewWidgetState extends State<AgoraVideoViewWidget> {
   int? _remoteUid;
   bool _localUserJoined = false;
   bool _isInitialized = false;
+  StreamSubscription<Map<String, dynamic>>? _eventSubscription;
 
   @override
   void initState() {
     super.initState();
+    SecureLogger.info('AgoraVideoViewWidget initState called');
+    _setupEventListener();
     initAgora();
   }
 
   @override
   void dispose() {
+    SecureLogger.info('AgoraVideoViewWidget dispose called');
+    _eventSubscription?.cancel();
     _AgoraManager.agoraEndCall();
     super.dispose();
   }
+  
+  void _setupEventListener() {
+    _eventSubscription = AgoraEngineManager.instance.eventStream.listen((event) {
+      final eventChannelId = event['channelId'] as String?;
+      
+      // Filter events for current channel only
+      if (eventChannelId != null && eventChannelId != widget.channelName) {
+        return; // Ignore events from other channels
+      }
+      
+      switch (event['event']) {
+        case 'joinChannelSuccess':
+          debugPrint('');
+          debugPrint('🎊🎊🎊 LOCAL USER JOINED SUCCESSFULLY 🎊🎊🎊');
+          print('🎥 [AGORA] 🎊🎊🎊 onJoinChannelSuccess FIRED 🎊🎊🎊');
+          final channelId = event['channelId'] as String? ?? '';
+          debugPrint('Channel: ${channelId.substring(0, min(8, channelId.length))}***');
+          print('🎥 [AGORA] Channel ID: ${channelId.substring(0, min(8, channelId.length))}***');
+          debugPrint('Local UID: ${event['uid']}');
+          print('🎥 [AGORA] Local UID: ${event['uid']}');
+          debugPrint('Elapsed: ${event['elapsed']}ms');
+          print('🎥 [AGORA] Elapsed time: ${event['elapsed']}ms');
+          if (mounted) {
+            setState(() {
+              _localUserJoined = true;
+              _isInitialized = true;
+            });
+            debugPrint('✅ UI state updated');
+          }
+          break;
+          
+        case 'userJoined':
+          final remoteUid = event['remoteUid'] as int?;
+          if (remoteUid != null) {
+            debugPrint('');
+            debugPrint('👤 REMOTE USER JOINED: $remoteUid');
+            print('🎥 [AGORA] 👤 onUserJoined FIRED - Remote UID: $remoteUid');
+            debugPrint('Elapsed: ${event['elapsed']}ms');
+            print('🎥 [AGORA] Remote user elapsed: ${event['elapsed']}ms');
+            if (mounted) {
+              setState(() => _remoteUid = remoteUid);
+              debugPrint('✅ Remote UID set to: $remoteUid');
+            }
+          }
+          break;
+          
+        case 'userOffline':
+          final remoteUid = event['remoteUid'] as int?;
+          debugPrint('');
+          debugPrint('👋 REMOTE USER LEFT: $remoteUid');
+          print('🎥 [AGORA] 👋 onUserOffline FIRED - Remote UID: $remoteUid');
+          debugPrint('Reason: ${event['reason']}');
+          print('🎥 [AGORA] Offline reason: ${event['reason']}');
+          if (mounted) {
+            setState(() => _remoteUid = null);
+            widget.onCallEnd();
+          }
+          break;
+          
+        case 'error':
+          final errorCode = event['errorCode'] as String?;
+          final message = event['message'] as String?;
+          debugPrint('');
+          debugPrint('⚠️ AGORA ERROR');
+          print('🎥 [AGORA] ⚠️⚠️⚠️ onError FIRED ⚠️⚠️⚠️');
+          debugPrint('Code: $errorCode');
+          print('🎥 [AGORA] Error code: $errorCode');
+          debugPrint('Message: $message');
+          print('🎥 [AGORA] Error message: $message');
+          
+          // Check for critical errors
+          if (errorCode?.contains('errInvalidAppId') == true ||
+              errorCode?.contains('errInvalidToken') == true ||
+              errorCode?.contains('errTokenExpired') == true) {
+            debugPrint('🚨 CRITICAL ERROR - Closing call');
+            print('🎥 [AGORA] 🚨 CRITICAL ERROR DETECTED - Closing call');
+            if (mounted) widget.onCallEnd();
+          }
+          break;
+          
+        case 'connectionStateChanged':
+          debugPrint('🔗 Connection state: ${event['state']}, reason: ${event['reason']}');
+          print('🎥 [AGORA] 🔗 Connection: ${event['state']} (${event['reason']})');
+          break;
+      }
+    });
+  }
 
   Future<void> initAgora() async {
-    SecureLogger.functionStart('initAgora', params: {
-      'channelName': '***REDACTED***'
-    });
+    debugPrint('');
+    debugPrint('═══════════════════════════════════════════');
+    debugPrint('🚀 AGORA INITIALIZATION START');
+    debugPrint('═══════════════════════════════════════════');
     
-    // Vérifier les permissions sans les redemander (déjà fait dans chat_details)
-    final cameraStatus = await Permission.camera.status;
-    final micStatus = await Permission.microphone.status;
-    
-    if (!cameraStatus.isGranted || !micStatus.isGranted) {
-      SecureLogger.warning('Agora permissions not granted - camera: $cameraStatus, mic: $micStatus');
+    // GUARD: Vérifier si une initialisation est déjà en cours
+    if (_AgoraManager._initializing) {
+      debugPrint('⚠️ Another initialization is in progress - aborting');
       if (mounted) widget.onCallEnd();
       return;
     }
+    
+    // GUARD: Vérifier si l\'engine existe déjà pour ce canal
+    if (_AgoraManager._engine != null && _AgoraManager._currentChannel == widget.channelName) {
+      debugPrint('⚠️ Engine already exists for this channel - reusing');
+      if (mounted) {
+        setState(() {
+          _localUserJoined = true;
+          _isInitialized = true;
+        });
+      }
+      return;
+    }
+    
+    // GUARD: Si engine existe pour un autre canal, nettoyer d\'abord
+    if (_AgoraManager._engine != null && _AgoraManager._currentChannel != widget.channelName) {
+      debugPrint('⚠️ Engine exists for different channel - cleaning up first');
+      await _AgoraManager.agoraEndCall();
+    }
+    
+    _AgoraManager._initializing = true;
+    
+    // STEP 1 : Validation
+    debugPrint('📋 STEP 1: Validating parameters...');
+    print('🎥 [AGORA] === STEP 1: VALIDATION ===');
+    print('🎥 [AGORA] App ID length: ${widget.appId.length}');
+    print('🎥 [AGORA] App ID value: ${widget.appId.substring(0, min(8, widget.appId.length))}***');
+    print('🎥 [AGORA] App ID isEmpty: ${widget.appId.isEmpty}');
+    
+    if (widget.appId.isEmpty) {
+      debugPrint('❌ ERROR: App ID is empty');
+      print('🎥 [AGORA] ❌ CRITICAL: App ID is EMPTY - aborting');
+      if (mounted) widget.onCallEnd();
+      return;
+    }
+    debugPrint('✅ App ID: OK');
+    print('🎥 [AGORA] ✅ App ID validated');
+    
+    print('🎥 [AGORA] Token length: ${widget.token.length}');
+    print('🎥 [AGORA] Token isEmpty: ${widget.token.isEmpty}');
+    if (widget.token.isNotEmpty) {
+      print('🎥 [AGORA] Token starts with: ${widget.token.substring(0, min(10, widget.token.length))}');
+    }
+    
+    if (widget.token.isEmpty) {
+      debugPrint('❌ ERROR: Token is empty');
+      print('🎥 [AGORA] ❌ CRITICAL: Token is EMPTY - aborting');
+      if (mounted) widget.onCallEnd();
+      return;
+    }
+    debugPrint('✅ Token: OK');
+    print('🎥 [AGORA] ✅ Token validated');
+    debugPrint('✅ Channel: ${widget.channelName.substring(0, min(8, widget.channelName.length))}***');
+    print('🎥 [AGORA] Channel name: ${widget.channelName.substring(0, min(8, widget.channelName.length))}***');
+    debugPrint('✅ User ID: ${widget.userId.substring(0, min(8, widget.userId.length))}***');
+    print('🎥 [AGORA] User ID: ${widget.userId.substring(0, min(8, widget.userId.length))}***');
+    
+    // STEP 2 : Permissions
+    debugPrint('');
+    debugPrint('📋 STEP 2: Checking permissions...');
+    print('🎥 [AGORA] === STEP 2: PERMISSIONS ===');
+    final cameraStatus = await Permission.camera.status;
+    final micStatus = await Permission.microphone.status;
+    debugPrint('Camera: $cameraStatus | Mic: $micStatus');
+    print('🎥 [AGORA] Camera permission: $cameraStatus');
+    print('🎥 [AGORA] Microphone permission: $micStatus');
+    
+    if (!cameraStatus.isGranted || !micStatus.isGranted) {
+      debugPrint('⚠️ Requesting permissions...');
+      final cameraRequested = await Permission.camera.request();
+      final micRequested = await Permission.microphone.request();
+      
+      if (!cameraRequested.isGranted || !micRequested.isGranted) {
+        debugPrint('❌ ERROR: Permissions denied');
+        if (mounted) widget.onCallEnd();
+        return;
+      }
+      debugPrint('✅ Permissions granted');
+    } else {
+      debugPrint('✅ Permissions already granted');
+    }
 
     try {
-      // ✅ API OFFICIELLE AGORA 5.3.1 - CORRECTION CRITIQUE
-      _AgoraManager._engine = await RtcEngine.create(widget.appId);
-      
-      SecureLogger.info('Agora engine created successfully');
-      
-      // Configuration pour appels 1-1
-      await _AgoraManager._engine!.enableVideo();
-      await _AgoraManager._engine!.setChannelProfile(ChannelProfile.Communication);
-      await _AgoraManager._engine!.setClientRole(ClientRole.Broadcaster);
-      
-      // ✅ CORRECTION: T majuscule dans ToSpeakerphone
-      await _AgoraManager._engine!.setDefaultAudioRouteToSpeakerphone(true);
+        // STEP 3 : Get pre-initialized engine (already initialized at app startup)
+      debugPrint('');
+      debugPrint('📋 STEP 3: Getting Agora engine instance...');
+      print('🎥 [AGORA] === STEP 3: ENGINE RETRIEVAL ===');
+      print('🎥 [AGORA] Requesting engine instance from singleton (should be pre-initialized)');
 
-      _AgoraManager._engine!.setEventHandler(
-        RtcEngineEventHandler(
-          joinChannelSuccess: (String channel, int uid, int elapsed) {
-            SecureLogger.debugSanitized(
-              'Agora join channel success',
-              sensitiveKeys: ['channel', 'uid']
-            );
-            if (mounted) setState(() => _localUserJoined = true);
-          },
-          userJoined: (int uid, int elapsed) {
-            SecureLogger.debugSanitized(
-              'Agora remote user joined',
-              sensitiveKeys: ['uid']
-            );
-            if (mounted) setState(() => _remoteUid = uid);
-          },
-          userOffline: (int uid, UserOfflineReason reason) {
-            SecureLogger.debugSanitized(
-              'Agora remote user offline',
-              sensitiveKeys: ['uid']
-            );
-            if (mounted) {
-              setState(() => _remoteUid = null);
-              widget.onCallEnd();
-            }
-          },
-          error: (ErrorCode err) {
-            SecureLogger.error('Agora engine error', error: err);
-            if (mounted) widget.onCallEnd();
-          },
-          leaveChannel: (RtcStats stats) {
-            SecureLogger.performance('Agora leave channel completed');
-          },
+      final engine = await _AgoraManager.ensureEngineInitialized(widget.appId)
+          .timeout(
+        const Duration(seconds: 5), // Reduced timeout since engine should already be ready
+        onTimeout: () {
+          throw TimeoutException(
+            'Agora engine not available after 5s (should have been pre-initialized at app startup)',
+          );
+        },
+      );
+
+      _AgoraManager._engine = engine;
+      debugPrint('✅ Engine ready from singleton');
+      print('🎥 [AGORA] ✅ Engine instance obtained (pre-initialized: ${_AgoraManager._engineManager.isInitialized})');
+
+      // STEP 4 : Event handlers already registered globally in AgoraEngineManager
+      // They are now listened via stream subscription setup in initState
+      debugPrint('');
+      debugPrint('📋 STEP 4: Event handlers ready (listening via global stream)');
+      print('🎥 [AGORA] === STEP 4: EVENT HANDLERS ===');
+      print('🎥 [AGORA] Event handlers already registered globally in manager');
+      
+      // STEP 5 : Set client role (for Communication profile, all users are broadcasters by default)
+      debugPrint('');
+      debugPrint('📋 STEP 5: Setting client role...');
+      print('🎥 [AGORA] === STEP 5: CLIENT ROLE ===');
+      print('🎥 [AGORA] Setting client role to broadcaster...');
+      await engine.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
+      debugPrint('✅ Client role set to broadcaster');
+      print('🎥 [AGORA] ✅ Client role set successfully');
+      
+      // STEP 6 : Enable video and start preview
+      debugPrint('');
+      debugPrint('📋 STEP 6: Enabling video and starting preview...');
+      print('🎥 [AGORA] === STEP 6: VIDEO & AUDIO ===');
+      print('🎥 [AGORA] Enabling video module...');
+      await engine.enableVideo();
+      debugPrint('✅ Video enabled');
+      print('🎥 [AGORA] ✅ Video enabled');
+      
+      print('🎥 [AGORA] Starting local preview...');
+      await engine.startPreview();
+      debugPrint('✅ Preview started');
+      print('🎥 [AGORA] ✅ Preview started');
+      
+      print('🎥 [AGORA] Setting audio route to speakerphone...');
+      await engine.setDefaultAudioRouteToSpeakerphone(true);
+      debugPrint('✅ Audio route set to speakerphone');
+      print('🎥 [AGORA] ✅ Audio route configured');
+      
+      // STEP 7 : Calculate UID
+      debugPrint('');
+      debugPrint('📋 STEP 7: Calculating Agora UID...');
+      print('🎥 [AGORA] === STEP 7: UID CALCULATION ===');
+      print('🎥 [AGORA] Calculating UID from userId: ${widget.userId.substring(0, min(8, widget.userId.length))}***');
+      final localUidInt = functions.generateAgoraUid(widget.userId);
+      debugPrint('✅ Agora UID: $localUidInt');
+      print('🎥 [AGORA] ✅ Calculated UID: $localUidInt');
+      print('🎥 [AGORA] Source userId: ${widget.userId.substring(0, min(8, widget.userId.length))}***');
+      
+      // STEP 8 : Join channel
+      debugPrint('');
+      debugPrint('📋 STEP 8: Joining channel...');
+      print('🎥 [AGORA] === STEP 8: JOIN CHANNEL ===');
+      debugPrint('Channel: ${widget.channelName.substring(0, min(8, widget.channelName.length))}***');
+      print('🎥 [AGORA] Channel name: ${widget.channelName.substring(0, min(8, widget.channelName.length))}***');
+      debugPrint('Local UID: $localUidInt');
+      print('🎥 [AGORA] Local UID: $localUidInt');
+      
+      print('🎥 [AGORA] About to join channel with options:');
+      print('🎥 [AGORA]   - channelId: ${widget.channelName.substring(0, min(8, widget.channelName.length))}***');
+      print('🎥 [AGORA]   - uid: $localUidInt');
+      print('🎥 [AGORA]   - token length: ${widget.token.length}');
+      print('🎥 [AGORA]   - token prefix: ${widget.token.substring(0, min(10, widget.token.length))}');
+      
+      await engine.joinChannel(
+        token: widget.token,
+        channelId: widget.channelName,
+        uid: localUidInt,
+        options: const ChannelMediaOptions(
+          channelProfile: ChannelProfileType.channelProfileCommunication,
+          clientRoleType: ClientRoleType.clientRoleBroadcaster,
+          publishCameraTrack: true,
+          publishMicrophoneTrack: true,
+          autoSubscribeAudio: true,
+          autoSubscribeVideo: true,
         ),
       );
-
-      // Conversion userId (String) → UID Agora (Int)
-      final localUidInt = widget.userId.hashCode & 0x7FFFFFFF;
-      SecureLogger.debugSanitized(
-        'Joining Agora channel',
-        sensitiveKeys: ['channelName', 'uid', 'token']
-      );
-
-      await _AgoraManager._engine!.joinChannel(
-        widget.token, 
-        widget.channelName, 
-        null,  // optionalInfo
-        localUidInt
-      );
+      print('🎥 [AGORA] joinChannel() call completed');
       
-      if (mounted) {
-        setState(() => _isInitialized = true);
-        SecureLogger.info('Agora initialization completed successfully');
-      }
+      debugPrint('✅ joinChannel() called successfully');
+      debugPrint('⏳ Waiting for onJoinChannelSuccess callback...');
+      debugPrint('═══════════════════════════════════════════');
+      
+      // Marquer le canal courant et fin d\'initialisation
+      _AgoraManager._currentChannel = widget.channelName;
+      _AgoraManager._initializing = false;
       
     } catch (e, stackTrace) {
-      SecureLogger.error('Critical error in Agora initialization', error: e, stackTrace: stackTrace);
+      debugPrint('');
+      debugPrint('❌❌❌ EXCEPTION IN INIT AGORA ❌❌❌');
+      print('🎥 [AGORA] ❌❌❌ EXCEPTION CAUGHT ❌❌❌');
+      debugPrint('Error: $e');
+      print('🎥 [AGORA] Exception: $e');
+      debugPrint('Error type: ${e.runtimeType}');
+      print('🎥 [AGORA] Exception type: ${e.runtimeType}');
+      debugPrint('Stack trace:');
+      debugPrint(stackTrace.toString());
+      print('🎥 [AGORA] Stack trace:');
+      print('🎥 [AGORA] ${stackTrace.toString()}');
+      
+      // Log avec print() pour forcer l'affichage en production
+      print('🚨 AGORA INIT FAILED: $e');
+      print('🚨 Error type: ${e.runtimeType}');
+      print('🎥 [AGORA] 🚨 Calling onCallEnd() due to exception');
+      
+      try {
+        SecureLogger.error('Critical error in Agora initialization', error: e);
+      } catch (logError) {
+        print('⚠️ SecureLogger failed: $logError');
+      }
+      
+      _AgoraManager._initializing = false;
       if (mounted) widget.onCallEnd();
     }
   }
@@ -227,7 +484,12 @@ class _AgoraVideoViewState extends State<AgoraVideoView> {
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: _localUserJoined
-                      ? const RtcLocalView.SurfaceView()
+                      ? agora.AgoraVideoView(
+                          controller: agora.VideoViewController(
+                            rtcEngine: _AgoraManager._engine!,
+                            canvas: const agora.VideoCanvas(uid: 0),
+                          ),
+                        )
                       : Container(
                           color: Colors.black87,
                           child: const Center(
@@ -248,9 +510,12 @@ class _AgoraVideoViewState extends State<AgoraVideoView> {
 
   Widget _remoteVideo() {
     if (_remoteUid != null) {
-      return RtcRemoteView.SurfaceView(
-        uid: _remoteUid!,
-        channelId: widget.channelName,
+      return agora.AgoraVideoView(
+        controller: agora.VideoViewController.remote(
+          rtcEngine: _AgoraManager._engine!,
+          canvas: agora.VideoCanvas(uid: _remoteUid!),
+          connection: agora.RtcConnection(channelId: widget.channelName),
+        ),
       );
     } else {
       return Container(

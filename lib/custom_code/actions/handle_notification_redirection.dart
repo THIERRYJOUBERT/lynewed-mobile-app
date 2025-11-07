@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
+import '/backend/supabase/supabase.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/custom_code/actions/index.dart' as actions;
 
@@ -24,9 +25,22 @@ Future<void> handleNotificationRedirection(
   }
 
   final type = data['type'] as String?;
+  SecureLogger.info('Notification type: $type');
+  
   if (type == null) {
     SecureLogger.warning('Notification redirection missing "type" field');
     return;
+  }
+
+  // Marquer la notification comme lue si notification_id est présent
+  final notificationId = data['notification_id'] as String?;
+  if (notificationId != null && notificationId.isNotEmpty) {
+    try {
+      await actions.markNotificationAsRead(notificationId);
+      SecureLogger.debug('Notification marked as read: $notificationId');
+    } catch (e) {
+      SecureLogger.error('Failed to mark notification as read', error: e);
+    }
   }
 
   final router = GoRouter.of(context);
@@ -39,45 +53,157 @@ Future<void> handleNotificationRedirection(
   switch (type) {
     case 'videoIncoming':
       {
-        final sessionId = data['video_session_id'] as String?;
-        final channelName = data['agora_channel_name'] as String?;
-        if (sessionId == null || channelName == null) {
-          SecureLogger.error('videoIncoming redirection missing session or channel name');
-          return;
-        }
+        SecureLogger.info('🎥 videoIncoming case triggered!');
+        
+        // ⚠️ Logique robuste:
+        // 1) Si un video_session_id est fourni dans le payload, tenter d'ouvrir CETTE session en priorité
+        // 2) Sinon (ou si non valide), récupérer la dernière session récente du receveur
+        try {
+          final client = SupaFlow.client;
+          final currentUserId = client.auth.currentUser?.id;
+          
+          if (currentUserId == null) {
+            SecureLogger.error('User not authenticated');
+            return;
+          }
+          // 1) Tentative par video_session_id exact (si présent dans le payload)
+          String? selectedSessionId;
+          String? selectedChannelName;
+          String? selectedStatus;
 
-        await actions.updateVideoSessionStatusAction(
-          sessionId,
-          VideoSessionStatus.accepted,
-        );
+          final requestedSessionId = (data['video_session_id'] as String?)?.trim();
+          if (requestedSessionId != null && requestedSessionId.isNotEmpty) {
+            SecureLogger.info('Trying requested session from payload: $requestedSessionId');
+            final exact = await client
+                .from('video_sessions')
+                .select('id, agora_channel_name, status, created_at, receiver_id')
+                .eq('id', requestedSessionId)
+                .maybeSingle();
 
-        // --- CORRECTION: On passe currentUserUid (String) directement ---
-        final token =
-            await actions.getAgoraTokenAction(channelName, currentUserUid);
+            if (exact != null) {
+              // Vérifier que c'est bien pour l'utilisateur courant
+              final receiverId = (exact['receiver_id'] as String?) ?? '';
+              if (receiverId == currentUserId) {
+                final createdAtStr = exact['created_at'] as String?;
+                DateTime? createdAt = createdAtStr != null ? DateTime.tryParse(createdAtStr) : null;
+                final ageOk = createdAt == null
+                    ? true
+                    : DateTime.now().toUtc().difference(createdAt.toUtc()).inMinutes <= 5;
 
-        if (token == null || token.isEmpty) {
+                final status = (exact['status'] as String?) ?? 'pending';
+                if (ageOk && status != 'completed') {
+                  selectedSessionId = exact['id'] as String?;
+                  selectedChannelName = exact['agora_channel_name'] as String?;
+                  selectedStatus = status;
+                  SecureLogger.info('Using requested session: id=$selectedSessionId, status=$selectedStatus');
+                } else {
+                  SecureLogger.warning('Requested session not recent or already completed');
+                }
+              } else {
+                SecureLogger.warning('Requested session does not belong to current receiver');
+              }
+            } else {
+              SecureLogger.warning('Requested session not found');
+            }
+          }
+
+          // 2) Fallback: dernière session du receveur (pending/accepted/missed), sans filtre de temps fragile
+          if (selectedSessionId == null || selectedChannelName == null) {
+            final fallback = await client
+                .from('video_sessions')
+                .select('id, agora_channel_name, status, created_at')
+                .eq('receiver_id', currentUserId)
+                .inFilter('status', ['pending', 'accepted', 'missed'])
+                .order('created_at', ascending: false)
+                .limit(1)
+                .maybeSingle();
+
+            if (fallback == null) {
+              SecureLogger.warning('No active video session found (fallback)');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Call expired or already ended'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+              return;
+            }
+
+            selectedSessionId = fallback['id'] as String?;
+            selectedChannelName = fallback['agora_channel_name'] as String?;
+            selectedStatus = fallback['status'] as String?;
+            SecureLogger.info('Using fallback session: id=$selectedSessionId, status=$selectedStatus, channel=$selectedChannelName');
+          }
+
+          final sessionId = selectedSessionId!;
+          final channelName = selectedChannelName!;
+          final currentStatus = selectedStatus ?? 'pending';
+          SecureLogger.info('Final session selected: $sessionId, status: $currentStatus, channel: $channelName');
+          
+          // Vérifier que la session n'est pas déjà "completed" (initiateur a raccroché)
+          if (currentStatus == 'completed') {
+            SecureLogger.warning('Session already completed by initiator');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Call already ended by the other person'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+            return;
+          }
+
+          await actions.updateVideoSessionStatusAction(
+            sessionId,
+            VideoSessionStatus.accepted,
+          );
+
+          final token =
+              await actions.getAgoraTokenAction(channelName, currentUserUid);
+
+          if (token == null || token.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Unable to join the call. Please try again.',
+                  style:
+                      TextStyle(color: FlutterFlowTheme.of(context).primaryText),
+                ),
+                backgroundColor: FlutterFlowTheme.of(context).error,
+              ),
+            );
+            return;
+          }
+
+          router.goNamed(
+            'VideoCallPage',
+            queryParameters: {
+              'videoSessionId': serializeParam(
+                sessionId,
+                ParamType.String,
+              ),
+              'channelName': serializeParam(
+                channelName,
+                ParamType.String,
+              ),
+              'agoraToken': serializeParam(
+                token,
+                ParamType.String,
+              ),
+              'isInitiator': serializeParam(
+                false,
+                ParamType.bool,
+              ),
+            }.withoutNulls,
+          );
+        } catch (e) {
+          SecureLogger.error('Error joining video call', error: e);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                'Unable to join the call. Please try again.',
-                style:
-                    TextStyle(color: FlutterFlowTheme.of(context).primaryText),
-              ),
-              backgroundColor: FlutterFlowTheme.of(context).error,
+              content: Text('Error joining call: ${e.toString()}'),
+              backgroundColor: Colors.red,
             ),
           );
-          return;
         }
-
-        router.pushNamed(
-          'VideoCallPage',
-          queryParameters: {
-            'videoSessionId': sessionId,
-            'channelName': channelName,
-            'agoraToken': token,
-            'isInitiator': 'false',
-          },
-        );
         break;
       }
 
@@ -91,6 +217,13 @@ Future<void> handleNotificationRedirection(
           router.pushNamed(
             'ChatDetails',
             queryParameters: {'roomId': roomId},
+            extra: <String, dynamic>{
+              kTransitionInfoKey: const TransitionInfo(
+                hasTransition: true,
+                transitionType: PageTransitionType.fade,
+                duration: Duration(milliseconds: 0),
+              ),
+            },
           );
         } else {
           if (userRole == UserRole.professional) {

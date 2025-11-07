@@ -10,6 +10,8 @@ import 'auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/internationalization.dart';
+import 'services/agora_engine_manager.dart';
+import 'app_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +30,19 @@ void main() async {
 
   final appState = FFAppState(); // Initialize FFAppState
   await appState.initializePersistedState();
+
+  // Initialize Agora engine at app startup (like Firebase)
+  try {
+    print('🎥 [AGORA] Initializing engine at app startup...');
+    await AgoraEngineManager.instance.ensureInitialized(
+      appId: FFAppConstants.agoraAppId,
+      timeout: const Duration(seconds: 10),
+    );
+    print('🎥 [AGORA] ✅ Engine initialized successfully at startup');
+  } catch (e) {
+    print('🎥 [AGORA] ⚠️ Failed to initialize at startup: $e');
+    print('🎥 [AGORA] Engine will be initialized on-demand');
+  }
 
   runApp(ChangeNotifierProvider(
     create: (context) => appState,

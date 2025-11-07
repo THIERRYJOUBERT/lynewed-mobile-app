@@ -639,29 +639,8 @@ class _PublicProProfileViewWidgetState
                                       20.0, 0.0, 20.0, 0.0),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          InkWell(
-                                            splashColor: Colors.transparent,
-                                            focusColor: Colors.transparent,
-                                            hoverColor: Colors.transparent,
-                                            highlightColor: Colors.transparent,
-                                            onTap: () async {
-                                              context.safePop();
-                                            },
-                                            child: Icon(
-                                              Icons.arrow_back_ios_new,
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                              size: 24.0,
-                                            ),
-                                          ),
-                                        ].divide(const SizedBox(width: 14.0)),
-                                      ),
                                       Text(
                                         'PROFESSIONAL PROFILE ',
                                         style: FlutterFlowTheme.of(context)
@@ -673,16 +652,6 @@ class _PublicProProfileViewWidgetState
                                               letterSpacing: 0.0,
                                               fontWeight: FontWeight.w500,
                                             ),
-                                      ),
-                                      Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          Container(
-                                            width: 24.0,
-                                            height: 24.0,
-                                            decoration: const BoxDecoration(),
-                                          ),
-                                        ].divide(const SizedBox(width: 14.0)),
                                       ),
                                     ].divide(const SizedBox(width: 14.0)),
                                   ),

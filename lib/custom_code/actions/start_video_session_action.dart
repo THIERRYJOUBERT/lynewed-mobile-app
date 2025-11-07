@@ -51,9 +51,9 @@ Future<VideoSessionsRow?> startVideoSessionAction(String receiverId) async {
       SecureLogger.error('Notification drain failed (will be processed by cron)', error: e);
     }
 
-    // --- AJOUT : Démarrer un timeout de 30 secondes ---
-    // Si la session n'est pas acceptée après 30 secondes, elle sera marquée comme 'missed'
-    Future.delayed(const Duration(seconds: 30), () async {
+    // --- AJOUT : Démarrer un timeout de 60 secondes ---
+    // Si la session n'est pas acceptée après 60 secondes, elle sera marquée comme 'missed'
+    Future.delayed(const Duration(seconds: 60), () async {
       try {
         await handleVideoSessionTimeout(videoSession.id);
       } catch (e) {

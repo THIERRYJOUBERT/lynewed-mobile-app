@@ -37,22 +37,31 @@ class _MessagesProWidgetState extends State<MessagesProWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       _model.isLoadingInbox = true;
       _model.isLoadingRequests = true;
-      safeSetState(() {});
+      if (mounted) {
+        safeSetState(() {});
+      }
       _model.inboxResult = await actions.getRoomsWithUnreadCountsAction(
         50,
       );
+      if (!mounted) return;
       _model.psInboxItems =
           _model.inboxResult!.items.toList().cast<ConversationListItemStruct>();
       _model.requestsResult = await actions.getPendingContactRequestsAction();
+      if (!mounted) return;
       _model.psRequestItems = _model.requestsResult!.items
           .toList()
           .cast<ContactRequestItemStruct>();
-      safeSetState(() {});
+      if (mounted) {
+        safeSetState(() {});
+      }
       _model.isLoadingInbox = false;
       _model.isLoadingRequests = false;
-      safeSetState(() {});
+      if (mounted) {
+        safeSetState(() {});
+      }
     });
   }
 
@@ -60,13 +69,34 @@ class _MessagesProWidgetState extends State<MessagesProWidget> {
   void dispose() {
     // On page dispose action.
     () async {
-      FFAppState().unreadMessagesCount = 0;
-      safeSetState(() {});
+      // Rafraîchir le compteur de messages au lieu de le mettre à 0
+      await actions.refreshUnreadCounts();
     }();
 
     _model.dispose();
 
     super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // Rafraîchir la liste quand on revient sur cette page
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      _model.isLoadingInbox = true;
+      if (mounted) {
+        safeSetState(() {});
+      }
+      _model.inboxResult = await actions.getRoomsWithUnreadCountsAction(50);
+      if (!mounted) return;
+      _model.psInboxItems =
+          _model.inboxResult!.items.toList().cast<ConversationListItemStruct>();
+      _model.isLoadingInbox = false;
+      if (mounted) {
+        safeSetState(() {});
+      }
+      await actions.refreshUnreadCounts();
+    });
   }
 
   @override

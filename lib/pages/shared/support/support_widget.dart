@@ -1,3 +1,5 @@
+import '/backend/supabase/supabase.dart';
+import '/auth/supabase_auth/auth_util.dart';
 import '/components/nav/header_bar/header_bar_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -457,166 +459,103 @@ class _SupportWidgetState extends State<SupportWidget> {
                                 20.0, 0.0, 20.0, 0.0),
                             child: FFButtonWidget(
                               onPressed: () async {
-                                if (((_model.dropDownSubjectValue != null &&
-                                            _model.dropDownSubjectValue !=
-                                                '') &&
-                                        (_model.dropDownSubjectValue !=
-                                            'Other...')) &&
-                                    (_model.textFieldDetailsTextController
-                                                .text !=
-                                            '')) {
-                                  await launchUrl(Uri(
-                                      scheme: 'mailto',
-                                      path: 'support@lynewed.com',
-                                      query: {
-                                        'subject': _model.dropDownSubjectValue!,
-                                        'body': _model
-                                            .textFieldDetailsTextController
-                                            .text,
-                                      }
-                                          .entries
-                                          .map((MapEntry<String, String> e) =>
-                                              '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
-                                          .join('&')));
+                                // Validation du sujet
+                                String? finalSubject;
+                                if (_model.dropDownSubjectValue == 'Other...') {
+                                  if (_model.textFieldOtherSubjectTextController.text.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Please add a subject to your request!',
+                                          style: TextStyle(
+                                            color: FlutterFlowTheme.of(context).primaryText,
+                                          ),
+                                        ),
+                                        duration: const Duration(milliseconds: 2000),
+                                        backgroundColor: FlutterFlowTheme.of(context).warning,
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  finalSubject = _model.textFieldOtherSubjectTextController.text;
+                                } else if (_model.dropDownSubjectValue == null || _model.dropDownSubjectValue!.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Please add a subject to your request!',
+                                        style: TextStyle(
+                                          color: FlutterFlowTheme.of(context).primaryText,
+                                        ),
+                                      ),
+                                      duration: const Duration(milliseconds: 2000),
+                                      backgroundColor: FlutterFlowTheme.of(context).warning,
+                                    ),
+                                  );
+                                  return;
+                                } else {
+                                  finalSubject = _model.dropDownSubjectValue!;
+                                }
+
+                                // Validation du message
+                                if (_model.textFieldDetailsTextController.text.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Please add a message to your request!',
+                                        style: TextStyle(
+                                          color: FlutterFlowTheme.of(context).primaryText,
+                                        ),
+                                      ),
+                                      duration: const Duration(milliseconds: 2000),
+                                      backgroundColor: FlutterFlowTheme.of(context).warning,
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                // Enregistrement dans la base de données
+                                try {
+                                  await SupportTicketsTable().insert({
+                                    'profile_id': currentUserUid,
+                                    'subject': finalSubject,
+                                    'message': _model.textFieldDetailsTextController.text,
+                                    'status': 'pending',
+                                  });
+
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(
                                         'Your message has been sent. We will respond as soon as possible.',
                                         style: TextStyle(
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
+                                          color: FlutterFlowTheme.of(context).primaryText,
                                         ),
                                       ),
                                       duration: const Duration(milliseconds: 2000),
-                                      backgroundColor:
-                                          FlutterFlowTheme.of(context).success,
+                                      backgroundColor: FlutterFlowTheme.of(context).success,
                                     ),
                                   );
-                                } else {
-                                  if ((_model.dropDownSubjectValue ==
-                                          'Other...') &&
-                                      (_model.textFieldOtherSubjectTextController
-                                                  .text !=
-                                              '') &&
-                                      (_model.textFieldDetailsTextController
-                                                  .text !=
-                                              '')) {
-                                    await launchUrl(Uri(
-                                        scheme: 'mailto',
-                                        path: 'support@lynewed.com',
-                                        query: {
-                                          'subject': _model
-                                              .textFieldOtherSubjectTextController
-                                              .text,
-                                          'body': _model
-                                              .textFieldDetailsTextController
-                                              .text,
-                                        }
-                                            .entries
-                                            .map((MapEntry<String, String> e) =>
-                                                '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
-                                            .join('&')));
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Your message has been sent. We will respond as soon as possible.',
-                                          style: TextStyle(
-                                            color: FlutterFlowTheme.of(context)
-                                                .primaryText,
-                                          ),
+
+                                  safeSetState(() {
+                                    _model.textFieldOtherSubjectTextController?.clear();
+                                    _model.textFieldDetailsTextController?.clear();
+                                    _model.dropDownSubjectValueController?.reset();
+                                  });
+                                  
+                                  context.safePop();
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'An error occurred while sending your message. Please try again.',
+                                        style: TextStyle(
+                                          color: FlutterFlowTheme.of(context).primaryText,
                                         ),
-                                        duration: const Duration(milliseconds: 2000),
-                                        backgroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .success,
                                       ),
-                                    );
-                                  } else {
-                                    if ((((_model.dropDownSubjectValue ==
-                                                    'Other...') &&
-                                                (_model.textFieldOtherSubjectTextController
-                                                            .text ==
-                                                        '')) ==
-                                            true) ||
-                                        ((_model.dropDownSubjectValue !=
-                                                'Other...') &&
-                                            (_model.dropDownSubjectValue ==
-                                                    null ||
-                                                _model.dropDownSubjectValue ==
-                                                    ''))) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            'Please add a subject to your request!',
-                                            style: TextStyle(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                            ),
-                                          ),
-                                          duration:
-                                              const Duration(milliseconds: 2000),
-                                          backgroundColor:
-                                              FlutterFlowTheme.of(context)
-                                                  .warning,
-                                        ),
-                                      );
-                                    } else {
-                                      if (_model.textFieldDetailsTextController
-                                                  .text ==
-                                              '') {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'Please add a message to your request!',
-                                              style: TextStyle(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                              ),
-                                            ),
-                                            duration:
-                                                const Duration(milliseconds: 2000),
-                                            backgroundColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .warning,
-                                          ),
-                                        );
-                                      } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'An error has occurred. Please complete all fields and try again.',
-                                              style: TextStyle(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                              ),
-                                            ),
-                                            duration:
-                                                const Duration(milliseconds: 2000),
-                                            backgroundColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .error,
-                                          ),
-                                        );
-                                      }
-                                    }
-
-                                    return;
-                                  }
+                                      duration: const Duration(milliseconds: 2000),
+                                      backgroundColor: FlutterFlowTheme.of(context).error,
+                                    ),
+                                  );
                                 }
-
-                                safeSetState(() {
-                                  _model.textFieldOtherSubjectTextController
-                                      ?.clear();
-                                  _model.textFieldDetailsTextController
-                                      ?.clear();
-                                });
-                                context.safePop();
                               },
                               text: 'Send',
                               options: FFButtonOptions(

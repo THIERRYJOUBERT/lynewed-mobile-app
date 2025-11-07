@@ -52,6 +52,11 @@
 	<string>Lynewed needs access to your camera so you can take photos and make video calls</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Lynewed needs access to your local network to enable real-time features</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Lynewed needs your location to display professionals and events near you</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
@@ -67,6 +72,8 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
+		<string>audio</string>
+		<string>voip</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
