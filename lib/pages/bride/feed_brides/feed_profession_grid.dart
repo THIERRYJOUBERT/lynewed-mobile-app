@@ -4,7 +4,7 @@ import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/profession_display_helper.dart';
 
-/// Widget pour afficher les checkboxes de professions en grille 3 colonnes (5-4-4) pour FeedBridesWidget
+/// Widget pour afficher les checkboxes de professions en grille 3 colonnes (4-4-4) pour FeedBridesWidget
 class FeedProfessionGrid extends StatelessWidget {
   final QueryFiltersStruct? filters;
   final Function(Function(QueryFiltersStruct) updateFn) onFiltersUpdate;
@@ -17,20 +17,19 @@ class FeedProfessionGrid extends StatelessWidget {
     required this.onSetState,
   });
 
-  // Liste des 13 professions dans l'ordre souhaité (5-4-4)
+  // Liste des 12 professions dans l'ordre souhaité (4-4-4)
   static const List<List<Profession>> professionColumns = [
-    // Colonne 1 (5 professions)
+    // Colonne 1 (4 professions)
     [
       Profession.PHOTOGRAPHER,
       Profession.FILMMAKER,
       Profession.PLANNER,
       Profession.MAKEUP,
-      Profession.MAKEUPARTIST,
     ],
     // Colonne 2 (4 professions)
     [
       Profession.HAIRDRESSER,
-      Profession.DESIGNER,
+      Profession.MAKEUPARTIST,
       Profession.EVENTDESIGNER,
       Profession.BRIDALDESIGNER,
     ],

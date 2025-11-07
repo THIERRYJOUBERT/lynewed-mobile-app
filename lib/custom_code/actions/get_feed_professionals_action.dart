@@ -61,6 +61,9 @@ Future<FeedResultStruct> getFeedProfessionalsAction(
       'radiusKm': (filters.radiusKm == 0.0)
           ? null
           : filters.radiusKm,
+      'countryCode': (filters.countryCode.isEmpty)
+          ? null
+          : filters.countryCode,
     };
 
     final data = await client.rpc('get_feed_professionals', params: {

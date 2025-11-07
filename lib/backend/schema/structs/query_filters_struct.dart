@@ -22,6 +22,7 @@ class QueryFiltersStruct extends BaseStruct {
     bool? showWeddingPins,
     bool? showProAlerts,
     bool? showOnlyMyProfessionPins,
+    String? countryCode,
   })  : _professions = professions,
         _budgetMin = budgetMin,
         _budgetMax = budgetMax,
@@ -35,7 +36,8 @@ class QueryFiltersStruct extends BaseStruct {
         _showBridePrivatePoi = showBridePrivatePoi,
         _showWeddingPins = showWeddingPins,
         _showProAlerts = showProAlerts,
-        _showOnlyMyProfessionPins = showOnlyMyProfessionPins;
+        _showOnlyMyProfessionPins = showOnlyMyProfessionPins,
+        _countryCode = countryCode;
 
   // "professions" field.
   List<Profession>? _professions;
@@ -145,6 +147,13 @@ class QueryFiltersStruct extends BaseStruct {
 
   bool hasShowOnlyMyProfessionPins() => _showOnlyMyProfessionPins != null;
 
+  // "countryCode" field.
+  String? _countryCode;
+  String get countryCode => _countryCode ?? '';
+  set countryCode(String? val) => _countryCode = val;
+
+  bool hasCountryCode() => _countryCode != null;
+
   static QueryFiltersStruct fromMap(Map<String, dynamic> data) =>
       QueryFiltersStruct(
         professions: getEnumList<Profession>(data['professions']),
@@ -161,6 +170,7 @@ class QueryFiltersStruct extends BaseStruct {
         showWeddingPins: data['showWeddingPins'] as bool?,
         showProAlerts: data['showProAlerts'] as bool?,
         showOnlyMyProfessionPins: data['showOnlyMyProfessionPins'] as bool?,
+        countryCode: data['countryCode'] as String?,
       );
 
   static QueryFiltersStruct? maybeFromMap(dynamic data) => data is Map
@@ -182,6 +192,7 @@ class QueryFiltersStruct extends BaseStruct {
         'showWeddingPins': _showWeddingPins,
         'showProAlerts': _showProAlerts,
         'showOnlyMyProfessionPins': _showOnlyMyProfessionPins,
+        'countryCode': _countryCode,
       }.withoutNulls;
 
   @override
@@ -242,6 +253,10 @@ class QueryFiltersStruct extends BaseStruct {
         'showOnlyMyProfessionPins': serializeParam(
           _showOnlyMyProfessionPins,
           ParamType.bool,
+        ),
+        'countryCode': serializeParam(
+          _countryCode,
+          ParamType.String,
         ),
       }.withoutNulls;
 
@@ -317,6 +332,11 @@ class QueryFiltersStruct extends BaseStruct {
           ParamType.bool,
           false,
         ),
+        countryCode: deserializeParam(
+          data['countryCode'],
+          ParamType.String,
+          false,
+        ),
       );
 
   @override
@@ -339,7 +359,8 @@ class QueryFiltersStruct extends BaseStruct {
         showBridePrivatePoi == other.showBridePrivatePoi &&
         showWeddingPins == other.showWeddingPins &&
         showProAlerts == other.showProAlerts &&
-        showOnlyMyProfessionPins == other.showOnlyMyProfessionPins;
+        showOnlyMyProfessionPins == other.showOnlyMyProfessionPins &&
+        countryCode == other.countryCode;
   }
 
   @override
@@ -357,7 +378,8 @@ class QueryFiltersStruct extends BaseStruct {
         showBridePrivatePoi,
         showWeddingPins,
         showProAlerts,
-        showOnlyMyProfessionPins
+        showOnlyMyProfessionPins,
+        countryCode
       ]);
 }
 
@@ -375,6 +397,7 @@ QueryFiltersStruct createQueryFiltersStruct({
   bool? showWeddingPins,
   bool? showProAlerts,
   bool? showOnlyMyProfessionPins,
+  String? countryCode,
 }) =>
     QueryFiltersStruct(
       budgetMin: budgetMin,
@@ -390,4 +413,5 @@ QueryFiltersStruct createQueryFiltersStruct({
       showWeddingPins: showWeddingPins,
       showProAlerts: showProAlerts,
       showOnlyMyProfessionPins: showOnlyMyProfessionPins,
+      countryCode: countryCode,
     );

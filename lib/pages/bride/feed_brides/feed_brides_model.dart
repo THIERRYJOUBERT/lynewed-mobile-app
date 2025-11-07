@@ -1,4 +1,5 @@
 import '/backend/schema/structs/index.dart';
+import '/backend/schema/enums/country_filter.dart';
 import '/components/nav/nav_bar_brides/nav_bar_brides_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -46,6 +47,8 @@ class FeedBridesModel extends FlutterFlowModel<FeedBridesWidget> {
   double budgetMin = 0.0;
 
   double budgetMax = 40000.0;
+
+  CountryFilter selectedCountry = CountryFilter.world;
 
   ///  State fields for stateful widgets in this page.
 

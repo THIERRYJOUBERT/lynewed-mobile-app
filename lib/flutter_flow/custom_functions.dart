@@ -494,6 +494,7 @@ QueryFiltersStruct deepCopyQueryFilters(QueryFiltersStruct? filtersToCopy) {
     currency: filtersToCopy.currency,
     center: filtersToCopy.center,
     radiusKm: filtersToCopy.radiusKm,
+    countryCode: filtersToCopy.countryCode,
     nearby: filtersToCopy.nearby,
     showPros: filtersToCopy.showPros,
     showProRecent: filtersToCopy.showProRecent,

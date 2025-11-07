@@ -73,6 +73,11 @@ Future<FeedPageResultStruct?> getPortfolioFeedAction(
       if (filters.budgetMax < 40000.0) {
         filterParams['budgetMax'] = filters.budgetMax;
       }
+      
+      // CRITICAL FIX: Add country code filter
+      if (filters.countryCode != null && filters.countryCode!.isNotEmpty) {
+        filterParams['countryCode'] = filters.countryCode;
+      }
     }
 
     final String filtersJson = jsonEncode(filterParams);

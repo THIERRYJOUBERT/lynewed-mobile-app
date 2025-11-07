@@ -17,15 +17,14 @@ class FeedProfessionFilterGrid extends StatelessWidget {
     required this.onSetState,
   });
 
-  // Liste des 13 professions dans l'ordre souhaité (3x5 = 15 slots, 13 utilisés)
+  // Liste des 12 professions dans l'ordre souhaité (3x4 = 12 professions)
   static const List<Profession> allProfessions = [
     Profession.PHOTOGRAPHER,
     Profession.FILMMAKER,
     Profession.PLANNER,
     Profession.MAKEUP,
-    Profession.MAKEUPARTIST,
     Profession.HAIRDRESSER,
-    Profession.DESIGNER,
+    Profession.MAKEUPARTIST,
     Profession.EVENTDESIGNER,
     Profession.BRIDALDESIGNER,
     Profession.VENUE,
@@ -101,16 +100,16 @@ class FeedProfessionFilterGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Diviser en 3 colonnes : 5-4-4 = 13 professions
-    final column1 = allProfessions.take(5).toList();
-    final column2 = allProfessions.skip(5).take(4).toList();
-    final column3 = allProfessions.skip(9).take(4).toList();
+    // Diviser en 3 colonnes : 4-4-4 = 12 professions
+    final column1 = allProfessions.take(4).toList();
+    final column2 = allProfessions.skip(4).take(4).toList();
+    final column3 = allProfessions.skip(8).take(4).toList();
 
     return Row(
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Colonne 1 (5 professions)
+        // Colonne 1 (4 professions)
         Column(
           mainAxisSize: MainAxisSize.max,
           crossAxisAlignment: CrossAxisAlignment.start,

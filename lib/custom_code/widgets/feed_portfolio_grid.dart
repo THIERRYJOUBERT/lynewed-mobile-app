@@ -43,6 +43,22 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
 
   QueryFiltersStruct? _lastFetchedFilters;
 
+  // Create a shallow/deep-enough copy of filters so we can reliably detect changes
+  QueryFiltersStruct _copyFilters(QueryFiltersStruct? f) {
+    final src = f ?? QueryFiltersStruct();
+    return QueryFiltersStruct(
+      // important lists copied
+      professions: List.from(src.professions),
+      // important scalar filters copied
+      budgetMin: src.budgetMin,
+      budgetMax: src.budgetMax,
+      currency: src.currency,
+      center: src.center,
+      radiusKm: src.radiusKm,
+      countryCode: src.countryCode,
+    );
+  }
+
   QueryFiltersStruct get _effectiveFilters =>
       widget.filters ?? QueryFiltersStruct();
 
@@ -50,7 +66,8 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
   void initState() {
     super.initState();
     _seed = const Uuid().v4();
-    _lastFetchedFilters = _effectiveFilters;
+    // snapshot current filters instead of keeping the same instance reference
+    _lastFetchedFilters = _copyFilters(_effectiveFilters);
     _fetchData();
 
     _scrollController.addListener(() {
@@ -66,7 +83,8 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
   @override
   void didUpdateWidget(covariant FeedPortfolioGrid oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_filtersChanged(oldWidget.filters, widget.filters)) {
+    // Compare against the last fetched snapshot, not oldWidget (which may share the same instance)
+    if (_filtersChanged(_lastFetchedFilters, widget.filters)) {
       _resetAndFetchData();
     }
   }
@@ -90,6 +108,9 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
     if (oldLat != newLat || oldLng != newLng) return true;
 
     if ((oldFilters.radiusKm ?? 0) != (newFilters.radiusKm ?? 0)) return true;
+
+    // CRITICAL: Check country code changes
+    if ((oldFilters.countryCode ?? '') != (newFilters.countryCode ?? '')) return true;
 
     List<String> norm(dynamic list) {
       final out = <String>[];
@@ -125,7 +146,8 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
       _hasMore = true;
       _isLoading = false;
       _seed = const Uuid().v4();
-      _lastFetchedFilters = _effectiveFilters;
+      // refresh the snapshot with a fresh copy
+      _lastFetchedFilters = _copyFilters(_effectiveFilters);
     });
 
     if (_scrollController.hasClients) {

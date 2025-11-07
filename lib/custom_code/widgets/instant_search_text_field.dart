@@ -153,7 +153,7 @@ class _InstantSearchTextFieldState extends State<InstantSearchTextField> {
           filled: true,
           fillColor: const Color(0xFFF2F2F2),
           contentPadding:
-              const EdgeInsetsDirectional.fromSTEB(24.0, 20.0, 83.0, 10.0),
+              const EdgeInsetsDirectional.fromSTEB(24.0, 20.0, 16.0, 10.0),
           prefixIcon: const Icon(
             Icons.search,
             color: Color(0xFF888888),
