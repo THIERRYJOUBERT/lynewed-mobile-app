@@ -90,7 +90,6 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
   DateTime? _lastErrorShownAt;
   String? _filtersSignature;
   int _reconcileSeq = 0;
-  double _lastZoom = 12.0;
 
   // Sizes (x2), cluster = même taille que marqueurs
   static const double _sizePro = 128.0;

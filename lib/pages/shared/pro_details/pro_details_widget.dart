@@ -355,28 +355,18 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                             thickness: 1.0,
                             color: FlutterFlowTheme.of(context).secondary,
                           ),
-                          Container(
-                            decoration: const BoxDecoration(),
-                            child: Visibility(
-                              visible:
-                                  widget.proDetails!.portfolioImages.isNotEmpty,
-                              child: SizedBox(
+                          if (widget.proDetails!.portfolioImages.isNotEmpty)
+                            SizedBox(
+                              width: MediaQuery.sizeOf(context).width * 1.0,
+                              height: 446.0,
+                              child: custom_widgets.PortfolioGrid(
                                 width: MediaQuery.sizeOf(context).width * 1.0,
                                 height: 446.0,
-                                child: custom_widgets.PortfolioGrid(
-                                  width: MediaQuery.sizeOf(context).width * 1.0,
-                                  height: 446.0,
-                                  portfolioImages:
-                                      widget.proDetails!.portfolioImages,
-                                  proDetails: widget.proDetails!,
-                                ),
+                                portfolioImages:
+                                    widget.proDetails!.portfolioImages,
+                                proDetails: widget.proDetails!,
                               ),
                             ),
-                          ),
-                          Divider(
-                            thickness: 1.0,
-                            color: FlutterFlowTheme.of(context).secondary,
-                          ),
                           if (widget.proDetails!.fixedLocations.isNotEmpty)
                             Column(
                               mainAxisSize: MainAxisSize.max,
@@ -457,7 +447,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                             ),
                           Padding(
                             padding: const EdgeInsetsDirectional.fromSTEB(
-                                0.0, 12.0, 0.0, 0.0),
+                                0.0, 24.0, 0.0, 0.0),
                             child: Row(
                               mainAxisSize: MainAxisSize.max,
                               mainAxisAlignment: MainAxisAlignment.start,

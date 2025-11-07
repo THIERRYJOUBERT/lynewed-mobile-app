@@ -258,7 +258,7 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                           hoverColor: Colors.transparent,
                           highlightColor: Colors.transparent,
                           onTap: () async {
-                            print('🔴 HANGUP BUTTON TAPPED');
+                            debugPrint('🔴 HANGUP BUTTON TAPPED');
                             
                             // 1. Naviguer vers home IMMÉDIATEMENT
                             if (mounted) {
@@ -268,12 +268,13 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                               } else {
                                 context.goNamed('HomeBrides');
                               }
-                              print('🔴 Navigated to home page');
+                              debugPrint('🔴 Navigated to home page');
                             }
                             
                             // 2. Nettoyer Agora en arrière-plan (non bloquant)
                             actions.agoraEndCall().catchError((e) {
-                              print('⚠️ Error ending Agora call: $e');
+                              debugPrint('⚠️ Error ending Agora call: $e');
+                              return false;
                             });
                             
                             // 3. Mettre à jour le status en arrière-plan (non bloquant)
@@ -281,7 +282,8 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                               widget.videoSessionId!,
                               VideoSessionStatus.completed,
                             ).catchError((e) {
-                              print('⚠️ Error updating session status: $e');
+                              debugPrint('⚠️ Error updating session status: $e');
+                              return false;
                             });
                           },
                           child: Container(

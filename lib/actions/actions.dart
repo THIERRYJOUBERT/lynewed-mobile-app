@@ -1,7 +1,5 @@
-import '/auth/supabase_auth/auth_util.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
-import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
@@ -75,7 +73,6 @@ Future contactRoomChatMessagerie(
   required String? otherProfileId,
 }) async {
   ChatEntryContextStruct? contactContextMessagerie;
-  List<ChatRoomParticipantsRow>? lastReadAtCurrentMessagerie;
 
   contactContextMessagerie = await actions.openOrPrepareContactAction(
     otherProfileId!,

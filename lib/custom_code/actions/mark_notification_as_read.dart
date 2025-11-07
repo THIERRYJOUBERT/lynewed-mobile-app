@@ -2,7 +2,6 @@
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
-import '/utils/secure_logger.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 // Begin custom action code

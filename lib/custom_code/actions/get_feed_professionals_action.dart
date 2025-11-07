@@ -47,7 +47,7 @@ Future<FeedResultStruct> getFeedProfessionalsAction(
 
     final filterParams = <String, dynamic>{
       // CORRECTION CRITIQUE : filters.professions est une List<String>, pas une List<Enum>
-      'professions': filters.professions ?? [],
+      'professions': filters.professions,
       'budgetMin': filters.budgetMin,
       'budgetMax': budgetMaxClean,
       'currency': (filters.currency.isEmpty)

@@ -85,7 +85,7 @@ Future<MapdatabundleStruct> callSearchMapBundleV2(
     },
     'p_viewer_role': viewerRole.name,
     'p_filters': filterParams,
-    'p_zoom': (viewport.zoom ?? 12.0).round(),
+    'p_zoom': viewport.zoom.round(),
   };
 
   final res = await client.rpc('search_map_bundle', params: params);

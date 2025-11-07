@@ -264,9 +264,8 @@ class _InfoProItemSheetWidgetState extends State<InfoProItemSheetWidget> {
             ),
             FFButtonWidget(
               onPressed: () async {
-                if ((widget.proDetails!.portfolioImages.isNotEmpty) &&
-                    (widget.proDetails?.proProfileId != null &&
-                        widget.proDetails?.proProfileId != '')) {
+                if (widget.proDetails?.proProfileId != null &&
+                    widget.proDetails?.proProfileId != '') {
                   context.goNamed(
                     ProDetailsWidget.routeName,
                     queryParameters: {

@@ -1,10 +1,31 @@
-import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 export 'database/database.dart';
 
-String _kSupabaseUrl = 'https://odzkhcplevcqbuhzqsmq.supabase.co';
-String _kSupabaseAnonKey =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kemtoY3BsZXZjcWJ1aHpxc21xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc2MDY2ODQsImV4cCI6MjA3MzE4MjY4NH0.j8KEBqFoR3aHp2mDpBlf025iEQyiv888FFBGwi_ss-8';
+// ✅ SECURITY: Secrets loaded from .env instead of hardcoded
+// ✅ ROBUSTNESS: Validation added to ensure required env vars are present
+String get _kSupabaseUrl {
+  final url = dotenv.env['SUPABASE_URL'] ?? '';
+  if (url.isEmpty) {
+    throw StateError(
+      '❌ SUPABASE_URL is not set in .env file. '
+      'Please add SUPABASE_URL=https://your-project.supabase.co to your .env file.',
+    );
+  }
+  return url;
+}
+
+String get _kSupabaseAnonKey {
+  final key = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+  if (key.isEmpty) {
+    throw StateError(
+      '❌ SUPABASE_ANON_KEY is not set in .env file. '
+      'Please add your Supabase anonymous key to your .env file.',
+    );
+  }
+  return key;
+}
 
 class SupaFlow {
   SupaFlow._();

@@ -1,6 +1,5 @@
 // Automatic FlutterFlow imports
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 // Imports other custom actions
 // Imports custom functions
 import 'package:flutter/material.dart';

@@ -20,7 +20,7 @@ import '/custom_code/firebase_options.dart';
 import '/custom_code/actions/handle_notification_redirection.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/utils/secure_logger.dart';
-import '/flutter_flow/nav/nav.dart'; // Pour appNavigatorKey
+// Pour appNavigatorKey
 
 StreamSubscription<AuthState>? _authStateSubscription;
 

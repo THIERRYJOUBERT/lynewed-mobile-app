@@ -736,7 +736,6 @@ class _ChatMessageListState extends State<ChatMessageList>
   }
 
   Widget _renderMedia(_ChatMsg m, String url, Color textColor) {
-    final theme = FlutterFlowTheme.of(context);
     final screenW = MediaQuery.of(context).size.width;
     final maxW = (screenW * 0.72).clamp(180.0, 360.0);
 

@@ -11,7 +11,6 @@ import '/backend/supabase/supabase.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/internationalization.dart';
 import 'services/agora_engine_manager.dart';
-import 'app_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -98,6 +97,13 @@ class _MyAppState extends State<MyApp> {
       const Duration(milliseconds: 1000),
       () => _appStateNotifier.stopShowingSplashImage(),
     );
+  }
+
+  @override
+  void dispose() {
+    // ✅ ROBUSTNESS: Cleanup Agora resources on app termination
+    AgoraEngineManager.instance.dispose();
+    super.dispose();
   }
 
   void setLocale(String language) {

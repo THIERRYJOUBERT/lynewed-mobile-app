@@ -1,11 +1,9 @@
-import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/supabase/supabase.dart';
 import '/components/ui_system/empty_state/empty_state_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/custom_code/actions/index.dart' as actions;
-import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/scheduler.dart';
@@ -38,10 +36,9 @@ class _NotificationsPageWidgetState extends State<NotificationsPageWidget> {
       if (!mounted) return;
       _model.allNotifications = await actions.getNotificationsAction();
       if (!mounted) return;
+      // Inverser la liste pour avoir les plus récentes en premier
       _model.listNotifications =
-          _model.allNotifications!.toList().cast<AppNotificationStruct>();
-      // La RPC retourne déjà les notifications triées DESC (plus récentes en premier)
-      // Pas besoin de .reversed !
+          _model.allNotifications!.toList().cast<AppNotificationStruct>().reversed.toList();
       if (mounted) {
         safeSetState(() {});
       }

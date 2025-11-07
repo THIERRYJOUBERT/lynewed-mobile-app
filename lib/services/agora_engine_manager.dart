@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/foundation.dart';
@@ -148,27 +147,48 @@ class AgoraEngineManager {
     );
   }
 
+  /// ✅ ROBUSTNESS: Improved cleanup with proper resource management
   Future<void> releaseEngine() async {
     if (_engine == null) {
       return;
     }
 
+    debugPrint('🎥 [AGORA_MANAGER] Releasing engine...');
+
     try {
       await _engine!.stopPreview();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('⚠️ [AGORA_MANAGER] Error stopping preview: $e');
+    }
 
     try {
       await _engine!.leaveChannel();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('⚠️ [AGORA_MANAGER] Error leaving channel: $e');
+    }
 
     try {
       await _engine!.release();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('⚠️ [AGORA_MANAGER] Error releasing engine: $e');
+    }
 
     _engine = null;
+    debugPrint('🎥 [AGORA_MANAGER] ✅ Engine released');
   }
   
-  void dispose() {
-    _eventController.close();
+  /// ✅ ROBUSTNESS: Proper dispose with full cleanup
+  Future<void> dispose() async {
+    debugPrint('🎥 [AGORA_MANAGER] Disposing manager...');
+    
+    // Release engine first
+    await releaseEngine();
+    
+    // Close event stream
+    if (!_eventController.isClosed) {
+      await _eventController.close();
+    }
+    
+    debugPrint('🎥 [AGORA_MANAGER] ✅ Manager disposed');
   }
 }

@@ -383,15 +383,11 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
                                       safeSetState(() {});
                                     }
                                   },
-                                  side: (FlutterFlowTheme.of(context)
-                                              .secondaryText !=
-                                          null)
-                                      ? BorderSide(
+                                  side: BorderSide(
                                           width: 2,
                                           color: FlutterFlowTheme.of(context)
                                               .secondaryText,
-                                        )
-                                      : null,
+                                        ),
                                   activeColor:
                                       FlutterFlowTheme.of(context).primary,
                                   checkColor: FlutterFlowTheme.of(context).info,

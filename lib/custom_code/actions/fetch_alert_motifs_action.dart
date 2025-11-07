@@ -13,7 +13,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 
 Future<List<AlertMotifStruct>> fetchAlertMotifsAction() async {
   try {
-    final locale = FFAppState().currentUserPreferences.defaultLocale ?? 'en';
+    final locale = FFAppState().currentUserPreferences.defaultLocale;
     final langColumn =
         (locale.toLowerCase().startsWith('fr')) ? 'name_fr' : 'name_en';
 

@@ -225,9 +225,8 @@ class _ItemAllAlertWidgetState extends State<ItemAllAlertWidget> {
                                 await actions.getProItemDetailsAction(
                               widget.alertInfos!.authorProfileId,
                             );
-                            if ((_model.getProDetails?.proProfileId != null &&
-                                    _model.getProDetails?.proProfileId != '') &&
-                                (_model.getProDetails!.portfolioImages.isNotEmpty)) {
+                            if (_model.getProDetails?.proProfileId != null &&
+                                _model.getProDetails?.proProfileId != '') {
                               context.pushNamed(
                                 ProDetailsWidget.routeName,
                                 queryParameters: {

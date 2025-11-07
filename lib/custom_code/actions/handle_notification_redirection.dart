@@ -121,7 +121,7 @@ Future<void> handleNotificationRedirection(
             if (fallback == null) {
               SecureLogger.warning('No active video session found (fallback)');
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
+                const SnackBar(
                   content: Text('Call expired or already ended'),
                   backgroundColor: Colors.orange,
                 ),
@@ -144,7 +144,7 @@ Future<void> handleNotificationRedirection(
           if (currentStatus == 'completed') {
             SecureLogger.warning('Session already completed by initiator');
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
+              const SnackBar(
                 content: Text('Call already ended by the other person'),
                 backgroundColor: Colors.orange,
               ),

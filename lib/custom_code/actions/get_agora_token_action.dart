@@ -8,6 +8,7 @@ import '/flutter_flow/custom_functions.dart' as functions;
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 // custom_code/actions/get_agora_token_action.dart
+import '/utils/network_helper.dart';
 
 Future<String?> getAgoraTokenAction(
   String channelName,
@@ -28,12 +29,18 @@ Future<String?> getAgoraTokenAction(
     
     SecureLogger.info('📤 Sending request body: {channelName: ***REDACTED***, agoraUid: $agoraUid}');
     
-    final response = await client.functions.invoke(
-      'agora_token_issue',
-      body: {
-        'channelName': channelName,
-        'agoraUid': agoraUid, // Envoyer l'UID calculé par Flutter
-      },
+    // ✅ ROBUSTNESS: Retry logic for critical Agora token generation
+    final response = await NetworkHelper.retryWithTimeout(
+      () => client.functions.invoke(
+        'agora_token_issue',
+        body: {
+          'channelName': channelName,
+          'agoraUid': agoraUid, // Envoyer l'UID calculé par Flutter
+        },
+      ),
+      timeout: const Duration(seconds: 10),
+      maxAttempts: 3,
+      context: 'agora_token_issue',
     );
 
     SecureLogger.info('📥 Edge Function response received');

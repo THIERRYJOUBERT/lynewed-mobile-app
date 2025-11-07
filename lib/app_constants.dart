@@ -1,8 +1,24 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 
 abstract class FFAppConstants {
-  static String get googlePlacesApiKey => dotenv.env['GOOGLE_PLACES_API_KEY'] ?? '';
+  // ✅ ROBUSTNESS: Validate critical API keys with warnings
+  static String get googlePlacesApiKey {
+    final key = dotenv.env['GOOGLE_PLACES_API_KEY'] ?? '';
+    if (key.isEmpty && kDebugMode) {
+      debugPrint('⚠️ WARNING: GOOGLE_PLACES_API_KEY is not set. Map features may not work.');
+    }
+    return key;
+  }
+  
   static const String tosVersion = 'v1.0.0';
   static const String privacyVersion = 'v1.0.0';
-  static String get agoraAppId => dotenv.env['AGORA_APP_ID'] ?? '';
+  
+  static String get agoraAppId {
+    final appId = dotenv.env['AGORA_APP_ID'] ?? '';
+    if (appId.isEmpty && kDebugMode) {
+      debugPrint('⚠️ WARNING: AGORA_APP_ID is not set. Video calls will not work.');
+    }
+    return appId;
+  }
 }
