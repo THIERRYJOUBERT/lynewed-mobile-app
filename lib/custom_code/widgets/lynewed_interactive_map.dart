@@ -293,7 +293,6 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
       final bounds = await c.getVisibleRegion();
       final zoom = await c.getZoomLevel();
       if (_isDisposed || localGen != _gen) return;
-      _lastZoom = zoom;
 
       final center = gmaps.LatLng(
         (bounds.southwest.latitude + bounds.northeast.latitude) / 2,
@@ -462,7 +461,6 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
 
     final zoom = await c.getZoomLevel();
     if (_isDisposed) return;
-    _lastZoom = zoom;
 
     // Candidats au clustering: EXCLUT seulement searchTarget et user.
     final candidates = <MapMarkerStruct>[];
