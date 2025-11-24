@@ -793,18 +793,19 @@ cd ios && pod install && cd ..
 
 **Structure actuelle :**
 - `main` : Version production MVP v1.1.1+59 (App Store) - **protégée, stable**
+- `release/v1.x` : Branche de maintenance pour hotfixes v1.x - **isolée de v2.0.0**
 - `develop` : Branche de développement pour refactorisation v2.0.0
 
-**Workflow Git :**
+**Workflow Git amélioré :**
 1. **MVP conservé** : `main` reste l'historique de référence du MVP déployé
-2. **Refactorisation** : Tous les changements v2.0.0 se font sur `develop`
-3. **Hotfixes** : Si nécessaire sur `main` (bugs critiques App Store)
-4. **Release** : Quand v2.0.0 prête → merge `develop` → `main` + tag `v2.0.0`
+2. **Hotfixes v1.x** : Si nécessaire sur `release/v1.x` (bugs critiques App Store)
+3. **Refactorisation** : Tous les changements v2.0.0 se font sur `develop`
+4. **Sync hotfixes** : `release/v1.x` → `main` (production) + `develop` (si pertinent)
+5. **Release** : Quand v2.0.0 prête → merge `develop` → `main` + tag `v2.0.0`
 
-**Commit de sauvegarde :**
-- SHA: `0992be1`
-- Message: "chore: backup MVP v1.1.1+59 - stable App Store version"
-- Date: 24 novembre 2025
+**Tags et versions :**
+- Tag actuel : `v1.1.1+59` (sur commit `0992be1`)
+- Prochain tag : `v2.0.0` (après refactorisation)
 
 ### Prochaines Étapes
 
