@@ -1,16 +1,48 @@
-# lynewed_alpha
+# Lynewed Mobile App
 
-A new Flutter project.
+Application Flutter de mise en relation pour les mariages.
 
-## Getting Started
+## 🚀 Démarrage rapide
 
-This project is a starting point for a Flutter application.
+Voir le guide d'installation complet : **[docs/SETUP.md](docs/SETUP.md)**
 
-A few resources to get you started if this is your first Flutter project:
+## 📁 Structure du projet
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```
+├── docs/                    # Documentation principale
+│   ├── SETUP.md            # Guide d'installation
+│   └── PROJECT_STATUS.md   # Statut du projet
+├── guides/                  # Guides techniques
+│   ├── BUILD_IPA_GUIDE.md  # Build iOS production
+│   └── technical_specification.md
+├── scripts/                 # Scripts utilitaires
+│   ├── check_config.sh     # Vérification configuration
+│   ├── build_and_run.sh    # Build automatique
+│   └── install_simulator.sh
+├── lib/                     # Code source Flutter
+├── assets/                  # Ressources
+└── supabase/               # Backend Supabase
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🛠️ Scripts utiles
+
+```bash
+# Vérifier la configuration du projet
+./scripts/check_config.sh
+
+# Builder et lancer sur simulateur
+./scripts/build_and_run.sh
+
+# Installer un simulateur iOS
+./scripts/install_simulator.sh
+```
+
+## 📚 Documentation
+
+- **Installation** : [docs/SETUP.md](docs/SETUP.md)
+- **Build iOS** : [guides/BUILD_IPA_GUIDE.md](guides/BUILD_IPA_GUIDE.md)
+- **Spécifications** : [guides/technical_specification.md](guides/technical_specification.md)
+- **Statut projet** : [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md)
+
+---
+**Version** : v1.1.1+59 | **Flutter** : 3.32.4 | **Platformes** : iOS/Android
