@@ -6,7 +6,7 @@ set -e
 
 SIMULATOR_ID="53D436C5-C951-4341-B4B4-A3206DBD2D22"
 BUNDLE_ID="com.lynewed.app"
-PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 echo "🚀 Lynewed Alpha - Build & Run Script"
 echo "======================================"

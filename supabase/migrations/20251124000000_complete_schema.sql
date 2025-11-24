@@ -199,26 +199,26 @@ CREATE EXTENSION IF NOT EXISTS "wrappers" WITH SCHEMA "extensions";
 
 
 
-CREATE TYPE "public"."alertStatus" AS ENUM (
+CREATE TYPE alertStatus AS ENUM (
     'active',
     'cancelled',
     'expired'
 );
 
 
-ALTER TYPE "public"."alertStatus" OWNER TO "postgres";
+ALTER TYPE alertStatus OWNER TO "postgres";
 
 
-CREATE TYPE "public"."app_role" AS ENUM (
+CREATE TYPE app_role AS ENUM (
     'admin',
     'moderator'
 );
 
 
-ALTER TYPE "public"."app_role" OWNER TO "postgres";
+ALTER TYPE app_role OWNER TO "postgres";
 
 
-CREATE TYPE "public"."connectionRequestSource" AS ENUM (
+CREATE TYPE connectionRequestSource AS ENUM (
     'wishlist',
     'weddingPin',
     'map',
@@ -227,30 +227,30 @@ CREATE TYPE "public"."connectionRequestSource" AS ENUM (
 );
 
 
-ALTER TYPE "public"."connectionRequestSource" OWNER TO "postgres";
+ALTER TYPE connectionRequestSource OWNER TO "postgres";
 
 
-CREATE TYPE "public"."connectionRequestStatus" AS ENUM (
+CREATE TYPE connectionRequestStatus AS ENUM (
     'pending',
     'accepted',
     'declined'
 );
 
 
-ALTER TYPE "public"."connectionRequestStatus" OWNER TO "postgres";
+ALTER TYPE connectionRequestStatus OWNER TO "postgres";
 
 
-CREATE TYPE "public"."contentModerationStatus" AS ENUM (
+CREATE TYPE contentModerationStatus AS ENUM (
     'pendingReview',
     'approved',
     'rejected'
 );
 
 
-ALTER TYPE "public"."contentModerationStatus" OWNER TO "postgres";
+ALTER TYPE contentModerationStatus OWNER TO "postgres";
 
 
-CREATE TYPE "public"."conversationStatus" AS ENUM (
+CREATE TYPE conversationStatus AS ENUM (
     'pending',
     'active',
     'declined',
@@ -260,20 +260,20 @@ CREATE TYPE "public"."conversationStatus" AS ENUM (
 );
 
 
-ALTER TYPE "public"."conversationStatus" OWNER TO "postgres";
+ALTER TYPE conversationStatus OWNER TO "postgres";
 
 
-CREATE TYPE "public"."messageType" AS ENUM (
+CREATE TYPE messageType AS ENUM (
     'text',
     'image',
     'audio'
 );
 
 
-ALTER TYPE "public"."messageType" OWNER TO "postgres";
+ALTER TYPE messageType OWNER TO "postgres";
 
 
-CREATE TYPE "public"."notificationType" AS ENUM (
+CREATE TYPE notificationType AS ENUM (
     'chatMessage',
     'connectionRequest',
     'connectionRequestAccepted',
@@ -287,10 +287,10 @@ CREATE TYPE "public"."notificationType" AS ENUM (
 );
 
 
-ALTER TYPE "public"."notificationType" OWNER TO "postgres";
+ALTER TYPE notificationType OWNER TO "postgres";
 
 
-CREATE TYPE "public"."profession" AS ENUM (
+CREATE TYPE profession AS ENUM (
     'PHOTOGRAPHER',
     'FILMMAKER',
     'PLANNER',
@@ -308,10 +308,10 @@ CREATE TYPE "public"."profession" AS ENUM (
 );
 
 
-ALTER TYPE "public"."profession" OWNER TO "postgres";
+ALTER TYPE profession OWNER TO "postgres";
 
 
-CREATE TYPE "public"."subscriptionTierType" AS ENUM (
+CREATE TYPE subscriptionTierType AS ENUM (
     'inactive',
     'trial',
     'earlyAccess',
@@ -320,19 +320,19 @@ CREATE TYPE "public"."subscriptionTierType" AS ENUM (
 );
 
 
-ALTER TYPE "public"."subscriptionTierType" OWNER TO "postgres";
+ALTER TYPE subscriptionTierType OWNER TO "postgres";
 
 
-CREATE TYPE "public"."userRole" AS ENUM (
+CREATE TYPE userRole AS ENUM (
     'bride',
     'professional'
 );
 
 
-ALTER TYPE "public"."userRole" OWNER TO "postgres";
+ALTER TYPE userRole OWNER TO "postgres";
 
 
-CREATE TYPE "public"."videoSessionStatus" AS ENUM (
+CREATE TYPE videoSessionStatus AS ENUM (
     'pending',
     'accepted',
     'declined',
@@ -342,10 +342,10 @@ CREATE TYPE "public"."videoSessionStatus" AS ENUM (
 );
 
 
-ALTER TYPE "public"."videoSessionStatus" OWNER TO "postgres";
+ALTER TYPE videoSessionStatus OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."accept_connection_request"("p_request_id" "uuid") RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."accept_connection_request"("p_request_id" uuid) RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'pg_temp'
     AS $$
@@ -401,10 +401,10 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."accept_connection_request"("p_request_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."accept_connection_request"("p_request_id" uuid) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."admin_get_professional_details"() RETURNS TABLE("profile_id" "uuid", "business_name" "text", "description" "text", "portfolio_images" "text"[], "profession" "public"."profession", "created_at" timestamp with time zone, "budget_min" integer, "budget_max" integer, "instagram_url" "text", "website_url" "text", "slideshow_images" "text"[], "profile_video_url" "text", "currency" "text", "is_live" boolean, "is_pending" boolean, "location_city" "text", "location_country_code" "text", "location_label" "text", "profile" "jsonb", "fixed_locations" "jsonb")
+CREATE OR REPLACE FUNCTION "public"."admin_get_professional_details"() RETURNS TABLE("profile_id" uuid, "business_name" text, "description" text, "portfolio_images" text[], "profession" profession, "created_at" timestamp with time zone, "budget_min" integer, "budget_max" integer, "instagram_url" text, "website_url" text, "slideshow_images" text[], "profile_video_url" text, "currency" text, "is_live" boolean, "is_pending" boolean, "location_city" text, "location_country_code" text, "location_label" text, "profile" "jsonb", "fixed_locations" "jsonb")
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
     AS $$
@@ -478,7 +478,7 @@ $$;
 ALTER FUNCTION "public"."alerts_rate_limit_before_insert"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."auth_uid"() RETURNS "uuid"
+CREATE OR REPLACE FUNCTION "public"."auth_uid"() RETURNS uuid
     LANGUAGE "sql" STABLE
     SET "search_path" TO 'public', 'pg_temp'
     AS $$ SELECT auth.uid(); $$;
@@ -487,7 +487,55 @@ CREATE OR REPLACE FUNCTION "public"."auth_uid"() RETURNS "uuid"
 ALTER FUNCTION "public"."auth_uid"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."cancel_professional_alert"("p_alert_id" "uuid") RETURNS boolean
+CREATE OR REPLACE FUNCTION "public"."auto_populate_fixed_location_country_code"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+    AS $$
+BEGIN
+  IF (NEW.location_country_code IS NULL OR NEW.location_country_code = '')
+     AND NEW.location_coords IS NOT NULL 
+     AND ST_X(NEW.location_coords) != 0 
+     AND ST_Y(NEW.location_coords) != 0 THEN
+    -- Qualification explicite avec public. pour éviter les problèmes de search_path
+    NEW.location_country_code := public.get_country_code_from_coords(NEW.location_coords);
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."auto_populate_fixed_location_country_code"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."auto_populate_fixed_location_country_code"() IS 'Trigger pour auto-peupler location_country_code dans professional_fixed_locations. SÉCURISÉ avec search_path fixe.';
+
+
+
+CREATE OR REPLACE FUNCTION "public"."auto_populate_location_country_code"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+    AS $$
+BEGIN
+  IF (NEW.location_country_code IS NULL OR NEW.location_country_code = '')
+     AND NEW.location_coords IS NOT NULL 
+     AND ST_X(NEW.location_coords) != 0 
+     AND ST_Y(NEW.location_coords) != 0 THEN
+    -- Qualification explicite avec public. pour éviter les problèmes de search_path
+    NEW.location_country_code := public.get_country_code_from_coords(NEW.location_coords);
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."auto_populate_location_country_code"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."auto_populate_location_country_code"() IS 'Trigger pour auto-peupler location_country_code dans professional_details. SÉCURISÉ avec search_path fixe.';
+
+
+
+CREATE OR REPLACE FUNCTION "public"."cancel_professional_alert"("p_alert_id" uuid) RETURNS boolean
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions'
     AS $$
@@ -511,7 +559,7 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."cancel_professional_alert"("p_alert_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."cancel_professional_alert"("p_alert_id" uuid) OWNER TO "postgres";
 
 SET default_tablespace = '';
 
@@ -519,23 +567,27 @@ SET default_table_access_method = "heap";
 
 
 CREATE TABLE IF NOT EXISTS "public"."notifications_outbox" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "event_type" "text" NOT NULL,
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "event_type" text NOT NULL,
     "payload" "jsonb" NOT NULL,
     "attempts" integer DEFAULT 0 NOT NULL,
-    "last_error" "text",
+    "last_error" text,
     "processed_at" timestamp with time zone,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "event_key" "text" NOT NULL,
+    "event_key" text NOT NULL,
     "claimed_at" timestamp with time zone,
-    "claimed_by" "text"
+    "claimed_by" text
 );
 
 
 ALTER TABLE "public"."notifications_outbox" OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."claim_outbox_events"("p_batch_size" integer DEFAULT 100, "p_claim_ttl_minutes" integer DEFAULT 5, "p_worker_id" "text" DEFAULT NULL::"text") RETURNS SETOF "public"."notifications_outbox"
+COMMENT ON TABLE "public"."notifications_outbox" IS 'Queue pour notifications push/in-app. Les events sont claim par l''edge function notifications_outbox_drain qui tourne toutes les 30 secondes via cron job.';
+
+
+
+CREATE OR REPLACE FUNCTION "public"."claim_outbox_events"("p_batch_size" integer DEFAULT 100, "p_claim_ttl_minutes" integer DEFAULT 5, "p_worker_id" text DEFAULT NULL::text) RETURNS SETOF "public"."notifications_outbox"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'pg_temp'
     AS $$-- VERSION CORRIGÉE par Flowbase Architect
@@ -564,7 +616,31 @@ BEGIN
 END;$$;
 
 
-ALTER FUNCTION "public"."claim_outbox_events"("p_batch_size" integer, "p_claim_ttl_minutes" integer, "p_worker_id" "text") OWNER TO "postgres";
+ALTER FUNCTION "public"."claim_outbox_events"("p_batch_size" integer, "p_claim_ttl_minutes" integer, "p_worker_id" text) OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."cleanup_abandoned_video_sessions"() RETURNS "void"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+    AS $$
+BEGIN
+  -- Marquer comme 'missed' les sessions pending ou accepted de plus de 5 minutes
+  UPDATE public.video_sessions
+  SET status = 'missed'
+  WHERE status IN ('pending', 'accepted')
+    AND created_at < NOW() - INTERVAL '5 minutes';
+    
+  -- Log pour debug (optionnel)
+  RAISE NOTICE 'Video sessions cleanup executed at %', NOW();
+END;
+$$;
+
+
+ALTER FUNCTION "public"."cleanup_abandoned_video_sessions"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."cleanup_abandoned_video_sessions"() IS 'Nettoie les sessions vidéo abandonnées (pending/accepted) de plus de 5 minutes. À appeler via un cron job toutes les 5 minutes.';
+
 
 
 CREATE OR REPLACE FUNCTION "public"."cleanup_old_notifications"() RETURNS "void"
@@ -624,7 +700,7 @@ $$;
 ALTER FUNCTION "public"."conn_req_before_insert"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."convert_to_eur"("p_amount" numeric, "p_currency" "text") RETURNS numeric
+CREATE OR REPLACE FUNCTION "public"."convert_to_eur"("p_amount" numeric, "p_currency" text) RETURNS numeric
     LANGUAGE "plpgsql" STABLE
     SET "search_path" TO 'public', 'pg_temp'
     AS $$
@@ -658,7 +734,7 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."convert_to_eur"("p_amount" numeric, "p_currency" "text") OWNER TO "postgres";
+ALTER FUNCTION "public"."convert_to_eur"("p_amount" numeric, "p_currency" text) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."create_next_notifications_partition"() RETURNS "void"
@@ -691,7 +767,7 @@ $$;
 ALTER FUNCTION "public"."create_next_notifications_partition"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."create_professional_alert"("p_motif_code" "text", "p_message" "text", "p_end_at" timestamp with time zone, "p_lat" double precision, "p_lng" double precision, "p_location_label" "text") RETURNS "uuid"
+CREATE OR REPLACE FUNCTION "public"."create_professional_alert"("p_motif_code" text, "p_message" text, "p_end_at" timestamp with time zone, "p_lat" double precision, "p_lng" double precision, "p_location_label" text) RETURNS uuid
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions'
     AS $$
@@ -741,10 +817,10 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."create_professional_alert"("p_motif_code" "text", "p_message" "text", "p_end_at" timestamp with time zone, "p_lat" double precision, "p_lng" double precision, "p_location_label" "text") OWNER TO "postgres";
+ALTER FUNCTION "public"."create_professional_alert"("p_motif_code" text, "p_message" text, "p_end_at" timestamp with time zone, "p_lat" double precision, "p_lng" double precision, "p_location_label" text) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."decline_connection_request"("p_request_id" "uuid") RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."decline_connection_request"("p_request_id" uuid) RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'pg_temp'
     AS $$
@@ -800,10 +876,55 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."decline_connection_request"("p_request_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."decline_connection_request"("p_request_id" uuid) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."delete_user_poi"("p_poi_id" "uuid") RETURNS boolean
+CREATE OR REPLACE FUNCTION "public"."delete_current_device_token"("device_token" text) RETURNS "void"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+BEGIN
+  -- Supprimer le token fourni
+  -- On ne vérifie pas profile_id car l'utilisateur peut être déconnecté
+  -- La sécurité vient du fait que seul l'appareil ayant le token peut le supprimer
+  DELETE FROM device_tokens
+  WHERE token = device_token;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."delete_current_device_token"("device_token" text) OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."delete_current_device_token"("device_token" text) IS 'Supprime le token de l''appareil actuel. Peut être appelé même après déconnexion.';
+
+
+
+CREATE OR REPLACE FUNCTION "public"."delete_my_device_tokens"() RETURNS "void"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+BEGIN
+  -- Cette fonction requiert que l'utilisateur soit authentifié
+  IF auth.uid() IS NULL THEN
+    RAISE EXCEPTION 'Not authenticated';
+  END IF;
+  
+  -- Supprimer tous les tokens de l'utilisateur actuel
+  DELETE FROM device_tokens
+  WHERE profile_id = auth.uid();
+END;
+$$;
+
+
+ALTER FUNCTION "public"."delete_my_device_tokens"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."delete_my_device_tokens"() IS 'Supprime tous les tokens de l''utilisateur connecté. Doit être appelé AVANT la déconnexion.';
+
+
+
+CREATE OR REPLACE FUNCTION "public"."delete_user_poi"("p_poi_id" uuid) RETURNS boolean
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions'
     AS $$
@@ -824,10 +945,10 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."delete_user_poi"("p_poi_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."delete_user_poi"("p_poi_id" uuid) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."delete_wedding_pin"("p_pin_id" "uuid") RETURNS boolean
+CREATE OR REPLACE FUNCTION "public"."delete_wedding_pin"("p_pin_id" uuid) RETURNS boolean
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions'
     AS $$
@@ -850,29 +971,7 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."delete_wedding_pin"("p_pin_id" "uuid") OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."enforce_fixed_locations_quota"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    SET "search_path" TO 'public', 'pg_temp'
-    AS $$
-DECLARE quota int := public.get_fixed_locations_quota(NEW.professional_profile_id);
-DECLARE current_count int;
-BEGIN
-  SELECT COUNT(*) INTO current_count
-  FROM public.professional_fixed_locations
-  WHERE professional_profile_id = NEW.professional_profile_id;
-
-  IF current_count >= quota THEN
-    RAISE EXCEPTION 'FIXED_LOCATIONS_QUOTA_REACHED';
-  END IF;
-  RETURN NEW;
-END;
-$$;
-
-
-ALTER FUNCTION "public"."enforce_fixed_locations_quota"() OWNER TO "postgres";
+ALTER FUNCTION "public"."delete_wedding_pin"("p_pin_id" uuid) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."expire_alerts"() RETURNS "void"
@@ -904,7 +1003,7 @@ $$;
 ALTER FUNCTION "public"."expire_trials"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."geocode_city_to_point"("city_name" "text") RETURNS "extensions"."geometry"
+CREATE OR REPLACE FUNCTION "public"."geocode_city_to_point"("city_name" text) RETURNS "extensions".geometry
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'pg_catalog', 'extensions', 'public'
     AS $$
@@ -917,14 +1016,14 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."geocode_city_to_point"("city_name" "text") OWNER TO "postgres";
+ALTER FUNCTION "public"."geocode_city_to_point"("city_name" text) OWNER TO "postgres";
 
 
-COMMENT ON FUNCTION "public"."geocode_city_to_point"("city_name" "text") IS 'Fonction de géocodage (actuellement retourne 0,0 car tiger.geocode non disponible). Non utilisée dans l''application. Sécurisé avec search_path fixe.';
+COMMENT ON FUNCTION "public"."geocode_city_to_point"("city_name" text) IS 'Fonction de géocodage (actuellement retourne 0,0 car tiger.geocode non disponible). Non utilisée dans l''application. Sécurisé avec search_path fixe.';
 
 
 
-CREATE OR REPLACE FUNCTION "public"."get_alert_item_details"("p_alert_id" "uuid") RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."get_alert_item_details"("p_alert_id" uuid) RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions'
     AS $$
@@ -957,7 +1056,7 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."get_alert_item_details"("p_alert_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."get_alert_item_details"("p_alert_id" uuid) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."get_bride_interest_items"() RETURNS "jsonb"
@@ -1049,7 +1148,7 @@ END;$$;
 ALTER FUNCTION "public"."get_bride_interest_items"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_color_for_profession"("p_profession" "public"."profession") RETURNS "text"
+CREATE OR REPLACE FUNCTION "public"."get_color_for_profession"("p_profession" profession) RETURNS text
     LANGUAGE "plpgsql" IMMUTABLE
     SET "search_path" TO 'public', 'pg_temp'
     AS $$
@@ -1071,7 +1170,132 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."get_color_for_profession"("p_profession" "public"."profession") OWNER TO "postgres";
+ALTER FUNCTION "public"."get_color_for_profession"("p_profession" profession) OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."get_country_code_from_coords"("coords" "extensions".geometry) RETURNS text
+    LANGUAGE "plpgsql"
+    SET "search_path" TO 'extensions, public'
+    AS $$
+DECLARE
+  lat double precision;
+  lon double precision;
+BEGIN
+  -- Extraire latitude et longitude avec qualification explicite
+  lat := extensions.ST_Y(coords);
+  lon := extensions.ST_X(coords);
+  
+  -- Monaco
+  IF lat BETWEEN 43.72 AND 43.76 AND lon BETWEEN 7.40 AND 7.44 THEN RETURN 'MC'; END IF;
+  IF lat BETWEEN 49.45 AND 50.18 AND lon BETWEEN 5.73 AND 6.53 THEN RETURN 'LU'; END IF;
+  IF lat BETWEEN 47.05 AND 47.27 AND lon BETWEEN 9.47 AND 9.63 THEN RETURN 'LI'; END IF;
+  IF lat BETWEEN 42.43 AND 42.66 AND lon BETWEEN 1.41 AND 1.79 THEN RETURN 'AD'; END IF;
+  IF lat BETWEEN 43.89 AND 43.99 AND lon BETWEEN 12.40 AND 12.52 THEN RETURN 'SM'; END IF;
+  IF lat BETWEEN 41.90 AND 41.91 AND lon BETWEEN 12.45 AND 12.46 THEN RETURN 'VA'; END IF;
+  IF lat BETWEEN 35.80 AND 36.08 AND lon BETWEEN 14.18 AND 14.58 THEN RETURN 'MT'; END IF;
+  
+  -- DOM-TOM
+  IF lat BETWEEN 15.83 AND 16.51 AND lon BETWEEN -61.81 AND -61.00 THEN RETURN 'GP'; END IF;
+  IF lat BETWEEN 14.39 AND 14.88 AND lon BETWEEN -61.23 AND -60.81 THEN RETURN 'MQ'; END IF;
+  IF lat BETWEEN 2.11 AND 5.78 AND lon BETWEEN -54.60 AND -51.61 THEN RETURN 'GF'; END IF;
+  IF lat BETWEEN -21.39 AND -20.87 AND lon BETWEEN 55.22 AND 55.84 THEN RETURN 'RE'; END IF;
+  IF lat BETWEEN -13.00 AND -12.64 AND lon BETWEEN 45.04 AND 45.30 THEN RETURN 'YT'; END IF;
+  IF lat BETWEEN -22.70 AND -20.00 AND lon BETWEEN 164.03 AND 167.00 THEN RETURN 'NC'; END IF;
+  IF lat BETWEEN -27.93 AND -7.90 AND lon BETWEEN -154.70 AND -134.93 THEN RETURN 'PF'; END IF;
+  IF lat BETWEEN 46.75 AND 47.15 AND lon BETWEEN -56.40 AND -56.10 THEN RETURN 'PM'; END IF;
+  IF lat BETWEEN -14.40 AND -13.15 AND lon BETWEEN -178.20 AND -176.10 THEN RETURN 'WF'; END IF;
+  IF lat BETWEEN 17.88 AND 17.97 AND lon BETWEEN -62.88 AND -62.78 THEN RETURN 'BL'; END IF;
+  IF lat BETWEEN 18.04 AND 18.13 AND lon BETWEEN -63.15 AND -63.00 THEN RETURN 'MF'; END IF;
+  
+  IF lat BETWEEN 45.82 AND 47.81 AND lon BETWEEN 5.96 AND 10.49 THEN RETURN 'CH'; END IF;
+  IF lat BETWEEN 49.50 AND 51.51 AND lon BETWEEN 2.54 AND 6.41 THEN RETURN 'BE'; END IF;
+  IF lat BETWEEN 50.75 AND 53.55 AND lon BETWEEN 3.36 AND 7.23 THEN RETURN 'NL'; END IF;
+  IF lat BETWEEN 36.96 AND 42.15 AND lon BETWEEN -9.50 AND -6.19 THEN RETURN 'PT'; END IF;
+  IF lat BETWEEN 36.00 AND 43.79 AND lon BETWEEN -9.30 AND 3.32 THEN RETURN 'ES'; END IF;
+  IF lat BETWEEN 41.33 AND 51.09 AND lon BETWEEN -5.14 AND 9.56 THEN RETURN 'FR'; END IF;
+  IF lat BETWEEN 49.96 AND 60.86 AND lon BETWEEN -8.18 AND 1.76 THEN RETURN 'GB'; END IF;
+  IF lat BETWEEN 51.45 AND 55.43 AND lon BETWEEN -10.48 AND -5.99 THEN RETURN 'IE'; END IF;
+  IF lat BETWEEN 63.30 AND 66.57 AND lon BETWEEN -24.54 AND -13.50 THEN RETURN 'IS'; END IF;
+  IF lat BETWEEN 47.27 AND 55.06 AND lon BETWEEN 5.87 AND 15.04 THEN RETURN 'DE'; END IF;
+  IF lat BETWEEN 46.37 AND 49.02 AND lon BETWEEN 9.53 AND 17.16 THEN RETURN 'AT'; END IF;
+  IF lat BETWEEN 49.00 AND 54.84 AND lon BETWEEN 14.12 AND 24.15 THEN RETURN 'PL'; END IF;
+  IF lat BETWEEN 48.55 AND 51.06 AND lon BETWEEN 12.09 AND 18.86 THEN RETURN 'CZ'; END IF;
+  IF lat BETWEEN 47.73 AND 49.61 AND lon BETWEEN 16.83 AND 22.56 THEN RETURN 'SK'; END IF;
+  IF lat BETWEEN 45.74 AND 48.58 AND lon BETWEEN 16.11 AND 22.90 THEN RETURN 'HU'; END IF;
+  IF lat BETWEEN 36.65 AND 47.09 AND lon BETWEEN 6.63 AND 18.52 THEN RETURN 'IT'; END IF;
+  IF lat BETWEEN 34.80 AND 41.75 AND lon BETWEEN 19.37 AND 28.24 THEN RETURN 'GR'; END IF;
+  IF lat BETWEEN 42.39 AND 46.55 AND lon BETWEEN 13.49 AND 19.43 THEN RETURN 'HR'; END IF;
+  IF lat BETWEEN 45.42 AND 46.88 AND lon BETWEEN 13.38 AND 16.61 THEN RETURN 'SI'; END IF;
+  IF lat BETWEEN 42.56 AND 45.27 AND lon BETWEEN 15.73 AND 19.62 THEN RETURN 'BA'; END IF;
+  IF lat BETWEEN 42.23 AND 46.19 AND lon BETWEEN 18.82 AND 23.00 THEN RETURN 'RS'; END IF;
+  IF lat BETWEEN 41.85 AND 43.57 AND lon BETWEEN 18.43 AND 20.36 THEN RETURN 'ME'; END IF;
+  IF lat BETWEEN 39.65 AND 42.66 AND lon BETWEEN 19.26 AND 21.07 THEN RETURN 'AL'; END IF;
+  IF lat BETWEEN 40.86 AND 42.36 AND lon BETWEEN 20.46 AND 23.04 THEN RETURN 'MK'; END IF;
+  IF lat BETWEEN 41.24 AND 44.22 AND lon BETWEEN 22.36 AND 28.61 THEN RETURN 'BG'; END IF;
+  IF lat BETWEEN 43.62 AND 48.27 AND lon BETWEEN 20.26 AND 29.71 THEN RETURN 'RO'; END IF;
+  IF lat BETWEEN 57.98 AND 71.19 AND lon BETWEEN 4.65 AND 31.08 THEN RETURN 'NO'; END IF;
+  IF lat BETWEEN 55.34 AND 69.06 AND lon BETWEEN 11.12 AND 24.17 THEN RETURN 'SE'; END IF;
+  IF lat BETWEEN 59.81 AND 70.09 AND lon BETWEEN 20.55 AND 31.59 THEN RETURN 'FI'; END IF;
+  IF lat BETWEEN 54.56 AND 57.75 AND lon BETWEEN 8.08 AND 15.19 THEN RETURN 'DK'; END IF;
+  IF lat BETWEEN 57.52 AND 59.68 AND lon BETWEEN 21.76 AND 28.21 THEN RETURN 'EE'; END IF;
+  IF lat BETWEEN 55.68 AND 58.09 AND lon BETWEEN 20.97 AND 28.24 THEN RETURN 'LV'; END IF;
+  IF lat BETWEEN 53.90 AND 56.45 AND lon BETWEEN 20.94 AND 26.84 THEN RETURN 'LT'; END IF;
+  IF lat BETWEEN 41.19 AND 81.86 AND lon BETWEEN 19.64 AND 180.00 THEN RETURN 'RU'; END IF;
+  IF lat BETWEEN 44.39 AND 52.38 AND lon BETWEEN 22.13 AND 40.23 THEN RETURN 'UA'; END IF;
+  IF lat BETWEEN 51.26 AND 56.17 AND lon BETWEEN 23.18 AND 32.77 THEN RETURN 'BY'; END IF;
+  IF lat BETWEEN 45.47 AND 48.49 AND lon BETWEEN 26.62 AND 30.14 THEN RETURN 'MD'; END IF;
+  IF lat BETWEEN 27.66 AND 35.92 AND lon BETWEEN -13.17 AND -0.99 THEN RETURN 'MA'; END IF;
+  IF lat BETWEEN 18.96 AND 37.09 AND lon BETWEEN -8.67 AND 11.98 THEN RETURN 'DZ'; END IF;
+  IF lat BETWEEN 30.24 AND 37.54 AND lon BETWEEN 7.52 AND 11.60 THEN RETURN 'TN'; END IF;
+  IF lat BETWEEN 19.50 AND 33.17 AND lon BETWEEN 9.38 AND 25.15 THEN RETURN 'LY'; END IF;
+  IF lat BETWEEN 22.00 AND 31.67 AND lon BETWEEN 24.70 AND 36.89 THEN RETURN 'EG'; END IF;
+  IF lat BETWEEN 24.52 AND 49.38 AND lon BETWEEN -125.00 AND -66.95 THEN RETURN 'US'; END IF;
+  IF lat BETWEEN 51.21 AND 71.39 AND lon BETWEEN -179.15 AND -129.98 THEN RETURN 'US'; END IF;
+  IF lat BETWEEN 18.91 AND 28.40 AND lon BETWEEN -178.33 AND -154.81 THEN RETURN 'US'; END IF;
+  IF lat BETWEEN 41.68 AND 83.11 AND lon BETWEEN -141.00 AND -52.62 THEN RETURN 'CA'; END IF;
+  IF lat BETWEEN 14.53 AND 32.72 AND lon BETWEEN -118.45 AND -86.71 THEN RETURN 'MX'; END IF;
+  IF lat BETWEEN 19.83 AND 23.19 AND lon BETWEEN -84.96 AND -74.13 THEN RETURN 'CU'; END IF;
+  IF lat BETWEEN 17.70 AND 18.53 AND lon BETWEEN -78.37 AND -76.18 THEN RETURN 'JM'; END IF;
+  IF lat BETWEEN 17.47 AND 19.93 AND lon BETWEEN -72.00 AND -68.32 THEN RETURN 'DO'; END IF;
+  IF lat BETWEEN 17.93 AND 18.52 AND lon BETWEEN -67.27 AND -65.59 THEN RETURN 'PR'; END IF;
+  IF lat BETWEEN -33.75 AND 5.27 AND lon BETWEEN -73.99 AND -34.79 THEN RETURN 'BR'; END IF;
+  IF lat BETWEEN -55.05 AND -21.78 AND lon BETWEEN -73.56 AND -53.64 THEN RETURN 'AR'; END IF;
+  IF lat BETWEEN -55.98 AND -17.50 AND lon BETWEEN -109.45 AND -66.42 THEN RETURN 'CL'; END IF;
+  IF lat BETWEEN -18.35 AND -0.04 AND lon BETWEEN -81.33 AND -68.65 THEN RETURN 'PE'; END IF;
+  IF lat BETWEEN -4.23 AND 12.46 AND lon BETWEEN -79.02 AND -66.87 THEN RETURN 'CO'; END IF;
+  IF lat BETWEEN 0.65 AND 12.20 AND lon BETWEEN -73.35 AND -59.80 THEN RETURN 'VE'; END IF;
+  IF lat BETWEEN -5.01 AND 1.45 AND lon BETWEEN -92.01 AND -75.19 THEN RETURN 'EC'; END IF;
+  IF lat BETWEEN 24.04 AND 45.55 AND lon BETWEEN 122.93 AND 153.99 THEN RETURN 'JP'; END IF;
+  IF lat BETWEEN 18.16 AND 53.56 AND lon BETWEEN 73.50 AND 135.09 THEN RETURN 'CN'; END IF;
+  IF lat BETWEEN 6.75 AND 35.51 AND lon BETWEEN 68.18 AND 97.40 THEN RETURN 'IN'; END IF;
+  IF lat BETWEEN 33.11 AND 38.61 AND lon BETWEEN 124.61 AND 131.87 THEN RETURN 'KR'; END IF;
+  IF lat BETWEEN 5.61 AND 20.46 AND lon BETWEEN 97.34 AND 105.64 THEN RETURN 'TH'; END IF;
+  IF lat BETWEEN 8.56 AND 23.39 AND lon BETWEEN 102.14 AND 109.47 THEN RETURN 'VN'; END IF;
+  IF lat BETWEEN -11.01 AND 6.08 AND lon BETWEEN 94.97 AND 141.02 THEN RETURN 'ID'; END IF;
+  IF lat BETWEEN 0.85 AND 7.36 AND lon BETWEEN 99.64 AND 119.27 THEN RETURN 'MY'; END IF;
+  IF lat BETWEEN 1.16 AND 1.47 AND lon BETWEEN 103.61 AND 104.04 THEN RETURN 'SG'; END IF;
+  IF lat BETWEEN 4.64 AND 21.12 AND lon BETWEEN 116.93 AND 126.60 THEN RETURN 'PH'; END IF;
+  IF lat BETWEEN 35.82 AND 42.11 AND lon BETWEEN 25.66 AND 44.83 THEN RETURN 'TR'; END IF;
+  IF lat BETWEEN 22.63 AND 26.08 AND lon BETWEEN 51.58 AND 56.38 THEN RETURN 'AE'; END IF;
+  IF lat BETWEEN 16.38 AND 32.15 AND lon BETWEEN 34.57 AND 55.67 THEN RETURN 'SA'; END IF;
+  IF lat BETWEEN 29.50 AND 33.34 AND lon BETWEEN 34.27 AND 35.88 THEN RETURN 'IL'; END IF;
+  IF lat BETWEEN 33.05 AND 34.69 AND lon BETWEEN 35.10 AND 36.62 THEN RETURN 'LB'; END IF;
+  IF lat BETWEEN -43.63 AND -10.06 AND lon BETWEEN 113.16 AND 153.64 THEN RETURN 'AU'; END IF;
+  IF lat BETWEEN -47.29 AND -34.39 AND lon BETWEEN 166.42 AND 178.58 THEN RETURN 'NZ'; END IF;
+  IF lat BETWEEN -34.84 AND -22.13 AND lon BETWEEN 16.46 AND 32.89 THEN RETURN 'ZA'; END IF;
+  IF lat BETWEEN -4.68 AND 5.03 AND lon BETWEEN 33.89 AND 41.90 THEN RETURN 'KE'; END IF;
+  IF lat BETWEEN 4.27 AND 13.89 AND lon BETWEEN 2.69 AND 14.68 THEN RETURN 'NG'; END IF;
+  
+  RETURN NULL;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."get_country_code_from_coords"("coords" "extensions".geometry) OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."get_country_code_from_coords"("coords" "extensions".geometry) IS 'Détecte le code pays (ISO 3166-1 alpha-2) à partir de coordonnées GPS. SÉCURISÉ avec search_path fixe.';
+
 
 
 CREATE OR REPLACE FUNCTION "public"."get_favorited_professionals"() RETURNS "jsonb"
@@ -1108,13 +1332,30 @@ BEGIN
             'slideshowImages', to_jsonb(pd.slideshow_images),
             'profileVideoUrl', pd.profile_video_url,
             'fixedLocations', (
-                SELECT jsonb_agg(jsonb_build_object('lat', ST_Y(fl.location_coords), 'lng', ST_X(fl.location_coords)))
-                FROM public.professional_fixed_locations fl
-                WHERE fl.professional_profile_id = p.id
+                -- Build array with main location first, then fixed locations
+                SELECT COALESCE(
+                    CASE 
+                        WHEN pd.location_coords IS NOT NULL THEN
+                            jsonb_build_array(
+                                jsonb_build_object('lat', ST_Y(pd.location_coords), 'lng', ST_X(pd.location_coords))
+                            ) || COALESCE(
+                                (SELECT jsonb_agg(jsonb_build_object('lat', ST_Y(fl.location_coords), 'lng', ST_X(fl.location_coords)))
+                                 FROM public.professional_fixed_locations fl
+                                 WHERE fl.professional_profile_id = p.id),
+                                '[]'::jsonb
+                            )
+                        ELSE
+                            (SELECT jsonb_agg(jsonb_build_object('lat', ST_Y(fl.location_coords), 'lng', ST_X(fl.location_coords)))
+                             FROM public.professional_fixed_locations fl
+                             WHERE fl.professional_profile_id = p.id)
+                    END,
+                    '[]'::jsonb
+                )
             ),
             'instagramUrl', pd.instagram_url,
             'websiteUrl', pd.website_url,
-            'canBeContactedByBride', (ps.subscription_tier IN ('premiumVisibility','ultimateAccess') AND pd.is_live = true),
+            -- FIXED: Removed is_live condition
+            'canBeContactedByBride', (ps.subscription_tier IN ('premiumVisibility','ultimateAccess')),
             'canContactBride', false -- Non pertinent du point de vue de la Bride
         ) ORDER BY w.added_at DESC
     )
@@ -1137,7 +1378,58 @@ COMMENT ON FUNCTION "public"."get_favorited_professionals"() IS 'Récupère les 
 
 
 
-CREATE OR REPLACE FUNCTION "public"."get_feed_professionals"("p_filters" "jsonb", "p_cursor" "text" DEFAULT NULL::"text", "p_page_size" integer DEFAULT 24) RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."get_featured_replay"() RETURNS TABLE("id" uuid, "title" text, "description" text, "youtube_url" text, "thumbnail_url" text, "published_at" timestamp with time zone, "is_featured" boolean, "is_published" boolean, "created_at" timestamp with time zone)
+    LANGUAGE "plpgsql" STABLE SECURITY DEFINER
+    AS $$
+BEGIN
+  -- First, try to get the most recent replay with is_featured = true
+  RETURN QUERY
+  SELECT 
+    r.id,
+    r.title,
+    r.description,
+    r.youtube_url,
+    r.thumbnail_url,
+    r.published_at,
+    r.is_featured,
+    r.is_published,
+    r.created_at
+  FROM public.replays r
+  WHERE r.is_published = true
+    AND r.is_featured = true
+  ORDER BY r.created_at DESC
+  LIMIT 1;
+  
+  -- If no featured replay found, get the most recent published replay
+  IF NOT FOUND THEN
+    RETURN QUERY
+    SELECT 
+      r.id,
+      r.title,
+      r.description,
+      r.youtube_url,
+      r.thumbnail_url,
+      r.published_at,
+      r.is_featured,
+      r.is_published,
+      r.created_at
+    FROM public.replays r
+    WHERE r.is_published = true
+    ORDER BY r.created_at DESC
+    LIMIT 1;
+  END IF;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."get_featured_replay"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."get_featured_replay"() IS 'Returns the featured replay based on priority: is_featured=true (most recent) or most recent created_at if none featured';
+
+
+
+CREATE OR REPLACE FUNCTION "public"."get_feed_professionals"("p_filters" "jsonb", "p_cursor" text DEFAULT NULL::text, "p_page_size" integer DEFAULT 24) RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
     AS $$
@@ -1151,8 +1443,9 @@ DECLARE
   v_budget_max_ui numeric;
   v_budget_min_eur numeric;
   v_budget_max_eur numeric;
+  v_country_code text;
 
-  cs jsonb; -- parsed cursor
+  cs jsonb;
   c_tier int;
   c_dist numeric;
   c_wl int;
@@ -1173,6 +1466,9 @@ BEGIN
     );
   END IF;
   v_radius_km := NULLIF(p_filters->>'radiusKm','')::float;
+
+  -- country filter
+  v_country_code := NULLIF(p_filters->>'countryCode','');
 
   -- professions
   SELECT ARRAY(SELECT jsonb_array_elements_text(p_filters->'professions')) INTO v_prof_filter;
@@ -1230,9 +1526,32 @@ BEGIN
           AND (v_budget_max_eur IS NULL OR pd.budget_min_eur <= v_budget_max_eur)
         )
       )
+      -- FIXED: Geographic filter logic
+      -- If country is specified, check BOTH main location AND fixed_locations
+      -- If no country, use radius filter as before
       AND (
-        v_center IS NULL OR v_radius_km IS NULL
-        OR ST_DWithin(pd.location_coords::geography, v_center::geography, v_radius_km*1000)
+        -- Country filter: check main location OR any fixed location
+        (
+          v_country_code IS NOT NULL 
+          AND (
+            pd.location_country_code = v_country_code
+            OR EXISTS (
+              SELECT 1 
+              FROM public.professional_fixed_locations pfl
+              WHERE pfl.professional_profile_id = pd.profile_id
+                AND pfl.location_country_code = v_country_code
+            )
+          )
+        )
+        OR
+        -- Radius filter (when no country specified)
+        (
+          v_country_code IS NULL
+          AND (
+            v_center IS NULL OR v_radius_km IS NULL
+            OR ST_DWithin(pd.location_coords::geography, v_center::geography, v_radius_km*1000)
+          )
+        )
       )
   ),
   ranked AS (
@@ -1277,16 +1596,15 @@ BEGIN
   FROM (SELECT * FROM sought) s
   WHERE TRUE;
 
-  -- next_cursor si +1 existe
+  -- next_cursor
   IF items IS NOT NULL AND jsonb_array_length(items) = v_page_size + 1 THEN
-    -- extraire le (v_page_size+1)-ème comme prochain curseur
     WITH lst AS (
       SELECT (items->>(v_page_size))::jsonb AS j
     ), lastrow AS (
       SELECT
         (j->>'proProfileId')::uuid AS pid
       FROM lst
-    ), full_row_data AS ( -- RENOMMÉ ICI
+    ), full_row_data AS (
       SELECT r.*
       FROM ranked r
       JOIN lastrow lr ON lr.pid = r.profile_id
@@ -1299,9 +1617,8 @@ BEGIN
         'profileId', f.profile_id
       )::text, 'utf8'), 'base64')
     INTO next_cursor
-    FROM full_row_data f; -- ET ICI
+    FROM full_row_data f;
 
-    -- tronquer items à v_page_size
     items := items - (v_page_size)::int;
   END IF;
 
@@ -1313,10 +1630,10 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."get_feed_professionals"("p_filters" "jsonb", "p_cursor" "text", "p_page_size" integer) OWNER TO "postgres";
+ALTER FUNCTION "public"."get_feed_professionals"("p_filters" "jsonb", "p_cursor" text, "p_page_size" integer) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_fixed_locations_quota"("p_profile_id" "uuid") RETURNS integer
+CREATE OR REPLACE FUNCTION "public"."get_fixed_locations_quota"("p_profile_id" uuid) RETURNS integer
     LANGUAGE "sql" STABLE
     SET "search_path" TO 'public', 'pg_temp'
     AS $$
@@ -1330,7 +1647,7 @@ CREATE OR REPLACE FUNCTION "public"."get_fixed_locations_quota"("p_profile_id" "
 $$;
 
 
-ALTER FUNCTION "public"."get_fixed_locations_quota"("p_profile_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."get_fixed_locations_quota"("p_profile_id" uuid) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."get_formatted_notifications"("p_limit" integer DEFAULT 100) RETURNS "jsonb"
@@ -1420,7 +1737,7 @@ $$;
 ALTER FUNCTION "public"."get_formatted_notifications"("p_limit" integer) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_latest_wed_article"("p_lang" "text" DEFAULT 'en'::"text") RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."get_latest_wed_article"("p_lang" text DEFAULT 'en'::text) RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions'
     AS $$
@@ -1482,10 +1799,10 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."get_latest_wed_article"("p_lang" "text") OWNER TO "postgres";
+ALTER FUNCTION "public"."get_latest_wed_article"("p_lang" text) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_my_role"() RETURNS "public"."userRole"
+CREATE OR REPLACE FUNCTION "public"."get_my_role"() RETURNS userRole
     LANGUAGE "sql" STABLE
     SET "search_path" TO 'public', 'pg_temp'
     AS $$
@@ -1496,7 +1813,7 @@ $$;
 ALTER FUNCTION "public"."get_my_role"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_my_tier"() RETURNS "public"."subscriptionTierType"
+CREATE OR REPLACE FUNCTION "public"."get_my_tier"() RETURNS subscriptionTierType
     LANGUAGE "sql" STABLE
     SET "search_path" TO 'public', 'pg_temp'
     AS $$
@@ -1562,7 +1879,7 @@ $$;
 ALTER FUNCTION "public"."get_pending_contact_requests"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_portfolio_feed"("p_filters" "jsonb", "p_cursor" "text", "p_page_size" integer, "p_seed" "text") RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."get_portfolio_feed"("p_filters" "jsonb", "p_cursor" text, "p_page_size" integer, "p_seed" text) RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
     AS $$
@@ -1574,6 +1891,7 @@ DECLARE
   v_prof_filter text[];
   v_budget_min  numeric;
   v_budget_max  numeric;
+  v_country_code text;
   cs            jsonb;
   c_sort_key    text;
   c_pid         uuid;
@@ -1597,6 +1915,8 @@ BEGIN
   IF v_radius_km IS NOT NULL THEN
     v_radius_km := GREATEST(5, LEAST(v_radius_km, 1000));
   END IF;
+
+  v_country_code := NULLIF(v_filters->>'countryCode','');
 
   IF v_filters ? 'professions' AND jsonb_typeof(v_filters->'professions') = 'array' THEN
     SELECT ARRAY(SELECT jsonb_array_elements_text(v_filters->'professions')) INTO v_prof_filter;
@@ -1637,17 +1957,35 @@ BEGIN
       unnest(pd.portfolio_images) WITH ORDINALITY AS u(image_url, image_index)
     WHERE
       ps.subscription_tier IN ('premiumVisibility', 'ultimateAccess')
+      AND pd.is_live = true  -- CRITICAL FIX: Only show live professionals
       AND array_length(pd.portfolio_images, 1) > 0
       AND u.image_url IS NOT NULL AND u.image_url <> ''
-      -- ✅ SUPPRIMÉ : AND u.image_url NOT LIKE '%thumbnail%'
       AND (
         v_prof_filter IS NULL OR
         COALESCE(array_length(v_prof_filter, 1), 0) = 0 OR
         UPPER(pd.profession::text) = ANY(v_prof_filter)
       )
       AND (
-        v_center IS NULL OR
-        ST_DWithin(pd.location_coords::geography, v_center::geography, COALESCE(v_radius_km, 100) * 1000)
+        (
+          v_country_code IS NOT NULL 
+          AND (
+            pd.location_country_code = v_country_code
+            OR EXISTS (
+              SELECT 1 
+              FROM public.professional_fixed_locations pfl
+              WHERE pfl.professional_profile_id = pd.profile_id
+                AND pfl.location_country_code = v_country_code
+            )
+          )
+        )
+        OR
+        (
+          v_country_code IS NULL
+          AND (
+            v_center IS NULL OR
+            ST_DWithin(pd.location_coords::geography, v_center::geography, COALESCE(v_radius_km, 100) * 1000)
+          )
+        )
       )
       AND (
         (v_budget_min IS NULL AND v_budget_max IS NULL)
@@ -1702,10 +2040,10 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."get_portfolio_feed"("p_filters" "jsonb", "p_cursor" "text", "p_page_size" integer, "p_seed" "text") OWNER TO "postgres";
+ALTER FUNCTION "public"."get_portfolio_feed"("p_filters" "jsonb", "p_cursor" text, "p_page_size" integer, "p_seed" text) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_pro_item_details"("p_pro_profile_id" "uuid") RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."get_pro_item_details"("p_pro_profile_id" uuid) RETURNS "jsonb"
     LANGUAGE "plpgsql"
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
     AS $$DECLARE
@@ -1726,8 +2064,10 @@ CREATE OR REPLACE FUNCTION "public"."get_pro_item_details"("p_pro_profile_id" "u
   v_is_fav boolean := false;
   v_instagram_url text;
   v_website_url text;
+  v_main_location geometry;
 
   v_fixed jsonb := '[]'::jsonb;
+  v_all_locations jsonb := '[]'::jsonb;
 
   can_contact_by_bride boolean := false;
   can_contact_bride boolean := false;
@@ -1736,7 +2076,7 @@ BEGIN
       SELECT role INTO v_my_role FROM public.profiles WHERE id = v_me;
   END IF;
 
-  -- pro details
+  -- pro details (including main location_coords)
   SELECT pr.full_name, pr.avatar_url,
          pd.business_name, pd.profession,
          pd.budget_min, pd.budget_max, pd.currency,
@@ -1746,6 +2086,7 @@ BEGIN
          pd.instagram_url,
          pd.website_url,
          pd.profile_video_url,
+         pd.location_coords,
          ps.subscription_tier
   INTO v_full_name, v_avatar_url,
        v_business_name, v_profession,
@@ -1756,6 +2097,7 @@ BEGIN
        v_instagram_url,
        v_website_url,
        v_profile_video_url,
+       v_main_location,
        v_subscription_tier
   FROM public.professional_details pd
   JOIN public.profiles pr ON pr.id = pd.profile_id
@@ -1770,7 +2112,21 @@ BEGIN
     v_cover := v_portfolio[1];
   END IF;
 
-  -- fixed locations
+  -- Build locations array: main location first, then fixed locations
+  -- Start with main location if it exists
+  IF v_main_location IS NOT NULL THEN
+    v_all_locations := jsonb_build_array(
+      jsonb_build_object(
+        'type', 'Point',
+        'coordinates', jsonb_build_array(
+          ST_X(v_main_location),
+          ST_Y(v_main_location)
+        )
+      )
+    );
+  END IF;
+
+  -- Add fixed locations (secondary addresses)
   SELECT COALESCE(jsonb_agg(
     jsonb_build_object(
       'type','Point',
@@ -1783,6 +2139,15 @@ BEGIN
   INTO v_fixed
   FROM public.professional_fixed_locations fl
   WHERE fl.professional_profile_id = p_pro_profile_id;
+
+  -- Concatenate main location with fixed locations
+  IF v_all_locations != '[]'::jsonb THEN
+    IF v_fixed != '[]'::jsonb THEN
+      v_all_locations := v_all_locations || v_fixed;
+    END IF;
+  ELSE
+    v_all_locations := v_fixed;
+  END IF;
 
   -- wishlist flag (bride viewer)
   IF v_me IS NOT NULL AND v_my_role = 'bride' THEN
@@ -1803,9 +2168,9 @@ BEGIN
   END IF;
 
   -- gating flags
+  -- FIXED: Removed is_live condition as it's for a different feature
   can_contact_by_bride :=
     (v_subscription_tier IN ('premiumVisibility','ultimateAccess'))
-    AND v_is_live = true
     AND NOT v_blocked;
 
   can_contact_bride :=
@@ -1830,7 +2195,7 @@ BEGIN
     'description', v_description,
     'portfolioImages', COALESCE(to_jsonb(v_portfolio), '[]'::jsonb),
     'slideshowImages', COALESCE(to_jsonb(v_slideshow), '[]'::jsonb),
-    'fixedLocations', v_fixed,
+    'fixedLocations', v_all_locations,
     'profileVideoUrl', v_profile_video_url,
     'canBeContactedByBride', can_contact_by_bride,
     'canContactBride', can_contact_bride,
@@ -1842,10 +2207,14 @@ BEGIN
 END;$$;
 
 
-ALTER FUNCTION "public"."get_pro_item_details"("p_pro_profile_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."get_pro_item_details"("p_pro_profile_id" uuid) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_professional_profile"("p_profile_id" "uuid") RETURNS "jsonb"
+COMMENT ON FUNCTION "public"."get_pro_item_details"("p_pro_profile_id" uuid) IS 'Accessible par tous les utilisateurs (anon, authenticated) pour permettre la consultation des profils professionnels depuis Wedding of the Week';
+
+
+
+CREATE OR REPLACE FUNCTION "public"."get_professional_profile"("p_profile_id" uuid) RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions'
     AS $$
@@ -1903,7 +2272,7 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."get_professional_profile"("p_profile_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."get_professional_profile"("p_profile_id" uuid) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."get_public_chat_rooms_for_brides"() RETURNS "jsonb"
@@ -1915,7 +2284,7 @@ CREATE OR REPLACE FUNCTION "public"."get_public_chat_rooms_for_brides"() RETURNS
 ALTER FUNCTION "public"."get_public_chat_rooms_for_brides"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_public_profile_details"("p_profile_id" "uuid") RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."get_public_profile_details"("p_profile_id" uuid) RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions'
     AS $$
@@ -1934,10 +2303,10 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."get_public_profile_details"("p_profile_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."get_public_profile_details"("p_profile_id" uuid) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_report_motifs"("p_locale" "text" DEFAULT 'fr'::"text") RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."get_report_motifs"("p_locale" text DEFAULT 'fr'::text) RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions'
     AS $$
@@ -1960,16 +2329,16 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."get_report_motifs"("p_locale" "text") OWNER TO "postgres";
+ALTER FUNCTION "public"."get_report_motifs"("p_locale" text) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_room_header"("p_room_id" "uuid") RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."get_room_header"("p_room_id" uuid) RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions'
     AS $$ declare v_me uuid := auth.uid(); v_type text; v_json jsonb; begin if v_me is null then raise exception 'AUTH_REQUIRED'; end if; select type into v_type from public.chat_rooms where id = p_room_id; if not found then raise exception 'ROOM_NOT_FOUND'; end if; if v_type = 'private' then if not is_room_participant(p_room_id, v_me) then raise exception 'NOT_A_PARTICIPANT'; end if; select jsonb_build_object('roomType','private', 'otherProfileId', pr.id, 'otherFullName', pr.full_name, 'otherAvatarUrl', pr.avatar_url, 'otherRole', pr.role::text) into v_json from public.chat_room_participants p1 join public.chat_room_participants p2 on p1.room_id = p2.room_id and p1.profile_id <> p2.profile_id join public.profiles pr on pr.id = case when p1.profile_id = v_me then p2.profile_id else p1.profile_id end where p1.room_id = p_room_id and (p1.profile_id = v_me or p2.profile_id = v_me) limit 1; else select jsonb_build_object('roomType','public', 'publicTitle', pcr.title, 'publicCoverUrl', pcr.cover_image_url, 'audienceRole', pcr.audience_role::text) into v_json from public.public_chat_rooms pcr where pcr.chat_room_id = p_room_id and pcr.is_active = true; end if; return v_json; end; $$;
 
 
-ALTER FUNCTION "public"."get_room_header"("p_room_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."get_room_header"("p_room_id" uuid) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."get_rooms_with_unread_counts"("p_limit" integer DEFAULT 50) RETURNS "jsonb"
@@ -1981,7 +2350,7 @@ CREATE OR REPLACE FUNCTION "public"."get_rooms_with_unread_counts"("p_limit" int
 ALTER FUNCTION "public"."get_rooms_with_unread_counts"("p_limit" integer) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_tier_of"("p_profile_id" "uuid") RETURNS "public"."subscriptionTierType"
+CREATE OR REPLACE FUNCTION "public"."get_tier_of"("p_profile_id" uuid) RETURNS subscriptionTierType
     LANGUAGE "sql" STABLE
     SET "search_path" TO 'public', 'pg_temp'
     AS $$
@@ -1993,7 +2362,7 @@ CREATE OR REPLACE FUNCTION "public"."get_tier_of"("p_profile_id" "uuid") RETURNS
 $$;
 
 
-ALTER FUNCTION "public"."get_tier_of"("p_profile_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."get_tier_of"("p_profile_id" uuid) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."get_unread_notifications_count"() RETURNS integer
@@ -2009,7 +2378,30 @@ $$;
 ALTER FUNCTION "public"."get_unread_notifications_count"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_wedding_pin_item_details"("p_pin_id" "uuid") RETURNS "jsonb"
+COMMENT ON FUNCTION "public"."get_unread_notifications_count"() IS 'Compte le nombre de notifications non lues pour l''utilisateur connecté. Utilisée pour afficher le badge dans l''app Flutter.';
+
+
+
+CREATE OR REPLACE FUNCTION "public"."get_user_email_by_profile_id"("p_profile_id" uuid) RETURNS text
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+DECLARE
+  v_email TEXT;
+BEGIN
+  SELECT email INTO v_email
+  FROM auth.users
+  WHERE id = p_profile_id;
+  
+  RETURN v_email;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."get_user_email_by_profile_id"("p_profile_id" uuid) OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."get_wedding_pin_item_details"("p_pin_id" uuid) RETURNS "jsonb"
     LANGUAGE "plpgsql"
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
     AS $$DECLARE 
@@ -2083,7 +2475,7 @@ BEGIN
 END;$$;
 
 
-ALTER FUNCTION "public"."get_wedding_pin_item_details"("p_pin_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."get_wedding_pin_item_details"("p_pin_id" uuid) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."get_wishlisted_by_brides"() RETURNS "jsonb"
@@ -2133,7 +2525,7 @@ $$;
 ALTER FUNCTION "public"."handle_message_report"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."has_role"("_user_id" "uuid", "_role" "public"."app_role") RETURNS boolean
+CREATE OR REPLACE FUNCTION "public"."has_role"("_user_id" uuid, "_role" app_role) RETURNS boolean
     LANGUAGE "sql" STABLE SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
@@ -2146,10 +2538,10 @@ CREATE OR REPLACE FUNCTION "public"."has_role"("_user_id" "uuid", "_role" "publi
 $$;
 
 
-ALTER FUNCTION "public"."has_role"("_user_id" "uuid", "_role" "public"."app_role") OWNER TO "postgres";
+ALTER FUNCTION "public"."has_role"("_user_id" uuid, "_role" app_role) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."insert_user_poi"("p_label" "text", "p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint DEFAULT NULL::smallint, "p_professions" "text"[] DEFAULT NULL::"text"[], "p_budget_min" integer DEFAULT NULL::integer, "p_budget_max" integer DEFAULT NULL::integer, "p_currency" "text" DEFAULT NULL::"text", "p_event_start_date" "date" DEFAULT NULL::"date", "p_event_end_date" "date" DEFAULT NULL::"date", "p_location_label" "text" DEFAULT ''::"text") RETURNS "uuid"
+CREATE OR REPLACE FUNCTION "public"."insert_user_poi"("p_label" text, "p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint DEFAULT NULL::smallint, "p_professions" text[] DEFAULT NULL::text[], "p_budget_min" integer DEFAULT NULL::integer, "p_budget_max" integer DEFAULT NULL::integer, "p_currency" text DEFAULT NULL::text, "p_event_start_date" "date" DEFAULT NULL::"date", "p_event_end_date" "date" DEFAULT NULL::"date", "p_location_label" text DEFAULT ''::text) RETURNS uuid
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions'
     AS $$
@@ -2199,10 +2591,10 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."insert_user_poi"("p_label" "text", "p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" "text"[], "p_budget_min" integer, "p_budget_max" integer, "p_currency" "text", "p_event_start_date" "date", "p_event_end_date" "date", "p_location_label" "text") OWNER TO "postgres";
+ALTER FUNCTION "public"."insert_user_poi"("p_label" text, "p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" text[], "p_budget_min" integer, "p_budget_max" integer, "p_currency" text, "p_event_start_date" "date", "p_event_end_date" "date", "p_location_label" text) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."insert_wedding_pin"("p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" "text"[] DEFAULT NULL::"text"[], "p_budget_min" integer DEFAULT NULL::integer, "p_budget_max" integer DEFAULT NULL::integer, "p_currency" "text" DEFAULT NULL::"text", "p_event_start_date" "date" DEFAULT NULL::"date", "p_event_end_date" "date" DEFAULT NULL::"date", "p_location_label" "text" DEFAULT ''::"text") RETURNS "uuid"
+CREATE OR REPLACE FUNCTION "public"."insert_wedding_pin"("p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" text[] DEFAULT NULL::text[], "p_budget_min" integer DEFAULT NULL::integer, "p_budget_max" integer DEFAULT NULL::integer, "p_currency" text DEFAULT NULL::text, "p_event_start_date" "date" DEFAULT NULL::"date", "p_event_end_date" "date" DEFAULT NULL::"date", "p_location_label" text DEFAULT ''::text) RETURNS uuid
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions'
     AS $$
@@ -2261,10 +2653,10 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."insert_wedding_pin"("p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" "text"[], "p_budget_min" integer, "p_budget_max" integer, "p_currency" "text", "p_event_start_date" "date", "p_event_end_date" "date", "p_location_label" "text") OWNER TO "postgres";
+ALTER FUNCTION "public"."insert_wedding_pin"("p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" text[], "p_budget_min" integer, "p_budget_max" integer, "p_currency" text, "p_event_start_date" "date", "p_event_end_date" "date", "p_location_label" text) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."is_blocked_between"("a" "uuid", "b" "uuid") RETURNS boolean
+CREATE OR REPLACE FUNCTION "public"."is_blocked_between"("a" uuid, "b" uuid) RETURNS boolean
     LANGUAGE "sql" STABLE
     SET "search_path" TO 'public', 'pg_temp'
     AS $$
@@ -2276,10 +2668,10 @@ CREATE OR REPLACE FUNCTION "public"."is_blocked_between"("a" "uuid", "b" "uuid")
 $$;
 
 
-ALTER FUNCTION "public"."is_blocked_between"("a" "uuid", "b" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."is_blocked_between"("a" uuid, "b" uuid) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."is_public_room"("p_room_id" "uuid") RETURNS boolean
+CREATE OR REPLACE FUNCTION "public"."is_public_room"("p_room_id" uuid) RETURNS boolean
     LANGUAGE "sql" STABLE
     SET "search_path" TO 'public'
     AS $$
@@ -2287,10 +2679,10 @@ CREATE OR REPLACE FUNCTION "public"."is_public_room"("p_room_id" "uuid") RETURNS
 $$;
 
 
-ALTER FUNCTION "public"."is_public_room"("p_room_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."is_public_room"("p_room_id" uuid) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."is_room_participant"("p_room_id" "uuid", "p_profile_id" "uuid") RETURNS boolean
+CREATE OR REPLACE FUNCTION "public"."is_room_participant"("p_room_id" uuid, "p_profile_id" uuid) RETURNS boolean
     LANGUAGE "sql" STABLE
     SET "search_path" TO 'public'
     AS $$
@@ -2298,16 +2690,16 @@ CREATE OR REPLACE FUNCTION "public"."is_room_participant"("p_room_id" "uuid", "p
 $$;
 
 
-ALTER FUNCTION "public"."is_room_participant"("p_room_id" "uuid", "p_profile_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."is_room_participant"("p_room_id" uuid, "p_profile_id" uuid) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."join_public_room_if_needed"("p_room_id" "uuid") RETURNS "uuid"
+CREATE OR REPLACE FUNCTION "public"."join_public_room_if_needed"("p_room_id" uuid) RETURNS uuid
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions'
     AS $$ declare v_me uuid := auth.uid(); v_role public."userRole"; v_room_type text; v_audience public."userRole"; v_is_active boolean; begin if v_me is null then raise exception 'AUTH_REQUIRED'; end if; select role into v_role from public.profiles where id = v_me; if v_role <> 'bride' then raise exception 'ONLY_BRIDES_CAN_JOIN_PUBLIC_SALONS'; end if; select r.type, pcr.audience_role, pcr.is_active into v_room_type, v_audience, v_is_active from public.chat_rooms r join public.public_chat_rooms pcr on pcr.chat_room_id = r.id where r.id = p_room_id; if not found then raise exception 'PUBLIC_ROOM_NOT_FOUND'; end if; if v_room_type <> 'public' then raise exception 'ROOM_NOT_PUBLIC'; end if; if v_audience <> 'bride' then raise exception 'AUDIENCE_NOT_BRIDE'; end if; if not v_is_active then raise exception 'ROOM_INACTIVE'; end if; insert into public.chat_room_participants(room_id, profile_id, conversation_status) values (p_room_id, v_me, 'active') on conflict (room_id, profile_id) do nothing; return p_room_id; end; $$;
 
 
-ALTER FUNCTION "public"."join_public_room_if_needed"("p_room_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."join_public_room_if_needed"("p_room_id" uuid) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."mark_all_notifications_as_read"() RETURNS "void"
@@ -2323,7 +2715,7 @@ $$;
 ALTER FUNCTION "public"."mark_all_notifications_as_read"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."mark_notification_as_read"("p_notification_id" "uuid") RETURNS "void"
+CREATE OR REPLACE FUNCTION "public"."mark_notification_as_read"("p_notification_id" uuid) RETURNS "void"
     LANGUAGE "sql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
     AS $$
@@ -2333,7 +2725,7 @@ CREATE OR REPLACE FUNCTION "public"."mark_notification_as_read"("p_notification_
 $$;
 
 
-ALTER FUNCTION "public"."mark_notification_as_read"("p_notification_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."mark_notification_as_read"("p_notification_id" uuid) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."mark_video_sessions_missed"() RETURNS "void"
@@ -2348,6 +2740,67 @@ $$;
 
 
 ALTER FUNCTION "public"."mark_video_sessions_missed"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."move_first_fixed_to_main_location"("p_profile_id" uuid) RETURNS "void"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+    AS $$
+DECLARE
+  v_first_fixed RECORD;
+  v_main_coords geometry;
+BEGIN
+  -- Récupérer les coords actuelles de professional_details
+  SELECT location_coords INTO v_main_coords
+  FROM professional_details
+  WHERE profile_id = p_profile_id;
+  
+  -- Vérifier si les coords principales sont invalides (NULL ou 0,0)
+  IF v_main_coords IS NULL 
+     OR (ST_X(v_main_coords) = 0 AND ST_Y(v_main_coords) = 0) THEN
+    
+    -- Récupérer la première fixed_location valide
+    SELECT 
+      id,
+      location_coords,
+      location_country_code,
+      label
+    INTO v_first_fixed
+    FROM professional_fixed_locations
+    WHERE professional_profile_id = p_profile_id
+      AND location_coords IS NOT NULL
+      AND ST_X(location_coords) != 0
+      AND ST_Y(location_coords) != 0
+    ORDER BY created_at
+    LIMIT 1;
+    
+    -- Si on a trouvé une fixed_location valide
+    IF FOUND THEN
+      -- 1. Copier vers professional_details
+      UPDATE professional_details
+      SET 
+        location_coords = v_first_fixed.location_coords,
+        location_country_code = v_first_fixed.location_country_code,
+        location_label = COALESCE(NULLIF(location_label, ''), v_first_fixed.label),
+        location_city = CASE 
+          WHEN v_first_fixed.label IS NOT NULL 
+          THEN split_part(v_first_fixed.label, ',', 1)
+          ELSE location_city
+        END
+      WHERE profile_id = p_profile_id;
+      
+      -- 2. Supprimer le fixed_location utilisé pour éviter la duplication
+      DELETE FROM professional_fixed_locations
+      WHERE id = v_first_fixed.id;
+      
+      RAISE NOTICE 'Moved fixed_location % to main location for profile %', v_first_fixed.id, p_profile_id;
+    END IF;
+  END IF;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."move_first_fixed_to_main_location"("p_profile_id" uuid) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."on_auth_user_created"() RETURNS "trigger"
@@ -2490,7 +2943,7 @@ $$;
 ALTER FUNCTION "public"."on_first_message_pro_to_bride"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."open_or_prepare_contact_context"("p_target" "uuid") RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."open_or_prepare_contact_context"("p_target" uuid) RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
     AS $$
@@ -2641,7 +3094,7 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."open_or_prepare_contact_context"("p_target" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."open_or_prepare_contact_context"("p_target" uuid) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."outbox_on_chat_message"() RETURNS "trigger"
@@ -2835,8 +3288,17 @@ CREATE OR REPLACE FUNCTION "public"."outbox_on_video_session_created"() RETURNS 
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
     AS $$
+DECLARE
+  sender_name text;
+  sender_avatar text;
 BEGIN
-  -- Insère un événement "videoIncoming" dans la table outbox
+  -- Récupérer les informations du sender depuis la table profiles
+  SELECT full_name, avatar_url
+  INTO sender_name, sender_avatar
+  FROM public.profiles
+  WHERE id = NEW.initiator_id;
+
+  -- Insère un événement "videoIncoming" dans la table outbox avec les infos complètes
   INSERT INTO public.notifications_outbox(event_type, payload, event_key)
   VALUES (
     'videoIncoming',
@@ -2844,6 +3306,8 @@ BEGIN
       'video_session_id', NEW.id,
       'agora_channel_name', NEW.agora_channel_name,
       'sender_profile_id', NEW.initiator_id,
+      'sender_full_name', COALESCE(sender_name, 'Unknown'),
+      'sender_avatar_url', sender_avatar,
       'recipient_profile_id', NEW.receiver_id
     ),
     'video-incoming-' || NEW.id::text -- Clé unique pour éviter les doublons
@@ -2952,7 +3416,7 @@ $$;
 ALTER FUNCTION "public"."recompute_all_budgets_eur"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."rpc_alerts_capture_to_remind"("p_from" timestamp with time zone, "p_to" timestamp with time zone) RETURNS TABLE("id" "uuid")
+CREATE OR REPLACE FUNCTION "public"."rpc_alerts_capture_to_remind"("p_from" timestamp with time zone, "p_to" timestamp with time zone) RETURNS TABLE("id" uuid)
     LANGUAGE "sql" SECURITY DEFINER
     SET "search_path" TO 'public', 'pg_temp'
     AS $$
@@ -2974,7 +3438,7 @@ COMMENT ON FUNCTION "public"."rpc_alerts_capture_to_remind"("p_from" timestamp w
 
 
 
-CREATE OR REPLACE FUNCTION "public"."search_map_bundle"("p_bbox_coords" "jsonb", "p_viewer_role" "text", "p_filters" "jsonb", "p_zoom" integer) RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."search_map_bundle"("p_bbox_coords" "jsonb", "p_viewer_role" text, "p_filters" "jsonb", "p_zoom" integer) RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'extensions', 'pg_temp'
     AS $$
@@ -3101,7 +3565,7 @@ BEGIN
   END IF;
   ms_fixed := EXTRACT(MILLISECOND FROM (clock_timestamp()-t0))::int - ms_pros;
 
-  -- 3) Pro recent (point dans viewport)
+  -- 3) Pro recent (point dans viewport) - FIXED: Added pd.is_live = true filter
   IF t_show_pro_recent THEN
     out_markers := out_markers || COALESCE((
       SELECT jsonb_agg(q.marker_data)
@@ -3118,7 +3582,8 @@ BEGIN
         FROM public.pro_recent_locations rl
         JOIN public.profiles pr ON pr.id = rl.profile_id
         JOIN public.professional_details pd ON pd.profile_id = rl.profile_id
-        WHERE rl.is_opt_in = true
+        WHERE pd.is_live = true
+          AND rl.is_opt_in = true
           AND rl.last_seen_at >= now() - interval '7 days'
           AND ST_Intersects(rl.coords_approx, v_bbox)
           AND (COALESCE(array_length(v_prof_filter,1),0) = 0 OR pd.profession::text = ANY(v_prof_filter))
@@ -3254,10 +3719,10 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."search_map_bundle"("p_bbox_coords" "jsonb", "p_viewer_role" "text", "p_filters" "jsonb", "p_zoom" integer) OWNER TO "postgres";
+ALTER FUNCTION "public"."search_map_bundle"("p_bbox_coords" "jsonb", "p_viewer_role" text, "p_filters" "jsonb", "p_zoom" integer) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."seed_map_test_data"("p_bride" "uuid", "p_pro" "uuid") RETURNS "void"
+CREATE OR REPLACE FUNCTION "public"."seed_map_test_data"("p_bride" uuid, "p_pro" uuid) RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'pg_temp'
     AS $$
@@ -3300,7 +3765,7 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."seed_map_test_data"("p_bride" "uuid", "p_pro" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."seed_map_test_data"("p_bride" uuid, "p_pro" uuid) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."send_alert_reminders"() RETURNS "void"
@@ -3475,7 +3940,7 @@ $$;
 ALTER FUNCTION "public"."sync_profile_to_professional_details"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."tier_score"("t" "public"."subscriptionTierType") RETURNS integer
+CREATE OR REPLACE FUNCTION "public"."tier_score"("t" subscriptionTierType) RETURNS integer
     LANGUAGE "sql" IMMUTABLE
     SET "search_path" TO 'public', 'pg_temp'
     AS $$
@@ -3487,10 +3952,10 @@ END
 $$;
 
 
-ALTER FUNCTION "public"."tier_score"("t" "public"."subscriptionTierType") OWNER TO "postgres";
+ALTER FUNCTION "public"."tier_score"("t" subscriptionTierType) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."toggle_wishlist"("p_pro_profile_id" "uuid") RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."toggle_wishlist"("p_pro_profile_id" uuid) RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'pg_temp'
     AS $$
@@ -3538,7 +4003,22 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."toggle_wishlist"("p_pro_profile_id" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."toggle_wishlist"("p_pro_profile_id" uuid) OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."trigger_move_first_fixed_after_insert"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public', 'extensions', 'pg_temp'
+    AS $$
+BEGIN
+  -- Appeler la fonction de déplacement
+  PERFORM move_first_fixed_to_main_location(NEW.professional_profile_id);
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."trigger_move_first_fixed_after_insert"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."update_updated_at_column"() RETURNS "trigger"
@@ -3656,9 +4136,9 @@ ALTER FUNCTION "public"."wedding_pins_set_budget_eur"() OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."alert_motifs" (
-    "code" "text" NOT NULL,
-    "name_fr" "text" NOT NULL,
-    "name_en" "text" NOT NULL,
+    "code" text NOT NULL,
+    "name_fr" text NOT NULL,
+    "name_en" text NOT NULL,
     "is_active" boolean DEFAULT true NOT NULL,
     "sort_order" integer DEFAULT 0 NOT NULL
 );
@@ -3668,7 +4148,7 @@ ALTER TABLE "public"."alert_motifs" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."bride_details" (
-    "profile_id" "uuid" NOT NULL,
+    "profile_id" uuid NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL
 );
@@ -3679,14 +4159,14 @@ ALTER TABLE "public"."bride_details" OWNER TO "postgres";
 
 CREATE TABLE IF NOT EXISTS "public"."chat_messages" (
     "id" bigint NOT NULL,
-    "room_id" "uuid" NOT NULL,
-    "profile_id" "uuid",
-    "content" "text",
-    "message_type" "public"."messageType" NOT NULL,
-    "attachment_url" "text",
+    "room_id" uuid NOT NULL,
+    "profile_id" uuid,
+    "content" text,
+    "message_type" messageType NOT NULL,
+    "attachment_url" text,
     "is_deleted" boolean DEFAULT false NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    CONSTRAINT "chat_msg_content_chk" CHECK (((("message_type" = 'text'::"public"."messageType") AND ("content" IS NOT NULL) AND ("attachment_url" IS NULL)) OR (("message_type" = ANY (ARRAY['image'::"public"."messageType", 'audio'::"public"."messageType"])) AND ("content" IS NULL) AND ("attachment_url" IS NOT NULL))))
+    CONSTRAINT "chat_msg_content_chk" CHECK (((("message_type" = 'text'::messageType) AND ("content" IS NOT NULL) AND ("attachment_url" IS NULL)) OR (("message_type" = ANY (ARRAY['image'::messageType, 'audio'::messageType])) AND ("content" IS NULL) AND ("attachment_url" IS NOT NULL))))
 );
 
 ALTER TABLE ONLY "public"."chat_messages" REPLICA IDENTITY FULL;
@@ -3711,9 +4191,9 @@ ALTER SEQUENCE "public"."chat_messages_id_seq" OWNED BY "public"."chat_messages"
 
 
 CREATE TABLE IF NOT EXISTS "public"."chat_room_participants" (
-    "room_id" "uuid" NOT NULL,
-    "profile_id" "uuid" NOT NULL,
-    "conversation_status" "public"."conversationStatus" DEFAULT 'active'::"public"."conversationStatus" NOT NULL,
+    "room_id" uuid NOT NULL,
+    "profile_id" uuid NOT NULL,
+    "conversation_status" conversationStatus DEFAULT 'active'::conversationStatus NOT NULL,
     "joined_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "last_read_at" timestamp with time zone
 );
@@ -3725,12 +4205,12 @@ ALTER TABLE "public"."chat_room_participants" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."chat_rooms" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "type" "text" NOT NULL,
-    "name" "text",
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "type" text NOT NULL,
+    "name" text,
     "is_active" boolean DEFAULT true NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    CONSTRAINT "chat_rooms_type_check" CHECK (("type" = ANY (ARRAY['private'::"text", 'public'::"text"])))
+    CONSTRAINT "chat_rooms_type_check" CHECK (("type" = ANY (ARRAY['private'::text, 'public'::text])))
 );
 
 
@@ -3738,16 +4218,16 @@ ALTER TABLE "public"."chat_rooms" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."connection_requests" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "pro_profile_id" "uuid" NOT NULL,
-    "bride_profile_id" "uuid" NOT NULL,
-    "source" "public"."connectionRequestSource" NOT NULL,
-    "source_id" "uuid",
-    "initial_message" "text",
-    "status" "public"."connectionRequestStatus" DEFAULT 'pending'::"public"."connectionRequestStatus" NOT NULL,
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "pro_profile_id" uuid NOT NULL,
+    "bride_profile_id" uuid NOT NULL,
+    "source" connectionRequestSource NOT NULL,
+    "source_id" uuid,
+    "initial_message" text,
+    "status" connectionRequestStatus DEFAULT 'pending'::connectionRequestStatus NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "responded_at" timestamp with time zone,
-    "initiator_id" "uuid" NOT NULL,
+    "initiator_id" uuid NOT NULL,
     CONSTRAINT "connection_requests_initial_message_check" CHECK (("char_length"("initial_message") <= 1000)),
     CONSTRAINT "connection_requests_initiator_check" CHECK ((("initiator_id" = "pro_profile_id") OR ("initiator_id" = "bride_profile_id")))
 );
@@ -3757,12 +4237,12 @@ ALTER TABLE "public"."connection_requests" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."content" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "type" "text" DEFAULT 'wed_of_the_week'::"text" NOT NULL,
-    "title" "text" NOT NULL,
-    "description" "text",
-    "image_url" "text",
-    "linked_pro_profile_id" "uuid",
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "type" text DEFAULT 'wed_of_the_week'::text NOT NULL,
+    "title" text NOT NULL,
+    "description" text,
+    "image_url" text,
+    "linked_pro_profile_id" uuid,
     "translations" "jsonb" DEFAULT '{}'::"jsonb" NOT NULL,
     "is_published" boolean DEFAULT false NOT NULL,
     "published_at" timestamp with time zone,
@@ -3775,9 +4255,9 @@ ALTER TABLE "public"."content" OWNER TO "postgres";
 
 CREATE TABLE IF NOT EXISTS "public"."countries" (
     "iso2" character(2) NOT NULL,
-    "name_fr" "text" NOT NULL,
-    "name_en" "text" NOT NULL,
-    "phone_code" "text",
+    "name_fr" text NOT NULL,
+    "name_en" text NOT NULL,
+    "phone_code" text,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
 );
 
@@ -3806,10 +4286,10 @@ COMMENT ON COLUMN "public"."countries"."phone_code" IS 'Indicatif téléphonique
 
 
 CREATE TABLE IF NOT EXISTS "public"."deleted_users_log" (
-    "user_id" "uuid" NOT NULL,
+    "user_id" uuid NOT NULL,
     "deleted_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "email_hash" "text",
-    "reason" "text" DEFAULT 'user_request'::"text"
+    "email_hash" text,
+    "reason" text DEFAULT 'user_request'::text
 );
 
 
@@ -3825,12 +4305,12 @@ COMMENT ON COLUMN "public"."deleted_users_log"."email_hash" IS 'Hash SHA-256 de 
 
 
 CREATE TABLE IF NOT EXISTS "public"."device_tokens" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "profile_id" "uuid" NOT NULL,
-    "token" "text" NOT NULL,
-    "platform" "text" NOT NULL,
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "profile_id" uuid NOT NULL,
+    "token" text NOT NULL,
+    "platform" text NOT NULL,
     "last_seen_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    CONSTRAINT "device_tokens_platform_check" CHECK (("platform" = ANY (ARRAY['ios'::"text", 'android'::"text", 'web'::"text"])))
+    CONSTRAINT "device_tokens_platform_check" CHECK (("platform" = ANY (ARRAY['ios'::text, 'android'::text, 'web'::text])))
 );
 
 
@@ -3838,8 +4318,8 @@ ALTER TABLE "public"."device_tokens" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."fx_rates" (
-    "code" "text" NOT NULL,
-    "base" "text" DEFAULT 'EUR'::"text" NOT NULL,
+    "code" text NOT NULL,
+    "base" text DEFAULT 'EUR'::text NOT NULL,
     "rate" numeric NOT NULL,
     "valid_on" "date" NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"(),
@@ -3851,8 +4331,8 @@ ALTER TABLE "public"."fx_rates" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."notification_settings" (
-    "profile_id" "uuid" NOT NULL,
-    "notification_type" "public"."notificationType" NOT NULL,
+    "profile_id" uuid NOT NULL,
+    "notification_type" notificationType NOT NULL,
     "in_app_enabled" boolean DEFAULT true NOT NULL,
     "push_enabled" boolean DEFAULT true NOT NULL
 );
@@ -3862,9 +4342,9 @@ ALTER TABLE "public"."notification_settings" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."notifications" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "profile_id" "uuid" NOT NULL,
-    "type" "public"."notificationType" NOT NULL,
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "profile_id" uuid NOT NULL,
+    "type" notificationType NOT NULL,
     "payload" "jsonb" DEFAULT '{}'::"jsonb" NOT NULL,
     "is_read" boolean DEFAULT false NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
@@ -3876,9 +4356,9 @@ ALTER TABLE "public"."notifications" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."notifications_2025_09" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "profile_id" "uuid" NOT NULL,
-    "type" "public"."notificationType" NOT NULL,
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "profile_id" uuid NOT NULL,
+    "type" notificationType NOT NULL,
     "payload" "jsonb" DEFAULT '{}'::"jsonb" NOT NULL,
     "is_read" boolean DEFAULT false NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
@@ -3889,9 +4369,9 @@ ALTER TABLE "public"."notifications_2025_09" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."notifications_2025_10" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "profile_id" "uuid" NOT NULL,
-    "type" "public"."notificationType" NOT NULL,
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "profile_id" uuid NOT NULL,
+    "type" notificationType NOT NULL,
     "payload" "jsonb" DEFAULT '{}'::"jsonb" NOT NULL,
     "is_read" boolean DEFAULT false NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
@@ -3901,11 +4381,37 @@ CREATE TABLE IF NOT EXISTS "public"."notifications_2025_10" (
 ALTER TABLE "public"."notifications_2025_10" OWNER TO "postgres";
 
 
+CREATE TABLE IF NOT EXISTS "public"."notifications_2025_11" (
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "profile_id" uuid NOT NULL,
+    "type" notificationType NOT NULL,
+    "payload" "jsonb" DEFAULT '{}'::"jsonb" NOT NULL,
+    "is_read" boolean DEFAULT false NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."notifications_2025_11" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."notifications_2025_12" (
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "profile_id" uuid NOT NULL,
+    "type" notificationType NOT NULL,
+    "payload" "jsonb" DEFAULT '{}'::"jsonb" NOT NULL,
+    "is_read" boolean DEFAULT false NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."notifications_2025_12" OWNER TO "postgres";
+
+
 CREATE TABLE IF NOT EXISTS "public"."pro_recent_locations" (
-    "profile_id" "uuid" NOT NULL,
+    "profile_id" uuid NOT NULL,
     "last_seen_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "is_opt_in" boolean DEFAULT false NOT NULL,
-    "coords_approx" "extensions"."geometry"(Point,4326)
+    "coords_approx" "extensions".geometry(Point,4326)
 );
 
 
@@ -3913,20 +4419,20 @@ ALTER TABLE "public"."pro_recent_locations" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."professional_alerts" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "author_profile_id" "uuid" NOT NULL,
-    "title" "text" NOT NULL,
-    "message" "text" NOT NULL,
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "author_profile_id" uuid NOT NULL,
+    "title" text NOT NULL,
+    "message" text NOT NULL,
     "radius_km" smallint NOT NULL,
     "duration_hours" smallint NOT NULL,
-    "status" "public"."alertStatus" DEFAULT 'active'::"public"."alertStatus" NOT NULL,
+    "status" alertStatus DEFAULT 'active'::alertStatus NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "expires_at" timestamp with time zone NOT NULL,
     "reminder_sent" boolean DEFAULT false NOT NULL,
     "is_deleted" boolean DEFAULT false NOT NULL,
-    "location_label" "text" DEFAULT ''::"text" NOT NULL,
-    "motif_code" "text",
-    "location_coords" "extensions"."geometry"(Point,4326),
+    "location_label" text DEFAULT ''::text NOT NULL,
+    "motif_code" text,
+    "location_coords" "extensions".geometry(Point,4326),
     CONSTRAINT "professional_alerts_duration_hours_check" CHECK ((("duration_hours" >= 1) AND ("duration_hours" <= 720))),
     CONSTRAINT "professional_alerts_message_check" CHECK ((("char_length"("message") >= 3) AND ("char_length"("message") <= 2000))),
     CONSTRAINT "professional_alerts_radius_km_check" CHECK ((("radius_km" >= 1) AND ("radius_km" <= 100))),
@@ -3938,29 +4444,29 @@ ALTER TABLE "public"."professional_alerts" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."professional_details" (
-    "profile_id" "uuid" NOT NULL,
-    "business_name" "text" NOT NULL,
-    "description" "text",
-    "portfolio_images" "text"[] DEFAULT '{}'::"text"[] NOT NULL,
-    "profession" "public"."profession" NOT NULL,
+    "profile_id" uuid NOT NULL,
+    "business_name" text NOT NULL,
+    "description" text,
+    "portfolio_images" text[] DEFAULT '{}'::text[] NOT NULL,
+    "profession" profession NOT NULL,
     "is_live" boolean DEFAULT false NOT NULL,
     "wishlist_count" integer DEFAULT 0 NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "location_city" "text",
-    "location_country_code" "text",
-    "location_label" "text",
+    "location_city" text,
+    "location_country_code" text,
+    "location_label" text,
     "budget_min" integer,
     "budget_max" integer,
-    "currency" "text",
-    "instagram_url" "text",
-    "website_url" "text",
+    "currency" text,
+    "instagram_url" text,
+    "website_url" text,
     "budget_min_eur" numeric,
     "budget_max_eur" numeric,
-    "slideshow_images" "text"[] DEFAULT '{}'::"text"[] NOT NULL,
-    "profile_video_url" "text",
+    "slideshow_images" text[] DEFAULT '{}'::text[] NOT NULL,
+    "profile_video_url" text,
     "is_pending" boolean DEFAULT false NOT NULL,
-    "location_coords" "extensions"."geometry"(Point,4326)
+    "location_coords" "extensions".geometry(Point,4326)
 );
 
 ALTER TABLE ONLY "public"."professional_details" REPLICA IDENTITY FULL;
@@ -3970,11 +4476,12 @@ ALTER TABLE "public"."professional_details" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."professional_fixed_locations" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "professional_profile_id" "uuid" NOT NULL,
-    "label" "text",
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "professional_profile_id" uuid NOT NULL,
+    "label" text,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "location_coords" "extensions"."geometry"(Point,4326)
+    "location_coords" "extensions".geometry(Point,4326),
+    "location_country_code" text
 );
 
 
@@ -3982,11 +4489,11 @@ ALTER TABLE "public"."professional_fixed_locations" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."professional_subscriptions" (
-    "profile_id" "uuid" NOT NULL,
-    "subscription_tier" "public"."subscriptionTierType" DEFAULT 'inactive'::"public"."subscriptionTierType" NOT NULL,
+    "profile_id" uuid NOT NULL,
+    "subscription_tier" subscriptionTierType DEFAULT 'inactive'::subscriptionTierType NOT NULL,
     "trial_ends_at" timestamp with time zone,
-    "stripe_customer_id" "text",
-    "stripe_subscription_id" "text",
+    "stripe_customer_id" text,
+    "stripe_subscription_id" text,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL
 );
@@ -3996,11 +4503,11 @@ ALTER TABLE "public"."professional_subscriptions" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."profiles" (
-    "id" "uuid" NOT NULL,
-    "role" "public"."userRole" DEFAULT 'bride'::"public"."userRole" NOT NULL,
-    "full_name" "text",
-    "avatar_url" "text",
-    "country" "text",
+    "id" uuid NOT NULL,
+    "role" userRole DEFAULT 'bride'::userRole NOT NULL,
+    "full_name" text,
+    "avatar_url" text,
+    "country" text,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL
 );
@@ -4010,10 +4517,10 @@ ALTER TABLE "public"."profiles" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."public_chat_rooms" (
-    "chat_room_id" "uuid" NOT NULL,
-    "title" "text" NOT NULL,
-    "cover_image_url" "text",
-    "audience_role" "public"."userRole" DEFAULT 'bride'::"public"."userRole" NOT NULL,
+    "chat_room_id" uuid NOT NULL,
+    "title" text NOT NULL,
+    "cover_image_url" text,
+    "audience_role" userRole DEFAULT 'bride'::userRole NOT NULL,
     "is_active" boolean DEFAULT true NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
 );
@@ -4029,17 +4536,17 @@ CREATE OR REPLACE VIEW "public"."public_professionals" WITH ("security_invoker"=
     "pd"."business_name" AS "businessName",
     "pd"."description",
     "pd"."location_label" AS "locationLabel",
-    ("pd"."profession")::"text" AS "profession",
+    ("pd"."profession")::text AS "profession",
     "pd"."budget_min" AS "budgetMin",
     "pd"."budget_max" AS "budgetMax",
     "pd"."currency",
     "pd"."budget_min_eur" AS "budgetMinEur",
     "pd"."budget_max_eur" AS "budgetMaxEur",
     "pd"."is_live" AS "isLive",
-    ("ps"."subscription_tier")::"text" AS "subscriptionTier",
+    ("ps"."subscription_tier")::text AS "subscriptionTier",
         CASE
             WHEN ("array_length"("pd"."portfolio_images", 1) >= 1) THEN "pd"."portfolio_images"[1]
-            ELSE NULL::"text"
+            ELSE NULL::text
         END AS "coverImageUrl",
     "pd"."wishlist_count" AS "wishlistCount"
    FROM (("public"."professional_details" "pd"
@@ -4065,8 +4572,8 @@ ALTER VIEW "public"."public_profiles" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."replay_guest_assignments" (
-    "replay_id" "uuid" NOT NULL,
-    "guest_id" "uuid" NOT NULL
+    "replay_id" uuid NOT NULL,
+    "guest_id" uuid NOT NULL
 );
 
 
@@ -4074,12 +4581,12 @@ ALTER TABLE "public"."replay_guest_assignments" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."replay_guests" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "full_name" "text" NOT NULL,
-    "profession" "text",
-    "avatar_url" "text",
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "full_name" text NOT NULL,
+    "profession" text,
+    "avatar_url" text,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    CONSTRAINT "replay_guests_avatar_url_check" CHECK (("avatar_url" ~* '^https?://.+'::"text"))
+    CONSTRAINT "replay_guests_avatar_url_check" CHECK (("avatar_url" ~* '^https?://.+'::text))
 );
 
 
@@ -4087,16 +4594,17 @@ ALTER TABLE "public"."replay_guests" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."replays" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "title" "text" NOT NULL,
-    "description" "text",
-    "youtube_url" "text" NOT NULL,
-    "thumbnail_url" "text" NOT NULL,
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "title" text NOT NULL,
+    "description" text,
+    "youtube_url" text NOT NULL,
+    "thumbnail_url" text NOT NULL,
     "published_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "is_featured" boolean DEFAULT false NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    CONSTRAINT "replays_thumbnail_url_check" CHECK (("thumbnail_url" ~* '^https?://.+'::"text")),
-    CONSTRAINT "replays_youtube_url_check" CHECK (("youtube_url" ~* '^https?://(www\.)?(youtube\.com|youtu\.be)/.+'::"text"))
+    "is_published" boolean DEFAULT true NOT NULL,
+    CONSTRAINT "replays_thumbnail_url_check" CHECK (("thumbnail_url" ~* '^https?://.+'::text)),
+    CONSTRAINT "replays_youtube_url_check" CHECK (("youtube_url" ~* '^https?://(www\.)?(youtube\.com|youtu\.be)/.+'::text))
 );
 
 
@@ -4107,10 +4615,14 @@ COMMENT ON COLUMN "public"."replays"."is_featured" IS 'Si true, ce replay appara
 
 
 
+COMMENT ON COLUMN "public"."replays"."is_published" IS 'Si true, ce replay est visible dans l''application. Si false, il est masqué.';
+
+
+
 CREATE TABLE IF NOT EXISTS "public"."report_motifs" (
-    "code" "text" NOT NULL,
-    "name_fr" "text" NOT NULL,
-    "name_en" "text" NOT NULL,
+    "code" text NOT NULL,
+    "name_fr" text NOT NULL,
+    "name_en" text NOT NULL,
     "is_active" boolean DEFAULT true NOT NULL,
     "sort_order" integer DEFAULT 0 NOT NULL
 );
@@ -4132,11 +4644,11 @@ ALTER VIEW "public"."report_motifs_v" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."reports" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "reporter_profile_id" "uuid" NOT NULL,
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "reporter_profile_id" uuid NOT NULL,
     "reported_message_id" bigint NOT NULL,
-    "reason" "text",
-    "status" "public"."contentModerationStatus" DEFAULT 'pendingReview'::"public"."contentModerationStatus" NOT NULL,
+    "reason" text,
+    "status" contentModerationStatus DEFAULT 'pendingReview'::contentModerationStatus NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
 );
 
@@ -4145,11 +4657,11 @@ ALTER TABLE "public"."reports" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."stripe_events_log" (
-    "event_id" "text" NOT NULL,
-    "event_type" "text" NOT NULL,
+    "event_id" text NOT NULL,
+    "event_type" text NOT NULL,
     "received_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "processed_at" timestamp with time zone,
-    "result_status" "text"
+    "result_status" text
 );
 
 
@@ -4157,17 +4669,16 @@ ALTER TABLE "public"."stripe_events_log" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."support_tickets" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "profile_id" "uuid" NOT NULL,
-    "professional_profile_id" "uuid" NOT NULL,
-    "status" "text" DEFAULT 'pending'::"text" NOT NULL,
-    "subject" "text" NOT NULL,
-    "message" "text" NOT NULL,
-    "admin_notes" "text",
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "profile_id" uuid NOT NULL,
+    "status" text DEFAULT 'pending'::text NOT NULL,
+    "subject" text NOT NULL,
+    "message" text NOT NULL,
+    "admin_notes" text,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "resolved_at" timestamp with time zone,
-    CONSTRAINT "support_tickets_status_check" CHECK (("status" = ANY (ARRAY['pending'::"text", 'in_progress'::"text", 'resolved'::"text", 'rejected'::"text"])))
+    CONSTRAINT "support_tickets_status_check" CHECK (("status" = ANY (ARRAY['pending'::text, 'in_progress'::text, 'resolved'::text, 'rejected'::text])))
 );
 
 
@@ -4175,7 +4686,7 @@ ALTER TABLE "public"."support_tickets" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."sync_control" (
-    "sync_type" "text" NOT NULL,
+    "sync_type" text NOT NULL,
     "last_sync_timestamp" timestamp with time zone NOT NULL,
     "updated_at" timestamp with time zone DEFAULT "now"()
 );
@@ -4185,17 +4696,17 @@ ALTER TABLE "public"."sync_control" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."sync_events" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "event_type" "text" NOT NULL,
-    "email" "text" NOT NULL,
+    "event_type" text NOT NULL,
+    "email" text NOT NULL,
     "payload" "jsonb" NOT NULL,
     "response" "jsonb",
-    "error_message" "text",
+    "error_message" text,
     "http_status" integer,
     "duration_ms" integer,
-    "user_id" "uuid",
-    "ip_address" "text"
+    "user_id" uuid,
+    "ip_address" text
 );
 
 
@@ -4203,11 +4714,11 @@ ALTER TABLE "public"."sync_events" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."sync_log" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "pro_id" "uuid",
-    "operation" "text",
-    "status" "text" DEFAULT 'success'::"text",
-    "error" "text",
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "pro_id" uuid,
+    "operation" text,
+    "status" text DEFAULT 'success'::text,
+    "error" text,
     "synced_at" timestamp with time zone DEFAULT "now"()
 );
 
@@ -4234,8 +4745,8 @@ COMMENT ON VIEW "public"."sync_stats" IS 'Statistics view for sync events - acce
 
 
 CREATE TABLE IF NOT EXISTS "public"."user_blocks" (
-    "blocker_profile_id" "uuid" NOT NULL,
-    "blocked_profile_id" "uuid" NOT NULL,
+    "blocker_profile_id" uuid NOT NULL,
+    "blocked_profile_id" uuid NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
 );
 
@@ -4244,10 +4755,10 @@ ALTER TABLE "public"."user_blocks" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."user_legal_acceptances" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "profile_id" "uuid" NOT NULL,
-    "tos_version" "text",
-    "privacy_version" "text",
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "profile_id" uuid NOT NULL,
+    "tos_version" text,
+    "privacy_version" text,
     "accepted_at" timestamp with time zone DEFAULT "now"() NOT NULL
 );
 
@@ -4256,19 +4767,19 @@ ALTER TABLE "public"."user_legal_acceptances" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."user_pois" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "bride_profile_id" "uuid" NOT NULL,
-    "label" "text",
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "bride_profile_id" uuid NOT NULL,
+    "label" text,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "radius_km" smallint,
-    "professions" "public"."profession"[],
+    "professions" profession[],
     "budget_min" integer,
     "budget_max" integer,
-    "currency" "text",
+    "currency" text,
     "event_start_date" "date",
     "event_end_date" "date",
-    "location_label" "text" DEFAULT ''::"text" NOT NULL,
-    "coords" "extensions"."geometry"(Point,4326),
+    "location_label" text DEFAULT ''::text NOT NULL,
+    "coords" "extensions".geometry(Point,4326),
     CONSTRAINT "user_poi_dates_chk" CHECK ((("event_end_date" IS NULL) OR ("event_start_date" IS NULL) OR ("event_end_date" >= "event_start_date"))),
     CONSTRAINT "user_poi_radius_chk" CHECK ((("radius_km" IS NULL) OR ("radius_km" = ANY (ARRAY[5, 10, 20, 50, 100]))))
 );
@@ -4278,14 +4789,14 @@ ALTER TABLE "public"."user_pois" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."user_pois_history" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "poi_id" "uuid",
-    "action" "text" NOT NULL,
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "poi_id" uuid,
+    "action" text NOT NULL,
     "old_values" "jsonb",
     "new_values" "jsonb",
-    "changed_by" "uuid",
+    "changed_by" uuid,
     "changed_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    CONSTRAINT "user_pois_history_action_check" CHECK (("action" = ANY (ARRAY['insert'::"text", 'update'::"text", 'delete'::"text"])))
+    CONSTRAINT "user_pois_history_action_check" CHECK (("action" = ANY (ARRAY['insert'::text, 'update'::text, 'delete'::text])))
 );
 
 
@@ -4293,21 +4804,21 @@ ALTER TABLE "public"."user_pois_history" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."user_preferences" (
-    "profile_id" "uuid" NOT NULL,
-    "distance_unit" "text" DEFAULT 'km'::"text" NOT NULL,
+    "profile_id" uuid NOT NULL,
+    "distance_unit" text DEFAULT 'km'::text NOT NULL,
     "default_radius_km" smallint DEFAULT 20 NOT NULL,
-    "default_country_code" "text",
-    "default_city" "text",
-    "default_locale" "text",
+    "default_country_code" text,
+    "default_city" text,
+    "default_locale" text,
     "map_toggles" "jsonb" DEFAULT '{}'::"jsonb" NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "currency" "text" DEFAULT 'EUR'::"text" NOT NULL,
-    "default_timezone" "text",
+    "currency" text DEFAULT 'EUR'::text NOT NULL,
+    "default_timezone" text,
     "last_filters" "jsonb",
     "last_feed_filters" "jsonb",
     CONSTRAINT "user_preferences_default_radius_km_check" CHECK ((("default_radius_km" >= 1) AND ("default_radius_km" <= 100))),
-    CONSTRAINT "user_preferences_distance_unit_check" CHECK (("distance_unit" = ANY (ARRAY['km'::"text", 'miles'::"text"])))
+    CONSTRAINT "user_preferences_distance_unit_check" CHECK (("distance_unit" = ANY (ARRAY['km'::text, 'miles'::text])))
 );
 
 
@@ -4319,9 +4830,9 @@ COMMENT ON COLUMN "public"."user_preferences"."last_feed_filters" IS 'Derniers f
 
 
 CREATE TABLE IF NOT EXISTS "public"."user_roles" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "user_id" "uuid" NOT NULL,
-    "role" "public"."app_role" NOT NULL,
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "user_id" uuid NOT NULL,
+    "role" app_role NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
 );
 
@@ -4330,11 +4841,11 @@ ALTER TABLE "public"."user_roles" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."video_sessions" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "initiator_id" "uuid" NOT NULL,
-    "receiver_id" "uuid" NOT NULL,
-    "status" "public"."videoSessionStatus" DEFAULT 'pending'::"public"."videoSessionStatus" NOT NULL,
-    "agora_channel_name" "text" NOT NULL,
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "initiator_id" uuid NOT NULL,
+    "receiver_id" uuid NOT NULL,
+    "status" videoSessionStatus DEFAULT 'pending'::videoSessionStatus NOT NULL,
+    "agora_channel_name" text NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "accepted_at" timestamp with time zone,
     "completed_at" timestamp with time zone
@@ -4347,10 +4858,10 @@ ALTER TABLE "public"."video_sessions" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."wed_articles" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
     "title" "jsonb" NOT NULL,
-    "linked_pro_profile_id" "uuid" NOT NULL,
-    "cover_images" "text"[] NOT NULL,
+    "linked_pro_profile_id" uuid NOT NULL,
+    "cover_images" text[] NOT NULL,
     "content_blocks" "jsonb",
     "is_published" boolean DEFAULT false NOT NULL,
     "published_at" timestamp with time zone,
@@ -4363,24 +4874,24 @@ ALTER TABLE "public"."wed_articles" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."wedding_pins" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "bride_profile_id" "uuid" NOT NULL,
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "bride_profile_id" uuid NOT NULL,
     "radius_km" smallint DEFAULT 20 NOT NULL,
-    "professions_needed" "public"."profession"[],
+    "professions_needed" profession[],
     "budget_brackets" smallint[],
     "event_start_date" "date",
     "event_end_date" "date",
     "is_active" boolean DEFAULT true NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "location_label" "text" DEFAULT ''::"text" NOT NULL,
+    "location_label" text DEFAULT ''::text NOT NULL,
     "budget_min" integer,
     "budget_max" integer,
-    "currency" "text",
+    "currency" text,
     "budget_min_eur" numeric,
     "budget_max_eur" numeric,
     "is_deleted" boolean DEFAULT false NOT NULL,
-    "location_coords" "extensions"."geometry"(Point,4326),
+    "location_coords" "extensions".geometry(Point,4326),
     CONSTRAINT "wedding_pin_dates_chk" CHECK ((("event_end_date" IS NULL) OR ("event_start_date" IS NULL) OR ("event_end_date" >= "event_start_date"))),
     CONSTRAINT "wedding_pins_radius_km_check" CHECK (("radius_km" = ANY (ARRAY[5, 10, 20, 50, 100])))
 );
@@ -4390,14 +4901,14 @@ ALTER TABLE "public"."wedding_pins" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."wedding_pins_history" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "wedding_pin_id" "uuid",
-    "action" "text" NOT NULL,
+    "id" uuid DEFAULT "gen_random_uuid"() NOT NULL,
+    "wedding_pin_id" uuid,
+    "action" text NOT NULL,
     "old_values" "jsonb",
     "new_values" "jsonb",
-    "changed_by" "uuid",
+    "changed_by" uuid,
     "changed_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    CONSTRAINT "wedding_pins_history_action_check" CHECK (("action" = ANY (ARRAY['insert'::"text", 'update'::"text", 'delete'::"text"])))
+    CONSTRAINT "wedding_pins_history_action_check" CHECK (("action" = ANY (ARRAY['insert'::text, 'update'::text, 'delete'::text])))
 );
 
 
@@ -4405,8 +4916,8 @@ ALTER TABLE "public"."wedding_pins_history" OWNER TO "postgres";
 
 
 CREATE TABLE IF NOT EXISTS "public"."wishlist_items" (
-    "bride_profile_id" "uuid" NOT NULL,
-    "professional_profile_id" "uuid" NOT NULL,
+    "bride_profile_id" uuid NOT NULL,
+    "professional_profile_id" uuid NOT NULL,
     "added_at" timestamp with time zone DEFAULT "now"() NOT NULL
 );
 
@@ -4419,6 +4930,14 @@ ALTER TABLE ONLY "public"."notifications" ATTACH PARTITION "public"."notificatio
 
 
 ALTER TABLE ONLY "public"."notifications" ATTACH PARTITION "public"."notifications_2025_10" FOR VALUES FROM ('2025-10-01 00:00:00+00') TO ('2025-11-01 00:00:00+00');
+
+
+
+ALTER TABLE ONLY "public"."notifications" ATTACH PARTITION "public"."notifications_2025_11" FOR VALUES FROM ('2025-11-01 00:00:00+00') TO ('2025-12-01 00:00:00+00');
+
+
+
+ALTER TABLE ONLY "public"."notifications" ATTACH PARTITION "public"."notifications_2025_12" FOR VALUES FROM ('2025-12-01 00:00:00+00') TO ('2026-01-01 00:00:00+00');
 
 
 
@@ -4503,6 +5022,16 @@ ALTER TABLE ONLY "public"."notifications_2025_09"
 
 ALTER TABLE ONLY "public"."notifications_2025_10"
     ADD CONSTRAINT "notifications_2025_10_pkey" PRIMARY KEY ("id", "created_at");
+
+
+
+ALTER TABLE ONLY "public"."notifications_2025_11"
+    ADD CONSTRAINT "notifications_2025_11_pkey" PRIMARY KEY ("id", "created_at");
+
+
+
+ALTER TABLE ONLY "public"."notifications_2025_12"
+    ADD CONSTRAINT "notifications_2025_12_pkey" PRIMARY KEY ("id", "created_at");
 
 
 
@@ -4666,11 +5195,11 @@ ALTER TABLE ONLY "public"."wishlist_items"
 
 
 
-CREATE INDEX "idx_alerts_active_not_deleted" ON "public"."professional_alerts" USING "btree" ("created_at") WHERE (("status" = 'active'::"public"."alertStatus") AND ("is_deleted" = false));
+CREATE INDEX "idx_alerts_active_not_deleted" ON "public"."professional_alerts" USING "btree" ("created_at") WHERE (("status" = 'active'::alertStatus) AND ("is_deleted" = false));
 
 
 
-CREATE INDEX "idx_alerts_expires_active" ON "public"."professional_alerts" USING "btree" ("expires_at") WHERE ("status" = 'active'::"public"."alertStatus");
+CREATE INDEX "idx_alerts_expires_active" ON "public"."professional_alerts" USING "btree" ("expires_at") WHERE ("status" = 'active'::alertStatus);
 
 
 
@@ -4694,7 +5223,7 @@ CREATE INDEX "idx_chat_participants_profile" ON "public"."chat_room_participants
 
 
 
-CREATE INDEX "idx_chat_rooms_private" ON "public"."chat_rooms" USING "btree" ("id") WHERE ("type" = 'private'::"text");
+CREATE INDEX "idx_chat_rooms_private" ON "public"."chat_rooms" USING "btree" ("id") WHERE ("type" = 'private'::text);
 
 
 
@@ -4719,6 +5248,10 @@ CREATE INDEX "idx_notifications_outbox_type_created" ON "public"."notifications_
 
 
 CREATE INDEX "idx_notifications_outbox_unprocessed" ON "public"."notifications_outbox" USING "btree" ("created_at") WHERE ("processed_at" IS NULL);
+
+
+
+CREATE INDEX "idx_notifications_profile_unread" ON ONLY "public"."notifications" USING "btree" ("profile_id", "is_read", "created_at" DESC) WHERE ("is_read" = false);
 
 
 
@@ -4754,7 +5287,7 @@ CREATE INDEX "idx_pro_recent_optin_lastseen" ON "public"."pro_recent_locations" 
 
 
 
-CREATE INDEX "idx_prof_alerts_active_partial" ON "public"."professional_alerts" USING "btree" ("expires_at") WHERE ("status" = 'active'::"public"."alertStatus");
+CREATE INDEX "idx_prof_alerts_active_partial" ON "public"."professional_alerts" USING "btree" ("expires_at") WHERE ("status" = 'active'::alertStatus);
 
 
 
@@ -4778,7 +5311,11 @@ CREATE INDEX "idx_professional_details_validation_status" ON "public"."professio
 
 
 
-CREATE INDEX "idx_ps_visible_tier" ON "public"."professional_subscriptions" USING "btree" ("profile_id") WHERE ("subscription_tier" = ANY (ARRAY['premiumVisibility'::"public"."subscriptionTierType", 'ultimateAccess'::"public"."subscriptionTierType"]));
+CREATE INDEX "idx_ps_visible_tier" ON "public"."professional_subscriptions" USING "btree" ("profile_id") WHERE ("subscription_tier" = ANY (ARRAY['premiumVisibility'::subscriptionTierType, 'ultimateAccess'::subscriptionTierType]));
+
+
+
+CREATE INDEX "idx_replays_is_published" ON "public"."replays" USING "btree" ("is_published");
 
 
 
@@ -4795,10 +5332,6 @@ CREATE INDEX "idx_subscriptions_tier" ON "public"."professional_subscriptions" U
 
 
 CREATE INDEX "idx_support_tickets_created_at" ON "public"."support_tickets" USING "btree" ("created_at" DESC);
-
-
-
-CREATE INDEX "idx_support_tickets_professional_profile_id" ON "public"."support_tickets" USING "btree" ("professional_profile_id");
 
 
 
@@ -4846,7 +5379,31 @@ CREATE INDEX "notifications_2025_09_profile_id_created_at_idx" ON "public"."noti
 
 
 
+CREATE INDEX "notifications_2025_09_profile_id_is_read_created_at_idx" ON "public"."notifications_2025_09" USING "btree" ("profile_id", "is_read", "created_at" DESC) WHERE ("is_read" = false);
+
+
+
 CREATE INDEX "notifications_2025_10_profile_id_created_at_idx" ON "public"."notifications_2025_10" USING "btree" ("profile_id", "created_at" DESC) WHERE ("is_read" = false);
+
+
+
+CREATE INDEX "notifications_2025_10_profile_id_is_read_created_at_idx" ON "public"."notifications_2025_10" USING "btree" ("profile_id", "is_read", "created_at" DESC) WHERE ("is_read" = false);
+
+
+
+CREATE INDEX "notifications_2025_11_profile_id_created_at_idx" ON "public"."notifications_2025_11" USING "btree" ("profile_id", "created_at" DESC) WHERE ("is_read" = false);
+
+
+
+CREATE INDEX "notifications_2025_11_profile_id_is_read_created_at_idx" ON "public"."notifications_2025_11" USING "btree" ("profile_id", "is_read", "created_at" DESC) WHERE ("is_read" = false);
+
+
+
+CREATE INDEX "notifications_2025_12_profile_id_created_at_idx" ON "public"."notifications_2025_12" USING "btree" ("profile_id", "created_at" DESC) WHERE ("is_read" = false);
+
+
+
+CREATE INDEX "notifications_2025_12_profile_id_is_read_created_at_idx" ON "public"."notifications_2025_12" USING "btree" ("profile_id", "is_read", "created_at" DESC) WHERE ("is_read" = false);
 
 
 
@@ -4866,7 +5423,7 @@ CREATE INDEX "professional_fixed_locations_location_coords_idx" ON "public"."pro
 
 
 
-CREATE UNIQUE INDEX "uq_pending_conn_request" ON "public"."connection_requests" USING "btree" ("pro_profile_id", "bride_profile_id") WHERE ("status" = 'pending'::"public"."connectionRequestStatus");
+CREATE UNIQUE INDEX "uq_pending_conn_request" ON "public"."connection_requests" USING "btree" ("pro_profile_id", "bride_profile_id") WHERE ("status" = 'pending'::connectionRequestStatus);
 
 
 
@@ -4886,11 +5443,47 @@ ALTER INDEX "public"."idx_notifications_unread" ATTACH PARTITION "public"."notif
 
 
 
+ALTER INDEX "public"."idx_notifications_profile_unread" ATTACH PARTITION "public"."notifications_2025_09_profile_id_is_read_created_at_idx";
+
+
+
 ALTER INDEX "public"."notifications_pkey" ATTACH PARTITION "public"."notifications_2025_10_pkey";
 
 
 
 ALTER INDEX "public"."idx_notifications_unread" ATTACH PARTITION "public"."notifications_2025_10_profile_id_created_at_idx";
+
+
+
+ALTER INDEX "public"."idx_notifications_profile_unread" ATTACH PARTITION "public"."notifications_2025_10_profile_id_is_read_created_at_idx";
+
+
+
+ALTER INDEX "public"."notifications_pkey" ATTACH PARTITION "public"."notifications_2025_11_pkey";
+
+
+
+ALTER INDEX "public"."idx_notifications_unread" ATTACH PARTITION "public"."notifications_2025_11_profile_id_created_at_idx";
+
+
+
+ALTER INDEX "public"."idx_notifications_profile_unread" ATTACH PARTITION "public"."notifications_2025_11_profile_id_is_read_created_at_idx";
+
+
+
+ALTER INDEX "public"."notifications_pkey" ATTACH PARTITION "public"."notifications_2025_12_pkey";
+
+
+
+ALTER INDEX "public"."idx_notifications_unread" ATTACH PARTITION "public"."notifications_2025_12_profile_id_created_at_idx";
+
+
+
+ALTER INDEX "public"."idx_notifications_profile_unread" ATTACH PARTITION "public"."notifications_2025_12_profile_id_is_read_created_at_idx";
+
+
+
+CREATE OR REPLACE TRIGGER "after_fixed_location_insert_move_to_main" AFTER INSERT ON "public"."professional_fixed_locations" FOR EACH ROW EXECUTE FUNCTION "public"."trigger_move_first_fixed_after_insert"();
 
 
 
@@ -4903,10 +5496,6 @@ CREATE OR REPLACE TRIGGER "trg_alerts_rate_limit_bi" BEFORE INSERT ON "public"."
 
 
 CREATE OR REPLACE TRIGGER "trg_conn_req_before_insert" BEFORE INSERT ON "public"."connection_requests" FOR EACH ROW EXECUTE FUNCTION "public"."conn_req_before_insert"();
-
-
-
-CREATE OR REPLACE TRIGGER "trg_enforce_fixed_locations_quota" BEFORE INSERT ON "public"."professional_fixed_locations" FOR EACH ROW EXECUTE FUNCTION "public"."enforce_fixed_locations_quota"();
 
 
 
@@ -4979,6 +5568,14 @@ CREATE OR REPLACE TRIGGER "trg_wishlist_count_aiud" AFTER INSERT OR DELETE ON "p
 
 
 CREATE OR REPLACE TRIGGER "trg_wishlist_items_after_insert_enqueue_notification" AFTER INSERT ON "public"."wishlist_items" FOR EACH ROW EXECUTE FUNCTION "public"."outbox_on_wishlist_add"();
+
+
+
+CREATE OR REPLACE TRIGGER "trigger_auto_populate_country_code" BEFORE INSERT OR UPDATE OF "location_coords", "location_country_code" ON "public"."professional_details" FOR EACH ROW EXECUTE FUNCTION "public"."auto_populate_location_country_code"();
+
+
+
+CREATE OR REPLACE TRIGGER "trigger_auto_populate_fixed_location_country_code" BEFORE INSERT OR UPDATE OF "location_coords", "location_country_code" ON "public"."professional_fixed_locations" FOR EACH ROW EXECUTE FUNCTION "public"."auto_populate_fixed_location_country_code"();
 
 
 
@@ -5182,55 +5779,63 @@ ALTER TABLE ONLY "public"."wishlist_items"
 
 CREATE POLICY "Admins can delete wed_articles" ON "public"."wed_articles" FOR DELETE TO "authenticated" USING ((EXISTS ( SELECT 1
    FROM "public"."user_roles"
-  WHERE (("user_roles"."user_id" = "auth"."uid"()) AND ("user_roles"."role" = 'admin'::"public"."app_role")))));
+  WHERE (("user_roles"."user_id" = "auth"."uid"()) AND ("user_roles"."role" = 'admin'::app_role)))));
 
 
 
 CREATE POLICY "Admins can insert wed_articles" ON "public"."wed_articles" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
    FROM "public"."user_roles"
-  WHERE (("user_roles"."user_id" = "auth"."uid"()) AND ("user_roles"."role" = 'admin'::"public"."app_role")))));
+  WHERE (("user_roles"."user_id" = "auth"."uid"()) AND ("user_roles"."role" = 'admin'::app_role)))));
 
 
 
-CREATE POLICY "Admins can read deleted users log" ON "public"."deleted_users_log" FOR SELECT TO "authenticated" USING ((("auth"."jwt"() ->> 'user_role'::"text") = 'admin'::"text"));
+CREATE POLICY "Admins can manage guest assignments" ON "public"."replay_guest_assignments" USING ("public"."has_role"("auth"."uid"(), 'admin'::app_role)) WITH CHECK ("public"."has_role"("auth"."uid"(), 'admin'::app_role));
 
 
 
-CREATE POLICY "Admins can update tickets" ON "public"."support_tickets" FOR UPDATE USING ((EXISTS ( SELECT 1
-   FROM "public"."user_roles"
-  WHERE (("user_roles"."user_id" = "auth"."uid"()) AND ("user_roles"."role" = 'admin'::"public"."app_role")))));
+CREATE POLICY "Admins can manage replay guests" ON "public"."replay_guests" USING ("public"."has_role"("auth"."uid"(), 'admin'::app_role)) WITH CHECK ("public"."has_role"("auth"."uid"(), 'admin'::app_role));
+
+
+
+CREATE POLICY "Admins can manage replays" ON "public"."replays" USING ("public"."has_role"("auth"."uid"(), 'admin'::app_role)) WITH CHECK ("public"."has_role"("auth"."uid"(), 'admin'::app_role));
+
+
+
+CREATE POLICY "Admins can read deleted users log" ON "public"."deleted_users_log" FOR SELECT TO "authenticated" USING ((("auth"."jwt"() ->> 'user_role'::text) = 'admin'::text));
+
+
+
+CREATE POLICY "Admins can update tickets" ON "public"."support_tickets" FOR UPDATE TO "authenticated" USING ("public"."has_role"("auth"."uid"(), 'admin'::app_role)) WITH CHECK ("public"."has_role"("auth"."uid"(), 'admin'::app_role));
 
 
 
 CREATE POLICY "Admins can update wed_articles" ON "public"."wed_articles" FOR UPDATE TO "authenticated" USING ((EXISTS ( SELECT 1
    FROM "public"."user_roles"
-  WHERE (("user_roles"."user_id" = "auth"."uid"()) AND ("user_roles"."role" = 'admin'::"public"."app_role"))))) WITH CHECK ((EXISTS ( SELECT 1
+  WHERE (("user_roles"."user_id" = "auth"."uid"()) AND ("user_roles"."role" = 'admin'::app_role))))) WITH CHECK ((EXISTS ( SELECT 1
    FROM "public"."user_roles"
-  WHERE (("user_roles"."user_id" = "auth"."uid"()) AND ("user_roles"."role" = 'admin'::"public"."app_role")))));
+  WHERE (("user_roles"."user_id" = "auth"."uid"()) AND ("user_roles"."role" = 'admin'::app_role)))));
 
 
 
-CREATE POLICY "Admins can view all roles" ON "public"."user_roles" FOR SELECT TO "authenticated" USING ("public"."has_role"("auth"."uid"(), 'admin'::"public"."app_role"));
+CREATE POLICY "Admins can view all roles" ON "public"."user_roles" FOR SELECT TO "authenticated" USING ("public"."has_role"("auth"."uid"(), 'admin'::app_role));
 
 
 
-CREATE POLICY "Admins can view all sync events" ON "public"."sync_events" FOR SELECT TO "authenticated" USING ("public"."has_role"("auth"."uid"(), 'admin'::"public"."app_role"));
+CREATE POLICY "Admins can view all sync events" ON "public"."sync_events" FOR SELECT TO "authenticated" USING ("public"."has_role"("auth"."uid"(), 'admin'::app_role));
 
 
 
-CREATE POLICY "Admins can view all tickets" ON "public"."support_tickets" FOR SELECT USING ((EXISTS ( SELECT 1
-   FROM "public"."user_roles"
-  WHERE (("user_roles"."user_id" = "auth"."uid"()) AND ("user_roles"."role" = 'admin'::"public"."app_role")))));
+CREATE POLICY "Admins can view all tickets" ON "public"."support_tickets" FOR SELECT TO "authenticated" USING ("public"."has_role"("auth"."uid"(), 'admin'::app_role));
 
 
 
 CREATE POLICY "Admins can view all wed_articles" ON "public"."wed_articles" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
    FROM "public"."user_roles"
-  WHERE (("user_roles"."user_id" = "auth"."uid"()) AND ("user_roles"."role" = 'admin'::"public"."app_role")))));
+  WHERE (("user_roles"."user_id" = "auth"."uid"()) AND ("user_roles"."role" = 'admin'::app_role)))));
 
 
 
-CREATE POLICY "Admins have full access to professional details" ON "public"."professional_details" TO "authenticated" USING ("public"."has_role"("auth"."uid"(), 'admin'::"public"."app_role")) WITH CHECK ("public"."has_role"("auth"."uid"(), 'admin'::"public"."app_role"));
+CREATE POLICY "Admins have full access to professional details" ON "public"."professional_details" TO "authenticated" USING ("public"."has_role"("auth"."uid"(), 'admin'::app_role)) WITH CHECK ("public"."has_role"("auth"."uid"(), 'admin'::app_role));
 
 
 
@@ -5266,7 +5871,7 @@ CREATE POLICY "Allow owner to update their profile" ON "public"."profiles" FOR U
 
 
 
-CREATE POLICY "Allow professionals to view alerts" ON "public"."professional_alerts" FOR SELECT TO "authenticated" USING (("public"."get_my_role"() = 'professional'::"public"."userRole"));
+CREATE POLICY "Allow professionals to view alerts" ON "public"."professional_alerts" FOR SELECT TO "authenticated" USING (("public"."get_my_role"() = 'professional'::userRole));
 
 
 
@@ -5290,7 +5895,15 @@ CREATE POLICY "Allow public read-only access on guests" ON "public"."replay_gues
 
 
 
-CREATE POLICY "Allow write access to service role only" ON "public"."wed_articles" USING (("auth"."role"() = 'service_role'::"text")) WITH CHECK (("auth"."role"() = 'service_role'::"text"));
+CREATE POLICY "Allow service_role to insert notifications" ON "public"."notifications" FOR INSERT TO "service_role" WITH CHECK (true);
+
+
+
+CREATE POLICY "Allow service_role to read all notifications" ON "public"."notifications" FOR SELECT TO "service_role" USING (true);
+
+
+
+CREATE POLICY "Allow write access to service role only" ON "public"."wed_articles" USING (("auth"."role"() = 'service_role'::text)) WITH CHECK (("auth"."role"() = 'service_role'::text));
 
 
 
@@ -5334,7 +5947,7 @@ CREATE POLICY "Participants can view video sessions" ON "public"."video_sessions
 
 
 
-CREATE POLICY "Professionals can view active wedding pins" ON "public"."wedding_pins" FOR SELECT TO "authenticated" USING ((("is_deleted" = false) AND ("is_active" = true) AND (("event_end_date" IS NULL) OR ("event_end_date" >= CURRENT_DATE)) AND (("bride_profile_id" = "auth"."uid"()) OR (("public"."get_my_role"() = 'professional'::"public"."userRole") AND ("public"."get_my_tier"() = ANY (ARRAY['premiumVisibility'::"public"."subscriptionTierType", 'ultimateAccess'::"public"."subscriptionTierType"]))))));
+CREATE POLICY "Professionals can view active wedding pins" ON "public"."wedding_pins" FOR SELECT TO "authenticated" USING ((("is_deleted" = false) AND ("is_active" = true) AND (("event_end_date" IS NULL) OR ("event_end_date" >= CURRENT_DATE)) AND (("bride_profile_id" = "auth"."uid"()) OR (("public"."get_my_role"() = 'professional'::userRole) AND ("public"."get_my_tier"() = ANY (ARRAY['premiumVisibility'::subscriptionTierType, 'ultimateAccess'::subscriptionTierType]))))));
 
 
 
@@ -5354,7 +5967,15 @@ CREATE POLICY "Public profiles are viewable by authenticated users" ON "public".
 
 
 
-CREATE POLICY "Service role can manage notifications in 2025_10" ON "public"."notifications_2025_10" USING (("auth"."role"() = 'service_role'::"text")) WITH CHECK (("auth"."role"() = 'service_role'::"text"));
+CREATE POLICY "Service role can manage notifications in 2025_10" ON "public"."notifications_2025_10" USING (("auth"."role"() = 'service_role'::text)) WITH CHECK (("auth"."role"() = 'service_role'::text));
+
+
+
+CREATE POLICY "Service role can manage notifications in 2025_11" ON "public"."notifications_2025_11" USING (("auth"."role"() = 'service_role'::text)) WITH CHECK (("auth"."role"() = 'service_role'::text));
+
+
+
+CREATE POLICY "Service role can manage notifications in 2025_12" ON "public"."notifications_2025_12" USING (("auth"."role"() = 'service_role'::text)) WITH CHECK (("auth"."role"() = 'service_role'::text));
 
 
 
@@ -5362,27 +5983,27 @@ CREATE POLICY "Service role can manage roles" ON "public"."user_roles" TO "servi
 
 
 
-CREATE POLICY "Service role can manage sync events" ON "public"."sync_events" USING (("auth"."role"() = 'service_role'::"text")) WITH CHECK (("auth"."role"() = 'service_role'::"text"));
+CREATE POLICY "Service role can manage sync events" ON "public"."sync_events" USING (("auth"."role"() = 'service_role'::text)) WITH CHECK (("auth"."role"() = 'service_role'::text));
 
 
 
-CREATE POLICY "Service role can write report motifs" ON "public"."report_motifs" USING (("auth"."role"() = 'service_role'::"text")) WITH CHECK (("auth"."role"() = 'service_role'::"text"));
+CREATE POLICY "Service role can write report motifs" ON "public"."report_motifs" USING (("auth"."role"() = 'service_role'::text)) WITH CHECK (("auth"."role"() = 'service_role'::text));
 
 
 
-CREATE POLICY "Service role only for sync_control" ON "public"."sync_control" USING (("auth"."role"() = 'service_role'::"text")) WITH CHECK (("auth"."role"() = 'service_role'::"text"));
+CREATE POLICY "Service role only for sync_control" ON "public"."sync_control" USING (("auth"."role"() = 'service_role'::text)) WITH CHECK (("auth"."role"() = 'service_role'::text));
 
 
 
-CREATE POLICY "Service role only for sync_log" ON "public"."sync_log" USING (("auth"."role"() = 'service_role'::"text")) WITH CHECK (("auth"."role"() = 'service_role'::"text"));
+CREATE POLICY "Service role only for sync_log" ON "public"."sync_log" USING (("auth"."role"() = 'service_role'::text)) WITH CHECK (("auth"."role"() = 'service_role'::text));
 
 
 
-CREATE POLICY "Service role only for user_pois_history" ON "public"."user_pois_history" USING (("auth"."role"() = 'service_role'::"text")) WITH CHECK (("auth"."role"() = 'service_role'::"text"));
+CREATE POLICY "Service role only for user_pois_history" ON "public"."user_pois_history" USING (("auth"."role"() = 'service_role'::text)) WITH CHECK (("auth"."role"() = 'service_role'::text));
 
 
 
-CREATE POLICY "Service role only for wedding_pins_history" ON "public"."wedding_pins_history" USING (("auth"."role"() = 'service_role'::"text")) WITH CHECK (("auth"."role"() = 'service_role'::"text"));
+CREATE POLICY "Service role only for wedding_pins_history" ON "public"."wedding_pins_history" USING (("auth"."role"() = 'service_role'::text)) WITH CHECK (("auth"."role"() = 'service_role'::text));
 
 
 
@@ -5398,7 +6019,23 @@ CREATE POLICY "Users can read their own notifications in 2025_10" ON "public"."n
 
 
 
+CREATE POLICY "Users can read their own notifications in 2025_11" ON "public"."notifications_2025_11" FOR SELECT USING (("auth"."uid"() = "profile_id"));
+
+
+
+CREATE POLICY "Users can read their own notifications in 2025_12" ON "public"."notifications_2025_12" FOR SELECT USING (("auth"."uid"() = "profile_id"));
+
+
+
 CREATE POLICY "Users can update their own notifications in 2025_10" ON "public"."notifications_2025_10" FOR UPDATE USING (("auth"."uid"() = "profile_id")) WITH CHECK (("auth"."uid"() = "profile_id"));
+
+
+
+CREATE POLICY "Users can update their own notifications in 2025_11" ON "public"."notifications_2025_11" FOR UPDATE USING (("auth"."uid"() = "profile_id")) WITH CHECK (("auth"."uid"() = "profile_id"));
+
+
+
+CREATE POLICY "Users can update their own notifications in 2025_12" ON "public"."notifications_2025_12" FOR UPDATE USING (("auth"."uid"() = "profile_id")) WITH CHECK (("auth"."uid"() = "profile_id"));
 
 
 
@@ -5435,14 +6072,14 @@ CREATE POLICY "chat_messages_delete_self" ON "public"."chat_messages" FOR DELETE
 
 
 
-CREATE POLICY "chat_messages_insert" ON "public"."chat_messages" FOR INSERT TO "authenticated" WITH CHECK ((("profile_id" = "auth"."uid"()) AND (("public"."is_public_room"("room_id") AND ("public"."get_my_role"() = 'bride'::"public"."userRole")) OR ("public"."is_room_participant"("room_id", "auth"."uid"()) AND (NOT "public"."is_blocked_between"("auth"."uid"(), ( SELECT "p"."profile_id"
+CREATE POLICY "chat_messages_insert" ON "public"."chat_messages" FOR INSERT TO "authenticated" WITH CHECK ((("profile_id" = "auth"."uid"()) AND (("public"."is_public_room"("room_id") AND ("public"."get_my_role"() = 'bride'::userRole)) OR ("public"."is_room_participant"("room_id", "auth"."uid"()) AND (NOT "public"."is_blocked_between"("auth"."uid"(), ( SELECT "p"."profile_id"
    FROM "public"."chat_room_participants" "p"
   WHERE (("p"."room_id" = "chat_messages"."room_id") AND ("p"."profile_id" <> "auth"."uid"()))
  LIMIT 1)))))));
 
 
 
-CREATE POLICY "chat_messages_select" ON "public"."chat_messages" FOR SELECT TO "authenticated" USING ((("public"."is_public_room"("room_id") AND ("public"."get_my_role"() = 'bride'::"public"."userRole")) OR ("public"."is_room_participant"("room_id", "auth"."uid"()) AND (NOT "public"."is_blocked_between"("auth"."uid"(), "profile_id")))));
+CREATE POLICY "chat_messages_select" ON "public"."chat_messages" FOR SELECT TO "authenticated" USING ((("public"."is_public_room"("room_id") AND ("public"."get_my_role"() = 'bride'::userRole)) OR ("public"."is_room_participant"("room_id", "auth"."uid"()) AND (NOT "public"."is_blocked_between"("auth"."uid"(), "profile_id")))));
 
 
 
@@ -5450,7 +6087,7 @@ CREATE POLICY "chat_messages_update_self" ON "public"."chat_messages" FOR UPDATE
 
 
 
-CREATE POLICY "chat_participants_insert" ON "public"."chat_room_participants" FOR INSERT TO "authenticated" WITH CHECK ((("profile_id" = "auth"."uid"()) OR ("auth"."role"() = 'service_role'::"text")));
+CREATE POLICY "chat_participants_insert" ON "public"."chat_room_participants" FOR INSERT TO "authenticated" WITH CHECK ((("profile_id" = "auth"."uid"()) OR ("auth"."role"() = 'service_role'::text)));
 
 
 
@@ -5468,7 +6105,7 @@ ALTER TABLE "public"."chat_room_participants" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."chat_rooms" ENABLE ROW LEVEL SECURITY;
 
 
-CREATE POLICY "chat_rooms_select" ON "public"."chat_rooms" FOR SELECT USING ((("type" = 'public'::"text") OR "public"."is_room_participant"("id", "auth"."uid"())));
+CREATE POLICY "chat_rooms_select" ON "public"."chat_rooms" FOR SELECT USING ((("type" = 'public'::text) OR "public"."is_room_participant"("id", "auth"."uid"())));
 
 
 
@@ -5554,6 +6191,12 @@ ALTER TABLE "public"."notifications_2025_09" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."notifications_2025_10" ENABLE ROW LEVEL SECURITY;
 
 
+ALTER TABLE "public"."notifications_2025_11" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."notifications_2025_12" ENABLE ROW LEVEL SECURITY;
+
+
 ALTER TABLE "public"."notifications_outbox" ENABLE ROW LEVEL SECURITY;
 
 
@@ -5561,11 +6204,11 @@ CREATE POLICY "notifications_read_auth" ON "public"."notifications_2025_09" FOR 
 
 
 
-CREATE POLICY "outbox_service_read" ON "public"."notifications_outbox" FOR SELECT USING (("auth"."role"() = 'service_role'::"text"));
+CREATE POLICY "outbox_service_read" ON "public"."notifications_outbox" FOR SELECT USING (("auth"."role"() = 'service_role'::text));
 
 
 
-CREATE POLICY "outbox_service_write" ON "public"."notifications_outbox" USING (("auth"."role"() = 'service_role'::"text"));
+CREATE POLICY "outbox_service_write" ON "public"."notifications_outbox" USING (("auth"."role"() = 'service_role'::text));
 
 
 
@@ -5573,7 +6216,7 @@ CREATE POLICY "pcr_read_auth" ON "public"."public_chat_rooms" FOR SELECT TO "aut
 
 
 
-CREATE POLICY "pcr_write_service" ON "public"."public_chat_rooms" TO "authenticated" USING (("auth"."role"() = 'service_role'::"text")) WITH CHECK (("auth"."role"() = 'service_role'::"text"));
+CREATE POLICY "pcr_write_service" ON "public"."public_chat_rooms" TO "authenticated" USING (("auth"."role"() = 'service_role'::text)) WITH CHECK (("auth"."role"() = 'service_role'::text));
 
 
 
@@ -5628,11 +6271,11 @@ CREATE POLICY "reports_owner_rw" ON "public"."reports" USING (("reporter_profile
 ALTER TABLE "public"."stripe_events_log" ENABLE ROW LEVEL SECURITY;
 
 
-CREATE POLICY "stripe_events_read_sr" ON "public"."stripe_events_log" FOR SELECT USING (("auth"."role"() = 'service_role'::"text"));
+CREATE POLICY "stripe_events_read_sr" ON "public"."stripe_events_log" FOR SELECT USING (("auth"."role"() = 'service_role'::text));
 
 
 
-CREATE POLICY "stripe_events_write_sr" ON "public"."stripe_events_log" USING (("auth"."role"() = 'service_role'::"text"));
+CREATE POLICY "stripe_events_write_sr" ON "public"."stripe_events_log" USING (("auth"."role"() = 'service_role'::text));
 
 
 
@@ -5713,7 +6356,7 @@ CREATE POLICY "wishlist_items_owner_rw" ON "public"."wishlist_items" USING (("br
 
 
 
-CREATE POLICY "wishlist_pro_ultimate_read" ON "public"."wishlist_items" FOR SELECT USING ((("professional_profile_id" = "auth"."uid"()) AND ("public"."get_my_tier"() = 'ultimateAccess'::"public"."subscriptionTierType")));
+CREATE POLICY "wishlist_pro_ultimate_read" ON "public"."wishlist_items" FOR SELECT USING ((("professional_profile_id" = "auth"."uid"()) AND ("public"."get_my_tier"() = 'ultimateAccess'::subscriptionTierType)));
 
 
 
@@ -9852,9 +10495,9 @@ GRANT USAGE ON SCHEMA "public" TO "service_role";
 
 
 
-REVOKE ALL ON FUNCTION "public"."accept_connection_request"("p_request_id" "uuid") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."accept_connection_request"("p_request_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."accept_connection_request"("p_request_id" "uuid") TO "service_role";
+REVOKE ALL ON FUNCTION "public"."accept_connection_request"("p_request_id" uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."accept_connection_request"("p_request_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."accept_connection_request"("p_request_id" uuid) TO "service_role";
 
 
 
@@ -9876,9 +10519,21 @@ GRANT ALL ON FUNCTION "public"."auth_uid"() TO "service_role";
 
 
 
-REVOKE ALL ON FUNCTION "public"."cancel_professional_alert"("p_alert_id" "uuid") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."cancel_professional_alert"("p_alert_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."cancel_professional_alert"("p_alert_id" "uuid") TO "service_role";
+GRANT ALL ON FUNCTION "public"."auto_populate_fixed_location_country_code"() TO "anon";
+GRANT ALL ON FUNCTION "public"."auto_populate_fixed_location_country_code"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."auto_populate_fixed_location_country_code"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."auto_populate_location_country_code"() TO "anon";
+GRANT ALL ON FUNCTION "public"."auto_populate_location_country_code"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."auto_populate_location_country_code"() TO "service_role";
+
+
+
+REVOKE ALL ON FUNCTION "public"."cancel_professional_alert"("p_alert_id" uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."cancel_professional_alert"("p_alert_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."cancel_professional_alert"("p_alert_id" uuid) TO "service_role";
 
 
 
@@ -9886,9 +10541,15 @@ GRANT ALL ON TABLE "public"."notifications_outbox" TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."claim_outbox_events"("p_batch_size" integer, "p_claim_ttl_minutes" integer, "p_worker_id" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."claim_outbox_events"("p_batch_size" integer, "p_claim_ttl_minutes" integer, "p_worker_id" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."claim_outbox_events"("p_batch_size" integer, "p_claim_ttl_minutes" integer, "p_worker_id" "text") TO "service_role";
+GRANT ALL ON FUNCTION "public"."claim_outbox_events"("p_batch_size" integer, "p_claim_ttl_minutes" integer, "p_worker_id" text) TO "anon";
+GRANT ALL ON FUNCTION "public"."claim_outbox_events"("p_batch_size" integer, "p_claim_ttl_minutes" integer, "p_worker_id" text) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."claim_outbox_events"("p_batch_size" integer, "p_claim_ttl_minutes" integer, "p_worker_id" text) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."cleanup_abandoned_video_sessions"() TO "anon";
+GRANT ALL ON FUNCTION "public"."cleanup_abandoned_video_sessions"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."cleanup_abandoned_video_sessions"() TO "service_role";
 
 
 
@@ -9910,9 +10571,9 @@ GRANT ALL ON FUNCTION "public"."conn_req_before_insert"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."convert_to_eur"("p_amount" numeric, "p_currency" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."convert_to_eur"("p_amount" numeric, "p_currency" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."convert_to_eur"("p_amount" numeric, "p_currency" "text") TO "service_role";
+GRANT ALL ON FUNCTION "public"."convert_to_eur"("p_amount" numeric, "p_currency" text) TO "anon";
+GRANT ALL ON FUNCTION "public"."convert_to_eur"("p_amount" numeric, "p_currency" text) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."convert_to_eur"("p_amount" numeric, "p_currency" text) TO "service_role";
 
 
 
@@ -9922,33 +10583,39 @@ GRANT ALL ON FUNCTION "public"."create_next_notifications_partition"() TO "servi
 
 
 
-REVOKE ALL ON FUNCTION "public"."create_professional_alert"("p_motif_code" "text", "p_message" "text", "p_end_at" timestamp with time zone, "p_lat" double precision, "p_lng" double precision, "p_location_label" "text") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."create_professional_alert"("p_motif_code" "text", "p_message" "text", "p_end_at" timestamp with time zone, "p_lat" double precision, "p_lng" double precision, "p_location_label" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."create_professional_alert"("p_motif_code" "text", "p_message" "text", "p_end_at" timestamp with time zone, "p_lat" double precision, "p_lng" double precision, "p_location_label" "text") TO "service_role";
+REVOKE ALL ON FUNCTION "public"."create_professional_alert"("p_motif_code" text, "p_message" text, "p_end_at" timestamp with time zone, "p_lat" double precision, "p_lng" double precision, "p_location_label" text) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."create_professional_alert"("p_motif_code" text, "p_message" text, "p_end_at" timestamp with time zone, "p_lat" double precision, "p_lng" double precision, "p_location_label" text) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."create_professional_alert"("p_motif_code" text, "p_message" text, "p_end_at" timestamp with time zone, "p_lat" double precision, "p_lng" double precision, "p_location_label" text) TO "service_role";
 
 
 
-REVOKE ALL ON FUNCTION "public"."decline_connection_request"("p_request_id" "uuid") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."decline_connection_request"("p_request_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."decline_connection_request"("p_request_id" "uuid") TO "service_role";
+REVOKE ALL ON FUNCTION "public"."decline_connection_request"("p_request_id" uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."decline_connection_request"("p_request_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."decline_connection_request"("p_request_id" uuid) TO "service_role";
 
 
 
-REVOKE ALL ON FUNCTION "public"."delete_user_poi"("p_poi_id" "uuid") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."delete_user_poi"("p_poi_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."delete_user_poi"("p_poi_id" "uuid") TO "service_role";
+GRANT ALL ON FUNCTION "public"."delete_current_device_token"("device_token" text) TO "anon";
+GRANT ALL ON FUNCTION "public"."delete_current_device_token"("device_token" text) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."delete_current_device_token"("device_token" text) TO "service_role";
 
 
 
-REVOKE ALL ON FUNCTION "public"."delete_wedding_pin"("p_pin_id" "uuid") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."delete_wedding_pin"("p_pin_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."delete_wedding_pin"("p_pin_id" "uuid") TO "service_role";
+GRANT ALL ON FUNCTION "public"."delete_my_device_tokens"() TO "anon";
+GRANT ALL ON FUNCTION "public"."delete_my_device_tokens"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."delete_my_device_tokens"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."enforce_fixed_locations_quota"() TO "anon";
-GRANT ALL ON FUNCTION "public"."enforce_fixed_locations_quota"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."enforce_fixed_locations_quota"() TO "service_role";
+REVOKE ALL ON FUNCTION "public"."delete_user_poi"("p_poi_id" uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."delete_user_poi"("p_poi_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."delete_user_poi"("p_poi_id" uuid) TO "service_role";
+
+
+
+REVOKE ALL ON FUNCTION "public"."delete_wedding_pin"("p_pin_id" uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."delete_wedding_pin"("p_pin_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."delete_wedding_pin"("p_pin_id" uuid) TO "service_role";
 
 
 
@@ -9964,15 +10631,15 @@ GRANT ALL ON FUNCTION "public"."expire_trials"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."geocode_city_to_point"("city_name" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."geocode_city_to_point"("city_name" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."geocode_city_to_point"("city_name" "text") TO "service_role";
+GRANT ALL ON FUNCTION "public"."geocode_city_to_point"("city_name" text) TO "anon";
+GRANT ALL ON FUNCTION "public"."geocode_city_to_point"("city_name" text) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."geocode_city_to_point"("city_name" text) TO "service_role";
 
 
 
-REVOKE ALL ON FUNCTION "public"."get_alert_item_details"("p_alert_id" "uuid") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."get_alert_item_details"("p_alert_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_alert_item_details"("p_alert_id" "uuid") TO "service_role";
+REVOKE ALL ON FUNCTION "public"."get_alert_item_details"("p_alert_id" uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."get_alert_item_details"("p_alert_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_alert_item_details"("p_alert_id" uuid) TO "service_role";
 
 
 
@@ -9982,9 +10649,12 @@ GRANT ALL ON FUNCTION "public"."get_bride_interest_items"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."get_color_for_profession"("p_profession" "public"."profession") TO "anon";
-GRANT ALL ON FUNCTION "public"."get_color_for_profession"("p_profession" "public"."profession") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_color_for_profession"("p_profession" "public"."profession") TO "service_role";
+GRANT ALL ON FUNCTION "public"."get_color_for_profession"("p_profession" profession) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_color_for_profession"("p_profession" profession) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_color_for_profession"("p_profession" profession) TO "service_role";
+
+
+
 
 
 
@@ -9994,15 +10664,21 @@ GRANT ALL ON FUNCTION "public"."get_favorited_professionals"() TO "service_role"
 
 
 
-REVOKE ALL ON FUNCTION "public"."get_feed_professionals"("p_filters" "jsonb", "p_cursor" "text", "p_page_size" integer) FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."get_feed_professionals"("p_filters" "jsonb", "p_cursor" "text", "p_page_size" integer) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_feed_professionals"("p_filters" "jsonb", "p_cursor" "text", "p_page_size" integer) TO "service_role";
+GRANT ALL ON FUNCTION "public"."get_featured_replay"() TO "anon";
+GRANT ALL ON FUNCTION "public"."get_featured_replay"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_featured_replay"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."get_fixed_locations_quota"("p_profile_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."get_fixed_locations_quota"("p_profile_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_fixed_locations_quota"("p_profile_id" "uuid") TO "service_role";
+REVOKE ALL ON FUNCTION "public"."get_feed_professionals"("p_filters" "jsonb", "p_cursor" text, "p_page_size" integer) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."get_feed_professionals"("p_filters" "jsonb", "p_cursor" text, "p_page_size" integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_feed_professionals"("p_filters" "jsonb", "p_cursor" text, "p_page_size" integer) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."get_fixed_locations_quota"("p_profile_id" uuid) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_fixed_locations_quota"("p_profile_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_fixed_locations_quota"("p_profile_id" uuid) TO "service_role";
 
 
 
@@ -10012,9 +10688,9 @@ GRANT ALL ON FUNCTION "public"."get_formatted_notifications"("p_limit" integer) 
 
 
 
-GRANT ALL ON FUNCTION "public"."get_latest_wed_article"("p_lang" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."get_latest_wed_article"("p_lang" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_latest_wed_article"("p_lang" "text") TO "service_role";
+GRANT ALL ON FUNCTION "public"."get_latest_wed_article"("p_lang" text) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_latest_wed_article"("p_lang" text) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_latest_wed_article"("p_lang" text) TO "service_role";
 
 
 
@@ -10036,21 +10712,22 @@ GRANT ALL ON FUNCTION "public"."get_pending_contact_requests"() TO "service_role
 
 
 
-GRANT ALL ON FUNCTION "public"."get_portfolio_feed"("p_filters" "jsonb", "p_cursor" "text", "p_page_size" integer, "p_seed" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."get_portfolio_feed"("p_filters" "jsonb", "p_cursor" "text", "p_page_size" integer, "p_seed" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_portfolio_feed"("p_filters" "jsonb", "p_cursor" "text", "p_page_size" integer, "p_seed" "text") TO "service_role";
+GRANT ALL ON FUNCTION "public"."get_portfolio_feed"("p_filters" "jsonb", "p_cursor" text, "p_page_size" integer, "p_seed" text) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_portfolio_feed"("p_filters" "jsonb", "p_cursor" text, "p_page_size" integer, "p_seed" text) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_portfolio_feed"("p_filters" "jsonb", "p_cursor" text, "p_page_size" integer, "p_seed" text) TO "service_role";
 
 
 
-REVOKE ALL ON FUNCTION "public"."get_pro_item_details"("p_pro_profile_id" "uuid") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."get_pro_item_details"("p_pro_profile_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_pro_item_details"("p_pro_profile_id" "uuid") TO "service_role";
+REVOKE ALL ON FUNCTION "public"."get_pro_item_details"("p_pro_profile_id" uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."get_pro_item_details"("p_pro_profile_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_pro_item_details"("p_pro_profile_id" uuid) TO "service_role";
+GRANT ALL ON FUNCTION "public"."get_pro_item_details"("p_pro_profile_id" uuid) TO "anon";
 
 
 
-GRANT ALL ON FUNCTION "public"."get_professional_profile"("p_profile_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."get_professional_profile"("p_profile_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_professional_profile"("p_profile_id" "uuid") TO "service_role";
+GRANT ALL ON FUNCTION "public"."get_professional_profile"("p_profile_id" uuid) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_professional_profile"("p_profile_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_professional_profile"("p_profile_id" uuid) TO "service_role";
 
 
 
@@ -10060,21 +10737,21 @@ GRANT ALL ON FUNCTION "public"."get_public_chat_rooms_for_brides"() TO "service_
 
 
 
-GRANT ALL ON FUNCTION "public"."get_public_profile_details"("p_profile_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."get_public_profile_details"("p_profile_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_public_profile_details"("p_profile_id" "uuid") TO "service_role";
+GRANT ALL ON FUNCTION "public"."get_public_profile_details"("p_profile_id" uuid) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_public_profile_details"("p_profile_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_public_profile_details"("p_profile_id" uuid) TO "service_role";
 
 
 
-REVOKE ALL ON FUNCTION "public"."get_report_motifs"("p_locale" "text") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."get_report_motifs"("p_locale" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_report_motifs"("p_locale" "text") TO "service_role";
+REVOKE ALL ON FUNCTION "public"."get_report_motifs"("p_locale" text) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."get_report_motifs"("p_locale" text) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_report_motifs"("p_locale" text) TO "service_role";
 
 
 
-REVOKE ALL ON FUNCTION "public"."get_room_header"("p_room_id" "uuid") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."get_room_header"("p_room_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_room_header"("p_room_id" "uuid") TO "service_role";
+REVOKE ALL ON FUNCTION "public"."get_room_header"("p_room_id" uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."get_room_header"("p_room_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_room_header"("p_room_id" uuid) TO "service_role";
 
 
 
@@ -10084,9 +10761,9 @@ GRANT ALL ON FUNCTION "public"."get_rooms_with_unread_counts"("p_limit" integer)
 
 
 
-GRANT ALL ON FUNCTION "public"."get_tier_of"("p_profile_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."get_tier_of"("p_profile_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_tier_of"("p_profile_id" "uuid") TO "service_role";
+GRANT ALL ON FUNCTION "public"."get_tier_of"("p_profile_id" uuid) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_tier_of"("p_profile_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_tier_of"("p_profile_id" uuid) TO "service_role";
 
 
 
@@ -10096,9 +10773,15 @@ GRANT ALL ON FUNCTION "public"."get_unread_notifications_count"() TO "service_ro
 
 
 
-GRANT ALL ON FUNCTION "public"."get_wedding_pin_item_details"("p_pin_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."get_wedding_pin_item_details"("p_pin_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_wedding_pin_item_details"("p_pin_id" "uuid") TO "service_role";
+GRANT ALL ON FUNCTION "public"."get_user_email_by_profile_id"("p_profile_id" uuid) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_user_email_by_profile_id"("p_profile_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_user_email_by_profile_id"("p_profile_id" uuid) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."get_wedding_pin_item_details"("p_pin_id" uuid) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_wedding_pin_item_details"("p_pin_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_wedding_pin_item_details"("p_pin_id" uuid) TO "service_role";
 
 
 
@@ -10114,45 +10797,45 @@ GRANT ALL ON FUNCTION "public"."handle_message_report"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."has_role"("_user_id" "uuid", "_role" "public"."app_role") TO "anon";
-GRANT ALL ON FUNCTION "public"."has_role"("_user_id" "uuid", "_role" "public"."app_role") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."has_role"("_user_id" "uuid", "_role" "public"."app_role") TO "service_role";
+GRANT ALL ON FUNCTION "public"."has_role"("_user_id" uuid, "_role" app_role) TO "anon";
+GRANT ALL ON FUNCTION "public"."has_role"("_user_id" uuid, "_role" app_role) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."has_role"("_user_id" uuid, "_role" app_role) TO "service_role";
 
 
 
-REVOKE ALL ON FUNCTION "public"."insert_user_poi"("p_label" "text", "p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" "text"[], "p_budget_min" integer, "p_budget_max" integer, "p_currency" "text", "p_event_start_date" "date", "p_event_end_date" "date", "p_location_label" "text") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."insert_user_poi"("p_label" "text", "p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" "text"[], "p_budget_min" integer, "p_budget_max" integer, "p_currency" "text", "p_event_start_date" "date", "p_event_end_date" "date", "p_location_label" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."insert_user_poi"("p_label" "text", "p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" "text"[], "p_budget_min" integer, "p_budget_max" integer, "p_currency" "text", "p_event_start_date" "date", "p_event_end_date" "date", "p_location_label" "text") TO "service_role";
+REVOKE ALL ON FUNCTION "public"."insert_user_poi"("p_label" text, "p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" text[], "p_budget_min" integer, "p_budget_max" integer, "p_currency" text, "p_event_start_date" "date", "p_event_end_date" "date", "p_location_label" text) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."insert_user_poi"("p_label" text, "p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" text[], "p_budget_min" integer, "p_budget_max" integer, "p_currency" text, "p_event_start_date" "date", "p_event_end_date" "date", "p_location_label" text) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."insert_user_poi"("p_label" text, "p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" text[], "p_budget_min" integer, "p_budget_max" integer, "p_currency" text, "p_event_start_date" "date", "p_event_end_date" "date", "p_location_label" text) TO "service_role";
 
 
 
-REVOKE ALL ON FUNCTION "public"."insert_wedding_pin"("p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" "text"[], "p_budget_min" integer, "p_budget_max" integer, "p_currency" "text", "p_event_start_date" "date", "p_event_end_date" "date", "p_location_label" "text") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."insert_wedding_pin"("p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" "text"[], "p_budget_min" integer, "p_budget_max" integer, "p_currency" "text", "p_event_start_date" "date", "p_event_end_date" "date", "p_location_label" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."insert_wedding_pin"("p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" "text"[], "p_budget_min" integer, "p_budget_max" integer, "p_currency" "text", "p_event_start_date" "date", "p_event_end_date" "date", "p_location_label" "text") TO "service_role";
+REVOKE ALL ON FUNCTION "public"."insert_wedding_pin"("p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" text[], "p_budget_min" integer, "p_budget_max" integer, "p_currency" text, "p_event_start_date" "date", "p_event_end_date" "date", "p_location_label" text) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."insert_wedding_pin"("p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" text[], "p_budget_min" integer, "p_budget_max" integer, "p_currency" text, "p_event_start_date" "date", "p_event_end_date" "date", "p_location_label" text) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."insert_wedding_pin"("p_lat" double precision, "p_lng" double precision, "p_radius_km" smallint, "p_professions" text[], "p_budget_min" integer, "p_budget_max" integer, "p_currency" text, "p_event_start_date" "date", "p_event_end_date" "date", "p_location_label" text) TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."is_blocked_between"("a" "uuid", "b" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."is_blocked_between"("a" "uuid", "b" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."is_blocked_between"("a" "uuid", "b" "uuid") TO "service_role";
+GRANT ALL ON FUNCTION "public"."is_blocked_between"("a" uuid, "b" uuid) TO "anon";
+GRANT ALL ON FUNCTION "public"."is_blocked_between"("a" uuid, "b" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."is_blocked_between"("a" uuid, "b" uuid) TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."is_public_room"("p_room_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."is_public_room"("p_room_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."is_public_room"("p_room_id" "uuid") TO "service_role";
+GRANT ALL ON FUNCTION "public"."is_public_room"("p_room_id" uuid) TO "anon";
+GRANT ALL ON FUNCTION "public"."is_public_room"("p_room_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."is_public_room"("p_room_id" uuid) TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."is_room_participant"("p_room_id" "uuid", "p_profile_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."is_room_participant"("p_room_id" "uuid", "p_profile_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."is_room_participant"("p_room_id" "uuid", "p_profile_id" "uuid") TO "service_role";
+GRANT ALL ON FUNCTION "public"."is_room_participant"("p_room_id" uuid, "p_profile_id" uuid) TO "anon";
+GRANT ALL ON FUNCTION "public"."is_room_participant"("p_room_id" uuid, "p_profile_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."is_room_participant"("p_room_id" uuid, "p_profile_id" uuid) TO "service_role";
 
 
 
-REVOKE ALL ON FUNCTION "public"."join_public_room_if_needed"("p_room_id" "uuid") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."join_public_room_if_needed"("p_room_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."join_public_room_if_needed"("p_room_id" "uuid") TO "service_role";
+REVOKE ALL ON FUNCTION "public"."join_public_room_if_needed"("p_room_id" uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."join_public_room_if_needed"("p_room_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."join_public_room_if_needed"("p_room_id" uuid) TO "service_role";
 
 
 
@@ -10162,15 +10845,21 @@ GRANT ALL ON FUNCTION "public"."mark_all_notifications_as_read"() TO "service_ro
 
 
 
-GRANT ALL ON FUNCTION "public"."mark_notification_as_read"("p_notification_id" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."mark_notification_as_read"("p_notification_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."mark_notification_as_read"("p_notification_id" "uuid") TO "service_role";
+GRANT ALL ON FUNCTION "public"."mark_notification_as_read"("p_notification_id" uuid) TO "anon";
+GRANT ALL ON FUNCTION "public"."mark_notification_as_read"("p_notification_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."mark_notification_as_read"("p_notification_id" uuid) TO "service_role";
 
 
 
 GRANT ALL ON FUNCTION "public"."mark_video_sessions_missed"() TO "anon";
 GRANT ALL ON FUNCTION "public"."mark_video_sessions_missed"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."mark_video_sessions_missed"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."move_first_fixed_to_main_location"("p_profile_id" uuid) TO "anon";
+GRANT ALL ON FUNCTION "public"."move_first_fixed_to_main_location"("p_profile_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."move_first_fixed_to_main_location"("p_profile_id" uuid) TO "service_role";
 
 
 
@@ -10186,9 +10875,9 @@ GRANT ALL ON FUNCTION "public"."on_first_message_pro_to_bride"() TO "service_rol
 
 
 
-GRANT ALL ON FUNCTION "public"."open_or_prepare_contact_context"("p_target" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."open_or_prepare_contact_context"("p_target" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."open_or_prepare_contact_context"("p_target" "uuid") TO "service_role";
+GRANT ALL ON FUNCTION "public"."open_or_prepare_contact_context"("p_target" uuid) TO "anon";
+GRANT ALL ON FUNCTION "public"."open_or_prepare_contact_context"("p_target" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."open_or_prepare_contact_context"("p_target" uuid) TO "service_role";
 
 
 
@@ -10240,15 +10929,15 @@ GRANT ALL ON FUNCTION "public"."rpc_alerts_capture_to_remind"("p_from" timestamp
 
 
 
-GRANT ALL ON FUNCTION "public"."search_map_bundle"("p_bbox_coords" "jsonb", "p_viewer_role" "text", "p_filters" "jsonb", "p_zoom" integer) TO "anon";
-GRANT ALL ON FUNCTION "public"."search_map_bundle"("p_bbox_coords" "jsonb", "p_viewer_role" "text", "p_filters" "jsonb", "p_zoom" integer) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."search_map_bundle"("p_bbox_coords" "jsonb", "p_viewer_role" "text", "p_filters" "jsonb", "p_zoom" integer) TO "service_role";
+GRANT ALL ON FUNCTION "public"."search_map_bundle"("p_bbox_coords" "jsonb", "p_viewer_role" text, "p_filters" "jsonb", "p_zoom" integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."search_map_bundle"("p_bbox_coords" "jsonb", "p_viewer_role" text, "p_filters" "jsonb", "p_zoom" integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."search_map_bundle"("p_bbox_coords" "jsonb", "p_viewer_role" text, "p_filters" "jsonb", "p_zoom" integer) TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."seed_map_test_data"("p_bride" "uuid", "p_pro" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."seed_map_test_data"("p_bride" "uuid", "p_pro" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."seed_map_test_data"("p_bride" "uuid", "p_pro" "uuid") TO "service_role";
+GRANT ALL ON FUNCTION "public"."seed_map_test_data"("p_bride" uuid, "p_pro" uuid) TO "anon";
+GRANT ALL ON FUNCTION "public"."seed_map_test_data"("p_bride" uuid, "p_pro" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."seed_map_test_data"("p_bride" uuid, "p_pro" uuid) TO "service_role";
 
 
 
@@ -10288,15 +10977,21 @@ GRANT ALL ON FUNCTION "public"."sync_profile_to_professional_details"() TO "serv
 
 
 
-GRANT ALL ON FUNCTION "public"."tier_score"("t" "public"."subscriptionTierType") TO "anon";
-GRANT ALL ON FUNCTION "public"."tier_score"("t" "public"."subscriptionTierType") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."tier_score"("t" "public"."subscriptionTierType") TO "service_role";
+GRANT ALL ON FUNCTION "public"."tier_score"("t" subscriptionTierType) TO "anon";
+GRANT ALL ON FUNCTION "public"."tier_score"("t" subscriptionTierType) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."tier_score"("t" subscriptionTierType) TO "service_role";
 
 
 
-REVOKE ALL ON FUNCTION "public"."toggle_wishlist"("p_pro_profile_id" "uuid") FROM PUBLIC;
-GRANT ALL ON FUNCTION "public"."toggle_wishlist"("p_pro_profile_id" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."toggle_wishlist"("p_pro_profile_id" "uuid") TO "service_role";
+REVOKE ALL ON FUNCTION "public"."toggle_wishlist"("p_pro_profile_id" uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."toggle_wishlist"("p_pro_profile_id" uuid) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."toggle_wishlist"("p_pro_profile_id" uuid) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trigger_move_first_fixed_after_insert"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trigger_move_first_fixed_after_insert"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trigger_move_first_fixed_after_insert"() TO "service_role";
 
 
 
@@ -10638,6 +11333,18 @@ GRANT ALL ON TABLE "public"."notifications_2025_09" TO "service_role";
 GRANT ALL ON TABLE "public"."notifications_2025_10" TO "anon";
 GRANT ALL ON TABLE "public"."notifications_2025_10" TO "authenticated";
 GRANT ALL ON TABLE "public"."notifications_2025_10" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."notifications_2025_11" TO "anon";
+GRANT ALL ON TABLE "public"."notifications_2025_11" TO "authenticated";
+GRANT ALL ON TABLE "public"."notifications_2025_11" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."notifications_2025_12" TO "anon";
+GRANT ALL ON TABLE "public"."notifications_2025_12" TO "authenticated";
+GRANT ALL ON TABLE "public"."notifications_2025_12" TO "service_role";
 
 
 
