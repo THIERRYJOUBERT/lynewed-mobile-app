@@ -94,7 +94,7 @@ Future<WedArticleStruct?> getLatestWedArticle(String? lang) async {
       }
 
       professional = ProDetailsStruct(
-        proProfileId: proData['proProfileId']?.toString(),
+        proProfileId: proData['profileId']?.toString(),  // Corrigé: la RPC retourne 'profileId' pas 'proProfileId'
         fullName: proData['fullName']?.toString(),
         avatarUrl: proData['avatarUrl']?.toString(),
         businessName: proData['businessName']?.toString(),

@@ -45,8 +45,10 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       _model.budgetMin = widget.filtersOn?.budgetMin;
       _model.budgetMax = widget.filtersOn?.budgetMax;
-      _model.selectedProfessions =
-          widget.filtersOn!.professions.toList().cast<Profession>();
+      // Si aucune profession n'est sélectionnée, on initialise avec toutes les professions
+      _model.selectedProfessions = widget.filtersOn!.professions.isEmpty
+          ? Profession.values.toList()
+          : widget.filtersOn!.professions.toList().cast<Profession>();
       _model.showPros = widget.filtersOn!.showPros;
       _model.showProRecent = widget.filtersOn!.showProRecent;
       _model.showWeddingPins = widget.filtersOn!.showWeddingPins;
@@ -75,7 +77,8 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
         }),
       ]);
       _model.budgetVisible = widget.filtersOn!.budgetMax > 1.0;
-      _model.professionVisible = widget.filtersOn!.professions.isNotEmpty;
+      // La section professions est toujours visible par défaut (car toutes sont cochées)
+      _model.professionVisible = true;
       _model.typeVisible = true;
       safeSetState(() {});
     });

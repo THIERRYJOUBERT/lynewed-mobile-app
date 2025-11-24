@@ -4,6 +4,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 // Imports other custom widgets
 // Imports custom actions
+import '/custom_code/actions/index.dart' as actions;
 // Imports custom functions
 import 'package:flutter/material.dart';
 // Begin custom widget code
@@ -409,12 +410,52 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
                     borderRadius: BorderRadius.circular(0)),
                 elevation: 0,
               ),
-              onPressed: () => context.pushNamed(
-                'ProDetails',
-                queryParameters: {
-                  'proDetails': serializeParam(pro, ParamType.DataStruct)
-                }.withoutNulls,
-              ),
+              onPressed: () async {
+                if (pro.proProfileId.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Unable to view this profile, please try again later.',
+                        style: TextStyle(
+                          color: theme.primaryText,
+                        ),
+                      ),
+                      duration: const Duration(milliseconds: 2000),
+                      backgroundColor: theme.warning,
+                    ),
+                  );
+                  return;
+                }
+
+                // Charger les données complètes du professionnel
+                final fullProDetails = await actions.getProItemDetailsAction(
+                  pro.proProfileId,
+                );
+
+                if (!context.mounted) return;
+
+                if (fullProDetails != null) {
+                  context.pushNamed(
+                    'ProDetails',
+                    queryParameters: {
+                      'proDetails': serializeParam(fullProDetails, ParamType.DataStruct)
+                    }.withoutNulls,
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Unable to load profile details, please try again later.',
+                        style: TextStyle(
+                          color: theme.primaryText,
+                        ),
+                      ),
+                      duration: const Duration(milliseconds: 2000),
+                      backgroundColor: theme.warning,
+                    ),
+                  );
+                }
+              },
               child: Text('More of this artist',
                   style: theme.bodyMedium.override(
                       fontFamily: 'Haas Grot Text Trial', color: Colors.white)),

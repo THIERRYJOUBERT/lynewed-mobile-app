@@ -11,7 +11,10 @@ Future<List<ReplayItemStruct>?> fetchReplaysBundle() async {
   try {
     final client = SupaFlow.client;
 
-    // Fetch all replays and their guest assignments ordered by most recent first
+    // Fetch all replays and their guest assignments
+    // Sorting logic:
+    // 1. Featured replays (is_featured = true) ordered by created_at DESC
+    // 2. Non-featured replays ordered by created_at DESC
     // Only fetch published replays (is_published = true)
     final response = await client.from('replays').select('''
       id,
@@ -22,6 +25,7 @@ Future<List<ReplayItemStruct>?> fetchReplaysBundle() async {
       published_at,
       is_featured,
       is_published,
+      created_at,
       replay_guest_assignments (
         replay_guests (
           id,
@@ -30,7 +34,7 @@ Future<List<ReplayItemStruct>?> fetchReplaysBundle() async {
           avatar_url
         )
       )
-    ''').eq('is_published', true).order('published_at', ascending: false);
+    ''').eq('is_published', true).order('is_featured', ascending: false).order('created_at', ascending: false);
 
     final List<dynamic> data = response as List<dynamic>? ?? [];
     final List<ReplayItemStruct> replays = [];

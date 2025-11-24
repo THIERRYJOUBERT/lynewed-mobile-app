@@ -327,28 +327,27 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
                                     flex: 1,
                                     child: Container(
                                       height: 50.0,
+                                      alignment: Alignment.center,
                                       decoration: BoxDecoration(
-                                        color: FlutterFlowTheme.of(context).secondaryBackground,
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        border: Border.all(
-                                          color: FlutterFlowTheme.of(context).alternate,
-                                        ),
+                                        color: const Color(0xFFF2F2F2),
+                                        borderRadius: BorderRadius.circular(100.0),
                                       ),
                                       child: DropdownButtonHideUnderline(
                                         child: DropdownButton<CountryFilter>(
                                           value: _model.selectedCountry,
                                           isExpanded: true,
                                           menuMaxHeight: 350.0,
-                                          icon: Icon(
+                                          icon: const Icon(
                                             Icons.keyboard_arrow_down_rounded,
-                                            color: FlutterFlowTheme.of(context).secondaryText,
+                                            color: Color(0xFF888888),
                                             size: 24.0,
                                           ),
                                           padding: const EdgeInsetsDirectional.fromSTEB(
-                                              12.0, 0.0, 12.0, 0.0),
+                                              8.0, 0.0, 8.0, 0.0),
                                           items: CountryFilter.values.map((country) {
                                             return DropdownMenuItem<CountryFilter>(
                                               value: country,
+                                              alignment: Alignment.center,
                                               child: Text(
                                                 country.displayName,
                                                 style: FlutterFlowTheme.of(context)
@@ -358,6 +357,7 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
                                                       fontSize: 14.0,
                                                       letterSpacing: 0.0,
                                                     ),
+                                                textAlign: TextAlign.center,
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             );

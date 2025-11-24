@@ -38,10 +38,12 @@ class _ContentReplayWidgetState extends State<ContentReplayWidget> {
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       _model.replaysBundle = await actions.fetchReplaysBundle();
+      // The first replay is now the featured one (is_featured=true with most recent created_at)
+      // or the most recent replay if none are featured
       _model.featuredReplay = _model.replaysBundle?.firstOrNull;
+      // Other replays exclude the featured one (first in list)
       _model.otherReplays = _model.replaysBundle!
-          .where((e) => e.isFeatured != true)
-          .toList()
+          .skip(1)
           .toList()
           .cast<ReplayItemStruct>();
       safeSetState(() {});
