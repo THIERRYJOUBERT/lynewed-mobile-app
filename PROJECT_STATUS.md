@@ -782,3 +782,41 @@ cd ios && pod install && cd ..
 **Document généré automatiquement via rétro-ingénierie complète du codebase.**  
 **Dernière mise à jour:** 7 novembre 2025  
 **Dernière mise à jour sécurité:** 7 novembre 2025 (v1.1.0)
+
+---
+
+## 🔄 Structure du Repository GitHub (v1.1.1+59)
+
+**Date de mise à jour:** 24 novembre 2025
+
+### Architecture de Branches
+
+**Structure actuelle :**
+- `main` : Version production MVP v1.1.1+59 (App Store) - **protégée, stable**
+- `develop` : Branche de développement pour refactorisation v2.0.0
+
+**Workflow Git :**
+1. **MVP conservé** : `main` reste l'historique de référence du MVP déployé
+2. **Refactorisation** : Tous les changements v2.0.0 se font sur `develop`
+3. **Hotfixes** : Si nécessaire sur `main` (bugs critiques App Store)
+4. **Release** : Quand v2.0.0 prête → merge `develop` → `main` + tag `v2.0.0`
+
+**Commit de sauvegarde :**
+- SHA: `0992be1`
+- Message: "chore: backup MVP v1.1.1+59 - stable App Store version"
+- Date: 24 novembre 2025
+
+### Prochaines Étapes
+
+**Phase de Refactorisation (sur branche `develop`) :**
+- 🏗️ Architecture clean code (separation layers, dependency injection)
+- 🔧 Refactorisation FlutterFlow → Flutter natif
+- 📊 Amélioration performance et scalabilité
+- 🧪 Tests unitaires et intégration
+- 📚 Documentation technique complète
+
+**Objectif v2.0.0 :**
+- Application production-ready et scalable
+- Code maintenable et testable
+- Architecture moderne (clean architecture + TDD)
+- Performance optimisée
