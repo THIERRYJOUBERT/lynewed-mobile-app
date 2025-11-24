@@ -15,7 +15,7 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '/utils/secure_logger.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
-import 'package:lynewed_alpha/services/agora_engine_manager.dart';
+import 'package:lynewed_beta/services/agora_engine_manager.dart';
 
 // Import du widget Agora avec alias pour éviter le conflit de nom
 import 'package:agora_rtc_engine/agora_rtc_engine.dart' as agora;
