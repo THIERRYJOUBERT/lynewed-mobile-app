@@ -2,141 +2,178 @@
 
 **Current Version:** v1.1.1+59  
 **Current Branch:** develop  
-**Last Updated:** 2025-11-24  
-**Environment:** Development (refactoring v2.0.0)
+**Last Updated:** 2025-11-25 17:30  
+**Environment:** Development (hekyovgnovhfhmkpfrna)  
 
 ---
 
-## Current State
+## 📊 **Project Overview**
 
 ### Branch Structure
 - `main`: MVP v1.1.1+59 (App Store) - protected
 - `release/v1.x`: Hotfix branch for v1.x maintenance
 - `develop`: Active development for v2.0.0 refactoring
 
-### Recent Commits
-- `0992be1` (main): chore: backup MVP v1.1.1+59 - stable App Store version
-- `d7202bd` (develop): docs: update PROJECT_STATUS.md with GitHub branching structure
-- `04eb024` (release/v1.x): docs: finalize GitHub branching structure with hotfix support
+### Current Status
+- ✅ Environment secured and functional
+- ✅ Authentication working (login/signup)
+- ✅ Database permissions fixed
+- 🔄 Preparing data seeding for comprehensive testing
 
-### File Map (Key Directories)
+---
+
+## 📋 **Change Log**
+
+### 2025-11-25 17:30 - Documentation Cleanup & Organization
+- **Actions**: Reorganized docs structure, removed temporary files
+- **Changes**: 
+  - Created `/docs/audits/` folder for audit documentation
+  - Moved `ENUMS_AUDIT.md` and `MAP_FEATURE_AUDIT.md` to `/audits/`
+  - Removed `SECRETS_TRACKING_TEMP.md`, `CONFIGURATION_AUDIT.md`, `SECURITY_ACTION_PLAN.md`
+  - Restructured PROJECT_STATUS.md for better maintainability
+- **Files Modified**: PROJECT_STATUS.md, docs folder structure
+
+### 2025-11-25 15:05 - Critical Authentication Bug Fixed
+- **Issue**: Users couldn't login/signup - "Erreur de session" displayed
+- **Root Cause**: Missing PostgreSQL grants for `authenticated`/`anon` roles on schema `public`
+- **Solution**: Applied migration `fix_missing_grants_for_authenticated_role`
+- **Technical Details**: 
+  - `loadInitialSessionData()` was returning `null` because users couldn't read their own data
+  - Added proper grants: SELECT/INSERT/UPDATE/DELETE for authenticated, SELECT for anon
+  - Set default privileges for future tables
+- **Result**: Login/signup fully functional, user `dev1@gmail.com` successfully connected
+- **Files Modified**: supabase/migrations/20251124000000_complete_schema.sql
+
+### 2025-11-25 14:30 - Google Places API Issue Identified
+- **Issue**: Places autocomplete not working in map search widget
+- **Root Cause**: API key restrictions blocking HTTP requests from mobile app
+- **Technical Details**: 
+  - HTTP REST API calls bypass bundle ID restrictions
+  - Mobile apps don't send HTTP referer (showing "empty referer" in errors)
+  - Temporary fix: Disabled API restrictions in Google Cloud Console
+- **Planned Solution**: Migrate to `flutter_google_places_sdk` for proper bundle ID restrictions
+- **Files Analyzed**: get_place_predictions.dart, app_constants.dart
+
+### 2025-11-25 12:00 - Security Audit Completed
+- **Actions**: Comprehensive security audit of all secrets and configurations
+- **Changes**:
+  - Fixed 4 Edge Functions with incorrect CRM URLs
+  - Synchronized 13 Supabase Dashboard secrets
+  - Added Google Maps API key to AndroidManifest.xml
+  - Validated Firebase configuration
+- **Edge Functions Fixed**: 
+  - `sync-wed-articles-to-app` v14
+  - `sync-professional-to-app` v14  
+  - `create-or-sync-user` v13
+  - `send-verification-email` v12
+- **Environment**: Supabase DEV (hekyovgnovhfhmkpfrna) fully aligned
+
+### 2025-11-25 10:00 - Map Feature Audit Completed
+- **Scope**: 12 Flutter files + 6 Supabase geospatial tables analyzed
+- **Findings**: Complete data flow traced, security validated, performance optimizations identified
+- **Document**: `docs/audits/MAP_FEATURE_AUDIT.md`
+
+### 2025-11-25 09:00 - Enums Audit Completed  
+- **Scope**: 23 Supabase enums + 16 Flutter enums inventoried
+- **Critical Issues**: 2 discrepancies identified (AlertStatus, ConversationStatus)
+- **Document**: `docs/audits/ENUMS_AUDIT.md`
+
+---
+
+## 🔧 **Technical Configuration**
+
+### Environment Details
+- **Supabase Project**: `hekyovgnovhfhmkpfrna` (LYNEWED-V1-APP)
+- **Supabase URL**: `https://hekyovgnovhfhmkpfrna.supabase.co`
+- **Firebase**: Hardcoded configuration in `firebase_options.dart`
+- **Google Maps API**: Android + iOS configured, restrictions temporarily disabled ⚠️
+- **Agora App ID**: Configured in .env
+
+### Database Schema
+- **Migrations Applied**: 52 total
+- **Key Tables**: profiles, user_preferences, alerts, wed_articles, professional_subscriptions
+- **RLS Policies**: Active and functional ✅
+- **PostGIS**: Enabled for geospatial queries
+
+### API Keys & Secrets
+```bash
+SUPABASE_URL=https://hekyovgnovhfhmkpfrna.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+GOOGLE_PLACES_API_KEY=AIzaSyCLOe2yCKXS-yoxq4E4pHt2NTxG8OUbhuY
+AGORA_APP_ID=ddfcd5a017564aebb138e985fdf30bcd
+```
+
+### Edge Functions (15 deployed)
+- All functions synchronized with correct CRM URLs
+- CRM project: `pjcorrkwafjskmzmimon` (LYNEWED-V1-CRM)
+- Status: ✅ All operational
+
+---
+
+## 💡 **Todo & Ideas**
+
+### Immediate Tasks
+- **Data Seeding**: Create realistic test data (PRO users, BRIDE users, POI locations, conversations, subscriptions)
+- **Functionality Testing**: Test all features after security fixes (Agora, Resend, Firebase, Places, Supabase Realtime)
+- **SDK Migration**: Replace HTTP REST Google Places with native SDK for proper security
+
+### Code Improvements
+- **FlutterFlow Cleanup**: Refactor verbose generated code into clean Flutter
+- **Error Handling**: Enhance error messages and user feedback
+- **Performance**: Optimize database queries and UI rendering
+- **Architecture**: Implement clean architecture patterns
+
+### Feature Enhancements
+- **Realtime Subscriptions**: Verify and optimize Supabase realtime functionality
+- **Push Notifications**: Test Firebase FCM token registration and delivery
+- **Media Handling**: Optimize image/video upload and caching
+- **Search Performance**: Improve map clustering and search debouncing
+
+### Security & Production Prep
+- **API Key Restrictions**: Implement proper bundle ID restrictions after SDK migration
+- **Environment Variables**: Review and secure all .env configurations
+- **Database Optimization**: Add missing indexes, optimize queries
+- **Monitoring**: Set up error tracking and analytics
+
+### Technical Debt
+- **Dependencies**: Review and update package versions
+- **Code Comments**: Add comprehensive documentation to complex logic
+- **Test Coverage**: Implement unit tests for critical business logic
+- **Build Process**: Optimize iOS/Android build configurations
+
+### Ideas to Explore
+- **Offline Support**: Implement local caching for critical data
+- **Background Sync**: Sync data when app comes online
+- **Advanced Search**: Implement filters and saved searches
+- **Analytics Integration**: User behavior tracking and insights
+- **Performance Monitoring**: Crash reporting and performance metrics
+
+---
+
+## 📁 **Key Files Structure**
+
 ```
 lib/
-├── auth/                    # Authentication layer
+├── auth/                    # Authentication layer (fixed ✅)
 ├── backend/                 # Backend integration
 │   ├── schema/             # Data models (40+ structs)
 │   └── supabase/           # Database queries
 ├── pages/                  # Screens (71 items)
 ├── compo_finaux/           # Final UI components
 ├── custom_code/            # Custom actions (96+)
-└── services/               # External services (Agora, etc.)
+└── services/               # External services
 
 supabase/
-├── functions/              # Edge functions (15 deployed)
-└── migrations/             # Database migrations (51 applied)
+├── functions/              # Edge functions (15 deployed ✅)
+└── migrations/             # Database migrations (52 applied ✅)
+
+docs/
+├── audits/                 # Audit documentation ✅
+│   ├── ENUMS_AUDIT.md      # Enums analysis
+│   └── MAP_FEATURE_AUDIT.md # Map functionality analysis
+└── PROJECT_STATUS.md       # This file
 ```
 
 ---
 
-## Change Log
-
-### 2025-11-24 - Application Build & Launch Test COMPLETED
-- **Environment Setup**: Fixed missing .env file causing build failures
-- **Configuration**: Created .env with dev Supabase credentials (hekyovgnovhfhmkpfrna)
-- **Build Script**: Updated simulator ID to iPhone 16e (04B822AE-18B4-4BDA-86A5-47AB23CA0E2F)
-- **Build Result**: ✅ BUILD SUCCEEDED - application compiled successfully
-- **Launch**: ✅ App launched on iPhone 16e simulator (Process ID: 98386)
-### 2025-11-24 - Registration Issue Debugging
-- **Problem Identified**: Registration failing with "password too weak" error
-- **Root Cause**: Supabase password requirements (min 8 chars + uppercase + lowercase + numbers + symbols)
-- **Solution**: Test with stronger password format like "Password123!@#" and different email
-### 2025-11-24 - Registration Issue RESOLVED
-- **Root Cause Identified**: .env file not included in iOS app bundle during build
-- **Solution Implemented**: Modified build_and_run.sh script to manually copy .env into bundle before installation
-- **Technical Details**: 
-  - xcodebuild bypasses Flutter asset bundling process
-  - Added manual copy step: `cp .env "$APP_PATH/Frameworks/App.framework/flutter_assets/.env"`
-  - Verified .env file (316 bytes) successfully included in installed bundle
-### 2025-11-24 - Connection Test & API Key Fix COMPLETED
-- **Root Cause Confirmed**: Invalid Supabase API key in .env file
-- **API Key Updated**: Retrieved new valid anon key from Supabase dashboard
-- **Validation**: curl test confirms connection working (email format error instead of API key error)
-- **Build Status**: ✅ Application rebuilt with valid API key, launched successfully (Process ID: 28845)
-### 2025-11-24 - Application Crash RESOLVED
-- **Root Cause Identified**: Debug print statement in supabase.dart causing app crash on startup
-- **Solution Applied**: Removed problematic `print('🔍 DEBUG: Supabase URL loaded: $url');` line
-- **Build Status**: ✅ Application now launches successfully without crash (Process ID: 38456)
-- **Stability**: App returned to stable state as before modifications
-- **Current State**: Ready for user registration testing with valid Supabase API key
-- **Next**: Test user registration functionality
-- Removed auto-generated build artifacts: build/, .dart_tool/, .flutter-plugins-dependencies*
-- Removed IDE artifacts: .idea/ folder, *.iml files (already gitignored but present)
-- Removed obsolete test file: test/widget_test.dart (generic boilerplate)
-- Confirmed .gitignore properly excludes all IDE and build artifacts
-- Final project structure: clean root with organized docs/, guides/, scripts/ folders
-- Total space recovered: ~500MB+ (build cache + IDE artifacts)
-- All scripts updated with correct paths after folder reorganization
-
-### 2025-11-24 - Project File Organization & Cleanup
-- Created organized folder structure: docs/, guides/, scripts/
-- Moved documentation: SETUP.md, PROJECT_STATUS.md → docs/
-- Moved technical guides: BUILD_IPA_GUIDE.md, technical_specification.md → guides/
-- Moved utility scripts: check_config.sh, build_and_run.sh, install_simulator.sh → scripts/
-- Fixed script paths after folder reorganization (build_and_run.sh, check_config.sh)
-- Removed obsolete files: README.md (generic), AGORA_PRODUCTION_READY.md, configure_notification_secrets.sh, run_ios.sh, production_schema_clean.sql
-- Created new README.md with proper navigation and project structure
-- Maintained root-level config files required by Flutter tooling
-
-### 2025-11-24 - Supabase Dev Environment Audit & Flutter Configuration COMPLETED
-- **Infrastructure Audit**: 100% parity confirmed between production (odzkhcplevcqbuhzqsmq) and development (hekyovgnovhfhmkpfrna)
-- **Database**: 58 tables with RLS enabled, 67 extensions installed, 139 policies configured
-- **Edge Functions**: 15/15 deployed and active with proper JWT tokens
-- **Cron Jobs**: 5/5 active with correct dev URLs pointing to hekyovgnovhfhmkpfrna.supabase.co
-- **Security**: 2 minor warnings (function search_path mutable, leaked password protection disabled)
-- **Performance**: 27 warnings inherited from production (unindexed foreign keys, duplicate indexes)
-- **Flutter Updates**: 
-  - Updated .env: SUPABASE_URL changed from production to dev project
-  - Updated .env: SUPABASE_ANON_KEY changed to dev project key  
-  - Updated pubspec.yaml: package name changed from lynewed_alpha to lynewed_beta
-  - Updated agora_video_view.dart: last lynewed_alpha import corrected
-- **Dependencies**: Ran flutter clean && flutter pub get successfully
-- **Status**: ✅ READY FOR DEVELOPMENT - App now connects to dev Supabase environment
-
-### 2025-11-24 - Supabase Environment Synchronization COMPLETED
-- Successfully synchronized complete Supabase environment from production (odzkhcplevcqbuhzqsmq) to development (hekyovgnovhfhmkpfrna)
-- **Edge Functions**: 15/15 deployed and synchronized (including missing send-verification-email, send-ticket-reply)
-- **Storage Buckets**: 8/8 created with 27 RLS policies (avatars, chat_*, portfolio, public_images, replays, users_profiles)
-- **Secrets**: 13/15 configured (2 APP_SUPABASE_* intentionally fused by editing functions, 1 critical ENABLE_PUSH added via audit)
-- **Cron Jobs**: 5/5 deployed with correct JWT tokens (alerts, notifications, video cleanup, locations cleanup, partition management)
-- **Optimization**: Modified 2 functions to use standard SUPABASE_* secrets instead of APP_SUPABASE_*
-- **Deno Environment**: Configured for proper development workflow
-- **Final Status**: ✅ COMPLETE - 100% production parity achieved
-- **All Components**: Edge functions, storage buckets, secrets, cron jobs fully synchronized
-
-### 2025-11-24 - Repository Restructuring
-- Created GitHub branching structure (main/release/develop)
-- Tagged MVP v1.1.1+59 for App Store reference
-- Set up isolated hotfix workflow
-- Cleaned PROJECT_STATUS.md for state tracking only
-
-### Previous Changes (See technical_specification.md)
-- Security improvements (v1.1.0)
-- FlutterFlow code cleanup
-- Performance optimizations
-
----
-
-## Known Issues
-- None critical
-
-## Next Actions
-- [x] **COMPLETED**: Duplicate Supabase environment from production (odzkhcplevcqbuhzqsmq) to v1 (hekyovgnovhfhmkpfrna)
-- [ ] Begin FlutterFlow → Flutter refactoring
-- [ ] Implement clean architecture layers
-- [ ] Add unit test coverage
-- [ ] Performance optimization pass
-
----
-
-## Tags
-- `v1.1.1+59`: MVP stable (App Store)
+**Note**: This document serves as the central reference for project state, completed work, technical configuration, and future ideas. Regular updates help maintain project clarity and direction.
