@@ -4,7 +4,7 @@
 
 set -e
 
-SIMULATOR_ID="53D436C5-C951-4341-B4B4-A3206DBD2D22"
+SIMULATOR_ID="04B822AE-18B4-4BDA-86A5-47AB23CA0E2F"
 BUNDLE_ID="com.lynewed.app"
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
@@ -39,9 +39,9 @@ xcodebuild \
   | grep -E "(BUILD|SUCCEEDED|FAILED|error:)" || true
 cd ..
 
-# 4. Trouver l'app
-echo "🔍 Recherche du bundle..."
-APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData/Runner-*/Build/Products/Debug-iphonesimulator -name "Runner.app" -type d 2>/dev/null | head -1)
+# 4. Trouver l'app la plus récente
+echo "🔍 Recherche du bundle le plus récent..."
+APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData/Runner-*/Build/Products/Debug-iphonesimulator -name "Runner.app" -type d 2>/dev/null | xargs ls -td | head -1)
 
 if [ -z "$APP_PATH" ]; then
   echo "❌ App non trouvée !"
@@ -50,7 +50,17 @@ fi
 
 echo "✅ App trouvée: $APP_PATH"
 
-# 5. Signature de TOUS les frameworks
+# 4.5 Copier le .env dans le bundle AVANT signature
+echo "📋 Copie du .env dans le bundle..."
+cp "$PROJECT_DIR/.env" "$APP_PATH/Frameworks/App.framework/flutter_assets/.env"
+if [ $? -eq 0 ]; then
+  echo "✅ .env copié avec succès dans le bundle"
+else
+  echo "❌ Erreur lors de la copie du .env"
+  exit 1
+fi
+
+# 5. Signature de TOUS les frameworks (APRÈS copie du .env)
 echo "🔏 Signature de tous les frameworks..."
 cd "$APP_PATH/Frameworks"
 for framework in *.framework; do

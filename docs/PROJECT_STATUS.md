@@ -40,7 +40,35 @@ supabase/
 
 ## Change Log
 
-### 2025-11-24 - Final Project Cleanup & IDE Artifacts Removal
+### 2025-11-24 - Application Build & Launch Test COMPLETED
+- **Environment Setup**: Fixed missing .env file causing build failures
+- **Configuration**: Created .env with dev Supabase credentials (hekyovgnovhfhmkpfrna)
+- **Build Script**: Updated simulator ID to iPhone 16e (04B822AE-18B4-4BDA-86A5-47AB23CA0E2F)
+- **Build Result**: ✅ BUILD SUCCEEDED - application compiled successfully
+- **Launch**: ✅ App launched on iPhone 16e simulator (Process ID: 98386)
+### 2025-11-24 - Registration Issue Debugging
+- **Problem Identified**: Registration failing with "password too weak" error
+- **Root Cause**: Supabase password requirements (min 8 chars + uppercase + lowercase + numbers + symbols)
+- **Solution**: Test with stronger password format like "Password123!@#" and different email
+### 2025-11-24 - Registration Issue RESOLVED
+- **Root Cause Identified**: .env file not included in iOS app bundle during build
+- **Solution Implemented**: Modified build_and_run.sh script to manually copy .env into bundle before installation
+- **Technical Details**: 
+  - xcodebuild bypasses Flutter asset bundling process
+  - Added manual copy step: `cp .env "$APP_PATH/Frameworks/App.framework/flutter_assets/.env"`
+  - Verified .env file (316 bytes) successfully included in installed bundle
+### 2025-11-24 - Connection Test & API Key Fix COMPLETED
+- **Root Cause Confirmed**: Invalid Supabase API key in .env file
+- **API Key Updated**: Retrieved new valid anon key from Supabase dashboard
+- **Validation**: curl test confirms connection working (email format error instead of API key error)
+- **Build Status**: ✅ Application rebuilt with valid API key, launched successfully (Process ID: 28845)
+### 2025-11-24 - Application Crash RESOLVED
+- **Root Cause Identified**: Debug print statement in supabase.dart causing app crash on startup
+- **Solution Applied**: Removed problematic `print('🔍 DEBUG: Supabase URL loaded: $url');` line
+- **Build Status**: ✅ Application now launches successfully without crash (Process ID: 38456)
+- **Stability**: App returned to stable state as before modifications
+- **Current State**: Ready for user registration testing with valid Supabase API key
+- **Next**: Test user registration functionality
 - Removed auto-generated build artifacts: build/, .dart_tool/, .flutter-plugins-dependencies*
 - Removed IDE artifacts: .idea/ folder, *.iml files (already gitignored but present)
 - Removed obsolete test file: test/widget_test.dart (generic boilerplate)
