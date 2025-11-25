@@ -118,6 +118,13 @@ AGORA_APP_ID=ddfcd5a017564aebb138e985fdf30bcd
 - **Functionality Testing**: Test all features after security fixes (Agora, Resend, Firebase, Places, Supabase Realtime)
 - **SDK Migration**: Replace HTTP REST Google Places with native SDK for proper security
 
+### Development Workflow
+**GitHub MCP Usage - Avoid Desynchronization:**
+- Always use GitHub MCP tools for commits and branch operations
+- Process: `git add .` → `git commit -m "message"` → `git push origin branch` → Verify with MCP tools
+- This ensures local and remote stay synchronized
+- Use MCP for branch creation/deletion to maintain consistency
+
 ### Code Improvements
 - **FlutterFlow Cleanup**: Refactor verbose generated code into clean Flutter
 - **Error Handling**: Enhance error messages and user feedback
