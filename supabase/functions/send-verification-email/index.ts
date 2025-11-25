@@ -45,7 +45,7 @@ const handler = async (req)=>{
                 <p>Vous pouvez maintenant accéder à toutes les fonctionnalités de notre plateforme et choisir le plan d'abonnement qui correspond le mieux à vos besoins.</p>
                 
                 <div style="text-align: center;">
-                  <a href="https://ojnyblbxrndhirjqdhro.supabase.co" class="button">
+                  <a href="https://pjcorrkwafjskmzmimon.supabase.co" class="button">
                     🚀 Choisir mon plan d'abonnement
                   </a>
                 </div>

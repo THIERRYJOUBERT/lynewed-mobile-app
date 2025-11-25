@@ -1,6 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
-const CRM_STORAGE_BASE_URL = 'https://ojnyblbxrndhirjqdhro.supabase.co/storage/v1/object/public/professional_profiles';
+const CRM_STORAGE_BASE_URL = 'https://pjcorrkwafjskmzmimon.supabase.co/storage/v1/object/public/professional_profiles';
 async function geocodeCity(cityName) {
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityName)}&format=json&limit=1&email=contact@lynewed.com`;
   try {

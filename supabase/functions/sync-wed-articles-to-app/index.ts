@@ -16,8 +16,8 @@ Deno.serve(async (req) => {
 
     // Connect to CRM database (current project)
     const supabaseCRM = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('CRM_SUPABASE_URL') ?? '',
+      Deno.env.get('CRM_SUPABASE_SERVICE_KEY') ?? ''
     );
 
     // Connect to APP database (target project)

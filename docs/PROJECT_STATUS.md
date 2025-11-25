@@ -11,8 +11,9 @@
 
 ### Branch Structure
 - `main`: MVP v1.1.1+59 (App Store) - protected
-- `release/v1.x`: Hotfix branch for v1.x maintenance
 - `develop`: Active development for v2.0.0 refactoring
+
+**Workflow**: All development and testing happens in `develop` → When ready, merge to `main` for production releases
 
 ### Current Status
 - ✅ Environment secured and functional
