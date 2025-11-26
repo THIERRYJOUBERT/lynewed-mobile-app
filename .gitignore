@@ -57,4 +57,7 @@ ios/Pods/
 ios/Runner.xcworkspace/xcshareddata/
 
 # Builds Généraux (déjà partiel, mais renforce)
+
+# Documentation avec secrets (jamais à commiter)
+docs/App/SECRETS_TRACKING.md
 /build/
