@@ -32,31 +32,14 @@ class CreateEditPointOfInterestSheetModel
 
   DateTime? eventStartDate;
 
-  String? psPlacesSessionToken;
-
-  List<PlaceSuggestionStruct> psPlaceSuggestions = [];
-  void addToPsPlaceSuggestions(PlaceSuggestionStruct item) =>
-      psPlaceSuggestions.add(item);
-  void removeFromPsPlaceSuggestions(PlaceSuggestionStruct item) =>
-      psPlaceSuggestions.remove(item);
-  void removeAtIndexFromPsPlaceSuggestions(int index) =>
-      psPlaceSuggestions.removeAt(index);
-  void insertAtIndexInPsPlaceSuggestions(
-          int index, PlaceSuggestionStruct item) =>
-      psPlaceSuggestions.insert(index, item);
-  void updatePsPlaceSuggestionsAtIndex(
-          int index, Function(PlaceSuggestionStruct) updateFn) =>
-      psPlaceSuggestions[index] = updateFn(psPlaceSuggestions[index]);
-
+  // Address search state (managed by AddressSearchWidget)
   String? searchText;
 
   LatLng? placeLatLng;
 
   ///  State fields for stateful widgets in this component.
 
-  // Stores action output result for [Custom Action - getPlacePredictions] action in InstantSearchTextField widget.
-  PlacePredictionsResultStruct? predictionsResult;
-  // Stores action output result for [Custom Action - getPlaceDetailsRich] action in Column widget.
+  // Stores action output result for [Custom Action - getPlaceDetailsRich] action in AddressSearchWidget.
   PlaceDetailsDataStruct? placeCoordinates;
   // State field(s) for Checkbox_nearby widget.
   bool? checkboxNearbyValue;

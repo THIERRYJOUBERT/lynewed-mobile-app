@@ -6,39 +6,39 @@ import '/flutter_flow/flutter_flow_util.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:flutter_google_places_sdk/flutter_google_places_sdk.dart' as places;
+import 'dart:ui' show Locale;
 
 Future<LatLng?> getPlaceDetails(
   String placeId,
   String sessionToken,
   String? locale,
 ) async {
-  // CLÉ LUE DEPUIS LES VARIABLES D'ENVIRONNEMENT DE FLUTTERFLOW
+  // Utilise SDK natif avec validation bundle ID
   final String apiKey = FFAppConstants.googlePlacesApiKey;
 
-  final String lang =
-      (locale ?? 'en').toLowerCase().startsWith('fr') ? 'fr' : 'en';
-  const String baseUrl =
-      'https://maps.googleapis.com/maps/api/place/details/json';
-  final String request =
-      '$baseUrl?place_id=$placeId&fields=geometry&key=$apiKey&sessiontoken=$sessionToken&language=$lang';
-
+  // Détermination de la locale
+  final Locale sdkLocale = (locale ?? 'en').toLowerCase().startsWith('fr') 
+      ? const Locale('fr') 
+      : const Locale('en');
+  
+  // Création du SDK avec la clé API et locale
+  final placesSdk = places.FlutterGooglePlacesSdk(apiKey, locale: sdkLocale);
+  
   try {
-    final response = await http.get(Uri.parse(request));
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data['status'] == 'OK' && data['result'] != null) {
-        final location = data['result']['geometry']['location'];
-        final double lat = (location['lat'] as num).toDouble();
-        final double lng = (location['lng'] as num).toDouble();
-        return LatLng(lat, lng);
-      }
-    } else {
-      debugPrint('getPlaceDetails error: ${response.statusCode} ${response.body}');
+    // Utilisation du SDK natif pour récupérer les détails du lieu
+    final result = await placesSdk.fetchPlace(
+      placeId,
+      fields: [places.PlaceField.Location],
+    );
+    
+    if (result.place != null && result.place!.latLng != null) {
+      final placesLatLng = result.place!.latLng!;
+      // Conversion du type SDK vers FlutterFlow LatLng
+      return LatLng(placesLatLng.lat, placesLatLng.lng);
     }
   } catch (e) {
-    debugPrint('getPlaceDetails error: $e');
+    debugPrint('getPlaceDetails SDK error: $e');
   }
   return null;
 }

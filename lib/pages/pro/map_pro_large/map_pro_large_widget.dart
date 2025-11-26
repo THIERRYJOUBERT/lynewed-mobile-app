@@ -12,6 +12,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
+import '/compo_finaux/address_search/address_search_widget.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/random_data_util.dart' as random_data;
 import 'package:flutter/material.dart';
@@ -670,8 +671,13 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                     ),
                     Align(
                       alignment: const AlignmentDirectional(0.0, 1.0),
-                      child: Container(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
                         width: MediaQuery.sizeOf(context).width * 1.0,
+                        // Expand height when suggestions are visible to make room for dropdown
+                        constraints: BoxConstraints(
+                          minHeight: _model.suggestionsVisible ? 420.0 : 0.0,
+                        ),
                         decoration: BoxDecoration(
                           color: FlutterFlowTheme.of(context).primaryBackground,
                           borderRadius: const BorderRadius.only(
@@ -783,43 +789,6 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                         ),
                                       ),
                                     ),
-                                    if (_model.psPlaceSuggestions.isNotEmpty)
-                                      InkWell(
-                                        splashColor: Colors.transparent,
-                                        focusColor: Colors.transparent,
-                                        hoverColor: Colors.transparent,
-                                        highlightColor: Colors.transparent,
-                                        onTap: () async {
-                                          _model.psPlacesSessionToken = null;
-                                          _model.psSearchTargetMarker =
-                                              MapMarkerStruct(
-                                            id: 'search_target',
-                                            type: MapMarkerType.searchTarget,
-                                            position: _model.placeCoordinates,
-                                          );
-                                          _model.psMapCommand =
-                                              MapCommandStruct(
-                                            id: random_data.randomString(
-                                              12,
-                                              12,
-                                              true,
-                                              true,
-                                              true,
-                                            ),
-                                            type: MapActionType.moveToTarget,
-                                            target: _model.placeCoordinates,
-                                          );
-                                          _model.psPlaceSuggestions = [];
-                                          _model.searchText = null;
-                                          safeSetState(() {});
-                                        },
-                                        child: Icon(
-                                          Icons.close,
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                          size: 24.0,
-                                        ),
-                                      ),
                                   ].divide(const SizedBox(width: 12.0)),
                                 ),
                               ),
@@ -837,44 +806,42 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                               const AlignmentDirectional(0.0, 1.0),
                                           children: [
                                             SizedBox(
-                                              width: MediaQuery.sizeOf(context)
-                                                      .width *
-                                                  1.0,
+                                              width: MediaQuery.sizeOf(context).width * 1.0,
                                               height: 50.0,
-                                              child: custom_widgets
-                                                  .InstantSearchTextField(
-                                                width:
-                                                    MediaQuery.sizeOf(context)
-                                                            .width *
-                                                        1.0,
+                                              child: AddressSearchWidget(
+                                                width: MediaQuery.sizeOf(context).width * 1.0,
                                                 height: 50.0,
                                                 hintText: 'Country or city',
                                                 initialValue: _model.searchText,
                                                 debounceMs: 200,
-                                                onChanged: (value) async {
-                                                  _model.predictionsResult =
-                                                      await actions
-                                                          .getPlacePredictions(
-                                                    value,
-                                                    _model.psPlacesSessionToken,
-                                                    valueOrDefault<String>(
-                                                      FFAppState()
-                                                          .currentUserPreferences
-                                                          .defaultLocale,
-                                                      'en',
-                                                    ),
+                                                locale: valueOrDefault<String>(
+                                                  FFAppState().currentUserPreferences.defaultLocale,
+                                                  'en',
+                                                ),
+                                                onAddressSelected: (PlaceDetailsDataStruct details) {
+                                                  _model.psSearchTargetMarker = MapMarkerStruct(
+                                                    id: 'search_target',
+                                                    type: MapMarkerType.searchTarget,
+                                                    position: details.coords,
                                                   );
-                                                  _model.psPlaceSuggestions = _model
-                                                      .predictionsResult!
-                                                      .suggestions
-                                                      .toList()
-                                                      .cast<
-                                                          PlaceSuggestionStruct>();
-                                                  _model.psPlacesSessionToken =
-                                                      _model.predictionsResult
-                                                          ?.newSessionToken;
+                                                  _model.psMapCommand = MapCommandStruct(
+                                                    id: random_data.randomString(12, 12, true, true, true),
+                                                    type: MapActionType.moveToTarget,
+                                                    target: details.coords,
+                                                  );
+                                                  _model.searchText = details.formattedAddress;
                                                   safeSetState(() {});
-
+                                                },
+                                                onAddressCleared: () {
+                                                  _model.psSearchTargetMarker = null;
+                                                  _model.searchText = null;
+                                                  safeSetState(() {});
+                                                },
+                                                onSearchTextChanged: (String text) {
+                                                  _model.searchText = text;
+                                                },
+                                                onSuggestionsVisibilityChanged: (bool visible) {
+                                                  _model.suggestionsVisible = visible;
                                                   safeSetState(() {});
                                                 },
                                               ),
@@ -886,137 +853,6 @@ class _MapProLargeWidgetState extends State<MapProLargeWidget> {
                                   ),
                                 ].divide(const SizedBox(width: 8.0)),
                               ),
-                              if (_model.psPlaceSuggestions.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                      10.0, 0.0, 10.0, 0.0),
-                                  child: Builder(
-                                    builder: (context) {
-                                      final placeSuggestionList =
-                                          _model.psPlaceSuggestions.toList();
-                                      if (placeSuggestionList.isEmpty) {
-                                        return const Center(
-                                          child: EmptyStateWidget(
-                                            message:
-                                                'Aucune adresse trouvée...',
-                                          ),
-                                        );
-                                      }
-
-                                      return ListView.separated(
-                                        padding: EdgeInsets.zero,
-                                        primary: false,
-                                        shrinkWrap: true,
-                                        scrollDirection: Axis.vertical,
-                                        itemCount: placeSuggestionList.length,
-                                        separatorBuilder: (_, __) =>
-                                            const SizedBox(height: 10.0),
-                                        itemBuilder: (context,
-                                            placeSuggestionListIndex) {
-                                          final placeSuggestionListItem =
-                                              placeSuggestionList[
-                                                  placeSuggestionListIndex];
-                                          return InkWell(
-                                            splashColor: Colors.transparent,
-                                            focusColor: Colors.transparent,
-                                            hoverColor: Colors.transparent,
-                                            highlightColor: Colors.transparent,
-                                            onTap: () async {
-                                              _model.placeCoordinates =
-                                                  await actions.getPlaceDetails(
-                                                placeSuggestionListItem.placeId,
-                                                _model.psPlacesSessionToken!,
-                                                valueOrDefault<String>(
-                                                  FFAppState()
-                                                      .currentUserPreferences
-                                                      .defaultLocale,
-                                                  'en',
-                                                ),
-                                              );
-                                              _model.psPlacesSessionToken =
-                                                  null;
-                                              _model.psSearchTargetMarker =
-                                                  MapMarkerStruct(
-                                                id: 'search_target',
-                                                type:
-                                                    MapMarkerType.searchTarget,
-                                                position:
-                                                    _model.placeCoordinates,
-                                              );
-                                              _model.psMapCommand =
-                                                  MapCommandStruct(
-                                                id: random_data.randomString(
-                                                  12,
-                                                  12,
-                                                  true,
-                                                  true,
-                                                  true,
-                                                ),
-                                                type:
-                                                    MapActionType.moveToTarget,
-                                                target: _model.placeCoordinates,
-                                              );
-                                              _model.psPlaceSuggestions = [];
-                                              _model.searchText =
-                                                  placeSuggestionListItem
-                                                      .primaryText;
-                                              safeSetState(() {});
-
-                                              safeSetState(() {});
-                                            },
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  children: [
-                                                    Text(
-                                                      placeSuggestionListItem
-                                                          .primaryText,
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            fontFamily:
-                                                                'Haas Grot Text Trial',
-                                                            letterSpacing: 0.0,
-                                                          ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  children: [
-                                                    Text(
-                                                      placeSuggestionListItem
-                                                          .secondaryText,
-                                                      style:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                fontFamily:
-                                                                    'Haas Grot Text Trial',
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .accent1,
-                                                                fontSize: 12.0,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                              ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ),
                             ].divide(const SizedBox(height: 14.0)),
                           ),
                         ),

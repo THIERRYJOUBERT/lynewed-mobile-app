@@ -2,12 +2,11 @@ import '/backend/schema/enums/enums.dart';
 import '/backend/schema/enums/country_filter.dart';
 import '/backend/schema/structs/index.dart';
 import '/components/nav/nav_bar_brides/nav_bar_brides_widget.dart';
-import '/components/ui_system/empty_state/empty_state_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
+import '/compo_finaux/address_search/address_search_widget.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:flutter/material.dart';
@@ -375,7 +374,6 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
                                               // Reset address search when country is selected
                                               if (!newValue.isWorld) {
                                                 _model.psSearchText = '';
-                                                _model.psPlaceSuggestions = [];
                                                 _model.updatePsFiltersDraftStruct(
                                                   (e) => e..center = null,
                                                 );
@@ -391,167 +389,46 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
                                     ),
                                   ),
                                   const SizedBox(width: 16.0),
-                                  // City search - 2/3 width
+                                  // City search - 2/3 width (UNIFIED WIDGET)
                                   Expanded(
                                     flex: 2,
-                                    child: Opacity(
-                                      opacity: _model.selectedCountry.isWorld ? 1.0 : 0.5,
-                                      child: AbsorbPointer(
-                                        absorbing: !_model.selectedCountry.isWorld,
-                                        child: SizedBox(
-                                          height: 50.0,
-                                          child: custom_widgets.InstantSearchTextField(
-                                            width: double.infinity,
-                                            height: 50.0,
-                                            hintText: _model.selectedCountry.isWorld 
-                                              ? 'Search city or address'
-                                              : 'Disabled (country filter active)',
-                                            initialValue: _model.psSearchText,
-                                            debounceMs: 200,
-                                            onChanged: (value) async {
-                                              if (_model.selectedCountry.isWorld) {
-                                                _model.predictionsResult =
-                                                    await actions.getPlacePredictions(
-                                                  value,
-                                                  _model.psPlacesSessionToken,
-                                                  valueOrDefault<String>(
-                                                    FFAppState()
-                                                        .currentUserPreferences
-                                                        .defaultLocale,
-                                                    'en',
-                                                  ),
-                                                );
-                                                _model.psPlaceSuggestions = _model
-                                                    .predictionsResult!
-                                                    .suggestions
-                                                    .toList()
-                                                    .cast<PlaceSuggestionStruct>();
-                                                _model.psPlacesSessionToken =
-                                                    _model.predictionsResult?.newSessionToken;
-                                                safeSetState(() {});
-                                              }
-                                            },
-                                          ),
-                                        ),
+                                    child: AddressSearchWidget(
+                                      height: 50.0,
+                                      hintText: _model.selectedCountry.isWorld 
+                                        ? 'Search city or address'
+                                        : 'Disabled (country filter active)',
+                                      initialValue: _model.psSearchText,
+                                      enabled: _model.selectedCountry.isWorld,
+                                      debounceMs: 200,
+                                      locale: valueOrDefault<String>(
+                                        FFAppState().currentUserPreferences.defaultLocale,
+                                        'en',
                                       ),
+                                      onAddressSelected: (PlaceDetailsDataStruct details) {
+                                        // Business logic: Update filters with selected place
+                                        _model.placeSelected = details;
+                                        _model.updatePsFiltersDraftStruct(
+                                          (e) => e..center = details.coords,
+                                        );
+                                        safeSetState(() {});
+                                      },
+                                      onAddressCleared: () {
+                                        // Business logic: Clear place selection
+                                        _model.placeSelected = null;
+                                        _model.updatePsFiltersDraftStruct(
+                                          (e) => e..center = null,
+                                        );
+                                        safeSetState(() {});
+                                      },
+                                      onSearchTextChanged: (String text) {
+                                        // Optional: Sync with page state (for compatibility)
+                                        _model.psSearchText = text;
+                                      },
                                     ),
                                   ),
                                 ],
                               ),
-                              if (_model.psPlaceSuggestions.isNotEmpty)
-                                Container(
-                                  constraints: const BoxConstraints(
-                                    maxHeight: 300.0,
-                                  ),
-                                  child: Builder(
-                                    builder: (context) {
-                                      final placeSuggestionList =
-                                          _model.psPlaceSuggestions.toList();
-                                      if (placeSuggestionList.isEmpty) {
-                                        return const Center(
-                                          child: EmptyStateWidget(
-                                            message: 'Aucune adresse trouvée...',
-                                          ),
-                                        );
-                                      }
-
-                                      return ListView.separated(
-                                        padding: EdgeInsets.zero,
-                                        primary: false,
-                                        shrinkWrap: true,
-                                        scrollDirection: Axis.vertical,
-                                        itemCount: placeSuggestionList.length,
-                                        separatorBuilder: (_, __) =>
-                                            const SizedBox(height: 10.0),
-                                        itemBuilder:
-                                            (context, placeSuggestionListIndex) {
-                                          final placeSuggestionListItem =
-                                              placeSuggestionList[
-                                                  placeSuggestionListIndex];
-                                          return InkWell(
-                                            splashColor: Colors.transparent,
-                                            focusColor: Colors.transparent,
-                                            hoverColor: Colors.transparent,
-                                            highlightColor: Colors.transparent,
-                                            onTap: () async {
-                                              _model.placeCoordinates =
-                                                  await actions
-                                                      .getPlaceDetailsRich(
-                                                placeSuggestionListItem.placeId,
-                                                _model.psPlacesSessionToken!,
-                                                valueOrDefault<String>(
-                                                  FFAppState()
-                                                      .currentUserPreferences
-                                                      .defaultLocale,
-                                                  'en',
-                                                ),
-                                              );
-                                              _model.placeSelected =
-                                                  _model.placeCoordinates;
-                                              _model.psSearchText =
-                                                  placeSuggestionListItem
-                                                      .primaryText;
-                                              _model.psPlaceSuggestions = [];
-                                              _model.psPlacesSessionToken = null;
-                                              _model.updatePsFiltersDraftStruct(
-                                                (e) => e
-                                                  ..center = _model
-                                                      .placeCoordinates?.coords,
-                                              );
-                                              safeSetState(() {});
-
-                                              safeSetState(() {});
-                                            },
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                Row(
-                                                  mainAxisSize: MainAxisSize.max,
-                                                  children: [
-                                                    Text(
-                                                      placeSuggestionListItem
-                                                          .primaryText,
-                                                      style: FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            fontFamily:
-                                                                'Haas Grot Text Trial',
-                                                            letterSpacing: 0.0,
-                                                          ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  mainAxisSize: MainAxisSize.max,
-                                                  children: [
-                                                    Text(
-                                                      placeSuggestionListItem
-                                                          .secondaryText,
-                                                      style: FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            fontFamily:
-                                                                'Haas Grot Text Trial',
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .accent1,
-                                                            fontSize: 12.0,
-                                                            letterSpacing: 0.0,
-                                                          ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ),
-                              // Distance slider - disabled when country filter is active
+                                                            // Distance slider - disabled when country filter is active
                               Opacity(
                                 opacity: _model.selectedCountry.isWorld ? 1.0 : 0.4,
                                 child: AbsorbPointer(

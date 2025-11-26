@@ -1,12 +1,27 @@
+import 'dart:io' show Platform;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
 
 abstract class FFAppConstants {
-  // ✅ ROBUSTNESS: Validate critical API keys with warnings
+  // ✅ PLATFORM-SPECIFIC: Use separate keys for iOS/Android with bundle ID restrictions
   static String get googlePlacesApiKey {
-    final key = dotenv.env['GOOGLE_PLACES_API_KEY'] ?? '';
-    if (key.isEmpty && kDebugMode) {
-      debugPrint('⚠️ WARNING: GOOGLE_PLACES_API_KEY is not set. Map features may not work.');
+    String key;
+    if (Platform.isIOS) {
+      key = dotenv.env['GOOGLE_PLACES_API_KEY_IOS'] ?? '';
+      if (key.isEmpty && kDebugMode) {
+        debugPrint('⚠️ WARNING: GOOGLE_PLACES_API_KEY_IOS is not set. Map features may not work.');
+      }
+    } else if (Platform.isAndroid) {
+      key = dotenv.env['GOOGLE_PLACES_API_KEY_ANDROID'] ?? '';
+      if (key.isEmpty && kDebugMode) {
+        debugPrint('⚠️ WARNING: GOOGLE_PLACES_API_KEY_ANDROID is not set. Map features may not work.');
+      }
+    } else {
+      // Fallback for web or other platforms
+      key = dotenv.env['GOOGLE_PLACES_API_KEY'] ?? '';
+      if (key.isEmpty && kDebugMode) {
+        debugPrint('⚠️ WARNING: GOOGLE_PLACES_API_KEY is not set. Map features may not work.');
+      }
     }
     return key;
   }

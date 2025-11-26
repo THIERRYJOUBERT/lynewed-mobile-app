@@ -18,22 +18,6 @@ class FeedBridesModel extends FlutterFlowModel<FeedBridesWidget> {
 
   String? psSearchText;
 
-  List<PlaceSuggestionStruct> psPlaceSuggestions = [];
-  void addToPsPlaceSuggestions(PlaceSuggestionStruct item) =>
-      psPlaceSuggestions.add(item);
-  void removeFromPsPlaceSuggestions(PlaceSuggestionStruct item) =>
-      psPlaceSuggestions.remove(item);
-  void removeAtIndexFromPsPlaceSuggestions(int index) =>
-      psPlaceSuggestions.removeAt(index);
-  void insertAtIndexInPsPlaceSuggestions(
-          int index, PlaceSuggestionStruct item) =>
-      psPlaceSuggestions.insert(index, item);
-  void updatePsPlaceSuggestionsAtIndex(
-          int index, Function(PlaceSuggestionStruct) updateFn) =>
-      psPlaceSuggestions[index] = updateFn(psPlaceSuggestions[index]);
-
-  String? psPlacesSessionToken;
-
   PlaceDetailsDataStruct? placeSelected;
   void updatePlaceSelectedStruct(Function(PlaceDetailsDataStruct) updateFn) {
     updateFn(placeSelected ??= PlaceDetailsDataStruct());
@@ -54,10 +38,6 @@ class FeedBridesModel extends FlutterFlowModel<FeedBridesWidget> {
 
   // Model for NavBarBrides component.
   late NavBarBridesModel navBarBridesModel;
-  // Stores action output result for [Custom Action - getPlacePredictions] action in InstantSearchTextField widget.
-  PlacePredictionsResultStruct? predictionsResult;
-  // Stores action output result for [Custom Action - getPlaceDetailsRich] action in Column widget.
-  PlaceDetailsDataStruct? placeCoordinates;
   // State field(s) for Slider widget.
   double? sliderValue;
   // State field(s) for Checkbox_PHOTOGRAPHER widget.

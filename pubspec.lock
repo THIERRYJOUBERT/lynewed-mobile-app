@@ -390,6 +390,78 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.2.1"
+  flutter_google_places_sdk:
+    dependency: "direct main"
+    description:
+      name: flutter_google_places_sdk
+      sha256: "707d9729960bb50fb38fbaa407ad78fa9fd31e4faac1e319d5e8cc3c3c7db584"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.2+1"
+  flutter_google_places_sdk_android:
+    dependency: transitive
+    description:
+      name: flutter_google_places_sdk_android
+      sha256: "48cdb684af36a6fcf26425035a5a2f5858ee36ae9c2a003886d60d34c672554f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
+  flutter_google_places_sdk_http:
+    dependency: transitive
+    description:
+      name: flutter_google_places_sdk_http
+      sha256: "5352e657ef0e55e3ba0011463847c7c0c37899591493ce3b12542524ec78a643"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
+  flutter_google_places_sdk_ios:
+    dependency: transitive
+    description:
+      name: flutter_google_places_sdk_ios
+      sha256: "8834ad1e2083589604e52680a54d3695ad8cf409c6ae9e8636ae451256d86af7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
+  flutter_google_places_sdk_linux:
+    dependency: transitive
+    description:
+      name: flutter_google_places_sdk_linux
+      sha256: "06bcbe1c654db1720008309e902edf0b798aa205391d6fe29d228490029bbc15"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
+  flutter_google_places_sdk_macos:
+    dependency: transitive
+    description:
+      name: flutter_google_places_sdk_macos
+      sha256: "9958383862da2ca01114701f3e89de839951ab17e13401f1a5bc95370882f16c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
+  flutter_google_places_sdk_platform_interface:
+    dependency: transitive
+    description:
+      name: flutter_google_places_sdk_platform_interface
+      sha256: d0a3cbce611c98ace16c847cdac586c21751205c83d0b46de0d5821ac3d37ea3
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.2+1"
+  flutter_google_places_sdk_web:
+    dependency: transitive
+    description:
+      name: flutter_google_places_sdk_web
+      sha256: f73fff5285e60aaed9a0a26f74dd31e4077c278694a9a76dae212fb68944daa7
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
+  flutter_google_places_sdk_windows:
+    dependency: transitive
+    description:
+      name: flutter_google_places_sdk_windows
+      sha256: "9540cb5877993fa2ea766003dda5280be2c0f37ea2e5ccba0bb14c32d57efe89"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
   flutter_image_compress:
     dependency: "direct main"
     description:
@@ -629,6 +701,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "10.7.0"
+  freezed_annotation:
+    dependency: transitive
+    description:
+      name: freezed_annotation
+      sha256: "7294967ff0a6d98638e7acb774aac3af2550777accd8149c90af5b014e6d44d8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0"
   from_css_color:
     dependency: "direct main"
     description:
@@ -981,6 +1061,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.1"
+  latlong2:
+    dependency: transitive
+    description:
+      name: latlong2
+      sha256: "98227922caf49e6056f91b6c56945ea1c7b166f28ffcd5fb8e72fc0b453cc8fe"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.9.1"
   leak_tracker:
     dependency: transitive
     description:

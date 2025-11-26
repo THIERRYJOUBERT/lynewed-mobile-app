@@ -22,32 +22,19 @@ class MapBridesLargeModel extends FlutterFlowModel<MapBridesLargeWidget> {
     updateFn(psMapData ??= MapdatabundleStruct());
   }
 
-  String? psPlacesSessionToken;
-
   MapMarkerStruct? psSearchTargetMarker;
   void updatePsSearchTargetMarkerStruct(Function(MapMarkerStruct) updateFn) {
     updateFn(psSearchTargetMarker ??= MapMarkerStruct());
   }
-
-  List<PlaceSuggestionStruct> psPlaceSuggestions = [];
-  void addToPsPlaceSuggestions(PlaceSuggestionStruct item) =>
-      psPlaceSuggestions.add(item);
-  void removeFromPsPlaceSuggestions(PlaceSuggestionStruct item) =>
-      psPlaceSuggestions.remove(item);
-  void removeAtIndexFromPsPlaceSuggestions(int index) =>
-      psPlaceSuggestions.removeAt(index);
-  void insertAtIndexInPsPlaceSuggestions(
-          int index, PlaceSuggestionStruct item) =>
-      psPlaceSuggestions.insert(index, item);
-  void updatePsPlaceSuggestionsAtIndex(
-          int index, Function(PlaceSuggestionStruct) updateFn) =>
-      psPlaceSuggestions[index] = updateFn(psPlaceSuggestions[index]);
 
   String? searchText;
 
   MapStyleType? mapStyle = MapStyleType.normal;
 
   bool viewMapStyle = false;
+  
+  /// Whether address suggestions are currently visible (for container height adjustment)
+  bool suggestionsVisible = false;
 
   ///  State fields for stateful widgets in this page.
 
@@ -59,10 +46,6 @@ class MapBridesLargeModel extends FlutterFlowModel<MapBridesLargeWidget> {
   WeddingPinItemDataStruct? weddingPinDetailsData;
   // Stores action output result for [Custom Action - getAlertItemDetailsRpc] action in LynewedInteractiveMap widget.
   AlertItemDataStruct? alertDetails;
-  // Stores action output result for [Custom Action - getPlacePredictions] action in InstantSearchTextField widget.
-  PlacePredictionsResultStruct? predictionsResult;
-  // Stores action output result for [Custom Action - getPlaceDetails] action in Column widget.
-  LatLng? placeCoordinates;
 
   @override
   void initState(BuildContext context) {}

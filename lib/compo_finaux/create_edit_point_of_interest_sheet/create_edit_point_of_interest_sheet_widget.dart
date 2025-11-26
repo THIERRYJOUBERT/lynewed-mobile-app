@@ -1,12 +1,12 @@
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
 import '/components/select_date_widget.dart';
-import '/components/ui_system/empty_state/empty_state_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
+import '/compo_finaux/address_search/address_search_widget.dart';
 import '/flutter_flow/random_data_util.dart' as random_data;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -189,34 +189,35 @@ class _CreateEditPointOfInterestSheetWidgetState
                                 child: SizedBox(
                                   width: MediaQuery.sizeOf(context).width * 1.0,
                                   height: 50.0,
-                                  child: custom_widgets.InstantSearchTextField(
-                                    width:
-                                        MediaQuery.sizeOf(context).width * 1.0,
+                                  child: AddressSearchWidget(
+                                    width: MediaQuery.sizeOf(context).width * 1.0,
                                     height: 50.0,
                                     hintText: 'Rechercher',
                                     initialValue: _model.searchText,
                                     debounceMs: 200,
-                                    onChanged: (value) async {
-                                      _model.predictionsResult =
-                                          await actions.getPlacePredictions(
-                                        value,
-                                        _model.psPlacesSessionToken,
-                                        valueOrDefault<String>(
-                                          FFAppState()
-                                              .currentUserPreferences
-                                              .defaultLocale,
-                                          'en',
-                                        ),
-                                      );
-                                      _model.psPlaceSuggestions = _model
-                                          .predictionsResult!.suggestions
-                                          .toList()
-                                          .cast<PlaceSuggestionStruct>();
-                                      _model.psPlacesSessionToken = _model
-                                          .predictionsResult?.newSessionToken;
+                                    suggestionsPosition: SuggestionsPosition.above,
+                                    locale: valueOrDefault<String>(
+                                      FFAppState()
+                                          .currentUserPreferences
+                                          .defaultLocale,
+                                      'en',
+                                    ),
+                                    onAddressSelected: (PlaceDetailsDataStruct details) {
+                                      _model.placeCoordinates = details;
+                                      _model.placeLatLng = details.coords;
+                                      _model.searchText = details.formattedAddress;
+                                      _model.selectedPlace = details;
                                       safeSetState(() {});
-
+                                    },
+                                    onAddressCleared: () {
+                                      _model.placeCoordinates = null;
+                                      _model.placeLatLng = null;
+                                      _model.searchText = null;
+                                      _model.selectedPlace = null;
                                       safeSetState(() {});
+                                    },
+                                    onSearchTextChanged: (String text) {
+                                      _model.searchText = text;
                                     },
                                   ),
                                 ),
@@ -224,137 +225,6 @@ class _CreateEditPointOfInterestSheetWidgetState
                             ],
                           ),
                         ),
-                        if (_model.psPlaceSuggestions.isNotEmpty)
-                          Align(
-                            alignment: const AlignmentDirectional(0.0, -0.4),
-                            child: Material(
-                              color: Colors.transparent,
-                              elevation: 0.0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(2.0),
-                              ),
-                              child: Container(
-                                width: MediaQuery.sizeOf(context).width * 1.0,
-                                decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
-                                  borderRadius: BorderRadius.circular(2.0),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                      16.0, 14.0, 16.0, 14.0),
-                                  child: Builder(
-                                    builder: (context) {
-                                      final placeSuggestionList =
-                                          _model.psPlaceSuggestions.toList();
-                                      if (placeSuggestionList.isEmpty) {
-                                        return const Center(
-                                          child: EmptyStateWidget(
-                                            message:
-                                                'Aucune adresse trouvée...',
-                                          ),
-                                        );
-                                      }
-
-                                      return ListView.separated(
-                                        padding: EdgeInsets.zero,
-                                        primary: false,
-                                        shrinkWrap: true,
-                                        scrollDirection: Axis.vertical,
-                                        itemCount: placeSuggestionList.length,
-                                        separatorBuilder: (_, __) =>
-                                            const SizedBox(height: 10.0),
-                                        itemBuilder: (context,
-                                            placeSuggestionListIndex) {
-                                          final placeSuggestionListItem =
-                                              placeSuggestionList[
-                                                  placeSuggestionListIndex];
-                                          return InkWell(
-                                            splashColor: Colors.transparent,
-                                            focusColor: Colors.transparent,
-                                            hoverColor: Colors.transparent,
-                                            highlightColor: Colors.transparent,
-                                            onTap: () async {
-                                              _model.placeCoordinates =
-                                                  await actions
-                                                      .getPlaceDetailsRich(
-                                                placeSuggestionListItem.placeId,
-                                                _model.psPlacesSessionToken!,
-                                                valueOrDefault<String>(
-                                                  FFAppState()
-                                                      .currentUserPreferences
-                                                      .defaultLocale,
-                                                  'en',
-                                                ),
-                                              );
-                                              _model.placeLatLng = _model
-                                                  .placeCoordinates?.coords;
-                                              _model.searchText =
-                                                  placeSuggestionListItem
-                                                      .primaryText;
-                                              _model.psPlaceSuggestions = [];
-                                              _model.selectedPlace =
-                                                  _model.placeCoordinates;
-                                              safeSetState(() {});
-
-                                              safeSetState(() {});
-                                            },
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  children: [
-                                                    Text(
-                                                      placeSuggestionListItem
-                                                          .primaryText,
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            fontFamily:
-                                                                'Haas Grot Text Trial',
-                                                            letterSpacing: 0.0,
-                                                          ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  children: [
-                                                    Text(
-                                                      placeSuggestionListItem
-                                                          .secondaryText,
-                                                      style:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                fontFamily:
-                                                                    'Haas Grot Text Trial',
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .accent1,
-                                                                fontSize: 12.0,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                              ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
                       ].divide(const SizedBox(height: 0.0)),
                     ),
                   ),

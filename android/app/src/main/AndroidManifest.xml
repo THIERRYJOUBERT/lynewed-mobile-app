@@ -64,10 +64,10 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <!-- Google Maps API Key -->
+        <!-- Google Maps API Key - Android specific (unrestricted until SHA configured) -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCLOe2yCKXS-yoxq4E4pHt2NTxG8OUbhuY" />
+            android:value="AIzaSyDqLPWBmKcHCSuOp5Ikz6LU5wfqdf2ZSNg" />
 
 
 

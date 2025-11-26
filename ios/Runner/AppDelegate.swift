@@ -1,6 +1,7 @@
 import UIKit
 import Flutter
 import GoogleMaps
+import GooglePlaces
 import UserNotifications
 
 @main
@@ -12,6 +13,8 @@ import UserNotifications
     GeneratedPluginRegistrant.register(with: self)
 		// Initialize Google Maps SDK
 		GMSServices.provideAPIKey("AIzaSyCLOe2yCKXS-yoxq4E4pHt2NTxG8OUbhuY")
+		// Initialize Google Places SDK for native SDK validation
+		GMSPlacesClient.provideAPIKey("AIzaSyCLOe2yCKXS-yoxq4E4pHt2NTxG8OUbhuY")
 		// Register for Push Notifications
 		// --- Code pour l'enregistrement des notifications push ---
 if #available(iOS 10.0, *) {
