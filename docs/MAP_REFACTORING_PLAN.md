@@ -1,7 +1,56 @@
 # Plan de Refactorisation - Map Feature
 
-**Créé:** 2025-11-26 | **Version:** v1.6 | **Source:** `docs/audits/MAP_FEATURE_AUDIT.md`
-**Validation:** 2025-11-27 | **Statut:** ✅ GO VALIDÉ (corrections appliquées)
+**Créé:** 2025-11-26 | **Version:** v1.7 | **Source:** `docs/audits/MAP_FEATURE_AUDIT.md`
+**Validation:** 2025-11-27 | **Statut:** ✅ GO VALIDÉ + STRATÉGIE RÉÉCRITURE ADOPTÉE
+
+---
+
+## 🔥 CHANGEMENTS v1.7 - STRATÉGIE RÉÉCRITURE (2025-11-27)
+
+### ⚠️ CONSTAT CRITIQUE : Code FlutterFlow Non-Maintenable
+
+**Analyse du code actuel :**
+| Fichier | Lignes | Problème |
+|---------|--------|----------|
+| `lynewed_interactive_map.dart` | 925 | Widget monolithique, logique complexe |
+| `map_brides_large_widget.dart` | 892 | ~90% dupliqué avec pro_large |
+| `map_pro_large_widget.dart` | 870 | Copié-collé de brides |
+| `query_filters_struct.dart` | 417 | Pattern FlutterFlow verbeux (3x) |
+| `layer_toggles_struct.dart` | 238 | Getters/setters inutiles |
+| **TOTAL** | **3342+** | **Dette technique massive** |
+
+**Problèmes FlutterFlow identifiés :**
+1. **Imports redondants** : 20+ imports par fichier
+2. **Structs verbeux** : Pattern `_field + get + set + hasField()` (3x plus de code que nécessaire)
+3. **Duplication massive** : 90% code identique entre pages bride/pro
+4. **Logique éparpillée** : Custom actions, custom functions, page models séparés
+5. **État incohérent** : Multiples sources de vérité pour les mêmes données
+6. **Non-testable** : Couplage fort, pas de dependency injection
+
+### ✅ DÉCISION : RÉÉCRITURE COMPLÈTE
+
+**Nouvelle approche : Créer un module map propre et indépendant**
+
+```
+lib/
+├── features/           # Nouvelle structure
+│   └── map/           # Module map autonome
+│       ├── domain/    # Entités et use cases
+│       ├── data/      # Repositories et datasources
+│       ├── presentation/ # Widgets et state management
+│       └── README.md  # Documentation module
+```
+
+**Objectif :** Sortir définitivement du pattern FlutterFlow verbeux et mal structuré
+
+### 📋 PHASES RÉVISÉES
+
+| Phase | Ancien Scope | Nouveau Scope |
+|-------|--------------|---------------|
+| Phase 1 | ~~Nettoyage enum~~ | ✅ TERMINÉ - Enum nettoyé (8→5 valeurs) |
+| Phase 2 | Backend Wedding | **RÉÉCRITURE** - Nouveau module `/features/map/` |
+| Phase 3 | Backend Alertes | Intégré dans nouvelle architecture |
+| Phase 4-7 | Patches progressifs | **Remplacé** par architecture propre |
 
 ---
 
