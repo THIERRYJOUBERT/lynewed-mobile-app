@@ -7,30 +7,7 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 
-/// Professions disponibles pour le filtrage
-enum Profession {
-  photographer,
-  videographer,
-  weddingPlanner,
-  venue,
-  caterer,
-  dj,
-  florist,
-  bridalShop,
-  photoMovie,
-  makeupArtist,
-  eventDesigner,
-  other;
-
-  /// Conversion depuis string Supabase
-  static Profession? fromString(String? value) {
-    if (value == null) return null;
-    return Profession.values.firstWhere(
-      (e) => e.name.toLowerCase() == value.toLowerCase(),
-      orElse: () => Profession.other,
-    );
-  }
-}
+import 'professional_details.dart' show Profession;
 
 /// Toggles pour afficher/masquer les couches de la map
 @immutable

@@ -59,6 +59,9 @@ export 'domain/repositories/map_repository.dart';
 // Domain - Utils (Phase 3)
 export 'domain/utils/marker_offset.dart';
 
+// Domain - Use Cases (Phase 4)
+export 'domain/usecases/get_marker_details.dart';
+
 // Data - Models (compatibility)
 export 'data/models/marker_type_mapper.dart';
 
@@ -80,5 +83,12 @@ export 'presentation/widgets/filter_sheet.dart';
 export 'presentation/widgets/marker_details_sheet.dart';
 export 'presentation/widgets/animated_marker.dart';
 
+// Presentation - Sheets (Phase 4)
+export 'presentation/sheets/sheets.dart';
+
 // Presentation - Pages
 export 'presentation/pages/map_page.dart';
+
+// Presentation - Legacy Wrappers (compatibilité navigation FlutterFlow)
+export 'presentation/pages/map_brides_large_wrapper.dart';
+export 'presentation/pages/map_pro_large_wrapper.dart';

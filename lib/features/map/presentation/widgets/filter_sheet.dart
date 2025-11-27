@@ -377,14 +377,26 @@ class _FilterSheetState extends State<FilterSheet> {
         return 'DJ';
       case Profession.florist:
         return 'Florist';
-      case Profession.bridalShop:
-        return 'Bridal Shop';
-      case Profession.photoMovie:
-        return 'Photo & Video';
       case Profession.makeupArtist:
         return 'Makeup Artist';
-      case Profession.eventDesigner:
-        return 'Event Designer';
+      case Profession.hairStylist:
+        return 'Hair Stylist';
+      case Profession.officiant:
+        return 'Officiant';
+      case Profession.rentals:
+        return 'Rentals';
+      case Profession.transportation:
+        return 'Transportation';
+      case Profession.stationery:
+        return 'Stationery';
+      case Profession.cake:
+        return 'Cake';
+      case Profession.jewelry:
+        return 'Jewelry';
+      case Profession.attire:
+        return 'Attire';
+      case Profession.musician:
+        return 'Musician';
       case Profession.other:
         return 'Other';
     }

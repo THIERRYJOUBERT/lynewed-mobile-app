@@ -55,9 +55,9 @@ List<MapMarkerStruct> filterMapMarkers(
         return toggles.showBridePrivatePoi ?? true;
       case MapMarkerType.professionalAlert:
         return toggles.showProAlerts ?? true;
-      case MapMarkerType.weddingPin: // <-- NOUVEAU
+      case MapMarkerType.weddingPin:
         return toggles.showWeddingPins ?? true;
-      case MapMarkerType.searchTarget:
+      // searchTarget supprimé dans la refactorisation map
       default:
         return true;
     }

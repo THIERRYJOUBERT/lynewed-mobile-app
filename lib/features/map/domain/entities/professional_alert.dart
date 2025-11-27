@@ -7,70 +7,7 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 
-/// Types d'alertes communautaires (entraide, pas rémunération)
-enum AlertType {
-  /// Besoin d'un remplaçant pour une date
-  backupNeeded,
-  
-  /// Location de matériel urgent
-  gearEmergency,
-  
-  /// Recherche second shooter ou assistant
-  teamMember,
-  
-  /// Urgence événement (problème jour J)
-  emergencyHelp;
-
-  /// Label d'affichage
-  String get displayName {
-    switch (this) {
-      case AlertType.backupNeeded:
-        return 'Backup Needed';
-      case AlertType.gearEmergency:
-        return 'Gear Emergency';
-      case AlertType.teamMember:
-        return 'Team Member';
-      case AlertType.emergencyHelp:
-        return 'Emergency Help';
-    }
-  }
-
-  /// Icône associée
-  String get iconAsset {
-    switch (this) {
-      case AlertType.backupNeeded:
-        return 'assets/icons/backup.png';
-      case AlertType.gearEmergency:
-        return 'assets/icons/gear.png';
-      case AlertType.teamMember:
-        return 'assets/icons/team.png';
-      case AlertType.emergencyHelp:
-        return 'assets/icons/emergency.png';
-    }
-  }
-
-  /// Conversion depuis string Supabase
-  static AlertType? fromString(String? value) {
-    if (value == null) return null;
-    // Support ancien motif_code et nouveau alert_type
-    switch (value.toLowerCase()) {
-      case 'backup_needed':
-      case 'backup':
-        return AlertType.backupNeeded;
-      case 'gear_emergency':
-      case 'gear':
-        return AlertType.gearEmergency;
-      case 'team_member':
-      case 'team':
-        return AlertType.teamMember;
-      case 'emergency_help':
-      case 'emergency':
-        return AlertType.emergencyHelp;
-      default:
-        return null;
-    }
-  }
-}
+import 'alert_details.dart' show AlertType;
 
 /// Alerte communautaire d'un professionnel
 @immutable

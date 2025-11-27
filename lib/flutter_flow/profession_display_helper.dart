@@ -49,9 +49,8 @@ String getMapMarkerTypeDisplayName(MapMarkerType markerType) {
       return 'Wedding Pin';
     case MapMarkerType.poiPrivate:
       return 'Private POI';
-    case MapMarkerType.searchTarget:
-      return 'Search Target';
-        default:
+    // searchTarget supprimé dans la refactorisation map
+    default:
       return markerType.name;
   }
 }

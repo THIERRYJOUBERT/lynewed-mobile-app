@@ -1,8 +1,9 @@
 # Map Feature Module
 
-**Version:** 1.0.0  
+**Version:** 2.0.0  
 **Created:** 2025-11-27  
-**Status:** 🚧 En développement (Phase 2)
+**Updated:** 2025-11-27  
+**Status:** ✅ Phases 1-4 Terminées - Module 100% Autonome
 
 ## 📋 Objectif
 
@@ -12,7 +13,7 @@ Réécriture complète de la fonctionnalité map pour remplacer le code FlutterF
 
 | Aspect | FlutterFlow (ancien) | Clean Architecture (nouveau) |
 |--------|---------------------|------------------------------|
-| Lignes de code | 3600+ | ~1000 |
+| Lignes de code | 3600+ | ~3200 (mais modulaire) |
 | Fichiers | 10+ dispersés | Module organisé |
 | Testabilité | ❌ Impossible | ✅ 100% testable |
 | Duplication | 90% (bride/pro) | 0% (widget unifié) |
@@ -21,34 +22,53 @@ Réécriture complète de la fonctionnalité map pour remplacer le code FlutterF
 ## 🏗️ Architecture
 
 ```
-lib/features/map/
-├── domain/                    # Couche métier (indépendante)
+lib/features/map/                    (~3200 lignes)
+├── domain/                          (~900 lignes)
 │   ├── entities/
-│   │   ├── map_marker.dart    # Marqueur immutable (~130 lignes vs 147)
-│   │   ├── map_filter.dart    # Filtres (~180 lignes vs 417)
-│   │   ├── professional_alert.dart
-│   │   └── wedding.dart       # Remplace wedding_pins + user_pois
-│   └── repositories/
-│       └── map_repository.dart # Interface abstraite
+│   │   ├── entities.dart            # Barrel export
+│   │   ├── map_marker.dart          # Marqueur map
+│   │   ├── map_filter.dart          # Filtres
+│   │   ├── professional_alert.dart  # Alerte communautaire
+│   │   ├── wedding.dart             # Mariage
+│   │   ├── professional_details.dart # Détails pro + enums Profession/SubscriptionTier
+│   │   ├── alert_details.dart       # Détails alerte + enum AlertType
+│   │   └── wedding_details.dart     # Détails mariage
+│   ├── repositories/
+│   │   └── map_repository.dart      # Interface abstraite
+│   ├── usecases/
+│   │   └── get_marker_details.dart  # Use cases + MarkerDetailsService
+│   └── utils/
+│       └── marker_offset.dart       # Offset superposition < 20m
 │
-├── data/                      # Couche données
+├── data/                            (~400 lignes)
 │   ├── datasources/
 │   │   └── supabase_map_datasource.dart
+│   ├── models/
+│   │   └── marker_type_mapper.dart  # Compatibilité enum FF
 │   └── repositories/
 │       └── supabase_map_repository.dart
 │
-├── presentation/              # Couche UI
-│   ├── widgets/
-│   │   └── lynewed_map_widget.dart  # Widget unifié bride/pro
+├── presentation/                    (~2000 lignes)
 │   ├── state/
-│   │   └── map_state.dart     # ChangeNotifier
-│   ├── pages/
-│   │   └── map_page.dart      # Page complète (TODO)
-│   └── theme/
-│       └── map_theme.dart     # Styles (TODO)
+│   │   └── map_state.dart           # ChangeNotifier
+│   ├── theme/
+│   │   └── map_theme.dart           # Couleurs, tailles, z-index
+│   ├── services/
+│   │   └── marker_icon_generator.dart # Custom markers avec initiales
+│   ├── widgets/
+│   │   ├── lynewed_map_widget.dart  # Widget unifié bride/pro
+│   │   ├── filter_sheet.dart        # Sheet filtres
+│   │   └── animated_marker.dart     # Animations fade/scale
+│   ├── sheets/
+│   │   ├── sheets.dart              # Barrel export
+│   │   ├── professional_details_sheet.dart # Sheet pro Material 3
+│   │   ├── alert_details_sheet.dart # Sheet alerte Material 3
+│   │   └── wedding_details_sheet.dart # Sheet mariage Material 3
+│   └── pages/
+│       └── map_page.dart            # Page complète avec loader async
 │
-├── map.dart                   # Barrel export
-└── README.md                  # Ce fichier
+├── map.dart                         # Barrel export principal
+└── README.md
 ```
 
 ## 🚀 Usage

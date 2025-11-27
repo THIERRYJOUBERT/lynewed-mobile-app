@@ -1,9 +1,9 @@
 # TODO & Améliorations Techniques - LYNEWED App
 
 **Document créé:** 2025-11-26  
-**Last Updated:** 2025-11-27 10:30  
+**Last Updated:** 2025-11-27 11:40  
 **Objectif:** Gestion des tâches à faire et idées d'améliorations techniques  
-**Version:** v1.4
+**Version:** v1.5
 
 ---
 
@@ -18,15 +18,28 @@
   - ✅ Base de dev stabilisée (plus de 4000+ requêtes/heure)
 - [ ] **Performance PostGIS** - Optimiser requêtes géospatiales avec grand volume
 
-### 🗺️ **MAP REFACTORING** - TÂCHE ACTIVE PRINCIPALE
-- [🔄] **MAP REFACTORING PLAN** - Phase 1 en cours (2025-11-27)
+### 🗺️ **MAP REFACTORING** - VALIDATION FINALE
+- [✅] **MAP REFACTORING PLAN** - Backend audité et nettoyé (2025-11-27)
   - 📋 **Source de vérité**: `MAP_REFACTORING_PLAN.md` v1.6 (60-75h)
   - ✅ Prérequis validés (seed data, décisions, cron jobs désactivés)
-  - 🎯 **Phase 1**: Nettoyage Enum & Code Mort (2-3h)
-  - 📊 **Impact**: 55 fichiers Flutter (~8% codebase)
-  - 🔗 **Référence technique**: `audits/MAP_FEATURE_AUDIT.md` (validation complète)
+  - ✅ Phases 1-7 terminées: Enum, Module Clean Architecture, Navigation, Tests
+  - ✅ Backend audité: RPC `search_map_bundle` (44ms), index PostGIS, RLS policies
+  - ✅ Nettoyage effectué: tables obsolètes supprimées, RPC obsolètes nettoyées
+  - 📊 **Impact**: 55 fichiers Flutter (~8% codebase) + 3 tables Supabase supprimées
+  - 🔗 **Référence technique**: `docs/MAP_BACKEND_AUDIT_REPORT.md` (audit complet)
+  - ⏳ **ÉTAPE FINALE**: Tests réels sur simulateur iOS/Android requis
 
-### 🧪 Tests & Validation
+### 🧪 Tests & Validation - ÉTAPE FINALE MAP
+- [🔄] **Tests Simulateur Map Module** - Validation finale avant déploiement (2025-11-27)
+  - 📱 **Tests iOS**: Lancer app sur simulateur iOS, tester flux map complet
+  - 🤖 **Tests Android**: Lancer app sur simulateur Android, tester flux map complet  
+  - 🗺️ **Validation Map**: 
+    - ✅ Navigation map bride/pro fonctionne
+    - ✅ Markers affichés correctement (pros, alertes, wedding pins)
+    - ✅ Filtres map appliqués correctement
+    - ✅ Sheets détails s'ouvrent avec bonnes données
+    - ✅ Performance fluide (< 1s chargement)
+  - 🎯 **Objectif**: Validation finale refactorisation map avant merge main
 - [ ] **Tests End-to-End** - Valider tous les flux avec données seeded (Agora, Resend, Firebase, Places, Supabase Realtime)
 - [ ] **Performance App** - Valider performance avec 40 utilisateurs et dataset complet
 - [ ] **Monitoring Setup** - Implémenter crash reporting et analytics

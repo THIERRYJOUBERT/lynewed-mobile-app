@@ -10,11 +10,12 @@ import 'package:provider/provider.dart';
 
 import '../../domain/entities/entities.dart';
 import '../../domain/repositories/map_repository.dart';
+import '../../domain/usecases/get_marker_details.dart';
 import '../../data/repositories/supabase_map_repository.dart';
 import '../state/map_state.dart';
 import '../widgets/lynewed_map_widget.dart';
 import '../widgets/filter_sheet.dart';
-import '../widgets/marker_details_sheet.dart';
+import '../sheets/sheets.dart';
 
 /// Configuration de la page map
 class MapPageConfig {
@@ -398,7 +399,10 @@ class _MapPageState extends State<MapPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => MarkerDetailsSheet(marker: marker),
+      builder: (context) => _MarkerDetailsLoader(
+        marker: marker,
+        userRole: widget.userRole,
+      ),
     );
   }
 
@@ -420,5 +424,191 @@ class _MapPageState extends State<MapPage> {
 
   void _goToMyLocation() {
     // TODO: Implement with Geolocator
+  }
+}
+
+/// Widget qui charge les détails d'un marker et affiche le sheet approprié
+class _MarkerDetailsLoader extends StatefulWidget {
+  const _MarkerDetailsLoader({
+    required this.marker,
+    required this.userRole,
+  });
+
+  final MapMarker marker;
+  final String userRole;
+
+  @override
+  State<_MarkerDetailsLoader> createState() => _MarkerDetailsLoaderState();
+}
+
+class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
+  final _detailsService = MarkerDetailsServiceProvider.instance;
+  bool _isLoading = true;
+  String? _error;
+  dynamic _details;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDetails();
+  }
+
+  Future<void> _loadDetails() async {
+    try {
+      final details = await _detailsService.getDetailsForMarker(widget.marker);
+      if (mounted) {
+        setState(() {
+          _details = details;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    if (_isLoading) {
+      return Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.all(40),
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_error != null || _details == null) {
+      return Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.all(40),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 48,
+                color: colorScheme.error,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Unable to load details',
+                style: theme.textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Afficher le sheet approprié selon le type de marker
+    switch (widget.marker.type) {
+      case MapMarkerType.proFixedLocation:
+        return ProfessionalDetailsSheet(
+          details: _details as ProfessionalDetails,
+          onContact: () => _handleContact(context),
+          onFavoriteToggle: () => _handleFavoriteToggle(context),
+          onViewProfile: () => _handleViewProfile(context),
+        );
+
+      case MapMarkerType.professionalAlert:
+        return AlertDetailsSheet(
+          details: _details as AlertDetails,
+          onHelp: () => _handleHelp(context),
+          onViewAuthorProfile: () => _handleViewAuthorProfile(context),
+          onDelete: (_details as AlertDetails).isOwn
+              ? () => _handleDeleteAlert(context)
+              : null,
+        );
+
+      case MapMarkerType.wedding:
+        return WeddingDetailsSheet(
+          details: _details as WeddingDetails,
+          onContact: () => _handleContactBride(context),
+          onViewBrideProfile: () => _handleViewBrideProfile(context),
+        );
+
+      case MapMarkerType.poiPrivate:
+        // POI deprecated, show error
+        return Container(
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: const EdgeInsets.all(40),
+          child: const Center(
+            child: Text('POI feature has been deprecated'),
+          ),
+        );
+    }
+  }
+
+  // Action handlers - à connecter avec la navigation et les services
+  void _handleContact(BuildContext context) {
+    Navigator.pop(context);
+    // TODO: Navigate to chat or contact flow
+    debugPrint('Contact professional: ${widget.marker.id}');
+  }
+
+  void _handleFavoriteToggle(BuildContext context) {
+    // TODO: Toggle favorite via Supabase
+    debugPrint('Toggle favorite: ${widget.marker.id}');
+  }
+
+  void _handleViewProfile(BuildContext context) {
+    Navigator.pop(context);
+    // TODO: Navigate to professional profile page
+    debugPrint('View profile: ${widget.marker.id}');
+  }
+
+  void _handleHelp(BuildContext context) {
+    Navigator.pop(context);
+    // TODO: Navigate to chat with alert author
+    debugPrint('Help with alert: ${widget.marker.id}');
+  }
+
+  void _handleViewAuthorProfile(BuildContext context) {
+    Navigator.pop(context);
+    // TODO: Navigate to author profile
+    debugPrint('View author profile: ${(_details as AlertDetails).authorId}');
+  }
+
+  void _handleDeleteAlert(BuildContext context) {
+    Navigator.pop(context);
+    // TODO: Delete alert via Supabase
+    debugPrint('Delete alert: ${widget.marker.id}');
+  }
+
+  void _handleContactBride(BuildContext context) {
+    Navigator.pop(context);
+    // TODO: Navigate to contact bride flow
+    debugPrint('Contact bride: ${(_details as WeddingDetails).brideId}');
+  }
+
+  void _handleViewBrideProfile(BuildContext context) {
+    Navigator.pop(context);
+    // TODO: Navigate to bride profile
+    debugPrint('View bride profile: ${(_details as WeddingDetails).brideId}');
   }
 }

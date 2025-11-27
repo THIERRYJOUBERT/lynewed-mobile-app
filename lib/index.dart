@@ -13,7 +13,8 @@ export '/pages/bride/home_brides/home_brides_widget.dart' show HomeBridesWidget;
 export '/pages/bride/feed_brides/feed_brides_widget.dart' show FeedBridesWidget;
 export '/pages/bride/messages_brides/messages_brides_widget.dart'
     show MessagesBridesWidget;
-export '/pages/bride/map_brides_large/map_brides_large_widget.dart'
+// Map Brides - Utilise nouveau module Clean Architecture
+export '/features/map/presentation/pages/map_brides_large_wrapper.dart'
     show MapBridesLargeWidget;
 export '/pages/pro/dashboard_pro/dashboard_pro_widget.dart'
     show DashboardProWidget;
@@ -28,7 +29,8 @@ export '/pages/shared/settings_permissions/settings_permissions_widget.dart'
     show SettingsPermissionsWidget;
 export '/pages/shared/wedding_of_the_week/wedding_of_the_week_widget.dart'
     show WeddingOfTheWeekWidget;
-export '/pages/pro/map_pro_large/map_pro_large_widget.dart'
+// Map Pro - Utilise nouveau module Clean Architecture
+export '/features/map/presentation/pages/map_pro_large_wrapper.dart'
     show MapProLargeWidget;
 export '/pages/onboarding/onboarding_brides_wizard/onboarding_brides_wizard_widget.dart'
     show OnboardingBridesWizardWidget;

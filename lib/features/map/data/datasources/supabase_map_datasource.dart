@@ -30,184 +30,186 @@ class SupabaseMapDatasource {
   final SupabaseClient _client;
 
   /// Appelle search_map_bundle RPC
+  /// 
+  /// Signature RPC Supabase:
+  /// search_map_bundle(p_bbox_coords jsonb, p_viewer_role text, p_filters jsonb, p_zoom integer)
   Future<Map<String, dynamic>> searchMapBundle({
     required gmaps.LatLngBounds bounds,
     required MapFilter filter,
     required String userRole,
     required double zoomLevel,
   }) async {
-    final params = {
-      'p_sw_lat': bounds.southwest.latitude,
-      'p_sw_lng': bounds.southwest.longitude,
-      'p_ne_lat': bounds.northeast.latitude,
-      'p_ne_lng': bounds.northeast.longitude,
-      'p_viewer_role': userRole,
-      'p_limit': ZoomLimits.getLimit(zoomLevel),
-      // Filtres
-      'p_professions': filter.professions.map((p) => p.name.toUpperCase()).toList(),
-      'p_budget_min': filter.budgetMin,
-      'p_budget_max': filter.budgetMax,
-      'p_currency': filter.currency,
-      'p_country_code': filter.countryCode,
-      // Toggles
-      'p_show_pros': filter.toggles.showPros,
-      'p_show_fixed_locations': filter.toggles.showFixedLocations,
-      'p_show_alerts': filter.toggles.showAlerts,
-      'p_show_weddings': filter.toggles.showWeddings,
-      'p_show_only_my_profession': filter.toggles.showOnlyMyProfession,
+    // Format bbox pour la RPC
+    final bboxCoords = {
+      'min_lat': bounds.southwest.latitude,
+      'min_lng': bounds.southwest.longitude,
+      'max_lat': bounds.northeast.latitude,
+      'max_lng': bounds.northeast.longitude,
     };
 
-    final response = await _client.rpc('search_map_bundle', params: params);
+    // Format filtres pour la RPC
+    final filters = {
+      'professions': filter.professions.map((p) => p.name.toUpperCase()).toList(),
+      'budgetMin': filter.budgetMin?.toString(),
+      'budgetMax': filter.budgetMax?.toString(),
+      'currency': filter.currency,
+      // Toggles
+      'showPros': filter.toggles.showPros,
+      'showFixedLocations': filter.toggles.showFixedLocations,
+      'showProRecent': false, // Désactivé dans la refonte
+      'showBridePrivatePoi': false, // POI deprecated
+      'showProAlerts': filter.toggles.showAlerts,
+      'showWeddingPins': filter.toggles.showWeddings,
+      'showOnlyMyProfessionPins': filter.toggles.showOnlyMyProfession,
+    };
+
+    final response = await _client.rpc('search_map_bundle', params: {
+      'p_bbox_coords': bboxCoords,
+      'p_viewer_role': userRole,
+      'p_filters': filters,
+      'p_zoom': zoomLevel.round(),
+    });
     return response as Map<String, dynamic>? ?? {};
   }
 
-  /// Parse les professionnels depuis la réponse RPC
-  List<MapMarker> parseProfessionals(Map<String, dynamic> data) {
-    final professionals = data['professionals'] as List? ?? [];
-    return professionals.map((p) {
-      final coords = _parseCoords(p['location_coords']);
-      if (coords == null) return null;
+  /// Parse tous les markers depuis la réponse RPC search_map_bundle
+  /// 
+  /// La RPC retourne: { markers: [...], overlays: [...], debugStats: "..." }
+  /// Chaque marker a: { id, type, position: {type: "Point", coordinates: [lng, lat]}, styleInfo: {...} }
+  List<MapMarker> parseAllMarkers(Map<String, dynamic> data) {
+    final markers = data['markers'] as List? ?? [];
+    return markers.map((m) {
+      final position = _parseGeoJsonPosition(m['position']);
+      if (position == null) return null;
+      
+      final type = _parseMarkerType(m['type'] as String?);
+      final styleInfo = m['styleInfo'] as Map<String, dynamic>? ?? {};
       
       return MapMarker(
-        id: p['id'] as String,
-        type: MapMarkerType.proFixedLocation,
-        position: coords,
+        id: m['id']?.toString() ?? '',
+        type: type,
+        position: position,
         style: MarkerStyle(
-          avatarUrl: p['avatar_url'] as String?,
-          label: p['full_name'] as String?,
-          borderColorHex: _professionColor(p['profession'] as String?),
+          avatarUrl: styleInfo['avatarUrl'] as String?,
+          borderColorHex: styleInfo['borderColorHex'] as String?,
         ),
         metadata: {
-          'profession': p['profession'],
-          'full_name': p['full_name'],
-          'subscription_tier': p['subscription_tier'],
+          'isOwn': styleInfo['isOwn'] == true,
         },
       );
     }).whereType<MapMarker>().toList();
   }
 
-  /// Parse les fixed locations depuis la réponse RPC
-  List<MapMarker> parseFixedLocations(Map<String, dynamic> data) {
-    final locations = data['fixed_locations'] as List? ?? [];
-    return locations.map((l) {
-      final coords = _parseCoords(l['location_coords']);
-      if (coords == null) return null;
-      
-      return MapMarker(
-        id: '${l['professional_id']}_${l['id']}',
-        type: MapMarkerType.proFixedLocation,
-        position: coords,
-        style: MarkerStyle(
-          avatarUrl: l['avatar_url'] as String?,
-          label: l['location_label'] as String?,
-          borderColorHex: _professionColor(l['profession'] as String?),
-        ),
-        metadata: {
-          'professional_id': l['professional_id'],
-          'location_label': l['location_label'],
-          'profession': l['profession'],
-        },
-      );
-    }).whereType<MapMarker>().toList();
+  /// Parse le type de marker depuis la string RPC
+  MapMarkerType _parseMarkerType(String? type) {
+    switch (type?.toLowerCase()) {
+      case 'professional':
+        return MapMarkerType.proFixedLocation;
+      case 'fixedlocation':
+        return MapMarkerType.proFixedLocation;
+      case 'prorecent':
+        return MapMarkerType.proFixedLocation;
+      case 'professionalalert':
+        return MapMarkerType.professionalAlert;
+      case 'weddingpin':
+        return MapMarkerType.wedding;
+      case 'poiprivate':
+        return MapMarkerType.poiPrivate;
+      default:
+        return MapMarkerType.proFixedLocation;
+    }
   }
 
-  /// Parse les alertes depuis la réponse RPC
-  List<MapMarker> parseAlerts(Map<String, dynamic> data) {
-    final alerts = data['alerts'] as List? ?? [];
-    return alerts.map((a) {
-      final coords = _parseCoords(a['location_coords']);
-      if (coords == null) return null;
-      
-      final alertType = AlertType.fromString(a['alert_type'] ?? a['motif_code']);
-      
-      return MapMarker(
-        id: a['id'] as String,
-        type: MapMarkerType.professionalAlert,
-        position: coords,
-        style: MarkerStyle(
-          avatarUrl: a['professional_avatar'] as String?,
-          label: a['title'] as String?,
-          borderColorHex: '#FF5722', // Orange pour alertes
-          iconAsset: alertType?.iconAsset,
-        ),
-        metadata: {
-          'alert_type': alertType?.name,
-          'event_date': a['event_date'],
-          'professional_id': a['professional_id'],
-          'professional_name': a['professional_name'],
-        },
-      );
-    }).whereType<MapMarker>().toList();
-  }
-
-  /// Parse les mariages depuis la réponse RPC
-  List<MapMarker> parseWeddings(Map<String, dynamic> data) {
-    final weddings = data['weddings'] as List? ?? 
-                     data['wedding_pins'] as List? ?? []; // Compatibilité ancien nom
-    return weddings.map((w) {
-      final coords = _parseCoords(w['location_coords']);
-      if (coords == null) return null;
-      
-      return MapMarker(
-        id: w['id'] as String,
-        type: MapMarkerType.wedding,
-        position: coords,
-        style: MarkerStyle(
-          avatarUrl: w['bride_avatar'] as String?,
-          label: w['venue_name'] as String?,
-          borderColorHex: '#E91E63', // Rose pour mariages
-        ),
-        metadata: {
-          'bride_id': w['bride_id'],
-          'bride_name': w['bride_name'],
-          'event_date': w['event_date'],
-          'venue_name': w['venue_name'],
-        },
-      );
-    }).whereType<MapMarker>().toList();
-  }
-
-  /// Récupère les détails d'un professionnel
-  Future<Map<String, dynamic>?> getProfessionalDetails(String id) async {
-    final response = await _client.rpc(
-      'get_pro_item_details',
-      params: {'p_professional_id': id},
+  /// Parse position GeoJSON depuis la RPC
+  gmaps.LatLng? _parseGeoJsonPosition(dynamic position) {
+    if (position == null) return null;
+    if (position is! Map) return null;
+    
+    final coords = position['coordinates'];
+    if (coords is! List || coords.length < 2) return null;
+    
+    return gmaps.LatLng(
+      (coords[1] as num).toDouble(), // lat
+      (coords[0] as num).toDouble(), // lng
     );
-    return response as Map<String, dynamic>?;
   }
 
-  /// Récupère les détails d'une alerte
+  /// Parse les professionnels depuis la réponse RPC (legacy)
+  @Deprecated('Utiliser parseAllMarkers à la place')
+  List<MapMarker> parseProfessionals(Map<String, dynamic> data) {
+    return parseAllMarkers(data)
+        .where((m) => m.type == MapMarkerType.proFixedLocation)
+        .toList();
+  }
+
+  /// Parse les fixed locations depuis la réponse RPC (legacy)
+  @Deprecated('Utiliser parseAllMarkers à la place')
+  List<MapMarker> parseFixedLocations(Map<String, dynamic> data) {
+    return parseProfessionals(data);
+  }
+
+  /// Parse les alertes depuis la réponse RPC (legacy)
+  @Deprecated('Utiliser parseAllMarkers à la place')
+  List<MapMarker> parseAlerts(Map<String, dynamic> data) {
+    return parseAllMarkers(data)
+        .where((m) => m.type == MapMarkerType.professionalAlert)
+        .toList();
+  }
+
+  /// Parse les mariages depuis la réponse RPC (legacy)
+  @Deprecated('Utiliser parseAllMarkers à la place')
+  List<MapMarker> parseWeddings(Map<String, dynamic> data) {
+    return parseAllMarkers(data)
+        .where((m) => m.type == MapMarkerType.wedding)
+        .toList();
+  }
+
+  /// Récupère les détails d'un professionnel via RPC
+  /// 
+  /// Utilise get_pro_item_details(p_pro_profile_id uuid)
+  Future<Map<String, dynamic>?> getProfessionalDetails(String id) async {
+    try {
+      final response = await _client.rpc(
+        'get_pro_item_details',
+        params: {'p_pro_profile_id': id},
+      );
+      return response as Map<String, dynamic>?;
+    } catch (e) {
+      // Log error but don't crash
+      return null;
+    }
+  }
+
+  /// Récupère les détails d'une alerte via RPC
+  /// 
+  /// Utilise get_alert_item_details(p_alert_id uuid)
   Future<Map<String, dynamic>?> getAlertDetails(String id) async {
-    final response = await _client
-        .from('professional_alerts')
-        .select('''
-          *,
-          profiles!professional_alerts_professional_id_fkey(
-            full_name,
-            avatar_url,
-            profession
-          )
-        ''')
-        .eq('id', id)
-        .maybeSingle();
-    return response;
+    try {
+      final response = await _client.rpc(
+        'get_alert_item_details',
+        params: {'p_alert_id': id},
+      );
+      return response as Map<String, dynamic>?;
+    } catch (e) {
+      // Log error but don't crash
+      return null;
+    }
   }
 
-  /// Récupère les détails d'un mariage
+  /// Récupère les détails d'un mariage via RPC
+  /// 
+  /// Utilise get_wedding_pin_item_details(p_pin_id uuid)
   Future<Map<String, dynamic>?> getWeddingDetails(String id) async {
-    // TODO: Adapter quand table weddings créée
-    final response = await _client
-        .from('wedding_pins')
-        .select('''
-          *,
-          profiles!wedding_pins_user_id_fkey(
-            full_name,
-            avatar_url
-          )
-        ''')
-        .eq('id', id)
-        .maybeSingle();
-    return response;
+    try {
+      final response = await _client.rpc(
+        'get_wedding_pin_item_details',
+        params: {'p_pin_id': id},
+      );
+      return response as Map<String, dynamic>?;
+    } catch (e) {
+      // Log error but don't crash
+      return null;
+    }
   }
 
   // --- Helpers privés ---

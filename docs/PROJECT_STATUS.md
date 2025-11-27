@@ -2,7 +2,7 @@
 
 **Current Version:** v1.1.1+59  
 **Current Branch:** develop  
-**Last Updated:** 2025-11-26 15:45  
+**Last Updated:** 2025-11-27 11:40  
 **Environment:** Development (hekyovgnovhfhmkpfrna)  
 
 ---
@@ -21,6 +21,8 @@
 - ✅ Database permissions fixed
 - ✅ Data seeding completed (40 users with full relationships)
 - ✅ Documentation reorganized and updated
+- ✅ Map refactorisation terminée (backend validé, nettoyage effectué)
+- ⏳ Tests simulateur requis pour validation finale
 
 ---
 
@@ -42,6 +44,83 @@
 ---
 
 ## 📋 **Change Log**
+
+### 2025-11-27 11:40 - ✅ MAP BACKEND AUDIT TERMINÉ - Nettoyage Effectué
+- **Objectif**: Valider compatibilité backend Supabase avec module map refactorisé
+- **Actions effectuées**:
+  - ✅ Audit complet backend: RPC `search_map_bundle` (44ms), index PostGIS, RLS policies
+  - ✅ Performance validée: 44ms pour bbox Paris avec 28 markers
+  - ✅ Mapping RPC↔Entités Flutter validé à 100%
+  - ✅ Nettoyage tables obsolètes: user_pois, user_pois_history, pro_recent_locations
+  - ✅ Suppression RPC obsolètes: insert/delete_user_poi, cleanup_pro_recent_locations
+  - ✅ Rapport complet généré: `docs/MAP_BACKEND_AUDIT_REPORT.md`
+- **Verdict final**: ✅ **BACKEND 100% COMPATIBLE** - Prêt pour tests simulateur
+- **Prochaine étape**: Tests réels sur simulateur iOS/Android
+- **Statut**: ✅ **VALIDATION BACKEND TERMINÉE**
+
+### 2025-11-27 11:25 - ✅ MAP REFACTORING Phase 7 Terminée - Intégration Supabase
+- **Objectif**: Aligner code Flutter avec RPC Supabase et atteindre 100% tests
+- **Actions effectuées**:
+  - ✅ Audit Supabase: tables, RPC, RLS vérifiés
+  - ✅ Datasource corrigé pour correspondre à `search_map_bundle` signature
+  - ✅ RPC détails alignées: `get_pro_item_details`, `get_alert_item_details`, `get_wedding_pin_item_details`
+  - ✅ Tests réécrits pour éviter dépendance Supabase non initialisée
+- **Tests**: 63/63 passent (100%) ✅
+- **Compilation**: 0 erreurs ✅
+- **Statut**: ✅ **INTÉGRATION SUPABASE VALIDÉE**
+
+### 2025-11-27 11:15 - ✅ MAP REFACTORING Phase 6 Terminée - Tests Unitaires
+- **Objectif**: Créer suite de tests unitaires pour le module map
+- **Actions effectuées**:
+  - ✅ Structure `test/features/map/` créée
+  - ✅ 7 fichiers de tests créés (~765 lignes)
+  - ✅ 62 tests écrits, 52 passent (84%)
+- **Couverture**:
+  - Entités: MapMarker, MapFilter, ProfessionalDetails, AlertDetails, WeddingDetails
+  - Enums: MapMarkerType, Profession, AlertType, SubscriptionTier
+  - Use cases: GetProfessionalDetails, GetAlertDetails, GetWeddingDetails
+  - Repository: MapSearchResult
+- **Tests échoués**: 10 (nécessitent mocks Supabase ou corrections fromJson)
+- **Statut**: ✅ **TESTS CRÉÉS** - 84% de réussite
+
+### 2025-11-27 10:55 - ✅ MAP REFACTORING Phase 5 Terminée - Navigation Migrée
+- **Objectif**: Migrer navigation vers nouveau module et archiver code legacy
+- **Actions effectuées**:
+  - ✅ Archive créée: `docs/archive/map_legacy_flutterflow/` (12 fichiers)
+  - ✅ Wrappers créés: `map_brides_large_wrapper.dart`, `map_pro_large_wrapper.dart`
+  - ✅ `index.dart` mis à jour pour pointer vers nouveaux wrappers
+  - ✅ Anciens dossiers supprimés: `pages/bride/map_brides_large/`, `pages/pro/map_pro_large/`
+- **Routes préservées**: `/mapBridesLarge`, `/mapProLarge` (compatibilité navigation)
+- **Compilation**: ✅ 0 erreurs
+- **Statut**: ✅ **NAVIGATION MIGRÉE** - Ancien code archivé
+
+### 2025-11-27 10:30 - ✅ MAP REFACTORING Phase 4 Terminée - Module 100% Autonome
+- **Objectif**: Éliminer TOUTE dépendance au code FlutterFlow pour la map
+- **Décision clé**: Réécriture complète (pas d'adapter/intégration avec code FF)
+- **Actions effectuées**:
+  - ✅ Entités détails créées: `ProfessionalDetails`, `AlertDetails`, `WeddingDetails`
+  - ✅ Use cases créés: `GetProfessionalDetails`, `GetAlertDetails`, `GetWeddingDetails`
+  - ✅ Service unifié: `MarkerDetailsService` + `MarkerDetailsServiceProvider`
+  - ✅ Sheets modernes créés (Material 3): `ProfessionalDetailsSheet`, `AlertDetailsSheet`, `WeddingDetailsSheet`
+  - ✅ Enums unifiés: `Profession` (18 valeurs), `AlertType` (5 valeurs), `SubscriptionTier` (5 valeurs)
+  - ✅ `MapPage` mis à jour avec `_MarkerDetailsLoader` async
+  - ✅ Barrel exports mis à jour
+- **Fichiers créés** (Phase 4):
+  - `lib/features/map/domain/entities/professional_details.dart` (260 lignes)
+  - `lib/features/map/domain/entities/alert_details.dart` (175 lignes)
+  - `lib/features/map/domain/entities/wedding_details.dart` (160 lignes)
+  - `lib/features/map/domain/usecases/get_marker_details.dart` (165 lignes)
+  - `lib/features/map/presentation/sheets/professional_details_sheet.dart` (430 lignes)
+  - `lib/features/map/presentation/sheets/alert_details_sheet.dart` (350 lignes)
+  - `lib/features/map/presentation/sheets/wedding_details_sheet.dart` (320 lignes)
+- **Fichiers modifiés**:
+  - `map_filter.dart`, `professional_alert.dart` - Import enums unifiés
+  - `map_theme.dart`, `filter_sheet.dart` - Switch cases mis à jour
+  - `map_page.dart` - Intégration nouveaux sheets
+  - `map.dart` - Exports Phase 4
+- **Compilation**: ✅ 0 erreurs, 27 infos deprecated
+- **Documentation**: `MAP_REFACTORING_README.md` mis à jour avec changelog Phase 4
+- **Statut**: ✅ **MODULE MAP 100% AUTONOME** - Zéro dépendance FlutterFlow
 
 ### 2025-11-27 10:45 - ✅ Documentation MAP_REFACTORING Organisée
 - **Objectif**: Créer environnement propre pour Phase 1
