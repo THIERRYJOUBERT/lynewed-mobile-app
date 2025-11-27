@@ -7,10 +7,9 @@ import '/backend/schema/enums/enums.dart' as ff;
 import '../../domain/entities/map_marker.dart';
 
 /// Convertit le nouveau enum vers l'ancien (FlutterFlow)
+/// Note: professional FF est mappé vers proFixedLocation (fusion)
 ff.MapMarkerType toFlutterFlowType(MapMarkerType type) {
   switch (type) {
-    case MapMarkerType.professional:
-      return ff.MapMarkerType.professional;
     case MapMarkerType.proFixedLocation:
       return ff.MapMarkerType.proFixedLocation;
     case MapMarkerType.professionalAlert:
@@ -23,10 +22,11 @@ ff.MapMarkerType toFlutterFlowType(MapMarkerType type) {
 }
 
 /// Convertit l'ancien enum (FlutterFlow) vers le nouveau
+/// Note: professional FF est mappé vers proFixedLocation (fusion)
 MapMarkerType fromFlutterFlowType(ff.MapMarkerType type) {
   switch (type) {
     case ff.MapMarkerType.professional:
-      return MapMarkerType.professional;
+      return MapMarkerType.proFixedLocation; // Fusionné → proFixedLocation
     case ff.MapMarkerType.proFixedLocation:
       return MapMarkerType.proFixedLocation;
     case ff.MapMarkerType.professionalAlert:
@@ -39,16 +39,16 @@ MapMarkerType fromFlutterFlowType(ff.MapMarkerType type) {
 }
 
 /// Convertit une string Supabase vers le nouveau enum
+/// Note: 'professional' est mappé vers proFixedLocation (fusion)
 MapMarkerType? markerTypeFromString(String? value) {
   if (value == null) return null;
   switch (value.toLowerCase()) {
     case 'professional':
-      return MapMarkerType.professional;
     case 'profixedlocation':
     case 'pro_fixed_location':
     case 'fixedlocation':
     case 'fixed_location':
-      return MapMarkerType.proFixedLocation;
+      return MapMarkerType.proFixedLocation; // Tout vers proFixedLocation
     case 'professionalalert':
     case 'professional_alert':
     case 'alert':

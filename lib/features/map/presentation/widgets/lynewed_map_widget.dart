@@ -10,8 +10,10 @@ import 'package:provider/provider.dart';
 
 import '../../domain/entities/entities.dart';
 import '../../domain/repositories/map_repository.dart';
-import '../../data/repositories/supabase_map_repository.dart';
+import '../../domain/utils/marker_offset.dart';
+import '../services/marker_icon_generator.dart';
 import '../state/map_state.dart';
+import '../../data/repositories/supabase_map_repository.dart';
 
 /// Configuration du widget LynewedMap
 class LynewedMapConfig {
@@ -95,12 +97,17 @@ class LynewedMapWidget extends StatefulWidget {
 class _LynewedMapWidgetState extends State<LynewedMapWidget> {
   late MapState _mapState;
   gmaps.GoogleMapController? _mapController;
+  late MapRepository _repository;
+  late MarkerIconGenerator _iconGenerator;
+  final Map<String, gmaps.BitmapDescriptor> _markerIcons = {};
 
   @override
   void initState() {
     super.initState();
+    _repository = widget.repository ?? SupabaseMapRepository();
+    _iconGenerator = MarkerIconGenerator();
     _mapState = MapState(
-      repository: widget.repository ?? SupabaseMapRepository(),
+      repository: _repository,
       userRole: widget.userRole,
       initialCenter: widget.config.initialCenter,
       initialZoom: widget.config.initialZoom,
@@ -212,18 +219,44 @@ class _LynewedMapWidgetState extends State<LynewedMapWidget> {
   }
 
   Set<gmaps.Marker> _buildMarkers() {
-    return _mapState.visibleMarkers.map((marker) {
+    // Apply proximity offset to prevent overlapping markers
+    final offsetMarkers = _mapState.visibleMarkers.withProximityOffset(
+      config: const MarkerOffsetConfig(
+        proximityThresholdMeters: 20.0,
+        offsetDistanceMeters: 12.0,
+      ),
+    );
+
+    return offsetMarkers.map((marker) {
       return gmaps.Marker(
         markerId: gmaps.MarkerId(marker.id),
         position: marker.position,
         onTap: () => _onMarkerTap(marker),
-        // TODO: Custom icons based on marker.type
-        icon: gmaps.BitmapDescriptor.defaultMarkerWithHue(
-          _hueForMarkerType(marker.type),
-        ),
+        // Custom icons with avatars
+        icon: _getMarkerIcon(marker),
         zIndex: _zIndexForMarkerType(marker.type),
       );
     }).toSet();
+  }
+
+  /// Get cached or generate custom marker icon
+  gmaps.BitmapDescriptor _getMarkerIcon(MapMarker marker) {
+    final cacheKey = _generateIconKey(marker);
+    
+    if (_markerIcons.containsKey(cacheKey)) {
+      return _markerIcons[cacheKey]!;
+    }
+
+    // For now, use default icons while async generation loads
+    // TODO: Implement async icon generation with loading states
+    return gmaps.BitmapDescriptor.defaultMarkerWithHue(
+      _hueForMarkerType(marker.type),
+    );
+  }
+
+  /// Generate unique cache key for marker icon
+  String _generateIconKey(MapMarker marker) {
+    return '${marker.type.name}|${marker.style.borderColorHex}|${marker.style.avatarUrl}';
   }
 
   void _onMarkerTap(MapMarker marker) {
@@ -233,7 +266,6 @@ class _LynewedMapWidgetState extends State<LynewedMapWidget> {
 
   double _hueForMarkerType(MapMarkerType type) {
     switch (type) {
-      case MapMarkerType.professional:
       case MapMarkerType.proFixedLocation:
         return gmaps.BitmapDescriptor.hueBlue;
       case MapMarkerType.professionalAlert:
@@ -251,10 +283,8 @@ class _LynewedMapWidgetState extends State<LynewedMapWidget> {
         return 5;
       case MapMarkerType.wedding:
         return 4;
-      case MapMarkerType.professional:
-        return 3;
       case MapMarkerType.proFixedLocation:
-        return 2;
+        return 3; // Augmenté car plus de types
       case MapMarkerType.poiPrivate:
         return 1;
     }

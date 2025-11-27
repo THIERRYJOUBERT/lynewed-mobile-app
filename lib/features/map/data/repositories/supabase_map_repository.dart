@@ -32,10 +32,10 @@ class SupabaseMapRepository implements MapRepository {
         zoomLevel: zoomLevel,
       );
 
-      final professionals = _datasource.parseProfessionals(data);
-      final fixedLocations = _datasource.parseFixedLocations(data);
-      final alerts = _datasource.parseAlerts(data);
-      final weddings = _datasource.parseWeddings(data);
+      final professionals = _datasource.parseProfessionals(data).whereType<MapMarker>().toList();
+      final fixedLocations = _datasource.parseFixedLocations(data).whereType<MapMarker>().toList();
+      final alerts = _datasource.parseAlerts(data).whereType<MapMarker>().toList();
+      final weddings = _datasource.parseWeddings(data).whereType<MapMarker>().toList();
 
       return MapSearchResult(
         professionals: professionals,

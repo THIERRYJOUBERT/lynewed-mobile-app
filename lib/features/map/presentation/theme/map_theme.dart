@@ -32,8 +32,6 @@ class MapMarkerColors {
   /// Couleur par type de marqueur
   static Color forMarkerType(MapMarkerType type) {
     switch (type) {
-      case MapMarkerType.professional:
-        return professional;
       case MapMarkerType.proFixedLocation:
         return proFixedLocation;
       case MapMarkerType.professionalAlert:
@@ -109,8 +107,6 @@ class MapMarkerSizes {
   /// Taille par type de marqueur
   static double forMarkerType(MapMarkerType type) {
     switch (type) {
-      case MapMarkerType.professional:
-        return professional;
       case MapMarkerType.proFixedLocation:
         return proFixedLocation;
       case MapMarkerType.professionalAlert:
@@ -151,8 +147,6 @@ class MapMarkerZIndex {
         return alert;
       case MapMarkerType.wedding:
         return wedding;
-      case MapMarkerType.professional:
-        return professional;
       case MapMarkerType.proFixedLocation:
         return proFixedLocation;
       case MapMarkerType.poiPrivate:

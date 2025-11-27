@@ -70,7 +70,7 @@ class SupabaseMapDatasource {
       
       return MapMarker(
         id: p['id'] as String,
-        type: MapMarkerType.professional,
+        type: MapMarkerType.proFixedLocation,
         position: coords,
         style: MarkerStyle(
           avatarUrl: p['avatar_url'] as String?,

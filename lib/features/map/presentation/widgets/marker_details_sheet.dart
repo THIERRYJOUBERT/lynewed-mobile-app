@@ -64,7 +64,6 @@ class MarkerDetailsSheet extends StatelessWidget {
 
   Widget _buildContent(BuildContext context) {
     switch (marker.type) {
-      case MapMarkerType.professional:
       case MapMarkerType.proFixedLocation:
         return _buildProfessionalContent(context);
       case MapMarkerType.professionalAlert:
@@ -380,7 +379,6 @@ class MarkerDetailsSheet extends StatelessWidget {
 
   String _contactButtonLabel() {
     switch (marker.type) {
-      case MapMarkerType.professional:
       case MapMarkerType.proFixedLocation:
         return 'Contact';
       case MapMarkerType.professionalAlert:
