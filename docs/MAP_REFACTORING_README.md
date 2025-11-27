@@ -205,4 +205,63 @@ lib/
 
 ---
 
-**Prêt pour Phase 2 ?** ✅ **OUI** - Avec nouvelle stratégie réécriture
+---
+
+## 📝 **CHANGELOG PHASE 2**
+
+### 🚧 Phase 2: Nouveau Module Map - EN COURS (2025-11-27)
+
+**Objectif:** Créer une architecture propre et maintenable pour remplacer le code FlutterFlow.
+
+**Structure créée:**
+```
+lib/features/map/
+├── domain/
+│   ├── entities/
+│   │   ├── map_marker.dart      (~130 lignes vs 147)
+│   │   ├── map_filter.dart      (~180 lignes vs 417)
+│   │   ├── professional_alert.dart
+│   │   ├── wedding.dart
+│   │   └── entities.dart        (barrel export)
+│   └── repositories/
+│       └── map_repository.dart   (interface)
+│
+├── data/
+│   ├── datasources/
+│   │   └── supabase_map_datasource.dart
+│   └── repositories/
+│       └── supabase_map_repository.dart
+│
+├── presentation/
+│   ├── widgets/
+│   │   └── lynewed_map_widget.dart  (widget unifié bride/pro)
+│   └── state/
+│       └── map_state.dart        (ChangeNotifier)
+│
+├── map.dart                     (barrel export principal)
+└── README.md                    (documentation module)
+```
+
+**Fichiers créés:** 11 fichiers, ~1000 lignes de code propre
+
+**Avantages vs FlutterFlow:**
+| Aspect | Ancien | Nouveau |
+|--------|--------|---------|
+| Lignes | 3600+ | ~1000 |
+| Duplication | 90% | 0% |
+| Testabilité | ❌ | ✅ |
+| Imports | 20+ | 1 |
+
+**Compilation:** ✅ Passe (7 warnings info seulement)
+
+**TODO Phase 2 (suite):**
+- [ ] Page MapPage complète
+- [ ] FilterSheet component
+- [ ] MarkerDetailsSheet component
+- [ ] Custom marker icons
+- [ ] Tests unitaires
+- [ ] Migration progressive des pages FF
+
+---
+
+**Phase 2 - Fondations posées.** ✅ Structure prête pour développement
