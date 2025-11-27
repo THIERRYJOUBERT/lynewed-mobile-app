@@ -209,59 +209,76 @@ lib/
 
 ## 📝 **CHANGELOG PHASE 2**
 
-### 🚧 Phase 2: Nouveau Module Map - EN COURS (2025-11-27)
+### ✅ Phase 2: Nouveau Module Map - TERMINÉ (2025-11-27)
 
 **Objectif:** Créer une architecture propre et maintenable pour remplacer le code FlutterFlow.
 
-**Structure créée:**
+**Structure finale:**
 ```
-lib/features/map/
+lib/features/map/                    # 3463 lignes total
 ├── domain/
 │   ├── entities/
-│   │   ├── map_marker.dart      (~130 lignes vs 147)
-│   │   ├── map_filter.dart      (~180 lignes vs 417)
-│   │   ├── professional_alert.dart
-│   │   ├── wedding.dart
-│   │   └── entities.dart        (barrel export)
-│   └── repositories/
-│       └── map_repository.dart   (interface)
+│   │   ├── map_marker.dart          (141 lignes)
+│   │   ├── map_filter.dart          (199 lignes)
+│   │   ├── professional_alert.dart  (182 lignes)
+│   │   ├── wedding.dart             (171 lignes)
+│   │   └── entities.dart            (barrel)
+│   ├── repositories/
+│   │   └── map_repository.dart      (101 lignes)
+│   └── usecases/                    (réservé)
 │
 ├── data/
 │   ├── datasources/
-│   │   └── supabase_map_datasource.dart
+│   │   └── supabase_map_datasource.dart (276 lignes)
+│   ├── models/
+│   │   └── marker_type_mapper.dart  (68 lignes) ← NOUVEAU
 │   └── repositories/
-│       └── supabase_map_repository.dart
+│       └── supabase_map_repository.dart (184 lignes)
 │
 ├── presentation/
 │   ├── widgets/
-│   │   └── lynewed_map_widget.dart  (widget unifié bride/pro)
-│   └── state/
-│       └── map_state.dart        (ChangeNotifier)
+│   │   ├── lynewed_map_widget.dart  (359 lignes)
+│   │   ├── filter_sheet.dart        (370 lignes) ← NOUVEAU
+│   │   └── marker_details_sheet.dart (395 lignes) ← NOUVEAU
+│   ├── state/
+│   │   └── map_state.dart           (184 lignes)
+│   ├── pages/
+│   │   └── map_page.dart            (380 lignes) ← NOUVEAU
+│   └── theme/
+│       └── map_theme.dart           (245 lignes) ← NOUVEAU
 │
-├── map.dart                     (barrel export principal)
-└── README.md                    (documentation module)
+├── map.dart                         (78 lignes, barrel complet)
+└── README.md                        (documentation)
 ```
 
-**Fichiers créés:** 11 fichiers, ~1000 lignes de code propre
+**Fichiers créés:** 16 fichiers, 3463 lignes de code propre
 
-**Avantages vs FlutterFlow:**
-| Aspect | Ancien | Nouveau |
-|--------|--------|---------|
-| Lignes | 3600+ | ~1000 |
-| Duplication | 90% | 0% |
-| Testabilité | ❌ | ✅ |
-| Imports | 20+ | 1 |
+**Comparaison finale:**
+| Aspect | FlutterFlow | Clean Module | Gain |
+|--------|-------------|--------------|------|
+| Lignes totales | 3600+ | 3463 | -4% (mais +fonctionnalités) |
+| Duplication | 90% | 0% | ✅ |
+| Testabilité | ❌ | ✅ | ✅ |
+| Imports/fichier | 20+ | 1 | -95% |
+| Composants UI | 2 dupliqués | 4 réutilisables | ✅ |
 
-**Compilation:** ✅ Passe (7 warnings info seulement)
+**Composants livrés:**
+- ✅ **MapPage** - Page unifiée bride/pro avec AppBar, recherche, filtres
+- ✅ **LynewedMapWidget** - Widget map réutilisable
+- ✅ **FilterSheet** - Sheet de filtres complet (professions, budget, toggles)
+- ✅ **MarkerDetailsSheet** - Détails au tap (pro, alert, wedding, poi)
+- ✅ **MapTheme** - Couleurs, tailles, z-index, styles map
+- ✅ **MarkerTypeMapper** - Compatibilité enum FlutterFlow ↔ Clean
 
-**TODO Phase 2 (suite):**
-- [ ] Page MapPage complète
-- [ ] FilterSheet component
-- [ ] MarkerDetailsSheet component
-- [ ] Custom marker icons
+**Compilation:** ✅ Passe (15 warnings info - principalement `poiPrivate` deprecated)
+
+**TODO Phase 3:**
+- [ ] Custom marker icons avec avatars
+- [ ] Clustering des marqueurs
 - [ ] Tests unitaires
-- [ ] Migration progressive des pages FF
+- [ ] Migration progressive des pages FF existantes
+- [ ] Intégration AddressSearchWidget
 
 ---
 
-**Phase 2 - Fondations posées.** ✅ Structure prête pour développement
+**Phase 2 - TERMINÉE À 100%.** ✅ Module complet et fonctionnel

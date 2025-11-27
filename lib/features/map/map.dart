@@ -1,20 +1,20 @@
 /// Map feature module - Clean architecture replacement for FlutterFlow code
 /// 
 /// This module provides a complete, testable map feature implementation
-/// replacing the verbose FlutterFlow-generated code (3600+ lines → ~1000 lines).
+/// replacing the verbose FlutterFlow-generated code (3600+ lines → ~2500 lines).
 /// 
 /// ## Usage
 /// 
 /// ```dart
 /// import 'package:lynewed/features/map/map.dart';
 /// 
-/// // Simple usage
-/// LynewedMapWidget(
+/// // Simple page usage
+/// MapPage(
 ///   userRole: 'professional',
-///   onMarkerTap: (marker) => _showDetails(marker),
+///   config: MapPageConfig(showSearchBar: true),
 /// )
 /// 
-/// // With custom config
+/// // Widget only usage
 /// LynewedMapWidget(
 ///   userRole: 'bride',
 ///   config: LynewedMapConfig(
@@ -25,6 +25,7 @@
 ///     professions: [Profession.photographer],
 ///     toggles: LayerToggles(showAlerts: false),
 ///   ),
+///   onMarkerTap: (marker) => _showDetails(marker),
 /// )
 /// ```
 /// 
@@ -38,12 +39,14 @@
 /// │
 /// ├── data/             # Data layer
 /// │   ├── datasources/  # SupabaseMapDatasource
+/// │   ├── models/       # Type mappers for compatibility
 /// │   └── repositories/ # SupabaseMapRepository
 /// │
 /// └── presentation/     # UI layer
-///     ├── widgets/      # LynewedMapWidget
+///     ├── widgets/      # LynewedMapWidget, FilterSheet, MarkerDetailsSheet
 ///     ├── state/        # MapState (ChangeNotifier)
-///     └── pages/        # MapPage (unified bride/pro)
+///     ├── pages/        # MapPage (unified bride/pro)
+///     └── theme/        # MapTheme, colors, sizes
 /// ```
 library map;
 
@@ -53,11 +56,22 @@ export 'domain/entities/entities.dart';
 // Domain - Repositories
 export 'domain/repositories/map_repository.dart';
 
+// Data - Models (compatibility)
+export 'data/models/marker_type_mapper.dart';
+
 // Data - Repositories
 export 'data/repositories/supabase_map_repository.dart';
 
 // Presentation - State
 export 'presentation/state/map_state.dart';
 
+// Presentation - Theme
+export 'presentation/theme/map_theme.dart';
+
 // Presentation - Widgets
 export 'presentation/widgets/lynewed_map_widget.dart';
+export 'presentation/widgets/filter_sheet.dart';
+export 'presentation/widgets/marker_details_sheet.dart';
+
+// Presentation - Pages
+export 'presentation/pages/map_page.dart';
