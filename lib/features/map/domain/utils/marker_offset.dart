@@ -134,10 +134,10 @@ extension MapMarkerOffset on List<MapMarker> {
   List<MapMarker> withProximityOffset({
     MarkerOffsetConfig config = const MarkerOffsetConfig(),
   }) {
-    // Filter out null markers and apply offset
-    final nonNullMarkers = where((m) => m != null).cast<MapMarker>().toList();
+    if (isEmpty) return this;
+    
     return applyProximityOffset<MapMarker>(
-      nonNullMarkers,
+      this,
       (marker) => marker.position,
       (marker, newPosition) => marker.copyWith(position: newPosition),
       config: config,

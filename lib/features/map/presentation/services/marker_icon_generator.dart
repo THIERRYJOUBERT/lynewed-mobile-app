@@ -6,9 +6,7 @@ library;
 
 import 'dart:async';
 import 'dart:ui' as ui;
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 
 import '../../domain/entities/map_marker.dart';
@@ -94,9 +92,9 @@ class MarkerIconGenerator {
     // Draw background circle
     _drawBackground(canvas, center, size, marker);
 
-    // Draw avatar if available
-    if (marker.style.avatarUrl != null) {
-      await _drawAvatar(canvas, center, size, marker.style.avatarUrl!, marker);
+    // Draw avatar placeholder or default icon
+    if (marker.style.avatarUrl != null || marker.style.label != null) {
+      _drawAvatarPlaceholder(canvas, center, size, marker);
     } else {
       _drawDefaultIcon(canvas, center, size, marker.type);
     }
@@ -139,44 +137,58 @@ class MarkerIconGenerator {
     canvas.drawCircle(center, size / 2, bgPaint);
   }
 
-  /// Draw avatar image
-  Future<void> _drawAvatar(
+  /// Draw avatar placeholder or cached image
+  /// 
+  /// NOTE: Direct network image loading in canvas is complex and unreliable.
+  /// For production, pre-load avatars via ImageCache and pass ui.Image directly.
+  /// This implementation draws a colored placeholder with initials.
+  void _drawAvatarPlaceholder(
     Canvas canvas,
     Offset center,
     double size,
-    String avatarUrl,
     MapMarker marker,
-  ) async {
-    try {
-      final avatarSize = size * _config.avatarSizeRatio;
-      final avatarCenter = center;
-      
-      // Create circular clip for avatar
-      final clipPath = Path()
-        ..addOval(Rect.fromCircle(
-          center: avatarCenter,
-          radius: avatarSize / 2,
-        ));
-      canvas.clipPath(clipPath);
-
-      // Load and draw avatar
-      final imageProvider = NetworkImage(avatarUrl);
-      final imageStream = imageProvider.resolve(const ImageConfiguration());
-      final completer = Completer<ui.Image>();
-      
-      imageStream.addListener(ImageStreamListener((info, _) {
-        completer.complete(info.image);
-      }));
-
-      final image = await completer.future;
-      final src = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
-      final dst = Rect.fromCircle(center: avatarCenter, radius: avatarSize / 2);
-      
-      canvas.drawImageRect(image, src, dst, Paint());
-    } catch (e) {
-      // Fallback to default icon on error
+  ) {
+    final avatarSize = size * _config.avatarSizeRatio;
+    
+    // Draw colored circle as placeholder
+    final bgPaint = Paint()
+      ..color = _getBorderColor(marker).withValues(alpha: 0.3)
+      ..style = PaintingStyle.fill;
+    
+    canvas.drawCircle(center, avatarSize / 2, bgPaint);
+    
+    // Draw initials if label available
+    final label = marker.style.label;
+    if (label != null && label.isNotEmpty) {
+      final initials = _getInitials(label);
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: initials,
+          style: TextStyle(
+            color: _getBorderColor(marker),
+            fontSize: avatarSize * 0.4,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        center - Offset(textPainter.width / 2, textPainter.height / 2),
+      );
+    } else {
+      // Fallback to type icon
       _drawDefaultIcon(canvas, center, size, marker.type);
     }
+  }
+  
+  /// Extract initials from name
+  String _getInitials(String name) {
+    final parts = name.trim().split(' ');
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1) return parts[0][0].toUpperCase();
+    return '${parts[0][0]}${parts.last[0]}'.toUpperCase();
   }
 
   /// Draw default icon when no avatar
@@ -254,11 +266,11 @@ class MarkerIconGenerator {
   void _drawAlertIcon(Canvas canvas, Offset center, double size, Paint paint) {
     canvas.drawCircle(center, size * 0.4, paint);
     final textPainter = TextPainter(
-      text: const TextSpan(
+      text: TextSpan(
         text: '!',
         style: TextStyle(
           color: Colors.red,
-          fontSize: 20,
+          fontSize: size * 0.6, // Relative to marker size
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -272,14 +284,30 @@ class MarkerIconGenerator {
   }
 
   void _drawHeartIcon(Canvas canvas, Offset center, double size, Paint paint) {
-    final path = Path();
-    final left = center - Offset(size * 0.2, 0);
-    final right = center + Offset(size * 0.2, 0);
-    final top = center - Offset(0, size * 0.1);
+    // Simple heart shape using circles and triangle
+    final heartSize = size * 0.35;
+    final topOffset = size * 0.15;
     
-    path.moveTo(center.dx, top.dy);
-    path.cubicTo(left.dx, top.dy, left.dx, center.dy, center.dy, center.dy + size * 0.2);
-    path.cubicTo(right.dx, center.dy, right.dx, top.dy, center.dx, top.dy);
+    // Left circle of heart
+    canvas.drawCircle(
+      center - Offset(heartSize * 0.3, topOffset),
+      heartSize * 0.35,
+      paint,
+    );
+    
+    // Right circle of heart
+    canvas.drawCircle(
+      center + Offset(heartSize * 0.3, -topOffset),
+      heartSize * 0.35,
+      paint,
+    );
+    
+    // Bottom triangle
+    final path = Path();
+    path.moveTo(center.dx - heartSize * 0.5, center.dy - topOffset);
+    path.lineTo(center.dx + heartSize * 0.5, center.dy - topOffset);
+    path.lineTo(center.dx, center.dy + heartSize * 0.4);
+    path.close();
     canvas.drawPath(path, paint);
   }
 

@@ -56,6 +56,9 @@ export 'domain/entities/entities.dart';
 // Domain - Repositories
 export 'domain/repositories/map_repository.dart';
 
+// Domain - Utils (Phase 3)
+export 'domain/utils/marker_offset.dart';
+
 // Data - Models (compatibility)
 export 'data/models/marker_type_mapper.dart';
 
@@ -68,10 +71,14 @@ export 'presentation/state/map_state.dart';
 // Presentation - Theme
 export 'presentation/theme/map_theme.dart';
 
+// Presentation - Services (Phase 3)
+export 'presentation/services/marker_icon_generator.dart';
+
 // Presentation - Widgets
 export 'presentation/widgets/lynewed_map_widget.dart';
 export 'presentation/widgets/filter_sheet.dart';
 export 'presentation/widgets/marker_details_sheet.dart';
+export 'presentation/widgets/animated_marker.dart';
 
 // Presentation - Pages
 export 'presentation/pages/map_page.dart';

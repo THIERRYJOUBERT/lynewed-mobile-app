@@ -111,18 +111,12 @@ class _AnimatedMarkerState extends State<AnimatedMarker>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Opacity(
-          opacity: _fadeAnimation.value,
-          child: Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
-          ),
-        );
-      },
-      child: widget.child,
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: widget.child,
+      ),
     );
   }
 }
