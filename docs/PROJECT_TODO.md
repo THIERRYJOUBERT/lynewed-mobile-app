@@ -1,9 +1,9 @@
 # TODO & Améliorations Techniques - LYNEWED App
 
 **Document créé:** 2025-11-26  
-**Last Updated:** 2025-11-26 18:30  
+**Last Updated:** 2025-11-27 10:30  
 **Objectif:** Gestion des tâches à faire et idées d'améliorations techniques  
-**Version:** v1.3
+**Version:** v1.4
 
 ---
 
@@ -12,7 +12,19 @@
 ### 🐛 Bug Fixes Critiques
 - [✅] **Portfolio Images Bug** - Corrigé : slideshow_images rempli avec les mêmes images que portfolio_images (2025-11-26)
 - [✅] **Google Places API** - Migré vers SDK natif (`flutter_google_places_sdk`) - Sécurisé avec restrictions bundle ID (2025-11-26)
+- [✅] **Cron Jobs Abusifs** - Désactivés et corrigés (2025-11-27)
+  - ✅ `notifications_outbox_drain` : Désactivé via Dashboard
+  - ✅ `alerts_housekeeping` : Erreurs RLS identifiées et désactivées
+  - ✅ Base de dev stabilisée (plus de 4000+ requêtes/heure)
 - [ ] **Performance PostGIS** - Optimiser requêtes géospatiales avec grand volume
+
+### 🗺️ **MAP REFACTORING** - TÂCHE ACTIVE PRINCIPALE
+- [🔄] **MAP REFACTORING PLAN** - Phase 1 en cours (2025-11-27)
+  - 📋 **Source de vérité**: `MAP_REFACTORING_PLAN.md` v1.6 (60-75h)
+  - ✅ Prérequis validés (seed data, décisions, cron jobs désactivés)
+  - 🎯 **Phase 1**: Nettoyage Enum & Code Mort (2-3h)
+  - 📊 **Impact**: 55 fichiers Flutter (~8% codebase)
+  - 🔗 **Référence technique**: `audits/MAP_FEATURE_AUDIT.md` (validation complète)
 
 ### 🧪 Tests & Validation
 - [ ] **Tests End-to-End** - Valider tous les flux avec données seeded (Agora, Resend, Firebase, Places, Supabase Realtime)
@@ -86,90 +98,7 @@
 - [ ] Tester la segmentation stricte (Brides & Vendors)
 
 ### 📍 LOCALISATION & CARTOGRAPHIE
-
-#### 🗂️ **REFACTORISATION MAP - DÉPLACÉE**
-*(Toutes les tâches de refactorisation map ont été déplacées vers le document dédié)*
-
-**Nouveau document:** `docs/MAP_REFACTORING_PLAN.md`  
-**Contenu:** Plan complet de refactorisation en 6 phases avec décisions, changelog et suivi
-
-##### Référence Rapide
-- **Phase 1:** Nettoyage Enum (proRecent, user, searchTarget, fixedLocation)
-- **Phase 2:** Source Pros unique (professional_fixed_locations uniquement)
-- **Phase 3:** Brainstorming POI/WeddingPin → Concept "Wedding"
-- **Phase 4:** Améliorations UX (style markers Uber/Mondial Relay)
-- **Phase 5:** Séparation marché indien (market_region)
-- **Phase 6:** Préparation Android
-
-**Status:** 📋 Plan créé, prêt pour implémentation
-
-#### 🗂️ **ANCIEN - Système de Localisation Professionnelle**
-*(Audit et analyse déplacés vers MAP_FEATURE_AUDIT.md et MAP_REFACTORING_PLAN.md)*
-
-**Acceptance Criteria:** 
-- ✅ Diagramme complet du flux de données créé
-- ✅ Debug logs confirmant présence/absence des fixedLocations dans le feed
-- ✅ Analyse de performance du clustering existante
-
-##### Phase 2: Correction Immédiate 🛠️ *(Fix rapide pour résoudre le problème principal)*
-- [ ] **Ajouter fixedLocations** à ProSummaryStruct (champ optionnel, backward compatible)
-- [ ] **Modifier get_feed_professionals_action.dart** pour parser les fixedLocations (GeoJSON → LatLng)
-- [ ] **Mettre à jour la map** pour utiliser fixedLocations des ProSummaryStruct
-- [ ] **Supprimer les calculs de distance** côté app devenus inutiles
-- [ ] **Tester que les markers** ne se superposent plus
-
-**Acceptance Criteria:**
-- ✅ ProSummaryStruct contient les fixedLocations sans casser l'existant
-- ✅ Map affiche les markers aux coordonnées précises
-- ✅ Plus de superposition de markers sur la carte
-
-##### Phase 3: Refactoring Architecture 🏗️ *(Solutions durables)*
-- [ ] **Créer ProLocationStruct** unifié pour toutes les localisations (CRM + App)
-- [ ] **Déplacer tous les calculs de distance** dans le backend (RPC functions optimisées)
-- [ ] **Standardiser le flux**: CRM → Backend → Map (sans transformation côté app)
-- [ ] **Implémenter cache intelligent** des positions calculées côté backend
-- [ ] **Séparer clairement les responsabilités**: CRM gère, App affiche
-
-**Acceptance Criteria:**
-- ✅ Architecture claire avec séparation des responsabilités
-- ✅ Calculs distances optimisés côté backend
-- ✅ Cache fonctionnel pour les performances
-
-##### Phase 4: Optimisations Avancées ⚡
-- [ ] **Algorithme de clustering** optimisé pour grandes quantités (>1000 markers)
-- [ ] **Système de mise à jour** temps réel des localisations (WebSocket/Realtime)
-- [ ] **Performance monitoring** du système de localisation
-- [ ] **Fallback strategy** si fixedLocations vide mais locationLabel existe
-- [ ] **Compression des données** pour optimiser le transfert mobile
-
-**Acceptance Criteria:**
-- ✅ Map performante avec 1000+ markers
-- ✅ Mises à jour temps réel fonctionnelles
-- ✅ Monitoring des performances en place
-
-##### Phase 5: Tests et Validation ✅
-- [ ] **Tests unitaires** du système de localisation (parsing, calculs distances)
-- [ ] **Tests de performance** avec dataset complet (40+ pros, 1000+ markers)
-- [ ] **Tests d'intégration** CRM ↔ App pour la cohérence des données
-- [ ] **Validation UX** de l'affichage des markers et clustering
-- [ ] **Documentation technique** complète du nouveau système
-
-**Acceptance Criteria:**
-- ✅ Tous les tests passent avec 100% de couverture
-- ✅ Performance validée sur device réel
-- ✅ Documentation complète et à jour
-
-#### Système de localisation amélioré (existants)
-- [ ] Implémenter fixed point (point fixe)
-- [ ] Gestion country (pays)
-- [ ] Gestion e complète
-- [ ] Tests système de localisation
-
-#### Map - Affichage des points (existants)
-- [ ] Refonte affichage points carte (style Uber/Mondial Relay)
-- [ ] 1 point = 1 pro (plus de superposition)
-- [ ] Passer des points regroupés à l'e précise
-- [ ] Affichage e exacte sur la carte
+*(Toutes les tâches de cartographie sont gérées dans MAP_REFACTORING_PLAN.md)*
 
 ### 👤 GESTION PROFILS PROS
 #### Statut & Visibilité
@@ -270,7 +199,51 @@ enum SubscriptionTier {
 
 ## 💡 **AMÉLIORATIONS FUTURES**
 
-### 🔄 Workflow Développement
+### � Refonte Système Notifications (Priorité Haute)
+
+**Contexte:** Le système actuel génère 4000+ requêtes/heure sur une base de dev inactive (2025-11-27).
+
+#### Problèmes Identifiés
+1. **Architecture Outbox inefficace:**
+   - Polling toutes les minutes même sans événements
+   - Pas de backoff exponentiel sur erreurs
+   - Pas de circuit breaker
+
+2. **RLS vs Service Role mal configuré:**
+   - Edge Functions utilisent `service_role` mais RLS bloque quand même
+   - Requêtes 403 en cascade sur `device_tokens`, `user_preferences`, `notification_settings`
+
+3. **Cron Jobs mal calibrés:**
+   - `notifications_outbox_drain`: `* * * * *` (toutes les minutes) → devrait être `*/5 * * * *`
+   - `alerts_housekeeping`: `*/15 * * * *` → devrait être `0 * * * *` (toutes les heures)
+
+4. **Pas de métriques/monitoring:**
+   - Impossible de détecter les anomalies sans vérification manuelle
+   - Pas d'alertes sur erreurs 500 répétées
+
+#### Solutions Proposées
+- [ ] **Court terme:** Désactiver cron jobs + corriger fréquences
+- [ ] **Moyen terme:** Ajouter policies RLS pour `service_role` sur tables notifications
+- [ ] **Long terme:** Migrer vers Supabase Realtime + Database Webhooks (push vs poll)
+- [ ] **Monitoring:** Ajouter alertes sur taux d'erreur Edge Functions
+
+#### Architecture Cible (V2)
+```
+Trigger DB → Database Webhook → Edge Function (on-demand)
+```
+Au lieu de:
+```
+Cron Job → Edge Function (polling) → Query DB
+```
+
+**Avantages:**
+- Exécution uniquement quand nécessaire
+- Pas de polling à vide
+- Réduction drastique des requêtes
+
+---
+
+### �🔄 Workflow Développement
 - [ ] **GitHub MCP** - Utiliser outils GitHub MCP pour commits/branches pour éviter désynchronisation
 - [ ] **Processus Git** - `git add .` → `git commit -m "message"` → `git push origin branch` → Vérification avec MCP
 
@@ -308,17 +281,10 @@ enum SubscriptionTier {
 - ✅ Configuration Google Maps API (Android + iOS)
 
 ### 🔧 Technique & Performance
-- ✅ Audit complet des fonctionnalités cartographiques (12 fichiers Flutter + 6 tables Supabase)
-- ✅ Audit complet des enums (23 enums Supabase + 16 enums Flutter)
 - ✅ Correction des bugs critiques d'authentification
 - ✅ Identification des problèmes API Google Places
 - ✅ Migration des données de test complète
-- ✅ **Audit Map Complet v2** (2025-11-26) - 48 fichiers Flutter + 18 RPCs + 16 triggers analysés
-  - ✅ Inventaire complet: widgets, pages, structs, custom actions, composants UI
-  - ✅ Analyse backend: tables, RPCs, triggers, index GiST, RLS policies
-  - ✅ Identification des incohérences MapMarkerType (8 valeurs → 3-4 proposées)
-  - ✅ Décisions stratégiques validées avec product owner
-  - ✅ Plan de refactorisation en 5 phases documenté
+- ✅ **Audits techniques complets** - Voir `audits/MAP_FEATURE_AUDIT.md` pour détails cartographiques
 
 ### 📊 Base de Données
 - ✅ 52 migrations appliquées

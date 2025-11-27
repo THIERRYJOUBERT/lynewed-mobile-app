@@ -43,6 +43,76 @@
 
 ## 📋 **Change Log**
 
+### 2025-11-27 10:45 - ✅ Documentation MAP_REFACTORING Organisée
+- **Objectif**: Créer environnement propre pour Phase 1
+- **Actions effectuées**:
+  - ✅ Dossier `archive/` créé + 3 fichiers terminés déplacés
+  - ✅ Source de vérité unique: `MAP_REFACTORING_PLAN.md` v1.6
+  - ✅ `PROJECT_TODO.md` nettoyé (tâches map centralisées)
+  - ✅ `MAP_FEATURE_AUDIT.md` enrichi avec résultats validation
+  - ✅ `MAP_REFACTORING_README.md` créé (guide démarrage rapide)
+- **Structure finale**:
+  - **Source implémentation**: `MAP_REFACTORING_PLAN.md` (60-75h, 8 phases)
+  - **Référence technique**: `audits/MAP_FEATURE_AUDIT.md` (validation complète)
+  - **Suivi projet**: `PROJECT_TODO.md` (MAP_REFACTORING tâche active)
+  - **Archives**: `archive/` (artefacts terminés)
+- **Statut**: ✅ **ENVIRONNEMENT PROPRE** - Prêt Phase 1
+
+### 2025-11-27 10:15 - ✅ GO PHASE 1 - Prérequis Validés
+- **Objectif**: Finaliser prérequis pour démarrer refactorisation
+- **Actions effectuées**:
+  - ✅ Cron jobs désactivés (confirmé par user)
+  - ✅ Seed data créé: 12 `professional_fixed_locations` (Paris, London, NYC, Tokyo, Dublin)
+  - ✅ 8 corrections appliquées au plan (v1.6)
+  - ✅ 3 décisions critiques prises:
+    - `proRecent` → **SUPPRIMER** (localisation temps réel abandonnée)
+    - `connectionRequestSource` → **MIGRER** weddingPin→wedding
+    - `motif_code` → **GARDER** pour compatibilité
+- **Documents mis à jour**:
+  - `MAP_REFACTORING_PLAN.md` v1.6 (décisions finales)
+  - `MAP_REFACTORING_PREFLIGHT_CHECKLIST.md` (100% validé)
+- **Statut**: ✅ **PRÊT POUR PHASE 1** - Nettoyage Enum & Code Mort
+
+### 2025-11-27 09:45 - Validation MAP_REFACTORING_PLAN.md Complète
+- **Objectif**: Validation exhaustive du plan avant implémentation
+- **Méthode**: Audit Supabase MCP + Analyse codebase Flutter
+- **Résultat**: ⚠️ **GO CONDITIONNEL** - 8 corrections requises
+- **Découvertes Critiques**:
+  - ❌ Enum `subscriptionTierType`: Utilise `trial` pas `free` (mismatch)
+  - ❌ Table `pro_recent_locations` non documentée mais utilisée par RPC
+  - ❌ Limites zoom RPC inversées vs plan (2000 au lieu de 0 pour zoom ≤5)
+  - ❌ `connectionRequestSource` utilise `weddingPin` pas `wedding`
+  - ✅ `user_pois` = 0 records → Suppression safe
+  - ✅ `wedding_pins` = 10 records → Migration possible
+- **Impact Flutter**: 55 fichiers à modifier (~8% du codebase)
+  - 249 usages de `weddingPin`
+  - 95 usages de `proRecent`
+  - 94 usages de `MapMarkerType`
+- **Timeline Révisée**: 60-75h (vs 42-57h original, +30%)
+- **Document**: `docs/MAP_REFACTORING_VALIDATION_REPORT.md`
+- **Pré-requis avant Phase 1**:
+  - [x] Désactiver cron jobs ✅
+  - [x] Créer seed data pour `professional_fixed_locations` ✅
+  - [x] Appliquer corrections C1-C8 au plan ✅
+  - [x] Confirmer logique zoom inversée intentionnelle ✅
+
+### 2025-11-27 08:55 - Fix Cron Jobs Abusifs (4000+ requêtes/heure)
+- **Problème**: Base de dev générant 4000+ requêtes/heure sans activité
+- **Cause Racine**: 
+  - `notifications_outbox_drain` : cron `* * * * *` (toutes les minutes) + RLS bloquant
+  - `alerts_housekeeping` : erreurs 500 en boucle (RLS bloquant)
+- **Analyse**:
+  - 73 événements `videoIncoming` bloqués dans `notifications_outbox`
+  - Edge Functions utilisent `service_role` mais RLS n'avait pas de policies pour ce rôle
+  - Requêtes 403 sur: `device_tokens`, `user_preferences`, `notification_settings`, `profiles`
+- **Corrections Appliquées**:
+  - ✅ Migration `fix_rls_service_role_notifications` : 6 nouvelles policies RLS pour `service_role`
+  - ⚠️ **ACTION MANUELLE REQUISE**: Désactiver cron jobs via Dashboard Supabase → Database → Cron Jobs
+- **À Faire (TODO ajouté)**:
+  - Reconfigurer fréquences: `*/5 * * * *` pour drain, `0 * * * *` pour housekeeping
+  - Refonte architecture notifications (push vs poll) - voir PROJECT_TODO.md
+- **Impact**: Réduction drastique des requêtes une fois cron jobs désactivés
+
 ### 2025-11-26 15:45 - Address Search Widget: Implementation & Migration Complète
 - **Actions**: Création widget unifié + migration 5 écrans + documentation technique
 - **Changes**: 

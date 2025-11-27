@@ -32,13 +32,10 @@ enum Profession {
 
 enum MapMarkerType {
   professional,
-  fixedLocation,
-  proRecent,
+  proFixedLocation,
   professionalAlert,
   weddingPin,
   poiPrivate,
-  searchTarget,
-  user,
 }
 
 enum MapActionType {

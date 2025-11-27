@@ -302,59 +302,7 @@ class _AddFilterSheetWidgetState extends State<AddFilterSheetWidget> {
                             ),
                           ],
                         ),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Theme(
-                              data: ThemeData(
-                                checkboxTheme: CheckboxThemeData(
-                                  visualDensity: VisualDensity.compact,
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(0.0),
-                                  ),
-                                ),
-                                unselectedWidgetColor:
-                                    FlutterFlowTheme.of(context).secondaryText,
-                              ),
-                              child: Checkbox(
-                                value: _model.checkboxProRecentValue ??=
-                                    _model.showProRecent,
-                                onChanged: (newValue) async {
-                                  safeSetState(() => _model
-                                      .checkboxProRecentValue = newValue!);
-                                  if (newValue!) {
-                                    _model.showProRecent = true;
-                                    safeSetState(() {});
-                                  } else {
-                                    _model.showProRecent = false;
-                                    safeSetState(() {});
-                                  }
-                                },
-                                side: BorderSide(
-                                  width: 2,
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryText,
-                                ),
-                                activeColor:
-                                    FlutterFlowTheme.of(context).primary,
-                                checkColor: FlutterFlowTheme.of(context).info,
-                              ),
-                            ),
-                            Text(
-                              getMapMarkerTypeDisplayName(MapMarkerType.proRecent),
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    fontFamily: 'Haas Grot Text Trial',
-                                    fontSize: 12.0,
-                                    letterSpacing: 0.0,
-                                  ),
-                            ),
-                          ],
-                        ),
-                        // Masquer "Alert" pour les brides (uniquement visible pour les pros)
+                                                // Masquer "Alert" pour les brides (uniquement visible pour les pros)
                         if (FFAppState().selfPublicProfile.role == UserRole.professional)
                           Row(
                             mainAxisSize: MainAxisSize.min,

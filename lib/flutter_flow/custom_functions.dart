@@ -49,18 +49,15 @@ List<MapMarkerStruct> filterMapMarkers(
     switch (m.type) {
       case MapMarkerType.professional:
         return toggles.showPros ?? true;
-      case MapMarkerType.fixedLocation:
+      case MapMarkerType.proFixedLocation:
         return toggles.showFixedLocations ?? true;
-      case MapMarkerType.proRecent:
-        return toggles.showProRecent ?? true;
-      case MapMarkerType.poiPrivate:
+            case MapMarkerType.poiPrivate:
         return toggles.showBridePrivatePoi ?? true;
       case MapMarkerType.professionalAlert:
         return toggles.showProAlerts ?? true;
       case MapMarkerType.weddingPin: // <-- NOUVEAU
         return toggles.showWeddingPins ?? true;
       case MapMarkerType.searchTarget:
-      case MapMarkerType.user:
       default:
         return true;
     }

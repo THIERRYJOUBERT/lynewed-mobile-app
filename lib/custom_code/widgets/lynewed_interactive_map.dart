@@ -468,8 +468,7 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
       final d = _markerDataByKey[k];
       if (d == null || d.position == null) continue;
       final t = d.type ?? MapMarkerType.professional;
-      if (t == MapMarkerType.searchTarget || t == MapMarkerType.user) continue;
-      // WeddingPin désormais INCLUS
+            // WeddingPin désormais INCLUS
       candidates.add(d);
     }
 
@@ -585,19 +584,13 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
     switch (type) {
       case MapMarkerType.professionalAlert:
         return 5;
-      case MapMarkerType.user:
-        return 4.5;
-      case MapMarkerType.searchTarget:
-        return 4;
-      case MapMarkerType.weddingPin:
+                  case MapMarkerType.weddingPin:
         return 3.5;
       case MapMarkerType.professional:
         return 3;
-      case MapMarkerType.fixedLocation:
+      case MapMarkerType.proFixedLocation:
         return 2;
-      case MapMarkerType.proRecent:
-        return 1;
-      case MapMarkerType.poiPrivate:
+            case MapMarkerType.poiPrivate:
         return 0.5;
       default:
         return 0;
@@ -621,8 +614,7 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
     double size;
     switch (marker.type ?? MapMarkerType.professional) {
       case MapMarkerType.professional:
-      case MapMarkerType.fixedLocation:
-      case MapMarkerType.proRecent:
+      case MapMarkerType.proFixedLocation:
         size = _sizePro;
         break;
       case MapMarkerType.weddingPin:
@@ -632,9 +624,6 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
       case MapMarkerType.professionalAlert:
         size = _sizeAlert;
         break;
-      case MapMarkerType.searchTarget:
-        return gmaps.BitmapDescriptor.defaultMarkerWithHue(
-            gmaps.BitmapDescriptor.hueViolet);
       default:
         size = _sizeWeddingPoi;
         break;
@@ -658,9 +647,7 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
 
     switch (markerType) {
       case MapMarkerType.professional:
-      case MapMarkerType.fixedLocation:
-      case MapMarkerType.proRecent:
-      case MapMarkerType.user:
+      case MapMarkerType.proFixedLocation:
         {
           final ring = marker.styleInfo.borderColorHex != null
               ? _colorFromHex(marker.styleInfo.borderColorHex)
@@ -868,17 +855,8 @@ class _LynewedInteractiveMapState extends State<LynewedInteractiveMap> {
         .whereType<gmaps.Marker>()
         .toSet();
 
-    // Toujours visibles: searchTarget & user
+    // Toujours visibles: plus de searchTarget & user (supprimés)
     final forceNoCluster = <gmaps.Marker>{};
-    for (final k in _visibleMarkerKeys) {
-      final d = _markerDataByKey[k];
-      if (d == null) continue;
-      final t = d.type ?? MapMarkerType.professional;
-      if (t == MapMarkerType.searchTarget || t == MapMarkerType.user) {
-        final m = _markerCache[k];
-        if (m != null) forceNoCluster.add(m);
-      }
-    }
 
     final clusterMarkers = _visibleClusterKeys
         .map((k) => _clusterMarkerCache[k])

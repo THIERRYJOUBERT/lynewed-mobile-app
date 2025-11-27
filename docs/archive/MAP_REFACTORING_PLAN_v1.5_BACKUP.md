@@ -1,26 +1,6 @@
 # Plan de Refactorisation - Map Feature
 
-**Créé:** 2025-11-26 | **Version:** v1.6 | **Source:** `docs/audits/MAP_FEATURE_AUDIT.md`
-**Validation:** 2025-11-27 | **Statut:** ✅ GO VALIDÉ (corrections appliquées)
-
----
-
-## 📝 CHANGEMENTS v1.6 (Validation Corrections)
-
-### Corrections Critiques Appliquées
-1. **✅ Enum subscriptionTierType**: `trial` (pas `free`) aligné avec Supabase
-2. **✅ Table pro_recent_locations**: Documentée + Phase 2.5 ajoutée pour décision
-3. **✅ Limites zoom**: Inversées pour correspondre au RPC (2000→50 au lieu de 0→1000)
-4. **✅ connectionRequestSource**: `weddingPin`→`wedding` migration documentée
-5. **✅ professional_alerts**: Migration `motif_code`→`alert_type` détaillée
-6. **✅ Phase 2.5**: Migration pro_recent_locations (2-3h, décision requise)
-7. **✅ Timeline**: Révisée 60-75h (+30% réaliste)
-8. **✅ Seed data**: Prérequis fixed locations ajouté (table vide en dev)
-
-### Décisions Critiques - ✅ TOUTES VALIDÉES (2025-11-27)
-- **✅ pro_recent_locations**: **SUPPRIMER** MapMarkerType.proRecent (localisation temps réel abandonnée)
-- **✅ connectionRequestSource**: **MIGRER** enum `weddingPin`→`wedding` (cohérence Wedding)
-- **✅ professional_alerts**: **GARDER** `motif_code` pour compatibilité (migration progressive)
+**Créé:** 2025-11-26 | **Version:** v1.5 | **Source:** `docs/audits/MAP_FEATURE_AUDIT.md`
 
 ---
 
@@ -31,14 +11,13 @@
 | Phase 0: Préparation | 4-6h | 4-6h |
 | Phase 1: Nettoyage Enum | 2-3h | 6-9h |
 | Phase 2: Backend Wedding | 10-12h | 16-21h |
-| Phase 2.5: Migration pro_recent_locations | 2-3h | 18-24h |
-| Phase 3: Backend Alertes | 6-8h | 24-32h |
-| Phase 4: Flutter Structs | 10-12h | 34-44h |
-| Phase 5: Widgets UI | 12-14h | 46-58h |
-| Phase 6: Tests | 8-10h | 54-68h |
-| Phase 7: Déploiement | 6-7h | **60-75h** |
+| Phase 3: Backend Alertes | 4-6h | 20-27h |
+| Phase 4: Flutter Structs | 6-8h | 26-35h |
+| Phase 5: Widgets UI | 8-10h | 34-45h |
+| Phase 6: Tests | 4-6h | 38-51h |
+| Phase 7: Déploiement | 4-6h | **42-57h** |
 
-**Estimation révisée : ~1.5 semaine dev (60-75h)**
+**Estimation totale : ~1 semaine dev (42-57h)**
 
 ---
 
@@ -200,20 +179,13 @@ La structure `wedding_participants` avec `status = 'accepted'` permet de savoir 
 ### Migration des Données Existantes
 
 ```sql
--- Tables à supprimer
--- user_pois → Supprimés (aucune valeur réelle, 0 records)
--- pro_recent_locations → À supprimer si proRecent est retiré de MapMarkerType
-
--- wedding_pins → Migrés vers weddings (10 records en dev)
+-- user_pois → Supprimés (aucune valeur réelle)
+-- wedding_pins → Migrés vers weddings
 
 INSERT INTO weddings (bride_profile_id, event_date, venue_coords, ...)
 SELECT bride_profile_id, event_start_date, location_coords, ...
 FROM wedding_pins
 WHERE is_deleted = false;
-
--- NOTE: pro_recent_locations contient les positions récentes des pros
--- Décision requise: garder la table et le type proRecent, ou supprimer les deux?
--- Si suppression: désactiver section 3 du RPC search_map_bundle
 ```
 
 ---
@@ -232,11 +204,11 @@ WHERE is_deleted = false;
 
 | Niveau Zoom | Échelle | Limite Markers | Comportement |
 |-------------|---------|----------------|--------------|
-| ≤ 5 | Continent | 2000 | Maximum markers (vue d'ensemble) |
-| 6-8 | Pays | 800 | Vue régionale élargie |
-| 9-11 | Région | 300 | Affichage standard |
-| 12-14 | Ville | 100 | Limité pour performance |
-| ≥ 15 | Rue/Quartier | 50 | Très limité (vue détaillée) |
+| ≤ 5 | Continent | 0 | Message "Zoomez pour découvrir les professionnels" |
+| 6-8 | Pays | 100 | Priorité aux pros avec avatar + abonnement élevé |
+| 9-11 | Région | 300 | Affichage élargi, priorité maintenue |
+| 12-14 | Ville | 500 | Quasi tous les markers visibles |
+| ≥ 15 | Rue/Quartier | 1000 | Tous les markers, détails complets |
 
 #### Priorité d'Affichage (si limite atteinte)
 ```sql
@@ -470,43 +442,16 @@ CREATE TYPE alert_type AS ENUM (
 ```sql
 professional_alerts (mise à jour)
 ├── id, author_profile_id
-├── alert_type: alert_type (ENUM)        -- Type d'aide demandée (NOUVEAU)
+├── alert_type: alert_type (ENUM)        -- Type d'aide demandée
 ├── title: text (max 100)                -- "Besoin photographe 15 juin Paris"
 ├── description: text (max 500)          -- Détails
 ├── location_coords: geometry            -- Où
-├── event_date: date NOT NULL            -- Quand (obligatoire, NOUVEAU)
+├── event_date: date NOT NULL            -- Quand (obligatoire)
 ├── budget_offered: numeric?             -- ❌ Supprimé (entraide, pas rémunération)
 ├── profession_needed: profession?       -- Quelle profession cherchée
 ├── expires_at: timestamptz              -- Auto: event_date + 1 jour
-├── motif_code: text?                    -- EXISTANT (référence alert_motifs.code)
-├── duration_hours: smallint?            -- EXISTANT (utilisé pour expires_at)
 ├── status: 'active' | 'resolved' | 'expired'
 ├── created_at
-```
-
-### Migration professional_alerts
-
-**État actuel (12 records en dev):**
-- `motif_code`: text vers `alert_motifs.code` (table de référence)
-- `duration_hours` + `expires_at` (calculé depuis duration)
-- Pas de `event_date` ni `alert_type`
-
-**Migration requise:**
-```sql
--- 1. Créer enum alert_type (déjà dans le plan)
-CREATE TYPE alert_type AS ENUM (
-  'backup_needed', 'gear_emergency', 'team_member', 'emergency_help'
-);
-
--- 2. Ajouter colonnes
-ALTER TABLE professional_alerts
-ADD COLUMN alert_type alert_type,
-ADD COLUMN event_date date;
-
--- 3. Migrer motif_code → alert_type (mapping à définir)
--- Besoin de mapper les codes existants vers les 4 nouveaux types
-
--- 4. Décision: garder motif_code pour compatibilité ou supprimer?
 ```
 
 ### Règles Métier Alertes
@@ -546,29 +491,32 @@ PRO CRÉE                                  AUTRE PRO
 
 | Tier | Prix/mois | Prix/an |
 |------|-----------|---------|
-| **Trial** | $0 | $0 |  <!-- NOTE: "Trial" pas "Free" dans Supabase enum -->
+| **Free** | $0 | $0 |
 | **Early Access** | $42 | $444 |
 | **Premium Visibility** | $64 | $700 |
 | **Ultimate Access** | $94 | $1000 |
 
 ### Matrice Visibilité Map
 
-| Élément Map | Trial | Early | Premium | Ultimate |
-|-------------|-------|-------|---------|----------|
+| Élément Map | Free | Early | Premium | Ultimate |
+|-------------|------|-------|---------|----------|
 | **Voir pros sur map** | ✅ | ✅ | ✅ | ✅ |
 | **Être visible sur map** | ❌ | ✅ | ✅ | ✅ |
+| **Voir alertes** | ✅ | ✅ | ✅ | ✅ |
+| **Créer alertes** | ✅ | ✅ | ✅ | ✅ |
+| **Voir mariages visibles** | ❌ | ❌ | ✅ | ✅ |
+| **Demander contact bride** | ❌ | ❌ | ✅ | ✅ |
 
 ### Règles Clés
 
-1. **Pro inactive** ne peut pas utiliser la map (compte désactivé)
-2. **Pro trial** peut explorer la map mais n'est pas visible (visibilité limitée)
-3. **Alertes** accessibles à tous (valeur communautaire, pas de paywall)
-4. **Mariages visibles** réservés Premium+ (fonctionnalité premium)
-5. **Être visible sur map** = Early Access minimum
+1. **Pro Free** peut explorer la map mais n'est pas visible (incitation)
+2. **Alertes** accessibles à tous (valeur communautaire, pas de paywall)
+3. **Mariages visibles** réservés Premium+ (fonctionnalité premium)
+4. **Être visible sur map** = Early Access minimum
 
 ---
 
-## PLAN D'ACTION COMPLET
+## 🚀 PLAN D'ACTION COMPLET
 
 ### Phase 0: Préparation & Sécurité 🔒 (4-6h)
 | Tâche | Description | Risque | Validation |
@@ -578,7 +526,6 @@ PRO CRÉE                                  AUTRE PRO
 | **Rollback plan** | Script de restauration automatique | Faible | ✅ Script testé |
 | **Environnement test** | Clone staging avec données réelles | Faible | ✅ Staging prêt |
 | **Monitoring** | Alertes performance + erreurs map | Faible | ✅ Dashboards ok |
-| **Seed data fixed locations** | Créer 10+ professional_fixed_locations pour tests | Faible | ⚠️ À FAIRE |
 
 ### Phase 1: Nettoyage Enum & Code Mort 🧹 (2-3h)
 | Tâche | Fichier | Risque | Dépendance |
@@ -603,41 +550,12 @@ PRO CRÉE                                  AUTRE PRO
 | **Mettre à jour autres RPCs** | `get_wedding_details`, `insert_wedding`, etc. | Moyen | weddings |
 | **Mettre à jour RLS** | Politiques weddings par bride | Moyen | weddings |
 | **Supprimer table `user_pois`** | Après validation complète | Faible | Tests OK |
-| **Migrer connectionRequestSource** | `weddingPin`→`wedding` enum value | Moyen | Tests OK |
 
 **✅ Validation Phase 2:** API retourne weddings + migration 100% + RLS sécurisé
 
-**Migration connectionRequestSource:**
-```sql
--- Migrer les données existantes
-UPDATE connection_requests 
-SET source = 'wedding' 
-WHERE source = 'weddingPin';
-
--- Renommer la valeur dans l'enum
-ALTER TYPE "connectionRequestSource" RENAME VALUE 'weddingPin' TO 'wedding';
-```
-
 ---
 
-### Phase 2.5: Migration pro_recent_locations 🔄 (2-3h) - ✅ DÉCISION PRISE
-| Tâche | Description | Risque | Dépendance |
-|-------|-------------|--------|------------|
-| ~~**Décider sur proRecent**~~ | ✅ **SUPPRIMER** MapMarkerType.proRecent | - | ✅ Décidé |
-| **Désactiver section 3 RPC** | Retirer proRecent de search_map_bundle | Moyen | Phase 2 |
-| **Archiver table** | Archiver pro_recent_locations (pas supprimer) | Faible | RPC désactivé |
-| **Supprimer toggle UI** | Retirer showProRecent des filtres Flutter | Faible | Aucune |
-| **Mettre à jour enums Flutter** | Supprimer proRecent de MapMarkerType | Moyen | Aucune |
-
-**✅ Décision validée (2025-11-27):**
-- **SUPPRIMER proRecent** - Fonctionnalité localisation temps réel abandonnée
-- Table archivée (pas supprimée) pour historique
-
-**✅ Validation Phase 2.5:** proRecent supprimé + table archivée + UI nettoyée
-
----
-
-### Phase 3: Backend Alertes & Abonnements 🚨 (6-8h)
+### Phase 3: Backend Alertes & Abonnements 🚨 (4-6h)
 | Tâche | Description | Risque | Dépendance |
 |-------|-------------|--------|------------|
 | **Créer `alert_type` enum** | 4 types d'entraide (backup, gear, team, emergency) | Faible | Aucune |

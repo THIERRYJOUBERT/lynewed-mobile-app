@@ -41,11 +41,9 @@ String getMapMarkerTypeDisplayName(MapMarkerType markerType) {
   switch (markerType) {
     case MapMarkerType.professional:
       return 'Professional';
-    case MapMarkerType.fixedLocation:
-      return 'Fixed Location';
-    case MapMarkerType.proRecent:
-      return 'Recent Pro';
-    case MapMarkerType.professionalAlert:
+    case MapMarkerType.proFixedLocation:
+      return 'Pro Fixed Location';
+        case MapMarkerType.professionalAlert:
       return 'Alert';
     case MapMarkerType.weddingPin:
       return 'Wedding Pin';
@@ -53,9 +51,7 @@ String getMapMarkerTypeDisplayName(MapMarkerType markerType) {
       return 'Private POI';
     case MapMarkerType.searchTarget:
       return 'Search Target';
-    case MapMarkerType.user:
-      return 'User';
-    default:
+        default:
       return markerType.name;
   }
 }

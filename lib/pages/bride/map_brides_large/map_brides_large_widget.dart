@@ -163,8 +163,7 @@ class _MapBridesLargeWidgetState extends State<MapBridesLargeWidget> {
                         onMarkerTap: (marker) async {
                           var shouldSetState = false;
                           if ((marker.type == MapMarkerType.professional) ||
-                              (marker.type == MapMarkerType.fixedLocation) ||
-                              (marker.type == MapMarkerType.proRecent)) {
+                              (marker.type == MapMarkerType.proFixedLocation)) {
                             _model.proDetailsFromAction =
                                 await actions.getProItemDetailsAction(
                               marker.id,
@@ -834,12 +833,13 @@ class _MapBridesLargeWidgetState extends State<MapBridesLargeWidget> {
                                                   'en',
                                                 ),
                                                 onAddressSelected: (PlaceDetailsDataStruct details) {
-                                                  _model.psSearchTargetMarker =
-                                                      MapMarkerStruct(
-                                                    id: 'search_target',
-                                                    type: MapMarkerType.searchTarget,
-                                                    position: details.coords,
-                                                  );
+                                                  // TODO: Convert searchTarget to overlay (Phase 2+)
+                                                  // _model.psSearchTargetMarker =
+                                                  //     MapMarkerStruct(
+                                                  //   id: 'search_target',
+                                                  //   type: MapMarkerType.searchTarget, // REMOVED from enum
+                                                  //   position: details.coords,
+                                                  // );
                                                   _model.psMapCommand =
                                                       MapCommandStruct(
                                                     id: random_data.randomString(

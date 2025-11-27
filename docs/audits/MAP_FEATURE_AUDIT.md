@@ -1,10 +1,11 @@
 # Audit Complet - Fonctionnalité Map
 
-**Date:** 2025-11-26 (Mise à jour majeure)  
-**Version précédente:** 2025-11-25  
+**Date:** 2025-11-27 (Validation complète)  
+**Version précédente:** 2025-11-26  
 **Scope:** Map feature for brides and pros to view location markers  
 **Projet:** Lynewed Mobile App v1.1.1+59  
-**Environnement:** Développement (hekyovgnovhfhmkpfrna)
+**Environnement:** Développement (hekyovgnovhfhmkpfrna)  
+**Statut:** ✅ **VALIDÉ POUR REFACTORISATION** - Voir `MAP_REFACTORING_PLAN.md` v1.6
 
 ---
 
@@ -22,6 +23,35 @@
 | 🟠 MAJEUR | **user enum inutilisé** - Aucune utilisation réelle | Code mort | §10.6 |
 | 🟡 MOYEN | **Structs FlutterFlow verbeux** - Code généré non optimisé | Maintenance difficile | §10.7 |
 | 🟡 MOYEN | **WeddingPinItemDataStruct** - Champs poiId et source inutilisés | Confusion, dette technique | §10.8 |
+
+---
+
+## 📊 RÉSULTATS VALIDATION (2025-11-27)
+
+### Audit Supabase MCP - État Réel
+| Table | Records | État | Action requise |
+|-------|---------|------|----------------|
+| `wedding_pins` | 10 | ✅ Données réelles | Migrer vers `weddings` |
+| `user_pois` | 0 | ✅ Vide | Supprimer |
+| `professional_alerts` | 12 | ✅ Données | Migrer `motif_code`→`alert_type` |
+| `professional_fixed_locations` | 0 | ❌ Vide | Seed data créé (12 records) |
+| `pro_recent_locations` | 0+ | ⚠️ Non documentée | **SUPPRIMER** (décision prise) |
+
+### Corrections Critiques Appliquées
+1. **Enum subscriptionTierType**: `trial` (pas `free`) aligné avec Supabase
+2. **Limites zoom**: Inversées (2000→50) pour correspondre au RPC actuel  
+3. **connectionRequestSource**: Migration `weddingPin`→`wedding` planifiée
+4. **Timeline révisée**: 60-75h (+30% réaliste, 55 fichiers impactés)
+
+### Décisions Finales Prises
+- **proRecent** → **SUPPRIMER** (localisation temps réel abandonnée)
+- **motif_code** → **GARDER** pour compatibilité (migration progressive)
+- **connectionRequestSource** → **MIGRER** pour cohérence Wedding
+
+### Documents de Référence
+- **Source de vérité implémentation**: `MAP_REFACTORING_PLAN.md` v1.6
+- **Validation complète**: `archive/MAP_REFACTORING_VALIDATION_REPORT.md`
+- **Pré-vol checklist**: `archive/MAP_REFACTORING_PREFLIGHT_CHECKLIST.md`
 
 ---
 
