@@ -10,14 +10,15 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/entities.dart';
 
 /// Configuration des limites par niveau de zoom
-/// Inversé pour correspondre au RPC actuel (2000→50)
+/// Style Uber/Relay: PLUS de markers au zoom faible (vue d'ensemble)
+/// MOINS de markers au zoom élevé (détail, performance)
 class ZoomLimits {
   static int getLimit(double zoom) {
-    if (zoom < 6) return 50;      // Très dézoomé
-    if (zoom < 8) return 100;     // Continental
-    if (zoom < 10) return 300;    // Régional
-    if (zoom < 12) return 500;    // Ville
-    return 1000;                   // Quartier
+    if (zoom <= 5) return 2000;   // Continent - vue d'ensemble max
+    if (zoom <= 8) return 800;    // Pays - vue régionale élargie
+    if (zoom <= 11) return 300;   // Région - affichage standard
+    if (zoom <= 14) return 100;   // Ville - limité pour performance
+    return 50;                     // Rue/Quartier - très limité (vue détaillée)
   }
 }
 

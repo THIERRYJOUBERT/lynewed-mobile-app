@@ -146,8 +146,13 @@ class SupabaseMapRepository implements MapRepository {
       venueAddress: data['venue_address'] ?? data['label'] as String?,
       visibility: WeddingVisibility.fromString(data['visibility']),
       guestCount: data['guest_count'] as int?,
-      budget: (data['budget'] as num?)?.toDouble(),
+      budgetMin: (data['budget_min'] as num?)?.toDouble(),
+      budgetMax: (data['budget_max'] as num?)?.toDouble(),
       currency: data['currency'] as String? ?? 'EUR',
+      professionsNeeded: (data['professions_needed'] as List?)
+          ?.map((e) => e.toString())
+          .toList() ?? [],
+      searchRadiusKm: data['radius_km'] as int? ?? 50,
       notes: data['notes'] as String?,
       createdAt: DateTime.tryParse(data['created_at'] ?? ''),
       brideName: profile['full_name'] as String?,

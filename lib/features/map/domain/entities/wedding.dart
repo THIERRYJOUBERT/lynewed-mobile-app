@@ -50,8 +50,11 @@ class Wedding {
     this.venueAddress,
     this.visibility = WeddingVisibility.private,
     this.guestCount,
-    this.budget,
+    this.budgetMin,
+    this.budgetMax,
     this.currency = 'EUR',
+    this.professionsNeeded = const [],
+    this.searchRadiusKm = 50,
     this.notes,
     this.createdAt,
     this.brideName,
@@ -82,11 +85,20 @@ class Wedding {
   /// Nombre d'invités estimé
   final int? guestCount;
 
-  /// Budget estimé
-  final double? budget;
+  /// Budget minimum
+  final double? budgetMin;
+
+  /// Budget maximum
+  final double? budgetMax;
 
   /// Devise
   final String currency;
+
+  /// Professions recherchées par la bride
+  final List<String> professionsNeeded;
+
+  /// Rayon de recherche en km
+  final int searchRadiusKm;
 
   /// Notes privées de la bride
   final String? notes;
@@ -132,8 +144,11 @@ class Wedding {
     String? venueAddress,
     WeddingVisibility? visibility,
     int? guestCount,
-    double? budget,
+    double? budgetMin,
+    double? budgetMax,
     String? currency,
+    List<String>? professionsNeeded,
+    int? searchRadiusKm,
     String? notes,
     DateTime? createdAt,
     String? brideName,
@@ -148,8 +163,11 @@ class Wedding {
       venueAddress: venueAddress ?? this.venueAddress,
       visibility: visibility ?? this.visibility,
       guestCount: guestCount ?? this.guestCount,
-      budget: budget ?? this.budget,
+      budgetMin: budgetMin ?? this.budgetMin,
+      budgetMax: budgetMax ?? this.budgetMax,
       currency: currency ?? this.currency,
+      professionsNeeded: professionsNeeded ?? this.professionsNeeded,
+      searchRadiusKm: searchRadiusKm ?? this.searchRadiusKm,
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
       brideName: brideName ?? this.brideName,
