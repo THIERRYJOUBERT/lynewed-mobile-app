@@ -2,7 +2,7 @@
 
 ## 📋 **Vue d'ensemble**
 
-Widget Flutter unifié pour la recherche d'adresses avec autocomplete Google Places, remplaçant le code dupliqué dans 5 écrans de l'application.
+Widget Flutter unifié pour la recherche d'es avec autocomplete Google Places, remplaçant le code dupliqué dans 5 écrans de l'application.
 
 ## 🎯 **Fonctionnalités**
 
@@ -32,7 +32,7 @@ import '/compo_finaux/address_search/address_search_widget.dart';
 AddressSearchWidget(
   width: double.infinity,
   height: 50.0,
-  hintText: 'Rechercher une ville ou adresse',
+  hintText: 'Rechercher une ville ou e',
   locale: 'fr',
   debounceMs: 200,
   
@@ -116,7 +116,7 @@ Input Text → Debounce → Google Places API → Suggestions → Overlay
 ### Ordre d'Exécution des Callbacks
 1. `onSearchTextChanged` (à chaque frappe)
 2. `onSuggestionsVisibilityChanged(true)` (quand suggestions apparaissent)
-3. `onAddressSelected` (quand adresse sélectionnée)
+3. `onAddressSelected` (quand e sélectionnée)
 4. `onSuggestionsVisibilityChanged(false)` (quand suggestions disparaissent)
 
 ## 🔧 **Dépannage**
@@ -174,7 +174,7 @@ AddressSearchWidget(
 
 ### Priorité Moyenne
 - [ ] **Types de lieux** : Filtrer par catégories (restaurants, hotels...)
-- [ ] **Historique** : Afficher les adresses récemment recherchées
+- [ ] **Historique** : Afficher les es récemment recherchées
 - [ ] **Autocomplete amélioré** : Suggestions basées sur les préférences utilisateur
 
 ### Priorité Basse

@@ -125,7 +125,7 @@ curl -X POST 'https://hekyovgnovhfhmkpfrna.supabase.co/functions/v1/send-verific
 
 Pour toute question sur ces configurations :
 1. Consulter `SECRETS_TRACKING.md` pour les détails des secrets
-2. Vérifier `PROJECT_STATUS.md` pour le changelog des modifications
+2. Vérifier `PROJECT.md` pour l'état du projet
 3. Utiliser ce guide pour les tests et dépannage
 
 ---

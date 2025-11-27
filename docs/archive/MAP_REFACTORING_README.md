@@ -1,8 +1,8 @@
 # Map Refactoring - Guide de Démarrage Rapide
 
 **Date:** 2025-11-27  
-**Statut:** ✅ **BACKEND VALIDÉ - TESTS SIMULATEUR REQUIS**  
-**Version:** v1.7  
+**Statut:** ⚠️ **CORRECTIONS UI/UX REQUISES** (Tests simulateur effectués)  
+**Version:** v1.8  
 
 ---
 
@@ -45,52 +45,66 @@ Refactorisation complète de la fonctionnalité Map pour simplifier le code, am�
 
 ---
 
-## 🎉 VALIDATION BACKEND TERMINÉE - ÉTAPE FINALE
+## ⚠️ TESTS SIMULATEUR EFFECTUÉS - CORRECTIONS REQUISES
 
-### ✅ Audit Backend Complet (2025-11-27)
-- **Performance RPC**: `search_map_bundle` = 44ms (optimal)
-- **Index PostGIS**: 6 index GiST validés
-- **RLS Policies**: 13 policies correctes
-- **Mapping RPC↔Entités**: 100% compatible
-- **Nettoyage**: 3 tables obsolètes supprimées
+### ✅ Ce qui fonctionne
+- Build réussi, app lancée sans crash
+- Map affiche la vue correctement
+- Backend 100% compatible (RPC 44ms)
 
-### 📋 Référence Audit Complet
-- **Rapport**: `docs/MAP_BACKEND_AUDIT_REPORT.md`
-- **Verdict**: ✅ **BACKEND 100% COMPATIBLE**
+### ❌ Problèmes Identifiés (2025-11-27 12:00)
+
+| Catégorie | Problème | Impact |
+|-----------|----------|--------|
+| **Design System** | Couleurs/style non respectés | Haut |
+| **Layout Map** | Boutons zoom manquants | Moyen |
+| **Layout Map** | AddressSearch non intégré | Moyen |
+| **Layout Map** | FAB création wedding/alert manquant | Haut |
+| **Layout Map** | Bouton géoloc non fonctionnel | Moyen |
+| **Layout Map** | Style map (satellite) manquant | Bas |
+| **Filtres** | UI incorrect | Haut |
+| **Filtres** | Filtrage professions non fonctionnel | Haut |
+| **Markers** | Pins identiques au lieu cercles avatar | Haut |
+| **Sheets Pro** | Style incorrect, boutons non fonctionnels | Haut |
+| **Sheets Wedding** | Style incorrect, boutons non fonctionnels | Haut |
+| **Sheets Alert** | Style incorrect, boutons non fonctionnels | Haut |
 
 ---
 
-## 🚀 ÉTAPE FINALE - Tests Simulateur
+## 🔧 PLAN DE CORRECTION
 
-**Objectif**: Validation finale avant merge main
+**Source de vérité**: `docs/MAP_CORRECTION_PLAN.md`  
+**Effort total estimé**: 17-24h
 
-### Tests à Effectuer
-1. **iOS Simulator**
-   - Lancer app avec `flutter run -d ios`
-   - Tester navigation map bride/pro
-   - Valider affichage markers et filtres
+### 7 Phases de Correction
 
-2. **Android Simulator** 
-   - Lancer app avec `flutter run -d android`
-   - Tester flux map complet
-   - Valider performance < 1s
+| Phase | Description | Effort | Priorité |
+|-------|-------------|--------|----------|
+| 0 | Design System Unifié | 2-3h | 1 |
+| 1 | Restauration Layout Map | 3-4h | 2 |
+| 2 | Correction Filtres | 2-3h | 3 |
+| 3 | Markers Style Correct | 2-3h | 4 |
+| 4 | Sheets avec Design System | 4-5h | 5 |
+| 5 | Actions Fonctionnelles | 3-4h | 6 |
+| 6 | Tests Finaux | 1-2h | 7 |
 
-### Validation Checklist
-- [ ] Navigation map fonctionne
-- [ ] Markers affichés correctement
-- [ ] Filtres appliqués correctement  
-- [ ] Sheets détails s'ouvrent
-- [ ] Performance fluide
+### Stratégie Validée
+**Option B (VALIDÉE)**: Créer de nouveaux composants propres
 
-**Après validation**: ✅ **PRÊT POUR MERGE MAIN**  
-3. Renommer `fixedLocation` → `proFixedLocation`
-4. `searchTarget` → overlay (plus sur map)
-5. Nettoyer code mort dans `LynewedInteractiveMap`
+**RÈGLE ABSOLUE DU PROJET:**
+- ❌ **JAMAIS** réutiliser les composants FlutterFlow existants
+- ✅ **TOUJOURS** créer de nouveaux composants dans `lib/features/map/`
+- ✅ **TOUJOURS** appliquer le Design System unifié (`lib/core/design/`)
+- ✅ S'inspirer du code FlutterFlow pour les fonctionnalités, mais NE PAS le réutiliser
 
-### Impact
-- **55 fichiers** Flutter à modifier (~8% codebase)
-- **249 usages** de `weddingPin` à migrer
-- **95 usages** de `proRecent` à supprimer
+---
+
+## 📝 PROCHAINE ACTION
+
+1. ✅ **Stratégie validée**: Option B (créer nouveaux composants propres)
+2. **Démarrer Phase 0**: Créer le Design System unifié (`lib/core/design/`)
+3. **Documenter**: `docs/DESIGN_SYSTEM.md`
+4. **Appliquer**: Corrections UI/UX sur composants map
 
 ---
 

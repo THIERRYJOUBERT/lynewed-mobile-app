@@ -1,332 +1,141 @@
-# TODO & Améliorations Techniques - LYNEWED App
+# PROJECT TODO - Idées & Tâches à Venir
 
 **Document créé:** 2025-11-26  
-**Last Updated:** 2025-11-27 11:40  
+**Last Updated:** 2025-11-27  
 **Objectif:** Gestion des tâches à faire et idées d'améliorations techniques  
-**Version:** v1.5
+**Version:** v2.0 (Structure spécialisée)
 
 ---
 
-## 🚨 **PRIORITÉS IMMÉDIATES**
+## 🎯 Tâches Prochaines (non-précises, temps-flexible)
 
-### 🐛 Bug Fixes Critiques
-- [✅] **Portfolio Images Bug** - Corrigé : slideshow_images rempli avec les mêmes images que portfolio_images (2025-11-26)
-- [✅] **Google Places API** - Migré vers SDK natif (`flutter_google_places_sdk`) - Sécurisé avec restrictions bundle ID (2025-11-26)
-- [✅] **Cron Jobs Abusifs** - Désactivés et corrigés (2025-11-27)
-  - ✅ `notifications_outbox_drain` : Désactivé via Dashboard
-  - ✅ `alerts_housekeeping` : Erreurs RLS identifiées et désactivées
-  - ✅ Base de dev stabilisée (plus de 4000+ requêtes/heure)
-- [ ] **Performance PostGIS** - Optimiser requêtes géospatiales avec grand volume
+### 🚨 Immediate Priority Thoughts
+- "Penser à finaliser les corrections UI/UX du module map" - Phase 1 en cours mais pourrait nécessiter ajustements
+- "Évaluer possibilité de créer des composants réutilisables pour les autres modules" - Le design system est prêt, l'appliquer partout
+- "Documenter le pattern Clean Architecture adopté" - Utile pour les futurs modules (auth, chat, etc.)
 
-### 🗺️ **MAP REFACTORING** - VALIDATION FINALE
-- [✅] **MAP REFACTORING PLAN** - Backend audité et nettoyé (2025-11-27)
-  - 📋 **Source de vérité**: `MAP_REFACTORING_PLAN.md` v1.6 (60-75h)
-  - ✅ Prérequis validés (seed data, décisions, cron jobs désactivés)
-  - ✅ Phases 1-7 terminées: Enum, Module Clean Architecture, Navigation, Tests
-  - ✅ Backend audité: RPC `search_map_bundle` (44ms), index PostGIS, RLS policies
-  - ✅ Nettoyage effectué: tables obsolètes supprimées, RPC obsolètes nettoyées
-  - 📊 **Impact**: 55 fichiers Flutter (~8% codebase) + 3 tables Supabase supprimées
-  - 🔗 **Référence technique**: `docs/MAP_BACKEND_AUDIT_REPORT.md` (audit complet)
-  - ⏳ **ÉTAPE FINALE**: Tests réels sur simulateur iOS/Android requis
-
-### 🧪 Tests & Validation - ÉTAPE FINALE MAP
-- [🔄] **Tests Simulateur Map Module** - Validation finale avant déploiement (2025-11-27)
-  - 📱 **Tests iOS**: Lancer app sur simulateur iOS, tester flux map complet
-  - 🤖 **Tests Android**: Lancer app sur simulateur Android, tester flux map complet  
-  - 🗺️ **Validation Map**: 
-    - ✅ Navigation map bride/pro fonctionne
-    - ✅ Markers affichés correctement (pros, alertes, wedding pins)
-    - ✅ Filtres map appliqués correctement
-    - ✅ Sheets détails s'ouvrent avec bonnes données
-    - ✅ Performance fluide (< 1s chargement)
-  - 🎯 **Objectif**: Validation finale refactorisation map avant merge main
-- [ ] **Tests End-to-End** - Valider tous les flux avec données seeded (Agora, Resend, Firebase, Places, Supabase Realtime)
-- [ ] **Performance App** - Valider performance avec 40 utilisateurs et dataset complet
-- [ ] **Monitoring Setup** - Implémenter crash reporting et analytics
-
-### 📚 Documentation Urgente
-- [ ] **Documentation API** - Documenter toutes les fonctions RPC et edge functions
+### 🗺️ Map Module - Thoughts en cours
+- "Les corrections de layout pourraient révéler d'autres problèmes UI" - Prévoir temps pour ajustements itératifs
+- "Peut-être que les filtres nécessitent une refonte complète" - Le code existant est complexe
+- "Faudrait penser à optimiser les performances des markers avec grand volume" - PostGIS est OK mais UI pourrait ramer
+- "Les sheets avec design system pourraient nécessiter des composants dédiés" - Créer des sheets réutilisables
 
 ---
 
-## 📋 **TO-DO LIST - Développement Application V2**
+## 💡 Idées & Réflexions
 
-### 🏗️ ARCHITECTURE & SÉCURITÉ (Socle V1)
-- [ ] Restructuration complète base de données Supabase
-- [ ] Nettoyage et suppression du code fantôme
-- [ ] Audit complet de sécurité + correction des vulnérabilités
-- [ ] Atteindre "Zéro Warnings" sur Supabase
-- [ ] Optimisation des temps de chargement de l'App
-- [ ] Standardisation du code pour Android
-- [ ] Adaptation architecture technique pour Play Store
-- [ ] Préparation complète déploiement Android
-- [ ] Mise à jour et nettoyage des options d'abonnements
-- [ ] Livraison documentation architecture technique (Flux CRM ↔ App ↔ Site)
+### Architecture Future
+- "Explorer la possibilité de migrer vers Riverpod pour le state management" - BLoC est bien mais verbeux
+- "Penser à créer un système de plugins pour les features" - Architecture modulaire encore plus flexible
+- "Évaluer l'idée de séparer le code métier du code UI complètement" - Pure Clean Architecture
+- "Considérer l'ajout d'une couche de cache intelligente" - Pour les données fréquemment accédées
 
-### 🔧 REFACTORING TECHNIQUE
-- [ ] Revoir les datatypes - Nettoyer et restructurer proprement
-- [ ] Gestion professional_details
-- [ ] Autres datatypes mal définis
-- [✅] **Widget AddressSearchWidget** - Composant réutilisable créé et migration COMPLÈTE (2025-11-26)
-  - ✅ Migré: feed_brides, map_brides_large, map_pro_large, create_edit_alert_sheet, create_edit_point_of_interest_sheet
-  - ✅ 5/5 écrans migrés avec 0 erreurs de compilation
-  - ✅ Mode overlay avec positionnement flexible (below/above)
-  - ✅ Container dynamique AnimatedContainer (420px) pour mapLarge
-  - ✅ Documentation technique complète: `docs/App/ADDRESS_SEARCH_WIDGET.md`
-  - ✅ Nettoyage des fichiers temporaires et optimisation du code
-- [ ] Ajouter colonne "is_ambassador" dans profiles (boolean) + "ambassador_since" (timestamptz)
-- [ ] Nettoyage FlutterFlow - Refactoriser code verbeux généré en Flutter propre
-- [ ] Gestion Erreurs - Améliorer messages d'erreur et feedback utilisateur
-- [ ] Architecture - Implémenter patterns clean architecture
-- [ ] Performance - Optimiser requêtes DB et rendu UI
+### Performance & Optimisation
+- "Réfléchir à implémenter du lazy loading pour les images des profils" - Améliorerait la vitesse de chargement
+- "Penser à optimiser les requêtes Supabase avec du batch processing" - Réduire le nombre d'appels
+- "Explorer l'idée de précharger les données critiques en arrière-plan" - Meilleure UX
+- "Considérer l'implémentation de WebSockets pour le temps réel" - Au lieu de polling
 
-### 🔐 SÉCURITÉ & INFRASTRUCTURE
-- [ ] **Android SHA-1 Security** : Ajouter restrictions SHA-1 pour clé API Google Places Android
-  - Actuel : Clé configurée mais sans restrictions SHA-1
-  - Action : Récupérer SHA-1 du certificat de production et ajouter aux restrictions Google Cloud Console
-  - Priorité : Haute (sécurité production)
-
-### 🎨 DESIGN SYSTEM & UI/UX
-- [ ] Créer/uniformiser le design system propre de l'application
-- [ ] Définir les composants réutilisables
-- [ ] Standardiser les styles et tokens
-- [ ] **Navigation back** - Revoir la navigation retour (lent, mal conçu, ne fonctionne pas bien)
-- [ ] **Sélection pays** - Améliorer la recherche de pays avec search, ajouter les pays manquants (ex: Japon) dans le feed
-
-### 🌍 LOCALISATION & LANGUES
-- [ ] Implémenter système multilingue
-- [ ] Définir les langues supportées
-- [ ] Traduction complète de l'interface
-- [ ] Tests des langues
-
-### 🍎 COMPTES DÉVELOPPEUR
-- [ ] Configuration compte Apple Developer propre
-- [ ] Gestion et paramétrage du compte
-
-### 🇮🇳 MARCHÉ INDIEN - SEGMENTATION GÉOGRAPHIQUE
-- [ ] Mettre en place filtre géographique hermétique
-- [ ] Configurer : Utilisateurs Inde = contenu Indien uniquement
-- [ ] Configurer : Utilisateurs hors Inde = pas de contenu Indien
-- [ ] Créer onglet Admin dédié pour gestion contenu Inde séparé
-- [ ] Tester la segmentation stricte (Brides & Vendors)
-
-### 📍 LOCALISATION & CARTOGRAPHIE
-*(Toutes les tâches de cartographie sont gérées dans MAP_REFACTORING_PLAN.md)*
-
-### 👤 GESTION PROFILS PROS
-#### Statut & Visibilité
-- [ ] Gestion pro inactif - Définir comportement fiche pro inactive
-- [ ] Définir règles d'affichage pros inactifs
-- [ ] Message/statut pour pros inactifs
-- [ ] Tests affichage selon statut
-
-#### Fiches Pros - Photo & Vidéo
-- [ ] Mise en page spécifique : Vidéo en en-tête
-- [ ] Grille de 4 photos en dessous de la vidéo
-- [ ] Slider vertical pleine page
-- [ ] Intégration liens externes (YouTube/Vimeo)
-- [ ] Correction ratio d'image photos (éviter effet "square")
-- [ ] Option prévisualisation (carré 9:16) dans CRM lors upload
-
-#### Fiches Pros - Fonctionnalités
-- [ ] Ajouter bouton/icon "Disponibilités" (Upcoming Travels)
-- [ ] Gestion modale des disponibilités via CRM
-
-### 🔔 FEED PRO & VISIBILITÉ (Mise à jour 2025-11-26)
-
-**Décision Thierry:** Feed visible côté Pro + Bride, mais visibilité payante séparée de l'abonnement.
-
-#### Structure
-- [ ] **Créer Feed côté Pro** - Miroir du feed bride
-- [ ] **Ajouter `is_feed_visible`** dans professional_details (boolean, default false)
-- [ ] **Ajouter `feed_visibility_expires_at`** dans professional_details (timestamptz)
-- [ ] **Paiement unique $900/an** - Pas lié à l'abonnement, séparé
-- [ ] **Exception Ambassadeurs** - Feed gratuit si `is_ambassador = true`
-- [ ] **Créer flow paiement** pour activer visibilité feed
-
-#### Règles Métier
-| Condition | Visible dans Feed |
-|-----------|------------------|
-| `is_feed_visible = true` ET `feed_visibility_expires_at > now()` | ✅ |
-| `is_ambassador = true` | ✅ |
-| Sinon | ❌ (trouvable via map/filtres) |
-
-### 🏅 AMBASSADEURS (Nouveau 2025-11-26)
-
-**Concept:** Titre honorifique (pas un rôle) pour fidéliser les pros actifs.
-
-- [ ] **Ajouter `is_ambassador`** dans profiles (boolean, default false)
-- [ ] **Ajouter `ambassador_since`** dans profiles (timestamptz, nullable)
-- [ ] **Badge profil** - Afficher "Ambassador" sur le profil public
-- [ ] **Avantage Feed** - Visibilité gratuite (pas besoin des $900)
-- [ ] **Interface Admin** - Permettre attribution/retrait du titre
-- [ ] **Définir autres avantages** avec Thierry (à clarifier)
-
-### 💰 PLANS D'ABONNEMENT (Clarification 2025-11-26)
-
-**Source:** Mail Thierry + Site lynewed.com/professionals
-
-#### Tiers Validés
-```dart
-enum SubscriptionTier {
-  free,              // Pas d'abonnement
-  earlyAccess,       // $42/mo ou $444/an
-  premiumVisibility, // $64/mo ou $700/an  
-  ultimateAccess,    // $94/mo ou $1000/an
-}
-```
-
-#### Matrice Fonctionnalités à Implémenter
-| Fonctionnalité | Free | Early | Premium | Ultimate |
-|----------------|------|-------|---------|----------|
-| Profil basique | ✅ | ✅ | ✅ | ✅ |
-| Visible sur map | ❌ | ✅ | ✅ | ✅ |
-| Live mode | ❌ | ✅ | ✅ | ✅ |
-| CRM clients | ❌ | 5 | 10 | ∞ |
-| Vendor-to-vendor chat | ❌ | ❌ | ✅ | ✅ |
-| Contactable par couples | ❌ | ❌ | ✅ | ✅ |
-| Voir mariages visibles | ❌ | ❌ | ✅ | ✅ |
-| Demander contact bride | ❌ | ❌ | ✅ | ✅ |
-| Alertes Community | ✅ | ✅ | ✅ | ✅ |
-| Contrats SignNow | ❌ | ❌ | ✅ | ✅ |
-| Marketplace achats | ❌ | ❌ | ✅ | ✅ |
-| Marketplace ventes | ❌ | ❌ | ❌ | ✅ |
-| Wedding Slot Exchange | ❌ | ❌ | ❌ | ✅ |
-| Lead Transfer | ❌ | ❌ | ❌ | ✅ |
-
-- [ ] **Valider matrice** avec Thierry
-- [ ] **Implémenter checks** dans l'app pour chaque fonctionnalité
-- [ ] **Mettre à jour enum** `subscriptionTierType` si nécessaire
-- [ ] **Documenter** dans APP_SOURCE_OF_TRUTH.md
-
-### 📱 FONCTIONNALITÉS APPLICATION
-#### Wed of the Week (App)
-- [ ] Système d'historique (anciens mariages consultables)
-- [ ] Réception des notifications
-
-#### Wording & Design
-- [ ] Ajuster textes boutons Home Pro/Bride ("Find vendors & pin my wed", etc.)
-- [ ] Intégrer images Header selon validation client
+### UX & Design
+- "Réfléchir à un système de thèmes (clair/sombre)" - Le design system actuel pourrait l'étendre
+- "Penser à des micro-interactions subtiles" - Améliorerait le sentiment de qualité
+- "Explorer l'idée d'animations de transition entre pages" - Plus moderne
+- "Considérer l'ajout de feedback haptique pour les actions importantes"
 
 ---
 
-## 💡 **AMÉLIORATIONS FUTURES**
+## 🔧 Maintenance & Améliorations
 
-### � Refonte Système Notifications (Priorité Haute)
+### Tâches Techniques Récurrentes
+- "Penser à mettre à jour les dépendances Flutter régulièrement" - Sécurité et performances
+- "Faudrait prévoir des audits de code mensuels" - Maintenir la qualité
+- "Réfléchir à mettre en place des tests de régression automatiques" - CI/CD pipeline
+- "Penser à nettoyer le code mort chaque trimestre" - Éviter l'accumulation
 
-**Contexte:** Le système actuel génère 4000+ requêtes/heure sur une base de dev inactive (2025-11-27).
+### Monitoring & Observabilité
+- "Évaluer l'idée d'ajouter Sentry pour le crash reporting" - Détection rapide des problèmes
+- "Penser à implémenter des analytics utilisateurs" - Comprendre l'usage réel
+- "Considérer l'ajout de monitoring de performance" - Temps de chargement, latence
+- "Réfléchir à des alertes automatiques pour les erreurs critiques"
 
-#### Problèmes Identifiés
-1. **Architecture Outbox inefficace:**
-   - Polling toutes les minutes même sans événements
-   - Pas de backoff exponentiel sur erreurs
-   - Pas de circuit breaker
-
-2. **RLS vs Service Role mal configuré:**
-   - Edge Functions utilisent `service_role` mais RLS bloque quand même
-   - Requêtes 403 en cascade sur `device_tokens`, `user_preferences`, `notification_settings`
-
-3. **Cron Jobs mal calibrés:**
-   - `notifications_outbox_drain`: `* * * * *` (toutes les minutes) → devrait être `*/5 * * * *`
-   - `alerts_housekeeping`: `*/15 * * * *` → devrait être `0 * * * *` (toutes les heures)
-
-4. **Pas de métriques/monitoring:**
-   - Impossible de détecter les anomalies sans vérification manuelle
-   - Pas d'alertes sur erreurs 500 répétées
-
-#### Solutions Proposées
-- [ ] **Court terme:** Désactiver cron jobs + corriger fréquences
-- [ ] **Moyen terme:** Ajouter policies RLS pour `service_role` sur tables notifications
-- [ ] **Long terme:** Migrer vers Supabase Realtime + Database Webhooks (push vs poll)
-- [ ] **Monitoring:** Ajouter alertes sur taux d'erreur Edge Functions
-
-#### Architecture Cible (V2)
-```
-Trigger DB → Database Webhook → Edge Function (on-demand)
-```
-Au lieu de:
-```
-Cron Job → Edge Function (polling) → Query DB
-```
-
-**Avantages:**
-- Exécution uniquement quand nécessaire
-- Pas de polling à vide
-- Réduction drastique des requêtes
+### Sécurité
+- "Penser à faire des audits de sécurité réguliers" - Nouvelles vulnérabilités possibles
+- "Évaluer l'idée d'implémenter le rate limiting côté API" - Protection contre abus
+- "Considérer l'ajout de logs d'audit pour les actions sensibles" - Traçabilité
+- "Réfléchir à la rotation des secrets API" - Bonne pratique sécurité
 
 ---
 
-### �🔄 Workflow Développement
-- [ ] **GitHub MCP** - Utiliser outils GitHub MCP pour commits/branches pour éviter désynchronisation
-- [ ] **Processus Git** - `git add .` → `git commit -m "message"` → `git push origin branch` → Vérification avec MCP
+## 📚 Documentation & Processus
 
-### 📱 Features Avancées
-- [ ] **Support Offline** - Implémenter cache local pour données critiques
-- [ ] **Sync Background** - Synchroniser données quand app revient en ligne
-- [ ] **Recherche Avancée** - Implémenter filtres et recherches sauvegardées
-- [ ] **Analytics** - Tracking comportement utilisateur et insights
+### Guides à Créer
+- "Penser à créer un guide de contribution pour les futurs développeurs" - Standardisation
+- "Faudrait documenter les patterns de test adoptés" - Pour maintenir la couverture
+- "Réfléchir à un guide de dépannage commun" - Problèmes fréquents
+- "Penser à créer des templates pour les nouveaux modules" - Accélérer le développement
 
----
+### Processus à Améliorer
+- "Évaluer l'idée d'implémenter des pull requests templates" - Standardiser les reviews
+- "Penser à automatiser plus de tâches dans le CI/CD" - Réduire le travail manuel
+- "Considérer l'ajout de checks de qualité automatiques" - Linting, test coverage, etc.
+- "Réfléchir à un processus de release plus formel" - Versioning, changelog, etc.
 
-## 📋 **LIVRABLES FINAUX**
-- [ ] Documentation complète architecture technique
-- [ ] Code source nettoyé et commenté
-- [ ] Tests complets fonctionnalités
-- [ ] Préparation finale déploiement Android (Play Store)
-- [ ] Configuration finale compte Apple Developer
-- [ ] Cession totale droits (code + designs)
-- [ ] Formation/documentation système multilingue
-- [ ] Documentation design system
+### Standards à Définir
+- "Penser à standardiser les messages d'erreur" - Cohérence UX
+- "Faudrait définir des standards de nommage" - Pour tout le projet
+- "Réfléchir à des standards de performance" - Temps de réponse max, etc.
+- "Penser à des standards d'accessibilité" - Inclusivité
 
 ---
 
-## ✅ **TÂCHES TERMINÉES**
+## 🚀 Vision Long Terme
 
-### 🏗️ Architecture & Sécurité (Socle V1)
-- ✅ Environment sécurisé et fonctionnel
-- ✅ Authentification opérationnelle (login/signup)
-- ✅ Permissions base de données corrigées
-- ✅ Seeding complet des données (40 utilisateurs avec relations complètes)
-- ✅ Documentation réorganisée et mise à jour
-- ✅ Audit de sécurité complet (secrets, configurations, Edge Functions)
-- ✅ Synchronisation de 15 Edge Functions avec URLs CRM correctes
-- ✅ Configuration Firebase validée
-- ✅ Configuration Google Maps API (Android + iOS)
+### v2.0 - Prochaines Mois
+- "Explorer l'idée d'une refonte complète du système de notifications" - Architecture actuelle problématique
+- "Penser à implémenter un vrai système de cache distribué" - Redis ou similaire
+- "Évaluer la possibilité de migrer vers Supabase Realtime" - Pour le temps réel
+- "Considérer l'ajout de support offline" - Cache local + sync
 
-### 🔧 Technique & Performance
-- ✅ Correction des bugs critiques d'authentification
-- ✅ Identification des problèmes API Google Places
-- ✅ Migration des données de test complète
-- ✅ **Audits techniques complets** - Voir `audits/MAP_FEATURE_AUDIT.md` pour détails cartographiques
+### v3.0 - Futur
+- "Réfléchir à une architecture microservices" - Si l'application grossit beaucoup
+- "Penser à un système de plugins pour les features tierces" - Extensibilité
+- "Explorer l'idée d'une version web" - Flutter Web adaptation
+- "Considérer l'internationalisation complète" - i18n + l10n
 
-### 📊 Base de Données
-- ✅ 52 migrations appliquées
-- ✅ Politiques RLS actives et fonctionnelles
-- ✅ PostGIS activé pour requêtes géospatiales
-- ✅ 40 utilisateurs seeded (10 brides + 30 professionnels)
-- ✅ Relations complètes : Wedding Pins, Wishlist, Chat Rooms, Messages, etc.
+### Nouveaux Modules Potentiels
+- "Module de gestion de projets" - Pour les professionnels
+- "Système de réservation en ligne" - Intégration calendriers
+- "Marketplace de services" - Extension du modèle actuel
+- "Module d'analytics pour les pros" - Statistiques détaillées
 
----
-
-## 🔄 **Processus de Travail**
-
-### Quand consulter ce fichier
-- **Planning:** Pour voir les tâches en cours et idées d'améliorations
-- **Développement:** Pour prioriser les features et corrections
-- **Review:** Pour mettre à jour le statut des tâches
-
-### Mise à jour des statuts
-- **[ ]** - À faire
-- **[🔄]** - En cours
-- **[✅]** - Terminé
-- **[❌]** - Bloqué/Annulé
-
-### Priorités
-1. **Critique:** Bugs bloquants, sécurité
-2. **Haute:** Features principales, performance
-3. **Moyenne:** Améliorations UX, refactoring
-4. **Basse:** Features futures, documentation
+### Évolutions Architecture
+- "Penser à une séparation complète frontend/backend" - Si besoin de scalabilité
+- "Évaluer l'idée d'un design system multi-plateforme" - Web + mobile
+- "Considérer l'ajout d'une couche GraphQL" - Alternative à REST
+- "Réfléchir à un système d'events pour la communication inter-modules"
 
 ---
 
-**Note:** Ce fichier est complémentaire à PROJECT_STATUS.md. PROJECT_STATUS.md contient l'état du projet, tandis que PROJECT_TODO.md contient les tâches à faire et améliorations futures.
+## 🔄 Processus de Travail
+
+### Quand Consulter ce Fichier
+- **Brainstorming**: Pour explorer des idées sans contraintes
+- **Planning**: Pour prioriser les améliorations futures
+- **Réflexion**: Pour évaluer l'impact de décisions techniques
+
+### Style de Travail
+- **Flexibilité**: Les idées peuvent évoluer ou être abandonnées
+- **Non-précision**: Pas de dates fermes, juste des directions
+- **Exploration**: Tester des concepts sans engagement
+- **Itération**: Les idées se précisent avec le temps
+
+### Mise à Jour des Statuts
+- **[ ]** - Idée à explorer
+- **[🤔]** - En réflexion active
+- **[📋]** - Planifié mais pas prioritaire
+- **[⏳]** - En attente de bon moment
+- **[✅]** - Idée réalisée (déplacé vers PROJECT.md)
+
+---
+
+**Note**: Ce fichier est un espace de réflexion technique. Les idées ici ne sont pas des engagements mais des pistes à explorer quand l'opportunité se présente. La flexibilité est la clé de l'innovation.

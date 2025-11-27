@@ -2,8 +2,25 @@
 
 **Current Version:** v1.1.1+59  
 **Current Branch:** develop  
-**Last Updated:** 2025-11-27 11:40  
+**Last Updated:** 2025-11-27 12:05  
 **Environment:** Development (hekyovgnovhfhmkpfrna)  
+
+---
+
+## 🚨 **DIRECTIVE FONDAMENTALE - REFACTORISATION COMPLÈTE**
+
+**OBJECTIF PRINCIPAL:**
+Refactoriser **TOUTE** l'application pour:
+1. **SUPPRIMER** toutes les références et dépendances FlutterFlow
+2. **RÉÉCRIRE** le code plus proprement, maintenable, optimisé, robuste et sécurisé
+3. **AMÉLIORER** les fonctionnalités existantes
+4. **CRÉER** une architecture Clean Architecture moderne
+
+**RÈGLE ABSOLUE - OPTION B TOUJOURS:**
+- ❌ **JAMAIS** réutiliser les composants FlutterFlow existants
+- ✅ **TOUJOURS** créer de nouveaux composants propres dans `lib/features/` ou `lib/core/`
+- ✅ **TOUJOURS** appliquer le Design System unifié
+- ✅ **TOUJOURS** suivre les patterns Clean Architecture
 
 ---
 
@@ -21,8 +38,9 @@
 - ✅ Database permissions fixed
 - ✅ Data seeding completed (40 users with full relationships)
 - ✅ Documentation reorganized and updated
-- ✅ Map refactorisation terminée (backend validé, nettoyage effectué)
-- ⏳ Tests simulateur requis pour validation finale
+- ⚠️ Map refactorisation: Backend OK, UI/UX nécessite corrections
+- 🔄 Tests simulateur effectués: problèmes UI identifiés
+- ⏳ Plan de correction créé: `docs/MAP_CORRECTION_PLAN.md`
 
 ---
 
@@ -44,6 +62,32 @@
 ---
 
 ## 📋 **Change Log**
+
+### 2025-11-27 14:30 - ✅ PHASE 0 DESIGN SYSTEM UNIFIÉ - COMPLÉTÉE
+- **Objectif**: Créer un design system unifié pour corriger les problèmes UI/UX du module map
+- **Actions effectuées**:
+  - ✅ Audit complet de 38 pages FlutterFlow pour extraction patterns visuels
+  - ✅ Création `/lib/core/design/` avec 9 fichiers de tokens (couleurs, typographie, espacement, bordures, composants)
+  - ✅ API `LynewedTheme.of(context)` qui miroite `FlutterFlowTheme.of(context)` pour migration transparente
+  - ✅ Documentation unifiée: `/docs/App/DESIGN_SYSTEM.md` (remplace 3 fichiers dispersés)
+  - ✅ Widget de test complet pour validation visuelle
+  - ✅ Validation technique: tous les fichiers compilent sans erreurs
+- **Design System préservé**: Esthétique MVP exacte (noir/blanc, Haas Grot Text Trial, design carré)
+- **Migration**: Simple remplacement `FlutterFlowTheme` → `LynewedTheme` avec import `'/core/design/design.dart'`
+- **Statut**: ✅ **PHASE 0 TERMINÉE** - Prêt pour Phase 1 (Layout Map Restoration)
+
+### 2025-11-27 12:05 - ⚠️ TESTS SIMULATEUR - Problèmes UI/UX Identifiés
+- **Objectif**: Valider le module map refactorisé sur simulateur iOS
+- **Build**: ✅ Réussi, app lancée sans crash
+- **Problèmes identifiés**:
+  - ❌ Design system non respecté (couleurs, style différents de l'app)
+  - ❌ Éléments UI manquants: boutons zoom, AddressSearch, FAB création, géoloc
+  - ❌ Filtres: UI incorrect + ne fonctionnent pas (professions)
+  - ❌ Markers: pins identiques au lieu de cercles avatars (pros)
+  - ❌ Sheets: style incorrect, boutons non fonctionnels
+  - ❌ Pas de changement style map (satellite/terrain)
+- **Plan de correction**: `docs/MAP_CORRECTION_PLAN.md` (17-24h estimées)
+- **Statut**: ✅ **PHASE 0 DESIGN SYSTEM CRÉÉ** - Prochaine étape: Phase 1 Layout Map
 
 ### 2025-11-27 11:40 - ✅ MAP BACKEND AUDIT TERMINÉ - Nettoyage Effectué
 - **Objectif**: Valider compatibilité backend Supabase avec module map refactorisé

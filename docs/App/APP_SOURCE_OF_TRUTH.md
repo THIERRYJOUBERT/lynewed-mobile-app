@@ -46,8 +46,8 @@
 | **Code safe zones ?** | `custom_code/`, `compo_finaux/` | [FlutterFlow Gotchas](#-flutterflow-gotchas---pièges-à-éviter) |
 | **Bucket avatars ?** | `avatars` (public) | [Storage](#️-storage-buckets--rls-policies) |
 | **RPC principal ?** | `get_pro_item_details()` | [API](#-edge-functions--api-endpoints) |
-| **Map clustering ?** | ❌ Supprimé (style Uber/Relay) | [MAP_REFACTORING_PLAN.md](../MAP_REFACTORING_PLAN.md) |
-| **Concept Wedding ?** | 1 mariage/bride, remplace pins/POI | [MAP_REFACTORING_PLAN.md](../MAP_REFACTORING_PLAN.md) |
+| **Map clustering ?** | ❌ Supprimé (style Uber/Relay) | [audits/MAP_FEATURE_AUDIT.md](../audits/MAP_FEATURE_AUDIT.md) |
+| **Concept Wedding ?** | 1 mariage/bride, remplace pins/POI | [audits/MAP_FEATURE_AUDIT.md](../audits/MAP_FEATURE_AUDIT.md) |
 
 ## 📄 **Migration Notice**
 **⚠️ IMPORTANT:** `APP_FLOWS_BUSINESS_RULES.md` est maintenant **déprécié**.  
@@ -90,7 +90,7 @@ CAST('ultimateAccess' AS "subscriptionTierType")
 - `bride_details` - Détails spécifiques brides (schéma simplifié: profile_id, created_at, updated_at)
 - `professional_details` - Détails professionnels avec localisation PostGIS (pas de colonne phone)
 - `professional_subscriptions` - Abonnements (free, earlyAccess, premiumVisibility, ultimateAccess)
-- `professional_fixed_locations` - Adresses fixes supplémentaires (précises obligatoires)
+- `professional_fixed_locations` - es fixes supplémentaires (précises obligatoires)
 - `chat_rooms` / `chat_room_participants` / `chat_messages` - Système de messagerie
 - `video_sessions` - Sessions vidéo avec Agora
 - `weddings` - **NOUVEAU** Mariages (1 par bride, remplace wedding_pins)
@@ -187,7 +187,7 @@ Retourne : `portfolioImages` + `slideshowImages` + toutes les infos pro
   - Créer des alertes professionnelles (entraide communautaire, visibles par TOUS les pros)
     - Types: backup_needed, gear_emergency, team_member, emergency_help
     - Pas de rémunération (entraide uniquement)
-  - Avoir une adresse principale + adresses supplémentaires (précises obligatoires)
+  - Avoir une e principale + es supplémentaires (précises obligatoires)
   - Contacter les brides (via mariage visible ou wishlist)
   - Contacter d'autres professionnels
   - Publier des articles
@@ -317,8 +317,8 @@ CRM → Supabase (professionals_details) → Backend RPC → App (ProDetailsStru
 - **Solution requise** : Vérifier et corriger l'algorithme de clustering
 
 ### 🏗️ **Architecture PostGIS (correcte mais sous-utilisée)**
-- **professional_details.location** : Point PostGIS principal (adresse professionnelle)
-- **professional_fixed_locations** : Adresses fixes supplémentaires ( GeoJSON )
+- **professional_details.location** : Point PostGIS principal (e professionnelle)
+- **professional_fixed_locations** : es fixes supplémentaires ( GeoJSON )
 - **wedding_pins** : Zones de recherche mariage (PostGIS)
 - **Requêtes spatiales** : `ST_DWithin`, `ST_Distance` pour la proximité
 
@@ -344,7 +344,7 @@ CRM → Supabase (professionals_details) → Backend RPC → App (ProDetailsStru
 4. **Fallback Strategy** : Que faire si `fixedLocations` est vide mais `locationLabel` existe ?
 
 #### Questions Business
-1. **User Experience** : Les utilisateurs comprennent-ils la différence entre adresse principale et zones de travail ?
+1. **User Experience** : Les utilisateurs comprennent-ils la différence entre e principale et zones de travail ?
 2. **Data Quality** : Les professionnels remplissent-ils correctement leurs `fixedLocations` dans le CRM ?
 3. **Map Performance** : Combien de markers peuvent être affichés simultanément sans dégradation ?
 
@@ -359,15 +359,15 @@ CRM → Supabase (professionals_details) → Backend RPC → App (ProDetailsStru
 7. **Backward Compatibility** : Ajouter des champs optionnels sans casser l'existant
 
 ### PROFESSIONAL
-- **Adresse principale:** Dans `professional_details`
+- **e principale:** Dans `professional_details`
   - Obligatoire pour tous les pros
-  - Siège social ou adresse principale d'activité
+  - Siège social ou e principale d'activité
 
-- **Adresses supplémentaires:** Dans `fixed_point`
-  - **TRIAL:** 0 adresse supplémentaire
-  - **PREMIUM_VISIBILITY:** Jusqu'à 2 adresses supplémentaires
-  - **ULTIMATE_ACCESS:** Jusqu'à 4 adresses supplémentaires
-  - Chaque adresse a sa propre zone de couverture
+- **es supplémentaires:** Dans `fixed_point`
+  - **TRIAL:** 0 e supplémentaire
+  - **PREMIUM_VISIBILITY:** Jusqu'à 2 es supplémentaires
+  - **ULTIMATE_ACCESS:** Jusqu'à 4 es supplémentaires
+  - Chaque e a sa propre zone de couverture
 
 ---
 
@@ -456,14 +456,14 @@ La MiniMap est utilisée dans les pages home et certains sheets pour afficher un
 - **Coordonnées:** Transmises via paramètres au widget
 - **Sources possibles:**
   - Position actuelle de l'utilisateur
-  - Adresse d'un professionnel
+  - e d'un professionnel
   - Localisation d'un mariage
 - **Interaction:** Tap sur la MiniMap → ouvre la mapLarge complète
 - **Style:** Simple, sans clustering, sans contrôles de zoom
 
 ### Cas d'usage typiques
 - **Home Bride:** Affiche la position de l'utilisateur
-- **Fiche Pro:** Affiche l'adresse principale du professionnel
+- **Fiche Pro:** Affiche l'e principale du professionnel
 - **Sheet mariage:** Affiche la localisation du mariage
 
 ---
