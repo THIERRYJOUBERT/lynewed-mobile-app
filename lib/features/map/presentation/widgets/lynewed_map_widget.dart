@@ -327,9 +327,7 @@ class _LynewedMapWidgetState extends State<LynewedMapWidget> {
       case MapMarkerType.wedding:
         return 4;
       case MapMarkerType.proFixedLocation:
-        return 3; // Augmenté car plus de types
-      case MapMarkerType.poiPrivate:
-        return 1;
+        return 3;
     }
   }
 }

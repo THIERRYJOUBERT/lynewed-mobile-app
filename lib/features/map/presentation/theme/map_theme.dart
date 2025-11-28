@@ -26,9 +26,6 @@ class MapMarkerColors {
   static const wedding = Color(0xFFE91E63); // Pink
   static const weddingVisible = Color(0xFFD81B60); // Dark Pink
 
-  // POI (deprecated)
-  static const poiPrivate = Color(0xFF9C27B0); // Purple
-
   /// Couleur par type de marqueur
   static Color forMarkerType(MapMarkerType type) {
     switch (type) {
@@ -38,8 +35,6 @@ class MapMarkerColors {
         return alert;
       case MapMarkerType.wedding:
         return wedding;
-      case MapMarkerType.poiPrivate:
-        return poiPrivate;
     }
   }
 
@@ -108,7 +103,6 @@ class MapMarkerSizes {
   static const double proFixedLocation = 40.0;
   static const double alert = 48.0;
   static const double wedding = 44.0;
-  static const double poi = 36.0;
 
   /// Taille par type de marqueur
   static double forMarkerType(MapMarkerType type) {
@@ -119,8 +113,6 @@ class MapMarkerSizes {
         return alert;
       case MapMarkerType.wedding:
         return wedding;
-      case MapMarkerType.poiPrivate:
-        return poi;
     }
   }
 
@@ -144,7 +136,6 @@ class MapMarkerZIndex {
   static const double wedding = 4.0;
   static const double professional = 3.0;
   static const double proFixedLocation = 2.0;
-  static const double poi = 1.0;
 
   /// Z-index par type
   static double forMarkerType(MapMarkerType type) {
@@ -155,8 +146,6 @@ class MapMarkerZIndex {
         return wedding;
       case MapMarkerType.proFixedLocation:
         return proFixedLocation;
-      case MapMarkerType.poiPrivate:
-        return poi;
     }
   }
 }

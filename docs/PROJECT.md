@@ -2,7 +2,7 @@
 
 **Version:** v1.1.1+59  
 **Branch:** develop  
-**Last Updated:** 2025-11-28  
+**Last Updated:** 2025-11-28 20:30  
 **Environment:** Development (hekyovgnovhfhmkpfrna)  
 
 ---
@@ -23,7 +23,9 @@
 - ✅ Documentation reorganized and updated
 - ✅ Design System unified and implemented (Phase 0 completed)
 - ✅ **Map Module PARTIE A COMPLÉTÉE** (2025-11-28)
-- 🔄 **Prochaine étape**: Partie B - Refactorisation complète (40-50h)
+- ✅ **Phase 5 Wedding System** terminée (cache invalidation, tables nettoyées)
+- ✅ **Phase 5.1 & 5.2**: AddressSearch integration + Design System chips noir
+- 🔄 **Prochaine étape**: Phase 6 Alertes (4 types structurés)
 
 ### Key Metrics
 - **Codebase**: ~15,000+ lines of Dart code
@@ -103,13 +105,13 @@
 
 ### Next Immediate Priorities
 1. ✅ ~~Phases 1-4~~: Foundation, Filtres, Sheets, Enums **COMPLÉTÉ**
-2. 🔄 **Phase 5**: Système Wedding (hub central bride) - 6-8h
+2. ✅ **Phase 5**: Système Wedding (hub central bride) **TERMINÉ**
 3. 🔄 **Phase 6**: Système Alertes (4 types structurés) - 6-8h
 4. 🔄 **Phase 7**: Android (tests, optimisations) - 4-6h
 5. 🔄 **Phase 8**: Séparation Indiens & Documentation - 6-8h
 
 ---
 
-**Last Updated**: 2025-11-28 18:00  
-**Status**: Phases 1-4 terminées, prêt pour Phase 5 (Wedding)  
-**Estimation restante**: 22-30h
+**Last Updated**: 2025-11-28 20:30  
+**Status**: Phases 1-5.2 terminées, prêt pour Phase 6 (Alertes)  
+**Estimation restante**: 16-22h

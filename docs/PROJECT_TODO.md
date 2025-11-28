@@ -1,7 +1,7 @@
 # PROJECT TODO - Idées & Tâches à Venir
 
 **Document créé:** 2025-11-26  
-**Last Updated:** 2025-11-28  
+**Last Updated:** 2025-11-28 20:30  
 **Objectif:** Gestion des tâches à faire et idées d'améliorations techniques  
 **Version:** v2.0 (Structure spécialisée)
 
@@ -16,11 +16,29 @@
 - ✅ Enums Map (simplifié 4 valeurs)
 - ✅ Bugs corrigés (alertes expirées, navigation auteur)
 
-### 🚨 Prochaines Phases Map (22-30h restants)
-- **Phase 5**: Système Wedding (hub central bride) - 6-8h
-- **Phase 6**: Système Alertes (4 types structurés) - 6-8h
-- **Phase 7**: Android (tests, optimisations) - 4-6h
-- **Phase 8**: Séparation Indiens & Documentation - 6-8h
+### 🚨 Prochaines Phases Map (22-31h restants)
+
+**Phase 5 - Wedding System:**
+- ✅ **Phase 5 base**: Tables, RPCs, WeddingCreateSheet **TERMINÉ**
+- ✅ **Phase 5.1**: Amélioration Wedding UI (4-6h) **TERMINÉ**
+  - ✅ Intégrer `AddressSearchWidget` dans venue field
+  - ✅ Validation: event_date futur, venue_coords requis, budget_min < max
+  - ✅ Erreurs inline claires
+- ✅ **Phase 5.2**: Design System Cohérence (2-3h) **TERMINÉ**
+  - ✅ Chips professions en noir (LynewedComponentStyles.chipTheme)
+  - ✅ Tous sheets → LynewedTheme (supprimer FlutterFlowTheme)
+
+**Phases 6-8:**
+- 🔴 **Phase 6**: Système Alertes (6-8h)
+  - 6.1 Backend: enum `alert_type` (4 valeurs), RPCs create/update/delete
+  - 6.2 Frontend: AlertCreateSheet, icônes par type, "Je peux aider" → Chat
+- 🟡 **Phase 7**: Android Tests (4-6h)
+- 🟡 **Phase 8**: Documentation Finale (6-8h)
+
+**Ordre:**
+```
+Phase 5.1 + 5.2 (parallèles) → Phase 6 → Phase 7 → Phase 8
+```
 
 ### 🚨 CONTACT SYSTEM - À REVOIR COMPLÈTEMENT (Partie B)
 **Contexte:** Le bouton "Contact" dans les sheets ne fonctionne pas correctement. La logique actuelle:

@@ -1,9 +1,9 @@
 # Map Feature Module
 
-**Version:** 2.1.0  
+**Version:** 3.0.0  
 **Created:** 2025-11-27  
 **Updated:** 2025-11-28  
-**Status:** ✅ Phases 1-4 Terminées - Prêt pour Phase 5-8
+**Status:** ✅ Phase 5 Terminée - Wedding System Implemented
 
 ## 📋 Objectif
 
@@ -167,19 +167,18 @@ final filter = MapFilter(
 );
 ```
 
-### MapMarkerType (enum simplifié - 4 valeurs)
+### MapMarkerType (enum simplifié - 3 valeurs)
 
 ```dart
 enum MapMarkerType {
   proFixedLocation,    // Position fixe pro (fusion professional + fixedLocation)
   professionalAlert,   // Alerte communautaire
-  wedding,             // Mariage (remplace weddingPin)
-  @Deprecated('Sera supprimé en Phase 5')
-  poiPrivate,          // POI privé (deprecated)
+  wedding,             // Mariage (hub central per bride, Phase 5)
 }
 ```
 
-> **Note:** L'ancien enum FlutterFlow (`lib/backend/schema/enums/`) a encore 5 valeurs.
+> **Note:** Phase 5 a supprimé `poiPrivate` (concept remplacé par Wedding hub).
+> L'ancien enum FlutterFlow (`lib/backend/schema/enums/`) a encore 5 valeurs.
 > La compatibilité est assurée par `marker_type_mapper.dart`.
 
 ## 🔄 Migration depuis FlutterFlow
@@ -228,7 +227,7 @@ LynewedMapWidget(
 )
 ```
 
-## ✅ PHASES TERMINÉES (1-4)
+## ✅ PHASES TERMINÉES (1-5)
 
 - [x] Page MapPage complète avec AppBar et filtres
 - [x] Composant FilterSheet réutilisable
@@ -237,10 +236,16 @@ LynewedMapWidget(
 - [x] MapActionsService (navigation, favoris)
 - [x] Cache accumulatif markers
 - [x] Bugs corrigés (alertes expirées, navigation auteur)
+- [x] **Phase 5:** Système Wedding complet
+  - Tables `weddings` + `wedding_participants` créées
+  - Migration données `wedding_pins` → `weddings`
+  - RPC `search_map_bundle` mis à jour pour `weddings`
+  - RPCs `get_wedding_details`, `upsert_wedding`, `get_my_wedding`, `delete_my_wedding`
+  - `WeddingCreateSheet` pour création/édition mariage
+  - `poiPrivate` supprimé de l'enum (3 valeurs finales)
 
-## 📝 TODO Phase 5-8
+## 📝 TODO Phase 6-8
 
-- [ ] **Phase 5:** Système Wedding (tables, migration, sheet création)
 - [ ] **Phase 6:** Système Alertes (4 types, expiration auto)
 - [ ] **Phase 7:** Tests Android
 - [ ] **Phase 8:** Documentation & séparation

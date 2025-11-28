@@ -150,42 +150,58 @@ class _FilterSheetState extends State<FilterSheet> {
   }
 
   Widget _buildProfessionChips() {
-    return Wrap(
-      spacing: LynewedSpacing.sm,
-      runSpacing: LynewedSpacing.sm,
-      children: Profession.values.map((profession) {
-        final isSelected = _selectedProfessions.contains(profession);
-        return FilterChip(
-          label: Text(
-            _professionLabel(profession),
-            style: LynewedTextStyles.bodySmall.copyWith(
-              color: isSelected ? LynewedColors.textOnPrimary : LynewedColors.textPrimary,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Selected count indicator
+        if (_selectedProfessions.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Text(
+              '${_selectedProfessions.length} selected',
+              style: LynewedTextStyles.labelSmall.copyWith(
+                color: LynewedColors.textSecondary,
+              ),
             ),
           ),
-          selected: isSelected,
-          selectedColor: LynewedColors.primary,
-          backgroundColor: LynewedColors.surface,
-          checkmarkColor: LynewedColors.textOnPrimary,
-          shape: RoundedRectangleBorder(
-            borderRadius: LynewedBorders.borderRadiusNone,
-            side: BorderSide(
-              color: isSelected ? LynewedColors.primary : LynewedColors.border,
-            ),
-          ),
-          onSelected: (selected) {
-            setState(() {
-              if (selected) {
-                _selectedProfessions.add(profession);
-              } else {
-                _selectedProfessions.remove(profession);
-              }
-              _filter = _filter.copyWith(
-                professions: _selectedProfessions.toList(),
-              );
-            });
-          },
-        );
-      }).toList(),
+        Wrap(
+          spacing: LynewedSpacing.sm,
+          runSpacing: LynewedSpacing.sm,
+          children: Profession.values.map((profession) {
+            final isSelected = _selectedProfessions.contains(profession);
+            // Using Design System chip styling - consistent with WeddingCreateSheet
+            return FilterChip(
+              label: Text(
+                _professionLabel(profession),
+                style: LynewedComponentStyles.chipTextStyle(selected: isSelected),
+              ),
+              selected: isSelected,
+              backgroundColor: LynewedColors.gray200,
+              selectedColor: LynewedColors.primary.withValues(alpha: 0.15),
+              checkmarkColor: LynewedColors.primary,
+              side: isSelected 
+                  ? const BorderSide(color: LynewedColors.primary, width: 1)
+                  : BorderSide.none,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+              onSelected: (selected) {
+                setState(() {
+                  if (selected) {
+                    _selectedProfessions.add(profession);
+                  } else {
+                    _selectedProfessions.remove(profession);
+                  }
+                  _filter = _filter.copyWith(
+                    professions: _selectedProfessions.toList(),
+                  );
+                });
+              },
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 

@@ -1111,52 +1111,132 @@ enum MapMarkerType {
 
 ## 🔄 TRAVAIL RESTANT (PARTIE B)
 
-### Phase 5: Système Wedding (6-8h) 🔴 PRIORITÉ HAUTE
+### Phase 5: Système Wedding ✅ COMPLÉTÉ (2025-11-28)
 **Objectif**: Remplacer weddingPin par un hub central bride
 
-**Problèmes actuels**:
-- POI privé = confusion avec weddings
-- Pas de hub central pour gestion mariage
-- Pas de préparation pour albums partagés
-
-**Nouveau concept**:
-- **1 mariage par bride** = hub central
-- **POI privé** = SUPPRIMÉ
-- **Tables**: `weddings` + `wedding_participants`
-- **Flux**: Bride favoris → Pro notifié → Demande contact → Chat
-
-**Tâches**:
-1. [ ] Créer tables `weddings` et `wedding_participants` (migration SQL)
-2. [ ] Migrer données `wedding_pins` existantes
-3. [ ] Mettre à jour RPC `search_map_bundle` pour weddings
-4. [ ] Créer sheet création wedding (bride)
-5. [ ] Implémenter nouveau flux de favoris
-6. [ ] Préparer structure pour albums partagés futurs
+**Status Phase 5 base:**
+- ✅ Tables `weddings` + `wedding_participants` créées
+- ✅ Tables `wedding_pins` et `wedding_pins_history` supprimées
+- ✅ Map affiche pins wedding fonctionnels
+- ✅ WeddingCreateSheet (722 lignes) avec Design System
+- ✅ Cache invalidé après création/modification
 
 ---
 
-### Phase 6: Système Alertes Amélioré (6-8h) 🔴 PRIORITÉ HAUTE
-**Objectif**: Améliorer le système d'alerte avec types structurés
+### Phase 5.1: Amélioration Wedding UI (4-6h) 🔴 PRIORITÉ HAUTE
+**Objectif**: Compléter l'UX du formulaire wedding
 
-**Nouveaux types (entraide, pas rémunération)**:
-- `backup_needed` - Remplaçant pour date
-- `gear_emergency` - Location matériel
-- `team_member` - Second shooter/assistant
-- `emergency_help` - Urgence événement
+**Tâches validation & champs:**
+1. [ ] Valider `event_date` obligatoire et dans le futur
+2. [ ] Valider `venue_coords` requis pour affichage map (actuellement optionnel)
+3. [ ] Valider `professions_needed` minimum 1 sélection
+4. [ ] Valider budget: `budget_min < budget_max`
+5. [ ] Afficher erreurs inline claires
 
-**Règles améliorées**:
-- Accessible TOUS les pros (valeur communautaire)
-- Expiration auto: `event_date + 1 jour`
-- Max 3 alertes actives/pro
-- Réponse: "Je peux aider" → Chat direct
+**Tâches AddressSearch intégration:**
+```dart
+// Dans WeddingCreateSheet - remplacer le TextFormField par AddressSearch
+Widget _buildVenueField() {
+  return AddressSearchWidget(
+    hintText: 'Rechercher lieu de mariage',
+    initialValue: _venueController.text,
+    useOverlay: true,
+    onAddressSelected: (details) {
+      setState(() {
+        _venueController.text = details.addressLabel;
+        _venueLat = details.latitude;
+        _venueLng = details.longitude;
+      });
+    },
+  );
+}
+```
 
-**Tâches**:
-1. [ ] Créer enum `alert_type` en backend
-2. [ ] Mettre à jour table `professional_alerts` (ajouter `alert_type`, `event_date`)
-3. [ ] Implémenter logique d'expiration automatique (cron job ou trigger)
-4. [ ] Créer sheet création alerte (pro)
-5. [ ] Mettre à jour AlertDetailsSheet avec nouveaux types
-6. [ ] Connecter FABs du map_page vers nouvelles sheets
+**Fichiers à modifier:**
+- `lib/features/map/presentation/sheets/wedding_create_sheet.dart`
+- `lib/features/map/data/datasources/supabase_map_datasource.dart` (validation RPC)
+
+---
+
+### Phase 5.2: Design System Cohérence (2-3h) 🟡 MOYENNE
+**Objectif**: Cohérence visuelle professions en noir
+
+**Problèmes:**
+- FilterChip professions utilisent `LynewedColors.primary` (couleur accent)
+- Doit être noir/blanc selon Design System LYNEWED
+
+**Solution - Chips professions noir:**
+```dart
+// Utiliser les nouveaux styles chip du Design System
+FilterChip(
+  label: Text(profession.displayName),
+  selected: isSelected,
+  onSelected: (selected) => _toggleProfession(profession),
+  backgroundColor: LynewedColors.gray100,
+  selectedColor: LynewedColors.primary.withValues(alpha: 0.15),
+  labelStyle: LynewedComponentStyles.chipTextStyle(selected: isSelected),
+  checkmarkColor: LynewedColors.primary,
+)
+```
+
+**Fichiers à vérifier:**
+- `lib/features/map/presentation/sheets/wedding_create_sheet.dart`
+- `lib/features/map/presentation/sheets/filter_sheet.dart`
+- Tous les sheets utilisant `FlutterFlowTheme` → `LynewedTheme`
+
+---
+
+### Phase 6: Système Alertes Structurées (6-8h) 🔴 PRIORITÉ HAUTE
+**Objectif**: Améliorer le système d'alerte avec 4 types structurés
+
+**Nouveaux types (entraide, pas rémunération):**
+```sql
+CREATE TYPE alert_type AS ENUM (
+  'backup_needed',      -- "Je cherche un remplaçant pour [date]"
+  'gear_emergency',     -- "Je cherche à louer [équipement] pour [date]"
+  'team_member',        -- "Je cherche un second shooter/assistant"
+  'emergency_help'      -- "Urgence sur événement, aide immédiate"
+);
+```
+
+**Règles métier:**
+| Règle | Valeur |
+|-------|--------|
+| Qui peut créer ? | Tous les pros (tous tiers) |
+| Qui voit ? | Tous les pros (valeur communautaire) |
+| Durée de vie | Jusqu'à `event_date + 1 jour` |
+| Limite | 3 alertes actives max par pro |
+| Réponse | Bouton "Je peux aider" → Chat direct |
+| Rémunération | ❌ Non (entraide uniquement) |
+
+#### Phase 6.1: Backend Alertes (2-3h)
+**RPCs requises:**
+1. [ ] `create_alert(p_type, p_location, p_description, p_event_date)`
+2. [ ] `update_alert(p_id, p_status)`
+3. [ ] `delete_alert(p_id)`
+4. [ ] Modifier `search_map_bundle` pour retourner `alert_type`
+
+**Migrations SQL:**
+```sql
+-- 1. Ajouter colonnes à professional_alerts
+ALTER TABLE professional_alerts
+ADD COLUMN alert_type alert_type,
+ADD COLUMN event_date date;
+
+-- 2. Logique expiration automatique
+-- Option: pg_cron ou trigger AFTER INSERT
+```
+
+#### Phase 6.2: Frontend Alertes (4-5h)
+**Widgets à créer:**
+1. [ ] `AlertCreateSheet` - création alerte avec sélection type
+2. [ ] `AlertDetailsSheet` - affichage/modification avec icônes par type
+3. [ ] `alert_icon_generator.dart` - icônes distinctes par type
+
+**Intégration Map:**
+- [ ] Pins alertes avec icônes distinctes par type
+- [ ] FilterSheet toggle "showAlerts"
+- [ ] Actions: "Contacter Pro" → Chat direct
 
 ---
 
@@ -1190,26 +1270,34 @@ enum MapMarkerType {
 
 ---
 
-## 📊 RÉSUMÉ TIMELINE
+## 📊 RÉSUMÉ TIMELINE (Mise à jour 2025-11-28 20:00)
 
 | Phase | Description | Durée | Statut |
 |-------|-------------|-------|--------|
 | 1-4 | Foundation, Filtres, Sheets, Enums | ~45h | ✅ FAIT |
-| 5 | Système Wedding | 6-8h | 🔄 À FAIRE |
-| 6 | Système Alertes | 6-8h | 🔄 À FAIRE |
-| 7 | Android | 4-6h | 🔄 À FAIRE |
-| 8 | Séparation & Docs | 6-8h | 🔄 À FAIRE |
-| **TOTAL** | | **22-30h** | |
+| 5 | Système Wedding base | 6-8h | ✅ FAIT |
+| 5.1 | Amélioration Wedding UI (AddressSearch, Validation) | 4-6h | 🔄 À FAIRE |
+| 5.2 | Design System Cohérence (Chips noir) | 2-3h | 🔄 À FAIRE |
+| 6 | Système Alertes structurées | 6-8h | 🔄 À FAIRE |
+| 7 | Android Tests & Optimisations | 4-6h | 🔄 À FAIRE |
+| 8 | Documentation Finale | 6-8h | 🔄 À FAIRE |
+| **TOTAL RESTANT** | | **22-31h** | |
 
 ---
 
-## 🚀 QUICK START
+## 🚀 QUICK START (2025-11-28 20:00)
 
-**Où on est**: Phases 1-4 terminées, prêt pour Phase 5  
-**Prochaine action**: Phase 5 - Système Wedding
+**Où on est**: Phase 5 base terminée, Wedding création/édition fonctionnel
+**Prochaine action**: Phase 5.1 - AddressSearch + Validation
 
 **Ordre recommandé**:
-1. Phase 5 (Wedding) → Phase 6 (Alertes) → Phase 7 (Android) → Phase 8 (Docs)
+```
+Phase 5.1 (Wedding UI) ────┐
+                           ├──► Phase 6 (Alertes) ──► Phase 7 (Android) ──► Phase 8 (Docs)
+Phase 5.2 (Design System) ─┘
+```
+
+**Phases 5.1 et 5.2 peuvent être faites en parallèle.**
 
 ---
 

@@ -1,49 +1,123 @@
 /// Wedding details entity for map marker details
 /// 
 /// Complete wedding data for display in details sheet.
-/// Replaces FlutterFlow's WeddingPinItemDataStruct with clean, immutable class.
+/// Phase 5: Updated to use new `weddings` table (hub central per bride).
 library;
 
 import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 import 'professional_details.dart';
 
+/// Wedding visibility enum
+enum WeddingVisibility {
+  private,
+  visibleToPros;
+
+  String get displayName {
+    switch (this) {
+      case WeddingVisibility.private:
+        return 'Private';
+      case WeddingVisibility.visibleToPros:
+        return 'Visible to Pros';
+    }
+  }
+
+  static WeddingVisibility fromString(String? value) {
+    switch (value?.toLowerCase()) {
+      case 'visible_to_pros':
+      case 'visibletopros':
+        return WeddingVisibility.visibleToPros;
+      default:
+        return WeddingVisibility.private;
+    }
+  }
+}
+
+/// Wedding status enum
+enum WeddingStatus {
+  planning,
+  confirmed,
+  completed,
+  cancelled;
+
+  String get displayName {
+    switch (this) {
+      case WeddingStatus.planning:
+        return 'Planning';
+      case WeddingStatus.confirmed:
+        return 'Confirmed';
+      case WeddingStatus.completed:
+        return 'Completed';
+      case WeddingStatus.cancelled:
+        return 'Cancelled';
+    }
+  }
+
+  static WeddingStatus fromString(String? value) {
+    switch (value?.toLowerCase()) {
+      case 'confirmed':
+        return WeddingStatus.confirmed;
+      case 'completed':
+        return WeddingStatus.completed;
+      case 'cancelled':
+        return WeddingStatus.cancelled;
+      default:
+        return WeddingStatus.planning;
+    }
+  }
+}
+
 /// Wedding details for map marker sheet
+/// Updated for Phase 5: Uses new `weddings` table structure
 @immutable
 class WeddingDetails {
   const WeddingDetails({
     required this.id,
     required this.brideId,
-    this.locationLabel,
-    this.center,
-    this.radiusKm,
+    this.weddingName,
+    this.venueLabel,
+    this.venueCoords,
+    this.searchRadiusKm,
     this.professionsNeeded = const [],
     this.eventDate,
+    this.eventEndDate,
     this.budgetMin,
     this.budgetMax,
     this.currency = 'EUR',
-    this.isContactable = false,
+    this.visibility = WeddingVisibility.private,
+    this.status = WeddingStatus.planning,
+    this.isOwn = false,
     this.brideAvatarUrl,
-    this.brideName,
-    this.guestCount,
-    this.notes,
+    this.brideFullName,
+    this.createdAt,
   });
 
   final String id;
   final String brideId;
-  final String? locationLabel;
-  final gmaps.LatLng? center;
-  final int? radiusKm;
+  final String? weddingName;
+  final String? venueLabel;
+  final gmaps.LatLng? venueCoords;
+  final int? searchRadiusKm;
   final List<Profession> professionsNeeded;
   final DateTime? eventDate;
+  final DateTime? eventEndDate;
   final int? budgetMin;
   final int? budgetMax;
   final String currency;
-  final bool isContactable;
+  final WeddingVisibility visibility;
+  final WeddingStatus status;
+  final bool isOwn;
   final String? brideAvatarUrl;
-  final String? brideName;
-  final int? guestCount;
-  final String? notes;
+  final String? brideFullName;
+  final DateTime? createdAt;
+
+  /// Bride name for display
+  String? get brideName {
+    if (brideFullName != null && brideFullName!.isNotEmpty) {
+      return brideFullName;
+    }
+    return null;
+  }
 
   /// Budget range formatted
   String get budgetRange {
@@ -87,28 +161,37 @@ class WeddingDetails {
 
   /// Search radius formatted
   String? get radiusFormatted {
-    if (radiusKm == null) return null;
-    return '$radiusKm km';
+    if (searchRadiusKm == null) return null;
+    return '$searchRadiusKm km';
   }
 
-  /// Factory from Supabase RPC response
+  /// Is visible to professionals
+  bool get isVisibleToPros => visibility == WeddingVisibility.visibleToPros;
+
+  /// Factory from Supabase RPC response (Phase 5: new get_wedding_details RPC)
   factory WeddingDetails.fromJson(Map<String, dynamic> json) {
+    // Handle brideInfo nested object from new RPC
+    final brideInfo = json['brideInfo'] as Map<String, dynamic>? ?? {};
+    
     return WeddingDetails(
-      id: json['weddingPinId']?.toString() ?? json['id']?.toString() ?? '',
-      brideId: json['brideProfileId']?.toString() ?? json['brideId']?.toString() ?? '',
-      locationLabel: json['locationLabel']?.toString(),
-      center: _parseGeoJson(json['center']),
-      radiusKm: (json['radiusKm'] as num?)?.toInt(),
+      id: json['id']?.toString() ?? '',
+      brideId: json['brideProfileId']?.toString() ?? '',
+      weddingName: json['weddingName']?.toString(),
+      venueLabel: json['venueLabel']?.toString(),
+      venueCoords: null, // Not returned in details RPC for privacy
+      searchRadiusKm: (json['searchRadiusKm'] as num?)?.toInt(),
       professionsNeeded: _parseProfessionsList(json['professionsNeeded']),
-      eventDate: _parseDateTime(json['eventStartDate'] ?? json['eventDate']),
+      eventDate: _parseDateTime(json['eventDate']),
+      eventEndDate: _parseDateTime(json['eventEndDate']),
       budgetMin: (json['budgetMin'] as num?)?.toInt(),
       budgetMax: (json['budgetMax'] as num?)?.toInt(),
       currency: json['currency']?.toString() ?? 'EUR',
-      isContactable: json['isContactable'] == true,
-      brideAvatarUrl: json['brideAvatarUrl']?.toString(),
-      brideName: json['brideName']?.toString(),
-      guestCount: (json['guestCount'] as num?)?.toInt(),
-      notes: json['notes']?.toString(),
+      visibility: WeddingVisibility.fromString(json['visibility']?.toString()),
+      status: WeddingStatus.fromString(json['status']?.toString()),
+      isOwn: json['isOwn'] == true,
+      brideAvatarUrl: brideInfo['avatarUrl']?.toString() ?? json['brideAvatarUrl']?.toString(),
+      brideFullName: brideInfo['fullName']?.toString(),  // FIXED: was displayName/firstName
+      createdAt: _parseDateTime(json['createdAt']),
     );
   }
 

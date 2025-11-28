@@ -9,9 +9,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 
 /// Types de marqueurs sur la map
 /// 
-/// Enum final après refactorisation (8→4 valeurs):
-/// - Supprimés: user, proRecent, searchTarget, professional
+/// Enum final après refactorisation Phase 5 (8→3 valeurs):
+/// - Supprimés: user, proRecent, searchTarget, professional, poiPrivate
 /// - Fusionné: professional + fixedLocation → proFixedLocation
+/// - Remplacé: weddingPin → wedding (hub central per bride)
 /// - Source unique: professional_fixed_locations (plus de professional_details.location_coords)
 enum MapMarkerType {
   /// Position fixe d'un professionnel (depuis professional_fixed_locations uniquement)
@@ -21,12 +22,9 @@ enum MapMarkerType {
   /// Alerte communautaire d'un professionnel
   professionalAlert,
   
-  /// Mariage visible sur la map (remplace weddingPin)
+  /// Mariage visible sur la map (hub central per bride)
+  /// Phase 5: Remplace weddingPin, utilise nouvelle table `weddings`
   wedding,
-  
-  /// POI privé d'une bride (sera supprimé - concept Wedding le remplace)
-  @Deprecated('Sera supprimé - concept Wedding remplace POI privé')
-  poiPrivate,
 }
 
 /// Style visuel d'un marqueur

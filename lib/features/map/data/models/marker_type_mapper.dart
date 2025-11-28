@@ -16,13 +16,12 @@ ff.MapMarkerType toFlutterFlowType(MapMarkerType type) {
       return ff.MapMarkerType.professionalAlert;
     case MapMarkerType.wedding:
       return ff.MapMarkerType.weddingPin; // Mapping wedding → weddingPin
-    case MapMarkerType.poiPrivate:
-      return ff.MapMarkerType.poiPrivate;
   }
 }
 
 /// Convertit l'ancien enum (FlutterFlow) vers le nouveau
 /// Note: professional FF est mappé vers proFixedLocation (fusion)
+/// Phase 5: poiPrivate removed, maps to proFixedLocation as fallback
 MapMarkerType fromFlutterFlowType(ff.MapMarkerType type) {
   switch (type) {
     case ff.MapMarkerType.professional:
@@ -34,12 +33,13 @@ MapMarkerType fromFlutterFlowType(ff.MapMarkerType type) {
     case ff.MapMarkerType.weddingPin:
       return MapMarkerType.wedding; // Mapping weddingPin → wedding
     case ff.MapMarkerType.poiPrivate:
-      return MapMarkerType.poiPrivate;
+      return MapMarkerType.proFixedLocation; // Deprecated, fallback
   }
 }
 
 /// Convertit une string Supabase vers le nouveau enum
 /// Note: 'professional' est mappé vers proFixedLocation (fusion)
+/// Phase 5: poiPrivate removed from enum
 MapMarkerType? markerTypeFromString(String? value) {
   if (value == null) return null;
   switch (value.toLowerCase()) {
@@ -60,7 +60,7 @@ MapMarkerType? markerTypeFromString(String? value) {
     case 'poiprivate':
     case 'poi_private':
     case 'poi':
-      return MapMarkerType.poiPrivate;
+      return null; // Deprecated, no longer supported
     default:
       return null;
   }

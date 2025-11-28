@@ -1,7 +1,7 @@
 /// Wedding details sheet widget
 /// 
 /// Clean, modern sheet for displaying wedding details.
-/// Replaces FlutterFlow's InfoWeddingPinSheetWidget.
+/// Phase 5: Updated to use new `weddings` table (hub central per bride).
 /// Uses Lynewed Design System for consistent styling.
 library;
 
@@ -18,11 +18,13 @@ class WeddingDetailsSheet extends StatelessWidget {
     required this.details,
     this.onContact,
     this.onViewBrideProfile,
+    this.onEdit,
   });
 
   final WeddingDetails details;
   final VoidCallback? onContact;
   final VoidCallback? onViewBrideProfile;
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +59,7 @@ class WeddingDetailsSheet extends StatelessWidget {
                   _buildEventDateRow(),
                 
                 // Location
-                if (details.locationLabel != null)
+                if (details.venueLabel != null)
                   _buildLocationRow(),
                 
                 // Budget range
@@ -72,9 +74,9 @@ class WeddingDetailsSheet extends StatelessWidget {
                 if (details.radiusFormatted != null)
                   _buildSearchRadius(),
                 
-                // Guest count
-                if (details.guestCount != null)
-                  _buildGuestCount(),
+                // Status badge for own wedding
+                if (details.isOwn)
+                  _buildStatusBadge(),
                 
                 LynewedGap.verticalLg,
                 
@@ -203,7 +205,7 @@ class WeddingDetailsSheet extends StatelessWidget {
           LynewedGap.horizontalSm,
           Expanded(
             child: Text(
-              details.locationLabel!,
+              details.venueLabel!,
               style: LynewedTextStyles.bodyMedium.copyWith(
                 color: LynewedColors.textPrimary,
               ),
@@ -295,20 +297,38 @@ class WeddingDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildGuestCount() {
+  Widget _buildStatusBadge() {
     return Padding(
       padding: EdgeInsets.only(bottom: LynewedSpacing.md),
       child: Row(
         children: [
           Icon(
-            Icons.people_outline,
+            details.isVisibleToPros ? Icons.visibility : Icons.visibility_off,
             size: 18,
             color: LynewedColors.textSecondary,
           ),
           LynewedGap.horizontalSm,
           Text(
-            '${details.guestCount} guests',
+            details.visibility.displayName,
             style: LynewedTextStyles.bodyMedium,
+          ),
+          LynewedGap.horizontalMd,
+          Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: LynewedSpacing.sm,
+              vertical: LynewedSpacing.xs,
+            ),
+            decoration: BoxDecoration(
+              color: LynewedColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              details.status.displayName,
+              style: LynewedTextStyles.labelSmall.copyWith(
+                color: LynewedColors.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
@@ -367,15 +387,38 @@ class WeddingDetailsSheet extends StatelessWidget {
   }
 
   Widget _buildActionButton() {
+    // Own wedding: show edit button
+    if (details.isOwn) {
+      return SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: onEdit,
+          style: OutlinedButton.styleFrom(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            side: BorderSide(color: LynewedColors.primary),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+          icon: Icon(Icons.edit, color: LynewedColors.primary),
+          label: Text(
+            'Edit Wedding',
+            style: LynewedTextStyles.labelLarge.copyWith(color: LynewedColors.primary),
+          ),
+        ),
+      );
+    }
+    
+    // Pro viewing visible wedding: can request contact
+    final canContact = details.isUpcoming && details.isVisibleToPros;
+    
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: details.isContactable && details.isUpcoming ? onContact : null,
+        onPressed: canContact ? onContact : null,
         style: LynewedComponentStyles.primaryButton(),
         icon: const Icon(Icons.mail_outline),
         label: Text(
           details.isUpcoming
-              ? (details.isContactable ? 'Request Contact' : 'Not Available')
+              ? (canContact ? 'Request Contact' : 'Not Available')
               : 'Wedding Passed',
         ),
       ),

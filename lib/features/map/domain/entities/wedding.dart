@@ -4,36 +4,13 @@
 /// - 1 mariage par bride
 /// - POI privé supprimé
 /// - Flux: Bride favoris → Pro notifié → Demande contact → Chat
+/// 
+/// Phase 5: WeddingVisibility and WeddingStatus enums moved to wedding_details.dart
 library;
 
 import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
-
-/// Visibilité du mariage sur la map
-enum WeddingVisibility {
-  /// Privé - visible uniquement par la bride
-  private,
-  
-  /// Visible par les pros Premium/Ultimate
-  visibleToPros,
-  
-  /// Public - visible par tous (future feature)
-  public;
-
-  static WeddingVisibility fromString(String? value) {
-    switch (value?.toLowerCase()) {
-      case 'private':
-        return WeddingVisibility.private;
-      case 'visible_to_pros':
-      case 'visibletopros':
-        return WeddingVisibility.visibleToPros;
-      case 'public':
-        return WeddingVisibility.public;
-      default:
-        return WeddingVisibility.private;
-    }
-  }
-}
+import 'wedding_details.dart' show WeddingVisibility;
 
 /// Mariage - Hub central de la bride
 /// 

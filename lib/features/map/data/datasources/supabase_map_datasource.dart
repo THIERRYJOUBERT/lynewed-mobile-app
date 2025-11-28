@@ -60,7 +60,7 @@ class SupabaseMapDatasource {
       'showProRecent': false, // Désactivé dans la refonte
       'showBridePrivatePoi': false, // POI deprecated
       'showProAlerts': filter.toggles.showAlerts,
-      'showWeddingPins': filter.toggles.showWeddings,
+      'showWeddings': filter.toggles.showWeddings,  // Updated for new RPC
       'showOnlyMyProfessionPins': filter.toggles.showOnlyMyProfession,
     };
 
@@ -117,10 +117,12 @@ class SupabaseMapDatasource {
         return MapMarkerType.proFixedLocation;
       case 'professionalalert':
         return MapMarkerType.professionalAlert;
-      case 'weddingpin':
+      case 'wedding':  // New type from updated RPC
         return MapMarkerType.wedding;
-      case 'poiprivate':
-        return MapMarkerType.poiPrivate;
+      case 'weddingpin':  // Legacy compatibility
+        return MapMarkerType.wedding;
+      case 'poiprivate':  // Deprecated, fallback to pro
+        return MapMarkerType.proFixedLocation;
       default:
         return MapMarkerType.proFixedLocation;
     }
@@ -204,17 +206,73 @@ class SupabaseMapDatasource {
 
   /// Récupère les détails d'un mariage via RPC
   /// 
-  /// Utilise get_wedding_pin_item_details(p_pin_id uuid)
+  /// Utilise get_wedding_details(p_wedding_id uuid) - NEW Phase 5
   Future<Map<String, dynamic>?> getWeddingDetails(String id) async {
     try {
       final response = await _client.rpc(
-        'get_wedding_pin_item_details',
-        params: {'p_pin_id': id},
+        'get_wedding_details',
+        params: {'p_wedding_id': id},
       );
       return response as Map<String, dynamic>?;
     } catch (e) {
       // Log error but don't crash
       return null;
+    }
+  }
+
+  /// Récupère le mariage de l'utilisateur courant (bride)
+  Future<Map<String, dynamic>?> getMyWedding() async {
+    try {
+      final response = await _client.rpc('get_my_wedding');
+      return response as Map<String, dynamic>?;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Crée ou met à jour le mariage de la bride
+  Future<Map<String, dynamic>?> upsertWedding({
+    String? weddingName,
+    required DateTime eventDate,
+    DateTime? eventEndDate,
+    double? venueLat,
+    double? venueLng,
+    String? venueLabel,
+    int searchRadiusKm = 50,
+    int? budgetMin,
+    int? budgetMax,
+    String currency = 'EUR',
+    List<String>? professionsNeeded,
+    String visibility = 'private',
+  }) async {
+    try {
+      final response = await _client.rpc('upsert_wedding', params: {
+        'p_wedding_name': weddingName,
+        'p_event_date': eventDate.toIso8601String().split('T').first,
+        'p_event_end_date': eventEndDate?.toIso8601String().split('T').first,
+        'p_venue_lat': venueLat,
+        'p_venue_lng': venueLng,
+        'p_venue_label': venueLabel,
+        'p_search_radius_km': searchRadiusKm,
+        'p_budget_min': budgetMin,
+        'p_budget_max': budgetMax,
+        'p_currency': currency,
+        'p_professions_needed': professionsNeeded,
+        'p_visibility': visibility,
+      });
+      return response as Map<String, dynamic>?;
+    } catch (e) {
+      return {'error': e.toString()};
+    }
+  }
+
+  /// Supprime le mariage de la bride (soft delete)
+  Future<bool> deleteMyWedding() async {
+    try {
+      await _client.rpc('delete_my_wedding');
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 

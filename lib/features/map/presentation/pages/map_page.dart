@@ -19,6 +19,7 @@ import '../../domain/entities/entities.dart';
 import '../../domain/repositories/map_repository.dart';
 import '../../domain/usecases/get_marker_details.dart';
 import '../../data/repositories/supabase_map_repository.dart';
+import '../../data/datasources/supabase_map_datasource.dart';
 import '../state/map_state.dart';
 import '../widgets/lynewed_map_widget.dart';
 import '../widgets/filter_sheet.dart';
@@ -78,6 +79,7 @@ class _MapPageState extends State<MapPage> {
   late MapState _mapState;
   gmaps.GoogleMapController? _mapController;
   final TextEditingController _searchController = TextEditingController();
+  final _datasource = SupabaseMapDatasource();
   bool _isSearchExpanded = false;
   bool _showMapStyleOptions = false;
   bool _mounted = true;
@@ -699,9 +701,10 @@ class _MapPageState extends State<MapPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (sheetContext) => _MarkerDetailsLoader(
+      builder: (c) => _MarkerDetailsLoader(
         marker: marker,
         userRole: widget.userRole,
+        onEditWedding: () => _showCreateSheet(context),
       ),
     );
   }
@@ -792,16 +795,69 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-  void _showCreateSheet(BuildContext ctx) {
+  void _showCreateSheet(BuildContext ctx) async {
     if (!_mounted) return;
     final isBride = widget.userRole == 'bride';
     
     if (isBride) {
-      // TODO: Navigate to create wedding flow
-      debugPrint('Create wedding');
-      ScaffoldMessenger.of(ctx).showSnackBar(
-        const SnackBar(content: Text('Create Wedding - Coming soon')),
+      // Show loader while fetching existing wedding
+      showDialog(
+        context: ctx,
+        barrierDismissible: false,
+        builder: (c) => const Center(child: CircularProgressIndicator()),
       );
+
+      try {
+        // Fetch existing wedding
+        final existingWedding = await _datasource.getMyWedding();
+        
+        if (!_mounted) return;
+        Navigator.of(ctx).pop(); // Hide loader
+
+        // Show create/edit sheet
+        showModalBottomSheet(
+          context: ctx,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (c) => WeddingCreateSheet(
+            existingWedding: existingWedding,
+            onSaved: () {
+              // Invalidate cache to show updated data
+              MarkerDetailsServiceProvider.instance.clearCache();
+              ScaffoldMessenger.of(ctx).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    existingWedding != null 
+                      ? 'Wedding updated successfully' 
+                      : 'Wedding created successfully'
+                  ),
+                  backgroundColor: LynewedColors.success,
+                ),
+              );
+              _mapState.refresh(); // Refresh map
+            },
+            onDeleted: () {
+              ScaffoldMessenger.of(ctx).showSnackBar(
+                const SnackBar(
+                  content: Text('Wedding deleted successfully'),
+                  backgroundColor: LynewedColors.success,
+                ),
+              );
+              _mapState.refresh(); // Refresh map
+            },
+          ),
+        );
+      } catch (e) {
+        if (!_mounted) return;
+        Navigator.of(ctx).pop(); // Hide loader on error
+        
+        ScaffoldMessenger.of(ctx).showSnackBar(
+          SnackBar(
+            content: Text('Error loading wedding: $e'),
+            backgroundColor: LynewedColors.error,
+          ),
+        );
+      }
     } else {
       // TODO: Navigate to create alert flow  
       debugPrint('Create alert');
@@ -939,10 +995,12 @@ class _MarkerDetailsLoader extends StatefulWidget {
   const _MarkerDetailsLoader({
     required this.marker,
     required this.userRole,
+    this.onEditWedding,
   });
 
   final MapMarker marker;
   final String userRole;
+  final VoidCallback? onEditWedding;
 
   @override
   State<_MarkerDetailsLoader> createState() => _MarkerDetailsLoaderState();
@@ -1016,8 +1074,9 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
               ),
               LynewedGap.verticalLg,
               Text(
-                'Unable to load details',
+                _error ?? 'Unable to load details',
                 style: LynewedTextStyles.titleMedium,
+                textAlign: TextAlign.center,
               ),
               LynewedGap.verticalSm,
               TextButton(
@@ -1066,24 +1125,7 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
           details: _details as WeddingDetails,
           onContact: () => _handleContactBride(context),
           onViewBrideProfile: () => _handleViewBrideProfile(context),
-        );
-
-      case MapMarkerType.poiPrivate:
-        // POI deprecated, show error
-        return Container(
-          decoration: BoxDecoration(
-            color: LynewedColors.background,
-            borderRadius: LynewedBorders.sheetBorderRadius,
-          ),
-          padding: EdgeInsets.all(LynewedSpacing.xxxl + LynewedSpacing.sm),
-          child: Center(
-            child: Text(
-              'POI feature has been deprecated',
-              style: LynewedTextStyles.bodyMedium.copyWith(
-                color: LynewedColors.textSecondary,
-              ),
-            ),
-          ),
+          onEdit: () => _handleEditWedding(context),
         );
     }
   }
@@ -1091,6 +1133,15 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
   // ============================================================
   // ACTION HANDLERS - Connected to MapActionsService
   // ============================================================
+
+  /// Handle edit wedding action
+  void _handleEditWedding(BuildContext context) {
+    Navigator.pop(context); // Close details sheet
+    // Wait a bit for the sheet to close before opening the new one
+    Future.delayed(const Duration(milliseconds: 200), () {
+      widget.onEditWedding?.call();
+    });
+  }
 
   /// Handle contact professional action
   void _handleContact(BuildContext context) {

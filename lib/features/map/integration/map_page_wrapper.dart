@@ -133,9 +133,6 @@ class _MapPageWrapperState extends State<MapPageWrapper> {
         case MapMarkerType.wedding:
           await _showWeddingDetailsSheet(marker.id);
           break;
-        case MapMarkerType.poiPrivate:
-          await _showPoiDetailsSheet(marker.id);
-          break;
       }
     } catch (e) {
       _showErrorDialog('Unable to load details. Please try again.');
@@ -226,14 +223,14 @@ class _MapPageWrapperState extends State<MapPageWrapper> {
     );
   }
 
-  /// Show filter sheet (uses new FilterSheet or existing AddFilterSheet)
+  /// Show filter sheet (uses new FilterSheet)
   Future<void> _showFilterSheet() async {
     final result = await showModalBottomSheet<MapFilter>(
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       context: context,
       builder: (context) => FilterSheet(
-        initialFilter: _currentFilter,
+        currentFilter: _currentFilter,
         userRole: widget.userRole,
         onApply: (filter) => Navigator.pop(context, filter),
       ),
@@ -299,9 +296,6 @@ class _MapPageWrapperState extends State<MapPageWrapper> {
               ),
               initialFilter: _currentFilter,
               onMarkerTap: _handleMarkerTap,
-              onFilterChanged: (filter) {
-                setState(() => _currentFilter = filter);
-              },
             ),
 
             // Top bar with back button and search

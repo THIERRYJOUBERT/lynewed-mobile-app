@@ -228,6 +228,55 @@ class LynewedComponentStyles {
     );
   }
 
+  // Chip Styles - Professions, Filters, Tags
+  static BoxDecoration chipDecoration({
+    bool selected = false,
+    Color? backgroundColor,
+    Color? borderColor,
+  }) {
+    return BoxDecoration(
+      color: selected 
+          ? (backgroundColor ?? LynewedColors.primary.withValues(alpha: 0.1))
+          : (backgroundColor ?? LynewedColors.gray100),
+      borderRadius: BorderRadius.circular(16.0),
+      border: selected
+          ? Border.all(color: borderColor ?? LynewedColors.primary, width: 1.0)
+          : null,
+    );
+  }
+
+  static TextStyle chipTextStyle({
+    bool selected = false,
+    Color? color,
+  }) {
+    return LynewedTextStyles.bodySmall.copyWith(
+      color: selected 
+          ? (color ?? LynewedColors.primary)
+          : (color ?? LynewedColors.textPrimary),
+      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+    );
+  }
+
+  /// FilterChip theme with Lynewed styling
+  static ChipThemeData chipTheme({
+    Color? backgroundColor,
+    Color? selectedColor,
+    Color? labelColor,
+  }) {
+    return ChipThemeData(
+      backgroundColor: backgroundColor ?? LynewedColors.gray100,
+      selectedColor: selectedColor ?? LynewedColors.primary.withValues(alpha: 0.15),
+      labelStyle: LynewedTextStyles.bodySmall.copyWith(
+        color: labelColor ?? LynewedColors.textPrimary,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      checkmarkColor: LynewedColors.primary,
+    );
+  }
+
   // List Tile Styles
   static ListTileThemeData listTileTheme({
     Color? tileColor,

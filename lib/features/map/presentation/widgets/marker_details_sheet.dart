@@ -70,8 +70,6 @@ class MarkerDetailsSheet extends StatelessWidget {
         return _buildAlertContent(context);
       case MapMarkerType.wedding:
         return _buildWeddingContent(context);
-      case MapMarkerType.poiPrivate:
-        return _buildPoiContent(context);
     }
   }
 
@@ -385,8 +383,6 @@ class MarkerDetailsSheet extends StatelessWidget {
         return 'I Can Help';
       case MapMarkerType.wedding:
         return 'Request';
-      case MapMarkerType.poiPrivate:
-        return 'Details';
     }
   }
 

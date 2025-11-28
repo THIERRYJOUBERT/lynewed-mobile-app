@@ -81,6 +81,7 @@ class GetAlertDetails implements UseCase<AlertDetails?, String> {
 }
 
 /// Get wedding details use case
+/// Phase 5: Updated to use new get_wedding_details RPC
 class GetWeddingDetails implements UseCase<WeddingDetails?, String> {
   GetWeddingDetails({SupabaseClient? client})
       : _client = client ?? Supabase.instance.client;
@@ -90,25 +91,28 @@ class GetWeddingDetails implements UseCase<WeddingDetails?, String> {
   @override
   Future<WeddingDetails?> call(String weddingId) async {
     if (weddingId.isEmpty) {
-      debugPrint('GetWeddingDetails: weddingId is empty');
-      return null;
+      throw Exception('Wedding ID is empty');
     }
 
     try {
       final data = await _client.rpc(
-        'get_wedding_pin_item_details',
-        params: {'p_pin_id': weddingId},
+        'get_wedding_details',
+        params: {'p_wedding_id': weddingId},
       );
 
       if (data is! Map<String, dynamic>) {
-        debugPrint('GetWeddingDetails: Invalid response type');
-        return null;
+        throw Exception('Invalid response format from server');
+      }
+
+      // Check for error response
+      if (data['error'] != null) {
+        throw Exception('Server error: ${data['error']}');
       }
 
       return WeddingDetails.fromJson(data);
     } catch (e) {
-      debugPrint('GetWeddingDetails error: $e');
-      return null;
+      if (e is Exception) rethrow;
+      throw Exception('Failed to load wedding: $e');
     }
   }
 }
@@ -171,9 +175,6 @@ class MarkerDetailsService {
         return getAlertDetails(marker.id);
       case MapMarkerType.wedding:
         return getWeddingDetails(marker.id);
-      case MapMarkerType.poiPrivate:
-        // POI is deprecated, return null
-        return null;
     }
   }
   
