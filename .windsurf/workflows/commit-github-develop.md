@@ -1,6 +1,5 @@
 ---
 description: Git Commit & Push to develop branch
-auto_execution_mode: 1
 ---
 
 ## Git Commit Workflow for LYNEWED Mobile App
@@ -68,7 +67,7 @@ Commit and push changes to the `develop` branch of the `lynewed-mobile-app` repo
    - docs/*: documentation updates"
    ```
 
-4. **Push to develop Branch**
+6. **Push to develop Branch**
    ```bash
    git push origin develop
    ```
