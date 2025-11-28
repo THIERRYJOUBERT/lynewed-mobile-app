@@ -7,75 +7,135 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 
-/// Profession enum (clean version)
+/// Profession enum - aligned with backend Supabase enum (14 values)
+/// Backend values: PHOTOGRAPHER, FILMMAKER, PLANNER, MAKEUP, HAIRDRESSER, 
+/// DESIGNER, BRIDALDESIGNER, VENUE, BRIDALSHOP, FLORIST, PHOTOMOVIE, 
+/// MAKEUPARTIST, EVENTDESIGNER, OTHER
 enum Profession {
   photographer,
-  videographer,
-  weddingPlanner,
-  florist,
-  caterer,
-  dj,
-  musician,
-  makeupArtist,
-  hairStylist,
-  officiant,
+  filmmaker,
+  planner,
+  makeup,
+  hairdresser,
+  designer,
+  bridalDesigner,
   venue,
-  rentals,
-  transportation,
-  stationery,
-  cake,
-  jewelry,
-  attire,
+  bridalShop,
+  florist,
+  photoMovie,
+  makeupArtist,
+  eventDesigner,
   other;
 
   String get displayName {
     switch (this) {
       case Profession.photographer:
         return 'Photographer';
-      case Profession.videographer:
-        return 'Videographer';
-      case Profession.weddingPlanner:
+      case Profession.filmmaker:
+        return 'Filmmaker';
+      case Profession.planner:
         return 'Wedding Planner';
-      case Profession.florist:
-        return 'Florist';
-      case Profession.caterer:
-        return 'Caterer';
-      case Profession.dj:
-        return 'DJ';
-      case Profession.musician:
-        return 'Musician';
-      case Profession.makeupArtist:
-        return 'Makeup Artist';
-      case Profession.hairStylist:
-        return 'Hair Stylist';
-      case Profession.officiant:
-        return 'Officiant';
+      case Profession.makeup:
+        return 'Makeup';
+      case Profession.hairdresser:
+        return 'Hairdresser';
+      case Profession.designer:
+        return 'Designer';
+      case Profession.bridalDesigner:
+        return 'Bridal Designer';
       case Profession.venue:
         return 'Venue';
-      case Profession.rentals:
-        return 'Rentals';
-      case Profession.transportation:
-        return 'Transportation';
-      case Profession.stationery:
-        return 'Stationery';
-      case Profession.cake:
-        return 'Cake';
-      case Profession.jewelry:
-        return 'Jewelry';
-      case Profession.attire:
-        return 'Attire';
+      case Profession.bridalShop:
+        return 'Bridal Shop';
+      case Profession.florist:
+        return 'Florist';
+      case Profession.photoMovie:
+        return 'Photo & Video';
+      case Profession.makeupArtist:
+        return 'Makeup Artist';
+      case Profession.eventDesigner:
+        return 'Event Designer';
       case Profession.other:
         return 'Other';
     }
   }
 
+  /// Converts to the backend RPC expected value (uppercase, matches Supabase enum)
+  String get toRpcValue {
+    switch (this) {
+      case Profession.photographer:
+        return 'PHOTOGRAPHER';
+      case Profession.filmmaker:
+        return 'FILMMAKER';
+      case Profession.planner:
+        return 'PLANNER';
+      case Profession.makeup:
+        return 'MAKEUP';
+      case Profession.hairdresser:
+        return 'HAIRDRESSER';
+      case Profession.designer:
+        return 'DESIGNER';
+      case Profession.bridalDesigner:
+        return 'BRIDALDESIGNER';
+      case Profession.venue:
+        return 'VENUE';
+      case Profession.bridalShop:
+        return 'BRIDALSHOP';
+      case Profession.florist:
+        return 'FLORIST';
+      case Profession.photoMovie:
+        return 'PHOTOMOVIE';
+      case Profession.makeupArtist:
+        return 'MAKEUPARTIST';
+      case Profession.eventDesigner:
+        return 'EVENTDESIGNER';
+      case Profession.other:
+        return 'OTHER';
+    }
+  }
+
+  /// Parse profession from string (handles backend RPC values)
   static Profession fromString(String? value) {
-    if (value == null) return Profession.other;
-    final normalized = value.toLowerCase().replaceAll('_', '');
-    return Profession.values.firstWhere(
-      (e) => e.name.toLowerCase() == normalized,
-      orElse: () => Profession.other,
-    );
+    if (value == null || value.isEmpty) return Profession.other;
+    
+    final upper = value.toUpperCase();
+    
+    switch (upper) {
+      case 'PHOTOGRAPHER':
+        return Profession.photographer;
+      case 'FILMMAKER':
+        return Profession.filmmaker;
+      case 'PLANNER':
+        return Profession.planner;
+      case 'MAKEUP':
+        return Profession.makeup;
+      case 'HAIRDRESSER':
+        return Profession.hairdresser;
+      case 'DESIGNER':
+        return Profession.designer;
+      case 'BRIDALDESIGNER':
+        return Profession.bridalDesigner;
+      case 'VENUE':
+        return Profession.venue;
+      case 'BRIDALSHOP':
+        return Profession.bridalShop;
+      case 'FLORIST':
+        return Profession.florist;
+      case 'PHOTOMOVIE':
+        return Profession.photoMovie;
+      case 'MAKEUPARTIST':
+        return Profession.makeupArtist;
+      case 'EVENTDESIGNER':
+        return Profession.eventDesigner;
+      case 'OTHER':
+      default:
+        // Fallback: try matching by clean enum name
+        final normalized = value.toLowerCase().replaceAll('_', '');
+        return Profession.values.firstWhere(
+          (e) => e.name.toLowerCase() == normalized,
+          orElse: () => Profession.other,
+        );
+    }
   }
 }
 

@@ -2,12 +2,14 @@
 /// 
 /// Clean, modern sheet for displaying professional details.
 /// Replaces FlutterFlow's InfoProItemSheetWidget.
+/// Uses Lynewed Design System for consistent styling.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '/core/design/design.dart';
 import '../../domain/entities/professional_details.dart';
 
 /// Professional details bottom sheet
@@ -18,68 +20,73 @@ class ProfessionalDetailsSheet extends StatelessWidget {
     this.onContact,
     this.onFavoriteToggle,
     this.onViewProfile,
+    this.showFavoriteButton = true, // Only show for brides
   });
 
   final ProfessionalDetails details;
   final VoidCallback? onContact;
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onViewProfile;
+  /// Whether to show the favorite button (only for brides, not for pros)
+  final bool showFavoriteButton;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        color: LynewedColors.background,
+        borderRadius: LynewedBorders.sheetBorderRadius,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Handle bar
-          _buildHandleBar(colorScheme),
+          _buildHandleBar(),
           
           // Content
           Flexible(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              padding: EdgeInsets.fromLTRB(
+                LynewedSpacing.xl, // Increased padding
+                0,
+                LynewedSpacing.xl, // Increased padding
+                LynewedSpacing.xl, // Increased padding
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Header with avatar and name
-                  _buildHeader(context),
-                  const SizedBox(height: 16),
+                  _buildHeader(),
+                  LynewedGap.verticalLg,
                   
                   // Profession and tier badge
-                  _buildProfessionRow(context),
-                  const SizedBox(height: 16),
+                  _buildProfessionRow(),
+                  LynewedGap.verticalLg,
                   
                   // Location and distance
                   if (details.locationLabel != null)
-                    _buildLocationRow(context),
+                    _buildLocationRow(),
                   
                   // Budget range
-                  _buildBudgetRow(context),
-                  const SizedBox(height: 16),
+                  _buildBudgetRow(),
+                  LynewedGap.verticalLg,
                   
                   // Description
                   if (details.description?.isNotEmpty == true)
-                    _buildDescription(context),
+                    _buildDescription(),
                   
                   // Portfolio preview
                   if (details.hasPortfolio)
-                    _buildPortfolioPreview(context),
+                    _buildPortfolioPreview(),
                   
                   // Social links
                   if (details.hasSocialLinks)
-                    _buildSocialLinks(context),
+                    _buildSocialLinks(),
                   
-                  const SizedBox(height: 20),
+                  LynewedGap.verticalXl,
                   
                   // Action buttons
-                  _buildActionButtons(context),
+                  _buildActionButtons(),
                 ],
               ),
             ),
@@ -89,21 +96,19 @@ class ProfessionalDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildHandleBar(ColorScheme colorScheme) {
+  Widget _buildHandleBar() {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 12),
+      margin: EdgeInsets.symmetric(vertical: LynewedSpacing.md),
       width: 40,
       height: 4,
       decoration: BoxDecoration(
-        color: colorScheme.onSurface.withValues(alpha: 0.2),
+        color: LynewedColors.gray200,
         borderRadius: BorderRadius.circular(2),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildHeader() {
     return Row(
       children: [
         // Avatar
@@ -111,21 +116,21 @@ class ProfessionalDetailsSheet extends StatelessWidget {
           tag: 'pro_avatar_${details.id}',
           child: CircleAvatar(
             radius: 36,
-            backgroundColor: theme.colorScheme.primaryContainer,
+            backgroundColor: LynewedColors.gray100,
             backgroundImage: details.avatarUrl != null
                 ? CachedNetworkImageProvider(details.avatarUrl!)
                 : null,
             child: details.avatarUrl == null
                 ? Text(
                     _getInitials(details.fullName),
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      color: theme.colorScheme.onPrimaryContainer,
+                    style: LynewedTextStyles.titleLarge.copyWith(
+                      color: LynewedColors.textSecondary,
                     ),
                   )
                 : null,
           ),
         ),
-        const SizedBox(width: 16),
+        LynewedGap.horizontalLg,
         
         // Name and business
         Expanded(
@@ -134,7 +139,7 @@ class ProfessionalDetailsSheet extends StatelessWidget {
             children: [
               Text(
                 details.displayName,
-                style: theme.textTheme.titleLarge?.copyWith(
+                style: LynewedTextStyles.titleLarge.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
                 maxLines: 1,
@@ -143,8 +148,8 @@ class ProfessionalDetailsSheet extends StatelessWidget {
               if (details.businessName != null && details.businessName != details.fullName)
                 Text(
                   details.fullName,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  style: LynewedTextStyles.bodyMedium.copyWith(
+                    color: LynewedColors.textSecondary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -153,44 +158,49 @@ class ProfessionalDetailsSheet extends StatelessWidget {
           ),
         ),
         
-        // Favorite button
-        IconButton(
-          onPressed: onFavoriteToggle,
-          icon: Icon(
-            details.isFavorited ? Icons.favorite : Icons.favorite_border,
-            color: details.isFavorited ? Colors.red : null,
+        // Favorite button (only for brides)
+        if (showFavoriteButton)
+          IconButton(
+            onPressed: onFavoriteToggle,
+            icon: Icon(
+              details.isFavorited ? Icons.favorite : Icons.favorite_border,
+              color: details.isFavorited ? LynewedColors.error : LynewedColors.textSecondary,
+            ),
           ),
-        ),
       ],
     );
   }
 
-  Widget _buildProfessionRow(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildProfessionRow() {
     return Row(
       children: [
         // Profession chip
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: EdgeInsets.symmetric(
+            horizontal: LynewedSpacing.md,
+            vertical: LynewedSpacing.xs,
+          ),
           decoration: BoxDecoration(
-            color: theme.colorScheme.primaryContainer,
+            color: LynewedColors.primary,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
             details.profession.displayName,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: theme.colorScheme.onPrimaryContainer,
+            style: LynewedTextStyles.labelMedium.copyWith(
+              color: LynewedColors.textOnPrimary,
               fontWeight: FontWeight.w500,
             ),
           ),
         ),
-        const SizedBox(width: 8),
+        LynewedGap.horizontalSm,
         
         // Subscription tier badge
         if (details.subscriptionTier != SubscriptionTier.inactive)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: EdgeInsets.symmetric(
+              horizontal: LynewedSpacing.sm,
+              vertical: LynewedSpacing.xxs,
+            ),
             decoration: BoxDecoration(
               color: _getTierColor(details.subscriptionTier).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
@@ -201,7 +211,7 @@ class ProfessionalDetailsSheet extends StatelessWidget {
             ),
             child: Text(
               details.subscriptionTier.displayName,
-              style: theme.textTheme.labelSmall?.copyWith(
+              style: LynewedTextStyles.labelSmall.copyWith(
                 color: _getTierColor(details.subscriptionTier),
                 fontWeight: FontWeight.w600,
               ),
@@ -210,11 +220,14 @@ class ProfessionalDetailsSheet extends StatelessWidget {
         
         // Live indicator
         if (details.isLive) ...[
-          const SizedBox(width: 8),
+          LynewedGap.horizontalSm,
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: EdgeInsets.symmetric(
+              horizontal: LynewedSpacing.sm,
+              vertical: LynewedSpacing.xxs,
+            ),
             decoration: BoxDecoration(
-              color: Colors.green.withValues(alpha: 0.1),
+              color: LynewedColors.success.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -223,16 +236,16 @@ class ProfessionalDetailsSheet extends StatelessWidget {
                 Container(
                   width: 6,
                   height: 6,
-                  decoration: const BoxDecoration(
-                    color: Colors.green,
+                  decoration: BoxDecoration(
+                    color: LynewedColors.success,
                     shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: 4),
+                LynewedGap.horizontalXxs,
                 Text(
                   'Live',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: Colors.green,
+                  style: LynewedTextStyles.labelSmall.copyWith(
+                    color: LynewedColors.success,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -244,24 +257,22 @@ class ProfessionalDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildLocationRow(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildLocationRow() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: LynewedSpacing.md),
       child: Row(
         children: [
           Icon(
             Icons.location_on_outlined,
             size: 18,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            color: LynewedColors.textSecondary,
           ),
-          const SizedBox(width: 8),
+          LynewedGap.horizontalSm,
           Expanded(
             child: Text(
               details.locationLabel!,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+              style: LynewedTextStyles.bodyMedium.copyWith(
+                color: LynewedColors.textPrimary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -270,8 +281,8 @@ class ProfessionalDetailsSheet extends StatelessWidget {
           if (details.distanceFormatted != null)
             Text(
               details.distanceFormatted!,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.primary,
+              style: LynewedTextStyles.bodySmall.copyWith(
+                color: LynewedColors.primary,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -280,20 +291,18 @@ class ProfessionalDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildBudgetRow(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildBudgetRow() {
     return Row(
       children: [
         Icon(
           Icons.euro_outlined,
           size: 18,
-          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          color: LynewedColors.textSecondary,
         ),
-        const SizedBox(width: 8),
+        LynewedGap.horizontalSm,
         Text(
           details.budgetRange,
-          style: theme.textTheme.bodyMedium?.copyWith(
+          style: LynewedTextStyles.bodyMedium.copyWith(
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -301,24 +310,22 @@ class ProfessionalDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildDescription(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildDescription() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: LynewedSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'About',
-            style: theme.textTheme.titleSmall?.copyWith(
+            style: LynewedTextStyles.titleSmall.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 8),
+          LynewedGap.verticalSm,
           Text(
             details.description!,
-            style: theme.textTheme.bodyMedium,
+            style: LynewedTextStyles.bodyMedium,
             maxLines: 4,
             overflow: TextOverflow.ellipsis,
           ),
@@ -327,12 +334,11 @@ class ProfessionalDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildPortfolioPreview(BuildContext context) {
-    final theme = Theme.of(context);
+  Widget _buildPortfolioPreview() {
     final images = details.portfolioImages.take(4).toList();
     
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: LynewedSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -341,24 +347,25 @@ class ProfessionalDetailsSheet extends StatelessWidget {
             children: [
               Text(
                 'Portfolio',
-                style: theme.textTheme.titleSmall?.copyWith(
+                style: LynewedTextStyles.titleSmall.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               if (details.portfolioImages.length > 4)
                 TextButton(
                   onPressed: onViewProfile,
+                  style: LynewedComponentStyles.textButton(),
                   child: Text('View all (${details.portfolioImages.length})'),
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          LynewedGap.verticalSm,
           SizedBox(
             height: 80,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: images.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              separatorBuilder: (_, __) => LynewedGap.horizontalSm,
               itemBuilder: (context, index) {
                 return ClipRRect(
                   borderRadius: BorderRadius.circular(8),
@@ -368,11 +375,11 @@ class ProfessionalDetailsSheet extends StatelessWidget {
                     height: 80,
                     fit: BoxFit.cover,
                     placeholder: (_, __) => Container(
-                      color: theme.colorScheme.surfaceContainerHighest,
+                      color: LynewedColors.gray100,
                     ),
                     errorWidget: (_, __, ___) => Container(
-                      color: theme.colorScheme.surfaceContainerHighest,
-                      child: const Icon(Icons.broken_image),
+                      color: LynewedColors.gray100,
+                      child: Icon(Icons.broken_image, color: LynewedColors.textSecondary),
                     ),
                   ),
                 );
@@ -384,11 +391,9 @@ class ProfessionalDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildSocialLinks(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildSocialLinks() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: LynewedSpacing.lg),
       child: Row(
         children: [
           if (details.instagramUrl != null)
@@ -398,7 +403,7 @@ class ProfessionalDetailsSheet extends StatelessWidget {
               onTap: () => _launchUrl(details.instagramUrl!),
             ),
           if (details.websiteUrl != null) ...[
-            if (details.instagramUrl != null) const SizedBox(width: 12),
+            if (details.instagramUrl != null) LynewedGap.horizontalMd,
             _SocialButton(
               icon: Icons.language,
               label: 'Website',
@@ -410,37 +415,24 @@ class ProfessionalDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildActionButtons() {
     return Row(
       children: [
         // View profile button
         Expanded(
           child: OutlinedButton(
             onPressed: onViewProfile,
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
+            style: LynewedComponentStyles.secondaryButton(),
             child: const Text('View Profile'),
           ),
         ),
-        const SizedBox(width: 12),
+        LynewedGap.horizontalMd,
         
         // Contact button
         Expanded(
-          flex: 2,
-          child: FilledButton(
+          child: ElevatedButton(
             onPressed: details.canBeContactedByBride ? onContact : null,
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
+            style: LynewedComponentStyles.primaryButton(),
             child: Text(
               details.canBeContactedByBride ? 'Contact' : 'Not Available',
             ),
@@ -493,25 +485,26 @@ class _SocialButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: EdgeInsets.symmetric(
+          horizontal: LynewedSpacing.md,
+          vertical: LynewedSpacing.sm,
+        ),
         decoration: BoxDecoration(
           border: Border.all(
-            color: theme.colorScheme.outline.withValues(alpha: 0.3),
+            color: LynewedColors.border,
           ),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 18),
-            const SizedBox(width: 6),
-            Text(label, style: theme.textTheme.labelMedium),
+            Icon(icon, size: 18, color: LynewedColors.textPrimary),
+            LynewedGap.horizontalXs,
+            Text(label, style: LynewedTextStyles.labelMedium),
           ],
         ),
       ),

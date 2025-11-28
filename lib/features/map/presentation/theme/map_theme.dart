@@ -59,43 +59,35 @@ class MapMarkerColors {
     }
   }
 
-  /// Couleur par profession
+  /// Couleur par profession - aligned with backend enum (14 values)
   static Color forProfession(Profession profession) {
     switch (profession) {
       case Profession.photographer:
         return const Color(0xFF2196F3); // Blue
-      case Profession.videographer:
+      case Profession.filmmaker:
         return const Color(0xFF9C27B0); // Purple
-      case Profession.weddingPlanner:
+      case Profession.planner:
         return const Color(0xFF4CAF50); // Green
+      case Profession.makeup:
+        return const Color(0xFFEC407A); // Pink 400
+      case Profession.hairdresser:
+        return const Color(0xFFFF4081); // Pink Accent
+      case Profession.designer:
+        return const Color(0xFFFFEB3B); // Yellow
+      case Profession.bridalDesigner:
+        return const Color(0xFF9E9E9E); // Grey
       case Profession.venue:
         return const Color(0xFFFF9800); // Orange
-      case Profession.caterer:
-        return const Color(0xFF795548); // Brown
-      case Profession.dj:
-        return const Color(0xFFE91E63); // Pink
+      case Profession.bridalShop:
+        return const Color(0xFFFFD700); // Gold
       case Profession.florist:
         return const Color(0xFF8BC34A); // Light Green
-      case Profession.makeupArtist:
-        return const Color(0xFFEC407A); // Pink 400
-      case Profession.hairStylist:
-        return const Color(0xFFFF4081); // Pink Accent
-      case Profession.officiant:
+      case Profession.photoMovie:
         return const Color(0xFF673AB7); // Deep Purple
-      case Profession.rentals:
+      case Profession.makeupArtist:
+        return const Color(0xFFE91E63); // Pink
+      case Profession.eventDesigner:
         return const Color(0xFF00BCD4); // Cyan
-      case Profession.transportation:
-        return const Color(0xFF607D8B); // Blue Grey
-      case Profession.stationery:
-        return const Color(0xFFFFEB3B); // Yellow
-      case Profession.cake:
-        return const Color(0xFFFFCDD2); // Pink 100
-      case Profession.jewelry:
-        return const Color(0xFFFFD700); // Gold
-      case Profession.attire:
-        return const Color(0xFF9E9E9E); // Grey
-      case Profession.musician:
-        return const Color(0xFF3F51B5); // Indigo
       case Profession.other:
         return const Color(0xFF607D8B); // Blue Grey
     }

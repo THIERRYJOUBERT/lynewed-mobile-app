@@ -37,24 +37,29 @@ class MarkerStyle {
     this.borderColorHex,
     this.label,
     this.iconAsset,
+    this.profileId,
   });
 
   final String? avatarUrl;
   final String? borderColorHex;
   final String? label;
   final String? iconAsset;
+  /// ID du profil associé (pour la navigation si marker.id != profile.id)
+  final String? profileId;
 
   MarkerStyle copyWith({
     String? avatarUrl,
     String? borderColorHex,
     String? label,
     String? iconAsset,
+    String? profileId,
   }) {
     return MarkerStyle(
       avatarUrl: avatarUrl ?? this.avatarUrl,
       borderColorHex: borderColorHex ?? this.borderColorHex,
       label: label ?? this.label,
       iconAsset: iconAsset ?? this.iconAsset,
+      profileId: profileId ?? this.profileId,
     );
   }
 
@@ -65,11 +70,12 @@ class MarkerStyle {
         other.avatarUrl == avatarUrl &&
         other.borderColorHex == borderColorHex &&
         other.label == label &&
-        other.iconAsset == iconAsset;
+        other.iconAsset == iconAsset &&
+        other.profileId == profileId;
   }
 
   @override
-  int get hashCode => Object.hash(avatarUrl, borderColorHex, label, iconAsset);
+  int get hashCode => Object.hash(avatarUrl, borderColorHex, label, iconAsset, profileId);
 }
 
 /// Marqueur de map immutable et léger

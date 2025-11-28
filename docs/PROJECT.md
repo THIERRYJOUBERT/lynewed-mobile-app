@@ -2,7 +2,7 @@
 
 **Version:** v1.1.1+59  
 **Branch:** develop  
-**Last Updated:** 2025-11-27  
+**Last Updated:** 2025-11-28  
 **Environment:** Development (hekyovgnovhfhmkpfrna)  
 
 ---
@@ -22,8 +22,8 @@
 - ✅ Data seeding completed (40 users with full relationships)
 - ✅ Documentation reorganized and updated
 - ✅ Design System unified and implemented (Phase 0 completed)
-- ⚠️ Map refactorisation: Backend OK, UI/UX corrections in progress
-- 🔄 Phase 1: Layout Map Restoration (active work)
+- ✅ **Map Module PARTIE A COMPLÉTÉE** (2025-11-28)
+- 🔄 **Prochaine étape**: Partie B - Refactorisation complète (40-50h)
 
 ### Key Metrics
 - **Codebase**: ~15,000+ lines of Dart code
@@ -91,24 +91,25 @@
 
 ### Primary References
 - **Future Tasks & Ideas**: `PROJECT_TODO.md` - Detailed thoughts and improvements
-- **Current Map Work**: `MAP_REFACTORING.md` - Active corrections and context
+- **Current Map Work**: `MAP_REFACTORING_PLAN.md` - Active corrections and context (Part A/B structure)
 - **Technical Knowledge Base**: `audits/MAP_FEATURE_AUDIT.md` - Complete technical documentation
 - **Design System**: `docs/App/DESIGN_SYSTEM.md` - UI/UX guidelines and tokens
 
 ### Development Workflow
 1. **Starting Any Task**: Read PROJECT.md + PROJECT_TODO.md
 2. **Creating Screens**: Reference Design System documentation
-3. **Map Development**: Consult MAP_REFACTORING.md for current work
+3. **Map Development**: Consult MAP_REFACTORING_PLAN.md for current work (Part A/B structure)
 4. **Technical Details**: Use `audits/MAP_FEATURE_AUDIT.md` for deep technical reference
 
 ### Next Immediate Priorities
-1. **Phase 1**: Complete Map Layout Restoration (UI/UX corrections)
-2. **Phase 2**: Map Filters correction and functionality
-3. **Phase 3**: Markers styling (avatar circles for pros)
-4. **Future**: Begin next module refactoring (auth/chat)
+1. ✅ ~~Phases 1-4~~: Foundation, Filtres, Sheets, Enums **COMPLÉTÉ**
+2. 🔄 **Phase 5**: Système Wedding (hub central bride) - 6-8h
+3. 🔄 **Phase 6**: Système Alertes (4 types structurés) - 6-8h
+4. 🔄 **Phase 7**: Android (tests, optimisations) - 4-6h
+5. 🔄 **Phase 8**: Séparation Indiens & Documentation - 6-8h
 
 ---
 
-**Last Updated**: 2025-11-27  
-**Status**: Phase 0 Design System Completed, Phase 1 Map Corrections In Progress  
-**Next Milestone**: Map Module UI/UX Validation
+**Last Updated**: 2025-11-28 18:00  
+**Status**: Phases 1-4 terminées, prêt pour Phase 5 (Wedding)  
+**Estimation restante**: 22-30h

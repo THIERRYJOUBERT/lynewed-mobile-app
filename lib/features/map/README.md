@@ -1,9 +1,9 @@
 # Map Feature Module
 
-**Version:** 2.0.0  
+**Version:** 2.1.0  
 **Created:** 2025-11-27  
-**Updated:** 2025-11-27  
-**Status:** ✅ Phases 1-4 Terminées - Module 100% Autonome
+**Updated:** 2025-11-28  
+**Status:** ✅ Phases 1-4 Terminées - Prêt pour Phase 5-8
 
 ## 📋 Objectif
 
@@ -105,7 +105,7 @@ LynewedMapWidget(
     enableMyLocation: true,
   ),
   initialFilter: MapFilter(
-    professions: [Profession.photographer, Profession.videographer],
+    professions: [Profession.photographer, Profession.filmmaker],
     toggles: LayerToggles(
       showPros: true,
       showAlerts: true,
@@ -167,17 +167,20 @@ final filter = MapFilter(
 );
 ```
 
-### MapMarkerType (enum nettoyé Phase 1)
+### MapMarkerType (enum simplifié - 4 valeurs)
 
 ```dart
 enum MapMarkerType {
-  professional,      // Professionnel
-  proFixedLocation,  // Position fixe (renommé de fixedLocation)
-  professionalAlert, // Alerte communautaire
-  wedding,           // Mariage (remplace weddingPin)
-  poiPrivate,        // POI privé (deprecated, sera supprimé)
+  proFixedLocation,    // Position fixe pro (fusion professional + fixedLocation)
+  professionalAlert,   // Alerte communautaire
+  wedding,             // Mariage (remplace weddingPin)
+  @Deprecated('Sera supprimé en Phase 5')
+  poiPrivate,          // POI privé (deprecated)
 }
 ```
+
+> **Note:** L'ancien enum FlutterFlow (`lib/backend/schema/enums/`) a encore 5 valeurs.
+> La compatibilité est assurée par `marker_type_mapper.dart`.
 
 ## 🔄 Migration depuis FlutterFlow
 
@@ -225,19 +228,25 @@ LynewedMapWidget(
 )
 ```
 
-## 📝 TODO Phase 2+
+## ✅ PHASES TERMINÉES (1-4)
 
-- [ ] Page MapPage complète avec AppBar et filtres
-- [ ] Composant FilterSheet réutilisable
-- [ ] Composant MarkerDetailsSheet
-- [ ] Custom marker icons (avatars)
-- [ ] Clustering des marqueurs
-- [ ] Theme map (dark mode, styles)
-- [ ] Tests unitaires et widget tests
-- [ ] Migration progressive des pages existantes
+- [x] Page MapPage complète avec AppBar et filtres
+- [x] Composant FilterSheet réutilisable
+- [x] Composants details sheets (Pro, Alert, Wedding)
+- [x] Custom marker icons (avatars 44px)
+- [x] MapActionsService (navigation, favoris)
+- [x] Cache accumulatif markers
+- [x] Bugs corrigés (alertes expirées, navigation auteur)
+
+## 📝 TODO Phase 5-8
+
+- [ ] **Phase 5:** Système Wedding (tables, migration, sheet création)
+- [ ] **Phase 6:** Système Alertes (4 types, expiration auto)
+- [ ] **Phase 7:** Tests Android
+- [ ] **Phase 8:** Documentation & séparation
 
 ## 🔗 Références
 
-- **Plan de refactorisation:** `docs/MAP_REFACTORING_PLAN.md` v1.7
-- **Audit technique:** `docs/audits/MAP_FEATURE_AUDIT.md`
-- **Changelog:** `docs/MAP_REFACTORING_README.md`
+- **Plan de refactorisation:** `docs/MAP_REFACTORING_PLAN.md`
+- **Audit technique:** `docs/audits/MAP_MODULE_AUDIT_2025-11-28.md`
+- **Status rapide:** `docs/MAP_STATUS.md`

@@ -1,7 +1,7 @@
 # PROJECT TODO - Idées & Tâches à Venir
 
 **Document créé:** 2025-11-26  
-**Last Updated:** 2025-11-27  
+**Last Updated:** 2025-11-28  
 **Objectif:** Gestion des tâches à faire et idées d'améliorations techniques  
 **Version:** v2.0 (Structure spécialisée)
 
@@ -9,16 +9,57 @@
 
 ## 🎯 Tâches Prochaines (non-précises, temps-flexible)
 
-### 🚨 Immediate Priority Thoughts
-- "Penser à finaliser les corrections UI/UX du module map" - Phase 1 en cours mais pourrait nécessiter ajustements
-- "Évaluer possibilité de créer des composants réutilisables pour les autres modules" - Le design system est prêt, l'appliquer partout
-- "Documenter le pattern Clean Architecture adopté" - Utile pour les futurs modules (auth, chat, etc.)
+### ✅ PHASES 1-4 MAP COMPLÉTÉES (2025-11-28)
+- ✅ Foundation (Design System, Clean Architecture)
+- ✅ Filtres & Markers (FilterSheet, cercles avatar)
+- ✅ Sheets & Actions (MapActionsService)
+- ✅ Enums Map (simplifié 4 valeurs)
+- ✅ Bugs corrigés (alertes expirées, navigation auteur)
 
-### 🗺️ Map Module - Thoughts en cours
-- "Les corrections de layout pourraient révéler d'autres problèmes UI" - Prévoir temps pour ajustements itératifs
-- "Peut-être que les filtres nécessitent une refonte complète" - Le code existant est complexe
-- "Faudrait penser à optimiser les performances des markers avec grand volume" - PostGIS est OK mais UI pourrait ramer
-- "Les sheets avec design system pourraient nécessiter des composants dédiés" - Créer des sheets réutilisables
+### 🚨 Prochaines Phases Map (22-30h restants)
+- **Phase 5**: Système Wedding (hub central bride) - 6-8h
+- **Phase 6**: Système Alertes (4 types structurés) - 6-8h
+- **Phase 7**: Android (tests, optimisations) - 4-6h
+- **Phase 8**: Séparation Indiens & Documentation - 6-8h
+
+### 🚨 CONTACT SYSTEM - À REVOIR COMPLÈTEMENT (Partie B)
+**Contexte:** Le bouton "Contact" dans les sheets ne fonctionne pas correctement. La logique actuelle:
+- Ne crée pas de chat_room automatiquement
+- Envoie vers la messagerie sans contexte
+- Pas de gestion du flow connection_request
+
+**Tâches à faire:**
+- [ ] Revoir la logique complète de contact Pro→Bride et Bride→Pro
+- [ ] Implémenter création automatique de chat_room si inexistante
+- [ ] Intégrer le système de connection_request (pending/accepted/declined)
+- [ ] Gérer les différents types de contact: wishlist, weddingPin, map, alert, proToPro
+- [ ] Ajouter feedback utilisateur approprié (snackbar, loading states)
+- [ ] Tester tous les scénarios de contact avec les test users
+
+### 📝 BUGS CORRIGÉS - Partie A (2025-11-28)
+
+#### Session Matin
+- ✅ Navigation View Profile: PublicProProfileViewWidget → ProDetailsWidget
+- ✅ Erreur "Error loading profile": RPC fallback query robuste
+- ✅ Icône favori visible côté Pro: paramètre showFavoriteButton
+- ✅ Wedding Sheet: Suppression chevron profil bride
+- ✅ Pro Sheet: Toggle Favori optimiste et réactif
+
+#### Session Après-midi (Bugs Alertes)
+- ✅ **Alertes expirées visibles sur map**: `search_map_bundle` + filtre `expires_at > now()`
+- ✅ **Tap profil auteur silencieux**: Context invalidation après `Navigator.pop()` async
+  - **Cause racine**: `_navigateToProProfileById` async appelé après pop → context invalide
+  - **Solution**: Utiliser `actions.getProItemDetailsAction()` (même pattern que dashboard) + `this.context`
+  - **Fichiers**: `map_page.dart`, `map_actions_service.dart`, `alert_details_sheet.dart`
+
+#### À revoir Partie B
+- ⚠️ Contact non fonctionnel → Logique complète à implémenter
+
+### 🚀 PERFORMANCE MAP - À INVESTIGUER
+- [ ] Chargement lent des points et avatars manquants
+- [ ] Optimiser RPC `get_map_bundle` (indexing?)
+- [ ] Vérifier caching images (CachedNetworkImage configuration)
+- [ ] Analyser latence Supabase (Cold starts?)
 
 ---
 

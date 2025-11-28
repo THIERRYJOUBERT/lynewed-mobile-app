@@ -1,13 +1,16 @@
 /// Marker icon generation service with caching
 /// 
 /// Generates custom marker icons with avatars, borders, and labels.
-/// Optimized for performance with bitmap caching and async generation.
+/// - Professionals: Circle with avatar image or initials + colored border
+/// - Alerts: Red circle with bell icon (like emergency beacon)
+/// - Weddings: Heart-shaped marker
 library;
 
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
+import 'package:http/http.dart' as http;
 
 import '../../domain/entities/map_marker.dart';
 import '../theme/map_theme.dart';
@@ -15,16 +18,12 @@ import '../theme/map_theme.dart';
 /// Configuration for marker icon generation
 class MarkerIconConfig {
   const MarkerIconConfig({
-    this.defaultSize = 44.0,
-    this.avatarSizeRatio = 0.6,
-    this.borderWidthRatio = 0.05,
-    this.shadowBlur = 2.0,
-    this.shadowOffset = const Offset(0, 1),
+    this.borderWidth = 4.0,
+    this.shadowBlur = 4.0,
+    this.shadowOffset = const Offset(0, 2),
   });
 
-  final double defaultSize;
-  final double avatarSizeRatio;
-  final double borderWidthRatio;
+  final double borderWidth;
   final double shadowBlur;
   final Offset shadowOffset;
 }
@@ -33,157 +32,230 @@ class MarkerIconConfig {
 class MarkerIconGenerator {
   MarkerIconGenerator({MarkerIconConfig? config})
       : _config = config ?? const MarkerIconConfig(),
-        _iconCache = {};
+        _iconCache = {},
+        _imageCache = {};
 
   final MarkerIconConfig _config;
   final Map<String, gmaps.BitmapDescriptor> _iconCache;
+  final Map<String, ui.Image> _imageCache;
 
   /// Generate marker icon for a given marker
   Future<gmaps.BitmapDescriptor> generateIcon(
     MapMarker marker, {
     double? size,
   }) async {
-    final cacheKey = _generateCacheKey(marker, size);
+    final actualSize = size ?? 168.0; // Default for 56px * 3 dpr
+    final cacheKey = _generateCacheKey(marker, actualSize);
     
     // Return cached icon if available
     if (_iconCache.containsKey(cacheKey)) {
       return _iconCache[cacheKey]!;
     }
 
-    // Generate new icon
-    final icon = await _createMarkerIcon(marker, size ?? _config.defaultSize);
-    _iconCache[cacheKey] = icon;
+    // Generate new icon based on type
+    gmaps.BitmapDescriptor icon;
+    switch (marker.type) {
+      case MapMarkerType.professionalAlert:
+        icon = await _createAlertIcon(marker, actualSize);
+        break;
+      case MapMarkerType.wedding:
+        icon = await _createWeddingIcon(marker, actualSize);
+        break;
+      case MapMarkerType.proFixedLocation:
+      case MapMarkerType.poiPrivate:
+      default:
+        icon = await _createProIcon(marker, actualSize);
+        break;
+    }
     
+    _iconCache[cacheKey] = icon;
     return icon;
   }
 
-  /// Clear icon cache (useful for memory management)
+  /// Clear icon cache
   void clearCache() {
     _iconCache.clear();
+    _imageCache.clear();
   }
 
-  /// Get cache size for debugging
   int get cacheSize => _iconCache.length;
 
-  /// Generate unique cache key for marker
-  String _generateCacheKey(MapMarker marker, double? size) {
-    final parts = [
-      marker.type.name,
-      marker.style.borderColorHex ?? 'transparent',
-      marker.style.avatarUrl ?? 'no-avatar',
-      marker.style.label ?? 'no-label',
-      size?.toString() ?? 'default',
-    ];
-    return parts.join('|');
+  String _generateCacheKey(MapMarker marker, double size) {
+    return '${marker.type.name}|${marker.style.borderColorHex}|${marker.style.avatarUrl}|${marker.style.label}|$size';
   }
 
-  /// Create marker icon bitmap
-  Future<gmaps.BitmapDescriptor> _createMarkerIcon(
-    MapMarker marker,
-    double size,
-  ) async {
+  // ============================================================
+  // PROFESSIONAL MARKER - Circle with avatar or initials
+  // ============================================================
+  
+  Future<gmaps.BitmapDescriptor> _createProIcon(MapMarker marker, double size) async {
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
     final center = Offset(size / 2, size / 2);
+    final radius = size / 2 - _config.borderWidth;
 
-    // Draw shadow
+    // Shadow
     _drawShadow(canvas, center, size);
 
-    // Draw background circle
-    _drawBackground(canvas, center, size, marker);
+    // White background circle
+    final bgPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, radius, bgPaint);
 
-    // Draw avatar placeholder or default icon
-    if (marker.style.avatarUrl != null || marker.style.label != null) {
-      _drawAvatarPlaceholder(canvas, center, size, marker);
-    } else {
-      _drawDefaultIcon(canvas, center, size, marker.type);
+    // Try to load avatar image
+    ui.Image? avatarImage;
+    if (marker.style.avatarUrl != null && marker.style.avatarUrl!.isNotEmpty) {
+      avatarImage = await _loadImage(marker.style.avatarUrl!);
     }
 
-    // Draw border
-    _drawBorder(canvas, center, size, marker);
+    if (avatarImage != null) {
+      // Draw avatar image clipped to circle
+      _drawClippedImage(canvas, center, radius * 0.9, avatarImage);
+    } else if (marker.style.label != null && marker.style.label!.isNotEmpty) {
+      // Draw initials
+      _drawInitials(canvas, center, radius, marker.style.label!, _getBorderColor(marker));
+    } else {
+      // Draw person icon
+      _drawPersonIcon(canvas, center, radius * 0.5);
+    }
 
-    // Convert to bitmap descriptor
-    final picture = recorder.endRecording();
-    final image = await picture.toImage(size.toInt(), size.toInt());
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    
-    return gmaps.BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
+    // Colored border
+    final borderPaint = Paint()
+      ..color = _getBorderColor(marker)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = _config.borderWidth;
+    canvas.drawCircle(center, radius, borderPaint);
+
+    return _finishIcon(recorder, size);
   }
 
-  /// Draw shadow under marker
+  // ============================================================
+  // ALERT MARKER - Red circle with bell icon (emergency beacon style)
+  // ============================================================
+  
+  Future<gmaps.BitmapDescriptor> _createAlertIcon(MapMarker marker, double size) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final center = Offset(size / 2, size / 2);
+    final radius = size / 2 - _config.borderWidth;
+
+    // Shadow
+    _drawShadow(canvas, center, size);
+
+    // Red background
+    final bgPaint = Paint()
+      ..color = const Color(0xFFE53935) // Red 600
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, radius, bgPaint);
+
+    // White bell icon
+    _drawBellIcon(canvas, center, radius * 0.55);
+
+    // White border
+    final borderPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = _config.borderWidth * 0.75;
+    canvas.drawCircle(center, radius, borderPaint);
+
+    return _finishIcon(recorder, size);
+  }
+
+  // ============================================================
+  // WEDDING MARKER - Heart shape or circle with heart
+  // ============================================================
+  
+  Future<gmaps.BitmapDescriptor> _createWeddingIcon(MapMarker marker, double size) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final center = Offset(size / 2, size / 2);
+    final radius = size / 2 - _config.borderWidth;
+
+    // Shadow
+    _drawShadow(canvas, center, size);
+
+    // Pink/rose background
+    final bgPaint = Paint()
+      ..color = const Color(0xFFF8BBD9) // Pink 100
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, radius, bgPaint);
+
+    // Heart icon in center
+    _drawHeartIcon(canvas, center, radius * 0.6, const Color(0xFFE91E63));
+
+    // Rose border
+    final borderPaint = Paint()
+      ..color = const Color(0xFFE91E63) // Pink 500
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = _config.borderWidth;
+    canvas.drawCircle(center, radius, borderPaint);
+
+    return _finishIcon(recorder, size);
+  }
+
+  // ============================================================
+  // HELPER METHODS
+  // ============================================================
+
   void _drawShadow(Canvas canvas, Offset center, double size) {
     final shadowPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.2)
+      ..color = Colors.black.withValues(alpha: 0.25)
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, _config.shadowBlur);
-
-    final shadowRect = Rect.fromCenter(
-      center: center + _config.shadowOffset,
-      width: size * 0.8,
-      height: size * 0.8,
-    );
-
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(shadowRect, Radius.circular(size * 0.4)),
-      shadowPaint,
-    );
+    canvas.drawCircle(center + _config.shadowOffset, size / 2 - _config.borderWidth, shadowPaint);
   }
 
-  /// Draw background circle
-  void _drawBackground(Canvas canvas, Offset center, double size, MapMarker marker) {
-    final bgPaint = Paint()
-      ..color = _getBackgroundColor(marker)
-      ..style = PaintingStyle.fill;
-
-    canvas.drawCircle(center, size / 2, bgPaint);
-  }
-
-  /// Draw avatar placeholder or cached image
-  /// 
-  /// NOTE: Direct network image loading in canvas is complex and unreliable.
-  /// For production, pre-load avatars via ImageCache and pass ui.Image directly.
-  /// This implementation draws a colored placeholder with initials.
-  void _drawAvatarPlaceholder(
-    Canvas canvas,
-    Offset center,
-    double size,
-    MapMarker marker,
-  ) {
-    final avatarSize = size * _config.avatarSizeRatio;
-    
-    // Draw colored circle as placeholder
-    final bgPaint = Paint()
-      ..color = _getBorderColor(marker).withValues(alpha: 0.3)
-      ..style = PaintingStyle.fill;
-    
-    canvas.drawCircle(center, avatarSize / 2, bgPaint);
-    
-    // Draw initials if label available
-    final label = marker.style.label;
-    if (label != null && label.isNotEmpty) {
-      final initials = _getInitials(label);
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: initials,
-          style: TextStyle(
-            color: _getBorderColor(marker),
-            fontSize: avatarSize * 0.4,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      );
-      textPainter.layout();
-      textPainter.paint(
-        canvas,
-        center - Offset(textPainter.width / 2, textPainter.height / 2),
-      );
-    } else {
-      // Fallback to type icon
-      _drawDefaultIcon(canvas, center, size, marker.type);
+  Future<ui.Image?> _loadImage(String url) async {
+    if (_imageCache.containsKey(url)) {
+      return _imageCache[url];
     }
+
+    try {
+      final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final codec = await ui.instantiateImageCodec(response.bodyBytes);
+        final frame = await codec.getNextFrame();
+        _imageCache[url] = frame.image;
+        return frame.image;
+      }
+    } catch (e) {
+      debugPrint('Failed to load avatar: $url - $e');
+    }
+    return null;
   }
-  
-  /// Extract initials from name
+
+  void _drawClippedImage(Canvas canvas, Offset center, double radius, ui.Image image) {
+    canvas.save();
+    
+    // Clip to circle
+    final clipPath = Path()..addOval(Rect.fromCircle(center: center, radius: radius));
+    canvas.clipPath(clipPath);
+    
+    // Draw image scaled to fit
+    final srcRect = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+    final dstRect = Rect.fromCircle(center: center, radius: radius);
+    canvas.drawImageRect(image, srcRect, dstRect, Paint());
+    
+    canvas.restore();
+  }
+
+  void _drawInitials(Canvas canvas, Offset center, double radius, String name, Color color) {
+    final initials = _getInitials(name);
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: initials,
+        style: TextStyle(
+          color: color,
+          fontSize: radius * 0.7,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+    textPainter.paint(canvas, center - Offset(textPainter.width / 2, textPainter.height / 2));
+  }
+
   String _getInitials(String name) {
     final parts = name.trim().split(' ');
     if (parts.isEmpty) return '?';
@@ -191,136 +263,95 @@ class MarkerIconGenerator {
     return '${parts[0][0]}${parts.last[0]}'.toUpperCase();
   }
 
-  /// Draw default icon when no avatar
-  void _drawDefaultIcon(Canvas canvas, Offset center, double size, MapMarkerType type) {
-    final iconPaint = Paint()
+  void _drawPersonIcon(Canvas canvas, Offset center, double size) {
+    final paint = Paint()
+      ..color = Colors.grey.shade400
+      ..style = PaintingStyle.fill;
+    
+    // Head
+    canvas.drawCircle(center - Offset(0, size * 0.35), size * 0.3, paint);
+    // Body
+    canvas.drawOval(
+      Rect.fromCenter(center: center + Offset(0, size * 0.25), width: size * 0.7, height: size * 0.5),
+      paint,
+    );
+  }
+
+  void _drawBellIcon(Canvas canvas, Offset center, double size) {
+    final paint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.fill;
 
-    final iconSize = size * 0.3;
+    // Bell body (rounded trapezoid shape)
+    final bellPath = Path();
+    bellPath.moveTo(center.dx - size * 0.35, center.dy + size * 0.2);
+    bellPath.quadraticBezierTo(center.dx - size * 0.4, center.dy - size * 0.1, center.dx - size * 0.2, center.dy - size * 0.35);
+    bellPath.quadraticBezierTo(center.dx, center.dy - size * 0.5, center.dx + size * 0.2, center.dy - size * 0.35);
+    bellPath.quadraticBezierTo(center.dx + size * 0.4, center.dy - size * 0.1, center.dx + size * 0.35, center.dy + size * 0.2);
+    bellPath.close();
+    canvas.drawPath(bellPath, paint);
+
+    // Bell bottom (clapper area)
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: center + Offset(0, size * 0.25), width: size * 0.8, height: size * 0.15),
+        Radius.circular(size * 0.1),
+      ),
+      paint,
+    );
+
+    // Clapper (small circle at bottom)
+    canvas.drawCircle(center + Offset(0, size * 0.4), size * 0.1, paint);
+  }
+
+  void _drawHeartIcon(Canvas canvas, Offset center, double size, Color color) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    final w = size * 0.9;
+    final h = size * 0.85;
+    final topY = center.dy - h * 0.25;
     
-    switch (type) {
-      case MapMarkerType.proFixedLocation:
-        _drawPersonIcon(canvas, center, iconSize, iconPaint);
-        break;
-      case MapMarkerType.professionalAlert:
-        _drawAlertIcon(canvas, center, iconSize, iconPaint);
-        break;
-      case MapMarkerType.wedding:
-        _drawHeartIcon(canvas, center, iconSize, iconPaint);
-        break;
-      case MapMarkerType.poiPrivate:
-        _drawLocationIcon(canvas, center, iconSize, iconPaint);
-        break;
-    }
+    // Start at bottom point
+    path.moveTo(center.dx, center.dy + h * 0.4);
+    // Left curve
+    path.cubicTo(
+      center.dx - w * 0.55, center.dy + h * 0.1,
+      center.dx - w * 0.55, topY - h * 0.2,
+      center.dx, topY,
+    );
+    // Right curve
+    path.cubicTo(
+      center.dx + w * 0.55, topY - h * 0.2,
+      center.dx + w * 0.55, center.dy + h * 0.1,
+      center.dx, center.dy + h * 0.4,
+    );
+    
+    canvas.drawPath(path, paint);
   }
 
-  /// Draw border around marker
-  void _drawBorder(Canvas canvas, Offset center, double size, MapMarker marker) {
-    final borderPaint = Paint()
-      ..color = _getBorderColor(marker)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size * _config.borderWidthRatio;
-
-    canvas.drawCircle(center, size / 2 - size * _config.borderWidthRatio / 2, borderPaint);
-  }
-
-  /// Get background color for marker type
-  Color _getBackgroundColor(MapMarker marker) {
-    switch (marker.type) {
-      case MapMarkerType.proFixedLocation:
-        return Colors.white;
-      case MapMarkerType.professionalAlert:
-        return MapMarkerColors.alert.withValues(alpha: 0.1);
-      case MapMarkerType.wedding:
-        return Colors.white;
-      case MapMarkerType.poiPrivate:
-        return Colors.white;
-    }
-  }
-
-  /// Get border color for marker
   Color _getBorderColor(MapMarker marker) {
     if (marker.style.borderColorHex != null) {
       try {
         final colorHex = marker.style.borderColorHex!.replaceFirst('#', '');
         return Color(int.parse('FF$colorHex', radix: 16));
-      } catch (_) {
-        // Fallback to type color
-      }
+      } catch (_) {}
     }
-    
     return MapMarkerColors.forMarkerType(marker.type);
   }
 
-  // Icon drawing methods
-  void _drawPersonIcon(Canvas canvas, Offset center, double size, Paint paint) {
-    final path = Path();
-    // Head
-    path.addOval(Rect.fromCircle(center: center - Offset(0, size * 0.3), radius: size * 0.2));
-    // Body
-    path.addOval(Rect.fromCircle(center: center + Offset(0, size * 0.1), radius: size * 0.25));
-    canvas.drawPath(path, paint);
-  }
-
-  void _drawAlertIcon(Canvas canvas, Offset center, double size, Paint paint) {
-    canvas.drawCircle(center, size * 0.4, paint);
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: '!',
-        style: TextStyle(
-          color: Colors.red,
-          fontSize: size * 0.6, // Relative to marker size
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
+  Future<gmaps.BitmapDescriptor> _finishIcon(ui.PictureRecorder recorder, double size) async {
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(size.toInt(), size.toInt());
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    // Use width parameter to display at exactly 44 logical pixels
+    return gmaps.BitmapDescriptor.bytes(
+      byteData!.buffer.asUint8List(),
+      width: 44,
+      height: 44,
     );
-    textPainter.layout();
-    textPainter.paint(
-      canvas,
-      center - Offset(textPainter.width / 2, textPainter.height / 2),
-    );
-  }
-
-  void _drawHeartIcon(Canvas canvas, Offset center, double size, Paint paint) {
-    // Simple heart shape using circles and triangle
-    final heartSize = size * 0.35;
-    final topOffset = size * 0.15;
-    
-    // Left circle of heart
-    canvas.drawCircle(
-      center - Offset(heartSize * 0.3, topOffset),
-      heartSize * 0.35,
-      paint,
-    );
-    
-    // Right circle of heart
-    canvas.drawCircle(
-      center + Offset(heartSize * 0.3, -topOffset),
-      heartSize * 0.35,
-      paint,
-    );
-    
-    // Bottom triangle
-    final path = Path();
-    path.moveTo(center.dx - heartSize * 0.5, center.dy - topOffset);
-    path.lineTo(center.dx + heartSize * 0.5, center.dy - topOffset);
-    path.lineTo(center.dx, center.dy + heartSize * 0.4);
-    path.close();
-    canvas.drawPath(path, paint);
-  }
-
-  void _drawLocationIcon(Canvas canvas, Offset center, double size, Paint paint) {
-    final path = Path();
-    path.moveTo(center.dx, center.dy - size * 0.3);
-    path.lineTo(center.dx - size * 0.25, center.dy + size * 0.2);
-    path.lineTo(center.dx + size * 0.25, center.dy + size * 0.2);
-    path.close();
-    canvas.drawPath(path, paint);
-    
-    // Inner circle
-    canvas.drawCircle(center, size * 0.1, paint);
   }
 }
 

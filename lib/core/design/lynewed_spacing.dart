@@ -7,6 +7,7 @@ class LynewedSpacing {
   LynewedSpacing._();
 
   // Base spacing scale (4px baseline)
+  static const double xxs = 2.0; // Added for fine tuning
   static const double xs = 4.0;
   static const double sm = 8.0;
   static const double md = 12.0;
@@ -46,12 +47,12 @@ class LynewedSpacing {
   static const EdgeInsets verticalXl = EdgeInsets.symmetric(vertical: xl);
 
   // Common padding patterns from MVP
-  static const EdgeInsets pageContent = EdgeInsetsDirectional.fromSTEB(20.0, 70.0, 20.0, 0.0);
-  static const EdgeInsets pageContentLarge = EdgeInsetsDirectional.fromSTEB(32.0, 70.0, 32.0, 40.0);
-  static const EdgeInsets pageContentXL = EdgeInsetsDirectional.fromSTEB(20.0, 110.0, 20.0, 84.0);
-  static const EdgeInsets pageContentXXL = EdgeInsetsDirectional.fromSTEB(20.0, 130.0, 20.0, 84.0);
-  static const EdgeInsets formSection = EdgeInsetsDirectional.fromSTEB(32.0, 70.0, 32.0, 40.0);
-  static const EdgeInsets cardPaddingHorizontal = EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0);
+  static const EdgeInsetsDirectional pageContent = EdgeInsetsDirectional.fromSTEB(20.0, 70.0, 20.0, 0.0);
+  static const EdgeInsetsDirectional pageContentLarge = EdgeInsetsDirectional.fromSTEB(32.0, 70.0, 32.0, 40.0);
+  static const EdgeInsetsDirectional pageContentXL = EdgeInsetsDirectional.fromSTEB(20.0, 110.0, 20.0, 84.0);
+  static const EdgeInsetsDirectional pageContentXXL = EdgeInsetsDirectional.fromSTEB(20.0, 130.0, 20.0, 84.0);
+  static const EdgeInsetsDirectional formSection = EdgeInsetsDirectional.fromSTEB(32.0, 70.0, 32.0, 40.0);
+  static const EdgeInsetsDirectional cardPaddingHorizontal = EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0);
 
   // Spacing utilities
   static EdgeInsets horizontal(double value) => EdgeInsets.symmetric(horizontal: value);
@@ -97,6 +98,7 @@ class LynewedSpacing {
 class LynewedGap {
   LynewedGap._();
 
+  static const SizedBox xxs = SizedBox(width: LynewedSpacing.xxs, height: LynewedSpacing.xxs);
   static const SizedBox xs = SizedBox(width: LynewedSpacing.xs, height: LynewedSpacing.xs);
   static const SizedBox sm = SizedBox(width: LynewedSpacing.sm, height: LynewedSpacing.sm);
   static const SizedBox md = SizedBox(width: LynewedSpacing.md, height: LynewedSpacing.md);
@@ -106,6 +108,7 @@ class LynewedGap {
   static const SizedBox xxxl = SizedBox(width: LynewedSpacing.xxxl, height: LynewedSpacing.xxxl);
 
   // Horizontal gaps
+  static const SizedBox horizontalXxs = SizedBox(width: LynewedSpacing.xxs);
   static const SizedBox horizontalXs = SizedBox(width: LynewedSpacing.xs);
   static const SizedBox horizontalSm = SizedBox(width: LynewedSpacing.sm);
   static const SizedBox horizontalMd = SizedBox(width: LynewedSpacing.md);
@@ -115,6 +118,7 @@ class LynewedGap {
   static const SizedBox horizontalXxxl = SizedBox(width: LynewedSpacing.xxxl);
 
   // Vertical gaps
+  static const SizedBox verticalXxs = SizedBox(height: LynewedSpacing.xxs);
   static const SizedBox verticalXs = SizedBox(height: LynewedSpacing.xs);
   static const SizedBox verticalSm = SizedBox(height: LynewedSpacing.sm);
   static const SizedBox verticalMd = SizedBox(height: LynewedSpacing.md);

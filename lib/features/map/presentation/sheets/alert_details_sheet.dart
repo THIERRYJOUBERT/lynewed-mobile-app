@@ -2,11 +2,13 @@
 /// 
 /// Clean, modern sheet for displaying alert details.
 /// Replaces FlutterFlow's InfoAlertItemSheetWidget.
+/// Uses Lynewed Design System for consistent styling.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+import '/core/design/design.dart';
 import '../../domain/entities/alert_details.dart';
 
 /// Alert details bottom sheet
@@ -26,48 +28,50 @@ class AlertDetailsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        color: LynewedColors.background,
+        borderRadius: LynewedBorders.sheetBorderRadius,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Handle bar
-          _buildHandleBar(colorScheme),
+          _buildHandleBar(),
           
           // Content
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            padding: EdgeInsets.fromLTRB(
+              LynewedSpacing.xl,
+              0,
+              LynewedSpacing.xl,
+              LynewedSpacing.xl,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Alert type header
-                _buildAlertTypeHeader(context),
-                const SizedBox(height: 16),
+                _buildAlertTypeHeader(),
+                LynewedGap.verticalLg,
                 
                 // Title and message
-                _buildTitleAndMessage(context),
-                const SizedBox(height: 16),
+                _buildTitleAndMessage(),
+                LynewedGap.verticalLg,
                 
                 // Location
                 if (details.locationLabel != null)
-                  _buildLocationRow(context),
+                  _buildLocationRow(),
                 
                 // Time info
-                _buildTimeInfo(context),
-                const SizedBox(height: 16),
+                _buildTimeInfo(),
+                LynewedGap.verticalLg,
                 
                 // Author info
-                _buildAuthorInfo(context),
-                const SizedBox(height: 20),
+                _buildAuthorInfo(),
+                LynewedGap.verticalXl,
                 
                 // Action buttons
-                _buildActionButtons(context),
+                _buildActionButtons(),
               ],
             ),
           ),
@@ -76,109 +80,102 @@ class AlertDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildHandleBar(ColorScheme colorScheme) {
+  Widget _buildHandleBar() {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 12),
+      margin: EdgeInsets.symmetric(vertical: LynewedSpacing.md),
       width: 40,
       height: 4,
       decoration: BoxDecoration(
-        color: colorScheme.onSurface.withValues(alpha: 0.2),
+        color: LynewedColors.gray200,
         borderRadius: BorderRadius.circular(2),
       ),
     );
   }
 
-  Widget _buildAlertTypeHeader(BuildContext context) {
-    final theme = Theme.of(context);
+  Widget _buildAlertTypeHeader() {
     final color = _getAlertTypeColor(details.alertType);
     
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              _getAlertTypeIcon(details.alertType),
-              color: color,
-              size: 24,
-            ),
+    return Row(
+      children: [
+        Container(
+          padding: EdgeInsets.all(LynewedSpacing.md),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  details.alertType.displayName,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
-                ),
-                Text(
-                  details.alertType.description,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
-                ),
-              ],
-            ),
+          child: Icon(
+            _getAlertTypeIcon(details.alertType),
+            color: color,
+            size: 28, // Increased from 24 to match Wedding sheet
           ),
-          // Status badge
-          _buildStatusBadge(context),
-        ],
-      ),
+        ),
+        LynewedGap.horizontalLg, // Increased from Md to match Wedding sheet
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                details.alertType.displayName,
+                style: LynewedTextStyles.titleLarge.copyWith( // Increased from titleMedium
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              Text(
+                details.alertType.description,
+                style: LynewedTextStyles.bodyMedium.copyWith( // Increased from bodySmall
+                  color: LynewedColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Status badge
+        _buildStatusBadge(),
+      ],
     );
   }
 
-  Widget _buildStatusBadge(BuildContext context) {
-    final theme = Theme.of(context);
+  Widget _buildStatusBadge() {
     final isActive = details.isActive;
     
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: LynewedSpacing.sm,
+        vertical: LynewedSpacing.xxs,
+      ),
       decoration: BoxDecoration(
-        color: isActive ? Colors.green.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1),
+        color: isActive 
+            ? LynewedColors.success.withValues(alpha: 0.1) 
+            : LynewedColors.gray200,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         isActive ? 'Active' : 'Expired',
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: isActive ? Colors.green : Colors.grey,
+        style: LynewedTextStyles.labelSmall.copyWith(
+          color: isActive ? LynewedColors.success : LynewedColors.textSecondary,
           fontWeight: FontWeight.w600,
         ),
       ),
     );
   }
 
-  Widget _buildTitleAndMessage(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildTitleAndMessage() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           details.displayTitle,
-          style: theme.textTheme.titleLarge?.copyWith(
+          style: LynewedTextStyles.titleLarge.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),
         if (details.message?.isNotEmpty == true) ...[
-          const SizedBox(height: 8),
+          LynewedGap.verticalSm,
           Text(
             details.message!,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+            style: LynewedTextStyles.bodyMedium.copyWith(
+              color: LynewedColors.textPrimary,
             ),
           ),
         ],
@@ -186,24 +183,22 @@ class AlertDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildLocationRow(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildLocationRow() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: LynewedSpacing.md),
       child: Row(
         children: [
           Icon(
             Icons.location_on_outlined,
             size: 18,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            color: LynewedColors.textSecondary,
           ),
-          const SizedBox(width: 8),
+          LynewedGap.horizontalSm,
           Expanded(
             child: Text(
               details.locationLabel!,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+              style: LynewedTextStyles.bodyMedium.copyWith(
+                color: LynewedColors.textPrimary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -214,9 +209,7 @@ class AlertDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildTimeInfo(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildTimeInfo() {
     return Row(
       children: [
         // Start time
@@ -224,30 +217,31 @@ class AlertDetailsSheet extends StatelessWidget {
           Icon(
             Icons.schedule_outlined,
             size: 18,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            color: LynewedColors.textSecondary,
           ),
-          const SizedBox(width: 8),
+          LynewedGap.horizontalSm,
           Text(
             _formatDateTime(details.startAt!),
-            style: theme.textTheme.bodyMedium,
+            style: LynewedTextStyles.bodyMedium,
           ),
         ],
         
-        // Time remaining
-        if (details.timeRemaining != null) ...[
+        // Time remaining (only for active alerts)
+        if (details.timeRemaining != null && details.isActive) ...[
           const Spacer(),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: EdgeInsets.symmetric(
+              horizontal: LynewedSpacing.sm,
+              vertical: LynewedSpacing.xxs,
+            ),
             decoration: BoxDecoration(
-              color: details.isActive
-                  ? Colors.orange.withValues(alpha: 0.1)
-                  : Colors.grey.withValues(alpha: 0.1),
+              color: LynewedColors.warning.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               details.timeRemaining!,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: details.isActive ? Colors.orange : Colors.grey,
+              style: LynewedTextStyles.labelSmall.copyWith(
+                color: LynewedColors.warning,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -257,37 +251,39 @@ class AlertDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildAuthorInfo(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return InkWell(
-      onTap: onViewAuthorProfile,
+  Widget _buildAuthorInfo() {
+    return Material(
+      color: LynewedColors.background,
       borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
+      clipBehavior: Clip.antiAlias, // Ensure ripple is clipped
+      child: InkWell(
+        onTap: onViewAuthorProfile,
+        child: Container(
+          padding: EdgeInsets.all(LynewedSpacing.md),
+          decoration: BoxDecoration(
+            // Color moved to Material widget to allow InkWell ripple effect
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: LynewedColors.border),
+          ),
+          child: Row(
           children: [
             // Author avatar
             CircleAvatar(
-              radius: 20,
-              backgroundColor: theme.colorScheme.primaryContainer,
+              radius: 24, // Increased to match Bride avatar size in Wedding sheet
+              backgroundColor: LynewedColors.gray100,
               backgroundImage: details.authorAvatarUrl != null
                   ? CachedNetworkImageProvider(details.authorAvatarUrl!)
                   : null,
               child: details.authorAvatarUrl == null
                   ? Text(
                       _getInitials(details.authorFullName ?? '?'),
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: theme.colorScheme.onPrimaryContainer,
+                      style: LynewedTextStyles.labelMedium.copyWith(
+                        color: LynewedColors.textSecondary,
                       ),
                     )
                   : null,
             ),
-            const SizedBox(width: 12),
+            LynewedGap.horizontalMd,
             
             // Author info
             Expanded(
@@ -296,15 +292,15 @@ class AlertDetailsSheet extends StatelessWidget {
                 children: [
                   Text(
                     details.authorFullName ?? 'Unknown',
-                    style: theme.textTheme.titleSmall?.copyWith(
+                    style: LynewedTextStyles.titleSmall.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   if (details.authorProfession != null)
                     Text(
                       details.authorProfession!.displayName,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                      style: LynewedTextStyles.bodySmall.copyWith(
+                        color: LynewedColors.textSecondary,
                       ),
                     ),
                 ],
@@ -314,15 +310,18 @@ class AlertDetailsSheet extends StatelessWidget {
             // Own badge
             if (details.isOwn)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: EdgeInsets.symmetric(
+                  horizontal: LynewedSpacing.sm,
+                  vertical: LynewedSpacing.xxs,
+                ),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  color: LynewedColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   'Your alert',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.primary,
+                  style: LynewedTextStyles.labelSmall.copyWith(
+                    color: LynewedColors.primary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -330,17 +329,15 @@ class AlertDetailsSheet extends StatelessWidget {
             else
               Icon(
                 Icons.chevron_right,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                color: LynewedColors.textSecondary,
               ),
           ],
         ),
       ),
-    );
+    ));
   }
 
-  Widget _buildActionButtons(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildActionButtons() {
     if (details.isOwn) {
       // Own alert - show delete button
       return SizedBox(
@@ -348,11 +345,11 @@ class AlertDetailsSheet extends StatelessWidget {
         child: OutlinedButton.icon(
           onPressed: onDelete,
           style: OutlinedButton.styleFrom(
-            foregroundColor: Colors.red,
-            side: const BorderSide(color: Colors.red),
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            foregroundColor: LynewedColors.error,
+            side: BorderSide(color: LynewedColors.error),
+            minimumSize: Size(0, LynewedSpacing.buttonHeight),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: LynewedBorders.borderRadiusNone,
             ),
           ),
           icon: const Icon(Icons.delete_outline),
@@ -364,15 +361,9 @@ class AlertDetailsSheet extends StatelessWidget {
     // Other's alert - show help button
     return SizedBox(
       width: double.infinity,
-      child: FilledButton.icon(
+      child: ElevatedButton.icon(
         onPressed: details.isContactable && details.isActive ? onHelp : null,
-        style: FilledButton.styleFrom(
-          backgroundColor: _getAlertTypeColor(details.alertType),
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
+        style: LynewedComponentStyles.primaryButton(),
         icon: const Icon(Icons.handshake_outlined),
         label: Text(
           details.isActive
@@ -386,30 +377,30 @@ class AlertDetailsSheet extends StatelessWidget {
   Color _getAlertTypeColor(AlertType type) {
     switch (type) {
       case AlertType.backupNeeded:
-        return Colors.orange;
+        return LynewedColors.primary;
       case AlertType.gearEmergency:
-        return Colors.red;
+        return LynewedColors.primary;
       case AlertType.teamMember:
-        return Colors.purple;
+        return LynewedColors.primary;
       case AlertType.emergencyHelp:
-        return Colors.pink;
+        return LynewedColors.primary;
       case AlertType.other:
-        return Colors.blue;
+        return LynewedColors.primary;
     }
   }
 
   IconData _getAlertTypeIcon(AlertType type) {
     switch (type) {
       case AlertType.backupNeeded:
-        return Icons.person_add_outlined;
+        return Icons.person_add; // Filled version
       case AlertType.gearEmergency:
-        return Icons.camera_outlined;
+        return Icons.camera_alt; // Filled version
       case AlertType.teamMember:
-        return Icons.group_add_outlined;
+        return Icons.group_add; // Filled version
       case AlertType.emergencyHelp:
-        return Icons.warning_amber_outlined;
+        return Icons.warning; // Filled version
       case AlertType.other:
-        return Icons.help_outline;
+        return Icons.notifications; // Filled version, better than question mark
     }
   }
 

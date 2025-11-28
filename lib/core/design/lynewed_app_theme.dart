@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'lynewed_colors.dart';
 import 'lynewed_text_styles.dart';
 import 'lynewed_spacing.dart';
@@ -30,8 +29,6 @@ class LynewedAppTheme {
         onError: LynewedColors.textOnPrimary,
         surface: LynewedColors.background,
         onSurface: LynewedColors.textPrimary,
-        background: LynewedColors.background,
-        onBackground: LynewedColors.textPrimary,
       ),
 
       // Typography
@@ -101,7 +98,7 @@ class LynewedAppTheme {
       ),
 
       // Card Theme
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: LynewedColors.background,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -161,7 +158,7 @@ class LynewedAppTheme {
       ),
 
       // Dialog Theme
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: LynewedColors.background,
         elevation: 8.0,
         shape: RoundedRectangleBorder(
@@ -199,7 +196,7 @@ class LynewedAppTheme {
       ),
 
       // Tab Bar Theme
-      tabBarTheme: const TabBarTheme(
+      tabBarTheme: const TabBarThemeData(
         labelColor: LynewedColors.primary,
         unselectedLabelColor: LynewedColors.textSecondary,
         labelStyle: LynewedTextStyles.labelMedium,
@@ -243,19 +240,10 @@ class LynewedAppTheme {
         }),
         trackColor: MaterialStateProperty.resolveWith((states) {
           if (states.contains(MaterialState.selected)) {
-            return LynewedColors.primary.withOpacity(0.5);
+            return LynewedColors.primary.withValues(alpha: 0.5);
           }
           return LynewedColors.gray200;
         }),
-      ),
-
-      // System UI Overlay Style
-      systemOverlayStyle: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-        systemNavigationBarColor: LynewedColors.background,
-        systemNavigationBarIconBrightness: Brightness.dark,
       ),
 
       // Scaffold Background

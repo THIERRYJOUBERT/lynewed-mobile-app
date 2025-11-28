@@ -9,11 +9,13 @@ import 'lynewed_component_styles.dart';
 /// See /docs/App/DESIGN_SYSTEM.md for complete usage guide
 /// Mirrors FlutterFlowTheme API for seamless migration
 class LynewedTheme {
-  LynewedTheme._();
+  const LynewedTheme._();
+
+  static const LynewedTheme _instance = LynewedTheme._();
 
   /// Get the current theme from context
   static LynewedTheme of(BuildContext context) {
-    return const LynewedTheme();
+    return _instance;
   }
 
   // Color properties (mirroring FlutterFlowTheme)
@@ -27,16 +29,16 @@ class LynewedTheme {
   Color get secondaryBackground => LynewedColors.surface;
   Color get accent1 => LynewedColors.gray300;
   Color get accent2 => LynewedColors.error;
-  Color get accent3 => LynewedColors.warning.withOpacity(0.3);
-  Color get accent4 => LynewedColors.background.withOpacity(0.8);
+  Color get accent3 => LynewedColors.warning.withValues(alpha: 0.3);
+  Color get accent4 => LynewedColors.background.withValues(alpha: 0.8);
   Color get success => LynewedColors.success;
   Color get warning => LynewedColors.warning;
   Color get error => LynewedColors.error;
   Color get info => LynewedColors.info;
-  Color get backgroundIcons => LynewedColors.gray300.withOpacity(0.2);
+  Color get backgroundIcons => LynewedColors.gray300.withValues(alpha: 0.2);
 
   // Typography properties (mirroring FlutterFlowTheme)
-  Typography get typography => _LynewedTypography(this);
+  _LynewedTypography get typography => _LynewedTypography(this);
 
   // Deprecated properties (for compatibility)
   @Deprecated('Use primary instead')
@@ -62,6 +64,7 @@ class LynewedTheme {
   TextStyle get labelLarge => LynewedTextStyles.labelLarge;
   TextStyle get labelMedium => LynewedTextStyles.labelMedium;
   TextStyle get labelSmall => LynewedTextStyles.labelSmall;
+  TextStyle get caption => LynewedTextStyles.caption;
 
   // Legacy typography properties (for compatibility)
   @Deprecated('Use displaySmall instead')
@@ -181,21 +184,6 @@ class LynewedDesignSystem {
 
 /// Extension methods for easy theme access
 extension LynewedThemeExtension on BuildContext {
-  /// Get LynewedTheme
+  /// Get LynewedTheme - convenient shorthand for LynewedTheme.of(context)
   LynewedTheme get lynewedTheme => LynewedTheme.of(this);
-
-  /// Get colors
-  LynewedColors get colors => LynewedColors;
-
-  /// Get text styles
-  LynewedTextStyles get textStyles => LynewedTextStyles;
-
-  /// Get spacing
-  LynewedSpacing get spacing => LynewedSpacing;
-
-  /// Get borders
-  LynewedBorders get borders => LynewedBorders;
-
-  /// Get component styles
-  LynewedComponentStyles get componentStyles => LynewedComponentStyles;
 }

@@ -48,8 +48,9 @@ class SupabaseMapDatasource {
     };
 
     // Format filtres pour la RPC
+    // Use toRpcValue for correct backend enum mapping
     final filters = {
-      'professions': filter.professions.map((p) => p.name.toUpperCase()).toList(),
+      'professions': filter.professions.map((p) => p.toRpcValue).toList(),
       'budgetMin': filter.budgetMin?.toString(),
       'budgetMax': filter.budgetMax?.toString(),
       'currency': filter.currency,
@@ -92,6 +93,11 @@ class SupabaseMapDatasource {
         style: MarkerStyle(
           avatarUrl: styleInfo['avatarUrl'] as String?,
           borderColorHex: styleInfo['borderColorHex'] as String?,
+          // Label for initials display (fallback to name from metadata)
+          label: styleInfo['label'] as String? ?? 
+                 styleInfo['name'] as String? ?? 
+                 styleInfo['displayName'] as String?,
+          profileId: styleInfo['profileId'] as String?,
         ),
         metadata: {
           'isOwn': styleInfo['isOwn'] == true,
@@ -260,9 +266,9 @@ class SupabaseMapDatasource {
     switch (profession?.toUpperCase()) {
       case 'PHOTOGRAPHER':
         return '#2196F3'; // Bleu
-      case 'VIDEOGRAPHER':
+      case 'FILMMAKER':
         return '#9C27B0'; // Violet
-      case 'WEDDINGPLANNER':
+      case 'PLANNER':
         return '#4CAF50'; // Vert
       case 'VENUE':
         return '#FF9800'; // Orange

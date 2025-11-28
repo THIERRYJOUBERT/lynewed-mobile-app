@@ -1,6 +1,7 @@
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
+import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_toggle_icon.dart';
@@ -49,11 +50,54 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
+      // Initialisation optimiste avec la valeur passée en paramètre
       _model.fav = widget.proDetails!.isFavorited;
       if (mounted) {
         safeSetState(() {});
       }
+      
+      // Vérifier le statut favori réel depuis la DB (pour synchronisation)
+      await _checkFavoriteStatusFromDb();
     });
+  }
+
+  /// Vérifie le statut favori réel depuis la table wishlist_items
+  /// Permet de synchroniser l'état si modifié ailleurs (map sheet, autre session)
+  Future<void> _checkFavoriteStatusFromDb() async {
+    if (!mounted) return;
+    
+    final userId = currentUserUid;
+    final proId = widget.proDetails?.proProfileId;
+    
+    // Seulement pour les brides (les pros n'ont pas de wishlist)
+    if (userId.isEmpty || 
+        proId == null || 
+        proId.isEmpty ||
+        FFAppState().currentUserRole != UserRole.bride) {
+      return;
+    }
+    
+    try {
+      final result = await SupaFlow.client
+          .from('wishlist_items')
+          .select('bride_profile_id')
+          .eq('bride_profile_id', userId)
+          .eq('professional_profile_id', proId)
+          .maybeSingle();
+      
+      if (!mounted) return;
+      
+      final isFavoritedFromDb = result != null;
+      
+      // Mettre à jour seulement si différent de la valeur actuelle
+      if (_model.fav != isFavoritedFromDb) {
+        _model.fav = isFavoritedFromDb;
+        safeSetState(() {});
+      }
+    } catch (e) {
+      // En cas d'erreur, on garde la valeur initiale
+      debugPrint('ProDetails: Failed to check favorite status: $e');
+    }
   }
 
   @override
@@ -641,51 +685,53 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                       Row(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
-                                          Align(
-                                            alignment:
-                                                const AlignmentDirectional(0.0, 0.0),
-                                            child: Container(
-                                              width: 40.0,
-                                              height: 40.0,
-                                              decoration: const BoxDecoration(),
-                                              child: ToggleIcon(
-                                                onPressed: () async {
-                                                  // Toggle optimiste pour UI réactive
-                                                  safeSetState(() =>
-                                                      _model.fav = !_model.fav);
-                                                  
-                                                  _model.toggleResult =
-                                                      await actions
-                                                          .toggleWishlistAction(
-                                                    widget.proDetails!
-                                                        .proProfileId,
-                                                  );
-                                                  
-                                                  // Mettre à jour avec le résultat réel du serveur
-                                                  if (_model.toggleResult != null) {
-                                                    _model.fav =
-                                                        _model.toggleResult!;
-                                                    safeSetState(() {});
-                                                  }
-                                                },
-                                                value: _model.fav,
-                                                onIcon: Icon(
-                                                  Icons.favorite_sharp,
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primary,
-                                                  size: 24.0,
-                                                ),
-                                                offIcon: Icon(
-                                                  Icons.favorite_border,
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .secondaryText,
-                                                  size: 24.0,
+                                          // Only show favorite button for brides (adds to wishlist)
+                                          if (FFAppState().currentUserRole == UserRole.bride)
+                                            Align(
+                                              alignment:
+                                                  const AlignmentDirectional(0.0, 0.0),
+                                              child: Container(
+                                                width: 40.0,
+                                                height: 40.0,
+                                                decoration: const BoxDecoration(),
+                                                child: ToggleIcon(
+                                                  onPressed: () async {
+                                                    // Toggle optimiste pour UI réactive
+                                                    safeSetState(() =>
+                                                        _model.fav = !_model.fav);
+                                                    
+                                                    _model.toggleResult =
+                                                        await actions
+                                                            .toggleWishlistAction(
+                                                      widget.proDetails!
+                                                          .proProfileId,
+                                                    );
+                                                    
+                                                    // Mettre à jour avec le résultat réel du serveur
+                                                    if (_model.toggleResult != null) {
+                                                      _model.fav =
+                                                          _model.toggleResult!;
+                                                      safeSetState(() {});
+                                                    }
+                                                  },
+                                                  value: _model.fav,
+                                                  onIcon: Icon(
+                                                    Icons.favorite_sharp,
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .primary,
+                                                    size: 24.0,
+                                                  ),
+                                                  offIcon: Icon(
+                                                    Icons.favorite_border,
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .secondaryText,
+                                                    size: 24.0,
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
                                         ].divide(const SizedBox(width: 14.0)),
                                       ),
                                     ],

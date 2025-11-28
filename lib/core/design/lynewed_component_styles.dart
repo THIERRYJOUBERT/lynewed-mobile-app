@@ -114,7 +114,7 @@ class LynewedComponentStyles {
       boxShadow: elevation != null && elevation > 0
           ? [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: elevation,
                 offset: const Offset(0, 2),
               ),
@@ -190,12 +190,12 @@ class LynewedComponentStyles {
   }
 
   // Bottom Navigation Bar Styles
-  static BottomNavigationBarTheme bottomNavigationBarTheme({
+  static BottomNavigationBarThemeData bottomNavigationBarTheme({
     Color? backgroundColor,
     Color? selectedItemColor,
     Color? unselectedItemColor,
   }) {
-    return BottomNavigationBarTheme(
+    return BottomNavigationBarThemeData(
       backgroundColor: backgroundColor ?? LynewedColors.background,
       selectedItemColor: selectedItemColor ?? LynewedColors.primary,
       unselectedItemColor: unselectedItemColor ?? LynewedColors.textSecondary,

@@ -383,6 +383,8 @@ class _AddressSearchWidgetState extends State<AddressSearchWidget> {
         onChanged: _onTextChanged,
         enabled: widget.enabled,
         autofocus: false,
+        autocorrect: false,
+        enableSuggestions: false,
         textInputAction: TextInputAction.search,
         decoration: InputDecoration(
           isDense: false,

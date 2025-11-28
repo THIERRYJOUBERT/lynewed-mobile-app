@@ -14,11 +14,11 @@ class LynewedBorders {
   static const double xl = 24.0;
 
   // Common border radius patterns
-  static const BorderRadius borderRadiusNone = BorderRadius.circular(none);
-  static const BorderRadius borderRadiusSm = BorderRadius.circular(sm);
-  static const BorderRadius borderRadiusMd = BorderRadius.circular(md);
-  static const BorderRadius borderRadiusLg = BorderRadius.circular(lg);
-  static const BorderRadius borderRadiusXl = BorderRadius.circular(xl);
+  static const BorderRadius borderRadiusNone = BorderRadius.all(Radius.circular(none));
+  static const BorderRadius borderRadiusSm = BorderRadius.all(Radius.circular(sm));
+  static const BorderRadius borderRadiusMd = BorderRadius.all(Radius.circular(md));
+  static const BorderRadius borderRadiusLg = BorderRadius.all(Radius.circular(lg));
+  static const BorderRadius borderRadiusXl = BorderRadius.all(Radius.circular(xl));
 
   // Top borders (for sheets and modals)
   static const BorderRadius topBorderRadiusXl = BorderRadius.only(
@@ -38,9 +38,9 @@ class LynewedBorders {
   );
 
   // Asymmetric borders
-  static const BorderRadius buttonBorderRadius = BorderRadius.circular(none);
-  static const BorderRadius inputBorderRadius = BorderRadius.circular(sm);
-  static const BorderRadius cardBorderRadius = BorderRadius.circular(none);
+  static final BorderRadius buttonBorderRadius = BorderRadius.circular(none);
+  static final BorderRadius inputBorderRadius = BorderRadius.circular(sm);
+  static final BorderRadius cardBorderRadius = BorderRadius.circular(none);
   static const BorderRadius sheetBorderRadius = BorderRadius.only(
     topLeft: Radius.circular(xl),
     topRight: Radius.circular(xl),

@@ -24,87 +24,87 @@ class DesignSystemTestWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Typography Test
-            _buildTypographySection(),
+            _buildTypographySection(context),
             LynewedGap.verticalXl,
             
             // Color Test
-            _buildColorSection(),
+            _buildColorSection(context),
             LynewedGap.verticalXl,
             
             // Button Test
-            _buildButtonSection(),
+            _buildButtonSection(context),
             LynewedGap.verticalXl,
             
             // Input Test
-            _buildInputSection(),
+            _buildInputSection(context),
             LynewedGap.verticalXl,
             
             // Card Test
-            _buildCardSection(),
+            _buildCardSection(context),
             LynewedGap.verticalXl,
             
             // Spacing Test
-            _buildSpacingSection(),
+            _buildSpacingSection(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTypographySection() {
+  Widget _buildTypographySection(BuildContext context) {
+    final theme = LynewedTheme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Typography Test',
-          style: LynewedTheme.of(context).headlineLarge,
+          style: theme.headlineLarge,
         ),
         LynewedGap.verticalMd,
         Text(
           'Display Large (64px)',
-          style: LynewedTheme.of(context).displayLarge,
+          style: theme.displayLarge,
         ),
         Text(
           'Headline Large (32px)',
-          style: LynewedTheme.of(context).headlineLarge,
+          style: theme.headlineLarge,
         ),
         Text(
           'Title Medium (20px)',
-          style: LynewedTheme.of(context).titleMedium,
+          style: theme.titleMedium,
         ),
         Text(
           'Body Large (16px)',
-          style: LynewedTheme.of(context).bodyLarge,
+          style: theme.bodyLarge,
         ),
         Text(
           'Body Medium (14px)',
-          style: LynewedTheme.of(context).bodyMedium,
+          style: theme.bodyMedium,
         ),
         Text(
           'Label Medium (12px)',
-          style: LynewedTheme.of(context).labelMedium,
+          style: theme.labelMedium,
         ),
         Text(
           'Caption (9px)',
-          style: LynewedTheme.of(context).caption,
+          style: theme.caption,
         ),
         Text(
           'Text on Dark Background',
-          style: LynewedTextStyles.textOnDark(
-            LynewedTheme.of(context).bodyLarge,
-          ),
+          style: LynewedTextStyles.textOnDark(theme.bodyLarge),
         ),
       ],
     );
   }
 
-  Widget _buildColorSection() {
+  Widget _buildColorSection(BuildContext context) {
+    final theme = LynewedTheme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Color Test',
-          style: LynewedTheme.of(context).headlineLarge,
+          style: theme.headlineLarge,
         ),
         LynewedGap.verticalMd,
         _buildColorBox('Primary', LynewedColors.primary, LynewedColors.textOnPrimary),
@@ -136,13 +136,14 @@ class DesignSystemTestWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildButtonSection() {
+  Widget _buildButtonSection(BuildContext context) {
+    final theme = LynewedTheme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Button Test',
-          style: LynewedTheme.of(context).headlineLarge,
+          style: theme.headlineLarge,
         ),
         LynewedGap.verticalMd,
         SizedBox(
@@ -152,7 +153,7 @@ class DesignSystemTestWidget extends StatelessWidget {
             onPressed: () {},
             child: Text(
               'Primary Button',
-              style: LynewedTheme.of(context).titleSmall,
+              style: theme.titleSmall,
             ),
           ),
         ),
@@ -164,7 +165,7 @@ class DesignSystemTestWidget extends StatelessWidget {
             onPressed: () {},
             child: Text(
               'Secondary Button',
-              style: LynewedTheme.of(context).titleSmall,
+              style: theme.titleSmall,
             ),
           ),
         ),
@@ -176,7 +177,7 @@ class DesignSystemTestWidget extends StatelessWidget {
             onPressed: () {},
             child: Text(
               'Text Button',
-              style: LynewedTheme.of(context).titleSmall,
+              style: theme.titleSmall,
             ),
           ),
         ),
@@ -184,13 +185,14 @@ class DesignSystemTestWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildInputSection() {
+  Widget _buildInputSection(BuildContext context) {
+    final theme = LynewedTheme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Input Test',
-          style: LynewedTheme.of(context).headlineLarge,
+          style: theme.headlineLarge,
         ),
         LynewedGap.verticalMd,
         TextField(
@@ -212,13 +214,14 @@ class DesignSystemTestWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildCardSection() {
+  Widget _buildCardSection(BuildContext context) {
+    final theme = LynewedTheme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Card Test',
-          style: LynewedTheme.of(context).headlineLarge,
+          style: theme.headlineLarge,
         ),
         LynewedGap.verticalMd,
         Container(
@@ -230,12 +233,12 @@ class DesignSystemTestWidget extends StatelessWidget {
             children: [
               Text(
                 'Card Title',
-                style: LynewedTheme.of(context).titleMedium,
+                style: theme.titleMedium,
               ),
               LynewedGap.verticalSm,
               Text(
                 'This is a card component using the design system. It should match the MVP card styling exactly.',
-                style: LynewedTheme.of(context).bodyMedium,
+                style: theme.bodyMedium,
               ),
             ],
           ),
@@ -250,12 +253,12 @@ class DesignSystemTestWidget extends StatelessWidget {
             children: [
               Text(
                 'Surface Card',
-                style: LynewedTheme.of(context).titleMedium,
+                style: theme.titleMedium,
               ),
               LynewedGap.verticalSm,
               Text(
                 'This card uses the surface background color.',
-                style: LynewedTheme.of(context).bodyMedium,
+                style: theme.bodyMedium,
               ),
             ],
           ),
@@ -264,13 +267,14 @@ class DesignSystemTestWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildSpacingSection() {
+  Widget _buildSpacingSection(BuildContext context) {
+    final theme = LynewedTheme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Spacing Test',
-          style: LynewedTheme.of(context).headlineLarge,
+          style: theme.headlineLarge,
         ),
         LynewedGap.verticalMd,
         Container(

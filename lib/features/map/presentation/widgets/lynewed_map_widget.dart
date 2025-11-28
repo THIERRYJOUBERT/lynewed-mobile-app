@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 import 'package:provider/provider.dart';
 
+import '/core/design/design.dart';
 import '../../domain/entities/entities.dart';
 import '../../domain/repositories/map_repository.dart';
 import '../../domain/utils/marker_offset.dart';
@@ -43,6 +44,9 @@ typedef OnMapTap = void Function(gmaps.LatLng position);
 typedef OnCameraMove = void Function(gmaps.CameraPosition position);
 typedef OnMarkersLoaded = void Function(List<MapMarker> markers);
 
+/// Callback pour récupérer le GoogleMapController
+typedef OnMapControllerReady = void Function(gmaps.GoogleMapController controller);
+
 /// Widget LynewedMap - Unifié bride/pro
 /// 
 /// Usage:
@@ -63,7 +67,9 @@ class LynewedMapWidget extends StatefulWidget {
     this.onMapTap,
     this.onCameraMove,
     this.onMarkersLoaded,
+    this.onMapControllerReady,
     this.repository,
+    this.externalMapState,
   });
 
   /// Rôle utilisateur: 'bride' ou 'professional'
@@ -87,34 +93,48 @@ class LynewedMapWidget extends StatefulWidget {
   /// Callback quand les marqueurs sont chargés
   final OnMarkersLoaded? onMarkersLoaded;
 
+  /// Callback quand le GoogleMapController est prêt
+  final OnMapControllerReady? onMapControllerReady;
+
   /// Repository custom (pour tests)
   final MapRepository? repository;
+
+  /// MapState externe (si fourni, on utilise celui-ci au lieu d'en créer un)
+  final MapState? externalMapState;
 
   @override
   State<LynewedMapWidget> createState() => _LynewedMapWidgetState();
 }
 
 class _LynewedMapWidgetState extends State<LynewedMapWidget> {
-  late MapState _mapState;
+  MapState? _ownMapState;  // Only created if externalMapState is null
   gmaps.GoogleMapController? _mapController;
   late MapRepository _repository;
   late MarkerIconGenerator _iconGenerator;
   final Map<String, gmaps.BitmapDescriptor> _markerIcons = {};
+  bool _mounted = true;
+
+  /// Get the active MapState (external or own)
+  MapState get _mapState => widget.externalMapState ?? _ownMapState!;
 
   @override
   void initState() {
     super.initState();
     _repository = widget.repository ?? SupabaseMapRepository();
     _iconGenerator = MarkerIconGenerator();
-    _mapState = MapState(
-      repository: _repository,
-      userRole: widget.userRole,
-      initialCenter: widget.config.initialCenter,
-      initialZoom: widget.config.initialZoom,
-    );
+    
+    // Only create own MapState if no external one provided
+    if (widget.externalMapState == null) {
+      _ownMapState = MapState(
+        repository: _repository,
+        userRole: widget.userRole,
+        initialCenter: widget.config.initialCenter,
+        initialZoom: widget.config.initialZoom,
+      );
 
-    if (widget.initialFilter != null) {
-      _mapState.updateFilter(widget.initialFilter!);
+      if (widget.initialFilter != null) {
+        _ownMapState!.updateFilter(widget.initialFilter!);
+      }
     }
 
     _mapState.addListener(_onStateChange);
@@ -122,74 +142,120 @@ class _LynewedMapWidgetState extends State<LynewedMapWidget> {
 
   @override
   void dispose() {
+    _mounted = false;
     _mapState.removeListener(_onStateChange);
-    _mapState.dispose();
+    // Only dispose own MapState, not external
+    _ownMapState?.dispose();
     _mapController?.dispose();
     super.dispose();
   }
 
   void _onStateChange() {
+    if (!_mounted) return;
     // Notify parent when markers loaded
     if (_mapState.loadingState == MapLoadingState.loaded) {
       widget.onMarkersLoaded?.call(_mapState.visibleMarkers);
+      // Generate custom icons for all visible markers
+      _generateMarkersIcons();
     }
     setState(() {});
   }
 
+  /// Pre-generate custom circle icons for all visible markers
+  /// Generate at 144px (48*3) for crisp Retina display, displayed at 48px
+  Future<void> _generateMarkersIcons() async {
+    final markers = _mapState.visibleMarkers;
+    if (markers.isEmpty) return;
+    
+    // Generate all icons in parallel for speed
+    final futures = <Future<void>>[];
+    
+    for (final marker in markers) {
+      final cacheKey = _generateIconKey(marker);
+      if (!_markerIcons.containsKey(cacheKey)) {
+        futures.add(_generateSingleIcon(marker, cacheKey));
+      }
+    }
+    
+    // Wait for all icons to be generated
+    if (futures.isNotEmpty) {
+      await Future.wait(futures);
+    }
+    
+    // Rebuild with custom icons
+    if (_mounted) setState(() {});
+  }
+  
+  Future<void> _generateSingleIcon(MapMarker marker, String cacheKey) async {
+    try {
+      // Generate at 144px (48 * 3) for crisp rendering, displayed at 48px
+      final icon = await _iconGenerator.generateIcon(marker, size: 144.0);
+      if (_mounted) {
+        _markerIcons[cacheKey] = icon;
+      }
+    } catch (e) {
+      debugPrint('Error generating icon for ${marker.id}: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: _mapState,
-      child: Stack(
-        children: [
-          // Google Map
-          gmaps.GoogleMap(
-            initialCameraPosition: gmaps.CameraPosition(
-              target: _mapState.center,
-              zoom: _mapState.zoom,
-            ),
-            onMapCreated: _onMapCreated,
-            onCameraMove: _onCameraMove,
-            onCameraIdle: _onCameraIdle,
-            onTap: _onMapTap,
-            markers: _buildMarkers(),
-            myLocationEnabled: widget.config.enableMyLocation,
-            myLocationButtonEnabled: false, // Custom button
-            zoomControlsEnabled: widget.config.enableZoomControls,
-            mapToolbarEnabled: false,
-            padding: widget.config.padding,
-            style: widget.config.mapStyle,
+    // If using external MapState, don't wrap in Provider (parent already provides it)
+    final child = Stack(
+      children: [
+        // Google Map
+        gmaps.GoogleMap(
+          initialCameraPosition: gmaps.CameraPosition(
+            target: _mapState.center,
+            zoom: _mapState.zoom,
           ),
+          onMapCreated: _onMapCreated,
+          onCameraMove: _onCameraMove,
+          onCameraIdle: _onCameraIdle,
+          onTap: _onMapTap,
+          markers: _buildMarkers(),
+          mapType: _mapState.mapType,
+          myLocationEnabled: widget.config.enableMyLocation,
+          myLocationButtonEnabled: false, // Custom button
+          zoomControlsEnabled: false, // Custom zoom controls
+          mapToolbarEnabled: false,
+          padding: widget.config.padding,
+          style: widget.config.mapStyle,
+        ),
 
-          // Loading indicator
-          if (_mapState.isLoading)
-            const Positioned(
-              top: 16,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: _LoadingIndicator(),
-              ),
-            ),
-
-          // Error message
-          if (_mapState.hasError)
-            Positioned(
-              bottom: 16,
-              left: 16,
-              right: 16,
-              child: _ErrorBanner(message: _mapState.errorMessage),
-            ),
-
-          // Markers count badge
-          Positioned(
+        // Loading indicator
+        if (_mapState.isLoading)
+          const Positioned(
             top: 16,
-            right: 16,
-            child: _MarkerCountBadge(count: _mapState.visibleMarkersCount),
+            left: 0,
+            right: 0,
+            child: Center(
+              child: _LoadingIndicator(),
+            ),
           ),
-        ],
-      ),
+
+        // Error message
+        if (_mapState.hasError)
+          Positioned(
+            bottom: 16,
+            left: 16,
+            right: 16,
+            child: _ErrorBanner(message: _mapState.errorMessage),
+          ),
+
+        // Markers count badge
+        Positioned(
+          top: 16,
+          right: 16,
+          child: _MarkerCountBadge(count: _mapState.visibleMarkersCount),
+        ),
+      ],
     );
+
+    // Only wrap in Provider if we created our own MapState
+    return widget.externalMapState != null 
+        ? child 
+        : ChangeNotifierProvider.value(value: _mapState, child: child);
   }
 
   void _onMapCreated(gmaps.GoogleMapController controller) {
@@ -199,6 +265,9 @@ class _LynewedMapWidgetState extends State<LynewedMapWidget> {
     if (widget.config.mapStyle != null) {
       controller.setMapStyle(widget.config.mapStyle);
     }
+    
+    // Notify parent that controller is ready
+    widget.onMapControllerReady?.call(controller);
   }
 
   void _onCameraMove(gmaps.CameraPosition position) {
@@ -227,54 +296,28 @@ class _LynewedMapWidgetState extends State<LynewedMapWidget> {
       ),
     );
 
-    return offsetMarkers.map((marker) {
+    // Only show markers that have their custom icon ready (no default pins)
+    return offsetMarkers
+        .where((marker) => _markerIcons.containsKey(_generateIconKey(marker)))
+        .map((marker) {
       return gmaps.Marker(
         markerId: gmaps.MarkerId(marker.id),
         position: marker.position,
         onTap: () => _onMarkerTap(marker),
-        // Custom icons with avatars
-        icon: _getMarkerIcon(marker),
+        icon: _markerIcons[_generateIconKey(marker)]!,
         zIndex: _zIndexForMarkerType(marker.type),
       );
     }).toSet();
   }
 
-  /// Get cached or generate custom marker icon
-  gmaps.BitmapDescriptor _getMarkerIcon(MapMarker marker) {
-    final cacheKey = _generateIconKey(marker);
-    
-    if (_markerIcons.containsKey(cacheKey)) {
-      return _markerIcons[cacheKey]!;
-    }
-
-    // For now, use default icons while async generation loads
-    // TODO: Implement async icon generation with loading states
-    return gmaps.BitmapDescriptor.defaultMarkerWithHue(
-      _hueForMarkerType(marker.type),
-    );
-  }
-
   /// Generate unique cache key for marker icon
   String _generateIconKey(MapMarker marker) {
-    return '${marker.type.name}|${marker.style.borderColorHex}|${marker.style.avatarUrl}';
+    return '${marker.type.name}|${marker.style.borderColorHex}|${marker.style.avatarUrl}|${marker.style.label}';
   }
 
   void _onMarkerTap(MapMarker marker) {
     _mapState.selectMarker(marker);
     widget.onMarkerTap?.call(marker);
-  }
-
-  double _hueForMarkerType(MapMarkerType type) {
-    switch (type) {
-      case MapMarkerType.proFixedLocation:
-        return gmaps.BitmapDescriptor.hueBlue;
-      case MapMarkerType.professionalAlert:
-        return gmaps.BitmapDescriptor.hueOrange;
-      case MapMarkerType.wedding:
-        return gmaps.BitmapDescriptor.hueRose;
-      case MapMarkerType.poiPrivate:
-        return gmaps.BitmapDescriptor.hueViolet;
-    }
   }
 
   double _zIndexForMarkerType(MapMarkerType type) {
@@ -299,27 +342,36 @@ class _LoadingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(
+        horizontal: LynewedSpacing.lg,
+        vertical: LynewedSpacing.sm,
+      ),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: LynewedColors.background,
+        borderRadius: LynewedBorders.borderRadiusXl,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: LynewedColors.primary.withValues(alpha: 0.1),
             blurRadius: 8,
           ),
         ],
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
             width: 16,
             height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: LynewedColors.primary,
+            ),
           ),
-          SizedBox(width: 8),
-          Text('Loading...', style: TextStyle(fontSize: 12)),
+          LynewedGap.horizontalSm,
+          Text(
+            'Loading...',
+            style: LynewedTextStyles.labelLarge,
+          ),
         ],
       ),
     );
@@ -334,20 +386,26 @@ class _ErrorBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: LynewedSpacing.allMd,
       decoration: BoxDecoration(
-        color: Colors.red.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.red.shade200),
+        color: LynewedColors.error.withValues(alpha: 0.1),
+        borderRadius: LynewedBorders.borderRadiusMd,
+        border: Border.all(color: LynewedColors.error.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
-          const SizedBox(width: 8),
+          Icon(
+            Icons.error_outline,
+            color: LynewedColors.error,
+            size: 20,
+          ),
+          LynewedGap.horizontalSm,
           Expanded(
             child: Text(
               message ?? 'An error occurred',
-              style: TextStyle(color: Colors.red.shade700, fontSize: 12),
+              style: LynewedTextStyles.labelLarge.copyWith(
+                color: LynewedColors.error,
+              ),
             ),
           ),
         ],
@@ -366,22 +424,24 @@ class _MarkerCountBadge extends StatelessWidget {
     if (count == 0) return const SizedBox.shrink();
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: EdgeInsets.symmetric(
+        horizontal: LynewedSpacing.md,
+        vertical: LynewedSpacing.sm - 2,
+      ),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: LynewedColors.background,
+        borderRadius: LynewedBorders.borderRadiusLg,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: LynewedColors.primary.withValues(alpha: 0.1),
             blurRadius: 4,
           ),
         ],
       ),
       child: Text(
         '$count',
-        style: const TextStyle(
+        style: LynewedTextStyles.bodyMedium.copyWith(
           fontWeight: FontWeight.bold,
-          fontSize: 14,
         ),
       ),
     );

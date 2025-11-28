@@ -5,6 +5,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '/core/design/design.dart';
 import '../../domain/entities/entities.dart';
 
 /// Callback quand les filtres sont appliqués
@@ -41,9 +42,9 @@ class _FilterSheetState extends State<FilterSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: LynewedColors.background,
+        borderRadius: LynewedBorders.sheetBorderRadius,
       ),
       child: DraggableScrollableSheet(
         initialChildSize: 0.7,
@@ -59,44 +60,29 @@ class _FilterSheetState extends State<FilterSheet> {
               // Header
               _buildHeader(context),
 
-              // Content
+              // Content - Simplified: Only Professions, Budget, Distance
+              // Layer toggles are now chips in map_page.dart bottom bar
               Expanded(
                 child: ListView(
                   controller: scrollController,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
                   children: [
-                    // Layer toggles
+                    // Professions filter
                     _buildSection(
-                      title: 'Show on map',
-                      child: _buildLayerToggles(),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Professions
-                    _buildSection(
-                      title: 'Professions',
+                      title: 'Filter by profession',
                       child: _buildProfessionChips(),
                     ),
 
-                    const SizedBox(height: 24),
-
                     // Budget (only for brides)
                     if (widget.userRole == 'bride') ...[
+                      LynewedGap.verticalXxl,
                       _buildSection(
                         title: 'Budget range',
                         child: _buildBudgetSlider(),
                       ),
-                      const SizedBox(height: 24),
                     ],
 
-                    // Distance
-                    _buildSection(
-                      title: 'Search radius',
-                      child: _buildDistanceSlider(),
-                    ),
-
-                    const SizedBox(height: 100), // Space for button
+                    SizedBox(height: 80), // Space for button
                   ],
                 ),
               ),
@@ -112,31 +98,35 @@ class _FilterSheetState extends State<FilterSheet> {
 
   Widget _buildHandle() {
     return Container(
-      margin: const EdgeInsets.only(top: 12),
+      margin: EdgeInsets.only(top: LynewedSpacing.md),
       width: 40,
       height: 4,
       decoration: BoxDecoration(
-        color: Colors.grey.shade300,
-        borderRadius: BorderRadius.circular(2),
+        color: LynewedColors.gray200,
+        borderRadius: LynewedBorders.borderRadiusSm,
       ),
     );
   }
 
   Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             'Filters',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: LynewedTextStyles.titleLarge,
           ),
           TextButton(
+            style: LynewedComponentStyles.textButton(),
             onPressed: _resetFilters,
-            child: const Text('Reset'),
+            child: Text(
+              'Reset',
+              style: LynewedTextStyles.bodyMedium.copyWith(
+                color: LynewedColors.primary,
+              ),
+            ),
           ),
         ],
       ),
@@ -149,80 +139,39 @@ class _FilterSheetState extends State<FilterSheet> {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: LynewedTextStyles.bodyLarge.copyWith(
             fontWeight: FontWeight.w600,
-            fontSize: 16,
           ),
         ),
-        const SizedBox(height: 12),
+        LynewedGap.verticalMd,
         child,
       ],
     );
   }
 
-  Widget _buildLayerToggles() {
-    return Column(
-      children: [
-        _buildToggleRow(
-          label: 'Professionals',
-          value: _filter.toggles.showPros,
-          onChanged: (v) => _updateToggles(showPros: v),
-        ),
-        _buildToggleRow(
-          label: 'Fixed locations',
-          value: _filter.toggles.showFixedLocations,
-          onChanged: (v) => _updateToggles(showFixedLocations: v),
-        ),
-        _buildToggleRow(
-          label: 'Community alerts',
-          value: _filter.toggles.showAlerts,
-          onChanged: (v) => _updateToggles(showAlerts: v),
-        ),
-        if (widget.userRole == 'professional')
-          _buildToggleRow(
-            label: 'Visible weddings',
-            value: _filter.toggles.showWeddings,
-            onChanged: (v) => _updateToggles(showWeddings: v),
-          ),
-        if (widget.userRole == 'professional')
-          _buildToggleRow(
-            label: 'Only my profession',
-            value: _filter.toggles.showOnlyMyProfession,
-            onChanged: (v) => _updateToggles(showOnlyMyProfession: v),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildToggleRow({
-    required String label,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label),
-          Switch.adaptive(
-            value: value,
-            onChanged: onChanged,
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildProfessionChips() {
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: LynewedSpacing.sm,
+      runSpacing: LynewedSpacing.sm,
       children: Profession.values.map((profession) {
         final isSelected = _selectedProfessions.contains(profession);
         return FilterChip(
-          label: Text(_professionLabel(profession)),
+          label: Text(
+            _professionLabel(profession),
+            style: LynewedTextStyles.bodySmall.copyWith(
+              color: isSelected ? LynewedColors.textOnPrimary : LynewedColors.textPrimary,
+            ),
+          ),
           selected: isSelected,
+          selectedColor: LynewedColors.primary,
+          backgroundColor: LynewedColors.surface,
+          checkmarkColor: LynewedColors.textOnPrimary,
+          shape: RoundedRectangleBorder(
+            borderRadius: LynewedBorders.borderRadiusNone,
+            side: BorderSide(
+              color: isSelected ? LynewedColors.primary : LynewedColors.border,
+            ),
+          ),
           onSelected: (selected) {
             setState(() {
               if (selected) {
@@ -246,85 +195,64 @@ class _FilterSheetState extends State<FilterSheet> {
 
     return Column(
       children: [
-        RangeSlider(
-          values: RangeValues(min, max),
-          min: 0,
-          max: 50000,
-          divisions: 50,
-          labels: RangeLabels(
-            '${_filter.currency} ${min.toInt()}',
-            '${_filter.currency} ${max.toInt()}',
+        SliderTheme(
+          data: SliderThemeData(
+            activeTrackColor: LynewedColors.primary,
+            inactiveTrackColor: LynewedColors.surface,
+            thumbColor: LynewedColors.primary,
+            overlayColor: LynewedColors.primary.withValues(alpha: 0.1),
+            rangeThumbShape: const RoundRangeSliderThumbShape(enabledThumbRadius: 10),
           ),
-          onChanged: (values) {
-            setState(() {
-              _filter = _filter.copyWith(
-                budgetMin: values.start,
-                budgetMax: values.end,
-              );
-            });
-          },
+          child: RangeSlider(
+            values: RangeValues(min, max),
+            min: 0,
+            max: 50000,
+            divisions: 50,
+            labels: RangeLabels(
+              '${_filter.currency} ${min.toInt()}',
+              '${_filter.currency} ${max.toInt()}',
+            ),
+            onChanged: (values) {
+              setState(() {
+                _filter = _filter.copyWith(
+                  budgetMin: values.start,
+                  budgetMax: values.end,
+                );
+              });
+            },
+          ),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('${_filter.currency} ${min.toInt()}'),
-            Text('${_filter.currency} ${max.toInt()}'),
+            Text(
+              '${_filter.currency} ${min.toInt()}',
+              style: LynewedTextStyles.bodySmall,
+            ),
+            Text(
+              '${_filter.currency} ${max.toInt()}',
+              style: LynewedTextStyles.bodySmall,
+            ),
           ],
         ),
-      ],
-    );
-  }
-
-  Widget _buildDistanceSlider() {
-    final radius = _filter.radiusKm ?? 50;
-
-    return Column(
-      children: [
-        Slider(
-          value: radius,
-          min: 5,
-          max: 200,
-          divisions: 39,
-          label: '${radius.toInt()} km',
-          onChanged: (value) {
-            setState(() {
-              _filter = _filter.copyWith(radiusKm: value);
-            });
-          },
-        ),
-        Text('${radius.toInt()} km radius'),
       ],
     );
   }
 
   Widget _buildApplyButton(BuildContext context) {
     return SafeArea(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: SizedBox(
           width: double.infinity,
+          height: LynewedSpacing.buttonHeight,
           child: ElevatedButton(
             onPressed: () => widget.onApply(_filter),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text(
+            style: LynewedComponentStyles.primaryButton(),
+            child: Text(
               'Apply Filters',
-              style: TextStyle(
-                fontSize: 16,
+              style: LynewedTextStyles.bodyLarge.copyWith(
+                color: LynewedColors.textOnPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -334,26 +262,6 @@ class _FilterSheetState extends State<FilterSheet> {
     );
   }
 
-  void _updateToggles({
-    bool? showPros,
-    bool? showFixedLocations,
-    bool? showAlerts,
-    bool? showWeddings,
-    bool? showOnlyMyProfession,
-  }) {
-    setState(() {
-      _filter = _filter.copyWith(
-        toggles: _filter.toggles.copyWith(
-          showPros: showPros,
-          showFixedLocations: showFixedLocations,
-          showAlerts: showAlerts,
-          showWeddings: showWeddings,
-          showOnlyMyProfession: showOnlyMyProfession,
-        ),
-      );
-    });
-  }
-
   void _resetFilters() {
     setState(() {
       _filter = MapFilter.defaults;
@@ -361,44 +269,6 @@ class _FilterSheetState extends State<FilterSheet> {
     });
   }
 
-  String _professionLabel(Profession profession) {
-    switch (profession) {
-      case Profession.photographer:
-        return 'Photographer';
-      case Profession.videographer:
-        return 'Videographer';
-      case Profession.weddingPlanner:
-        return 'Wedding Planner';
-      case Profession.venue:
-        return 'Venue';
-      case Profession.caterer:
-        return 'Caterer';
-      case Profession.dj:
-        return 'DJ';
-      case Profession.florist:
-        return 'Florist';
-      case Profession.makeupArtist:
-        return 'Makeup Artist';
-      case Profession.hairStylist:
-        return 'Hair Stylist';
-      case Profession.officiant:
-        return 'Officiant';
-      case Profession.rentals:
-        return 'Rentals';
-      case Profession.transportation:
-        return 'Transportation';
-      case Profession.stationery:
-        return 'Stationery';
-      case Profession.cake:
-        return 'Cake';
-      case Profession.jewelry:
-        return 'Jewelry';
-      case Profession.attire:
-        return 'Attire';
-      case Profession.musician:
-        return 'Musician';
-      case Profession.other:
-        return 'Other';
-    }
-  }
+  /// Use the displayName getter from Profession enum
+  String _professionLabel(Profession profession) => profession.displayName;
 }

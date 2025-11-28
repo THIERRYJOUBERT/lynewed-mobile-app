@@ -47,6 +47,14 @@ class MapState extends ChangeNotifier {
 
   MapFilter _filter = MapFilter.defaults;
   MapFilter get filter => _filter;
+  
+  // Cache accumulatif de tous les markers chargés
+  // Key: marker.id, Value: marker
+  // Les markers sont accumulés au fil des pans/zooms
+  final Map<String, MapMarker> _professionalsCache = {};
+  final Map<String, MapMarker> _fixedLocationsCache = {};
+  final Map<String, MapMarker> _alertsCache = {};
+  final Map<String, MapMarker> _weddingsCache = {};
 
   gmaps.LatLng _center;
   gmaps.LatLng get center => _center;
@@ -59,6 +67,9 @@ class MapState extends ChangeNotifier {
 
   MapMarker? _selectedMarker;
   MapMarker? get selectedMarker => _selectedMarker;
+
+  gmaps.MapType _mapType = gmaps.MapType.normal;
+  gmaps.MapType get mapType => _mapType;
 
   // Debounce timer pour éviter trop d'appels
   Timer? _debounceTimer;
@@ -80,9 +91,23 @@ class MapState extends ChangeNotifier {
   }
 
   /// Met à jour les filtres et relance la recherche
+  /// Si les filtres de contenu changent (professions, budget), vide le cache
   void updateFilter(MapFilter newFilter) {
     if (_filter == newFilter) return;
+    
+    // Check if content filters changed (not just toggles)
+    final contentFiltersChanged = 
+        _filter.professions != newFilter.professions ||
+        _filter.budgetMin != newFilter.budgetMin ||
+        _filter.budgetMax != newFilter.budgetMax;
+    
     _filter = newFilter;
+    
+    // Clear cache if content filters changed (need fresh data from backend)
+    if (contentFiltersChanged) {
+      clearMarkersCache();
+    }
+    
     notifyListeners();
     _debouncedSearch();
   }
@@ -104,9 +129,29 @@ class MapState extends ChangeNotifier {
     selectMarker(null);
   }
 
-  /// Force le rechargement des données
+  /// Zoom in
+  void zoomIn() {
+    _zoom = (_zoom + 1).clamp(1.0, 21.0);
+    notifyListeners();
+  }
+
+  /// Zoom out
+  void zoomOut() {
+    _zoom = (_zoom - 1).clamp(1.0, 21.0);
+    notifyListeners();
+  }
+
+  /// Change le type de map
+  void setMapType(gmaps.MapType type) {
+    if (_mapType == type) return;
+    _mapType = type;
+    notifyListeners();
+  }
+
+  /// Force le rechargement des données (vide le cache)
   Future<void> refresh() async {
     if (_visibleBounds == null) return;
+    clearMarkersCache();
     await _loadMarkers();
   }
 
@@ -121,6 +166,8 @@ class MapState extends ChangeNotifier {
   }
 
   /// Charge les marqueurs depuis le repository
+  /// Les markers sont ACCUMULÉS dans le cache (pas remplacés)
+  /// pour éviter les disparitions lors des pans/zooms
   Future<void> _loadMarkers() async {
     if (_visibleBounds == null) return;
 
@@ -129,18 +176,56 @@ class MapState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _searchResult = await _repository.searchMarkers(
+      final result = await _repository.searchMarkers(
         bounds: _visibleBounds!,
         filter: _filter,
         userRole: _userRole,
         zoomLevel: _zoom,
       );
+      
+      // ACCUMULATE markers in cache (don't replace)
+      // This prevents markers from disappearing during pan/zoom
+      for (final m in result.professionals) {
+        _professionalsCache[m.id] = m;
+      }
+      for (final m in result.fixedLocations) {
+        _fixedLocationsCache[m.id] = m;
+      }
+      for (final m in result.alerts) {
+        _alertsCache[m.id] = m;
+      }
+      for (final m in result.weddings) {
+        _weddingsCache[m.id] = m;
+      }
+      
+      // Update searchResult with FULL cache contents
+      _searchResult = MapSearchResult(
+        professionals: _professionalsCache.values.toList(),
+        fixedLocations: _fixedLocationsCache.values.toList(),
+        alerts: _alertsCache.values.toList(),
+        weddings: _weddingsCache.values.toList(),
+        totalCount: _professionalsCache.length + 
+                   _fixedLocationsCache.length + 
+                   _alertsCache.length + 
+                   _weddingsCache.length,
+      );
+      
       _loadingState = MapLoadingState.loaded;
     } catch (e) {
       _loadingState = MapLoadingState.error;
       _errorMessage = e.toString();
     }
 
+    notifyListeners();
+  }
+  
+  /// Vide le cache des markers (appelé lors d'un changement de filtres significatif)
+  void clearMarkersCache() {
+    _professionalsCache.clear();
+    _fixedLocationsCache.clear();
+    _alertsCache.clear();
+    _weddingsCache.clear();
+    _searchResult = MapSearchResult.empty;
     notifyListeners();
   }
 

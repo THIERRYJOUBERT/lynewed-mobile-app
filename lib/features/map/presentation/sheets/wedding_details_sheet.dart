@@ -2,11 +2,13 @@
 /// 
 /// Clean, modern sheet for displaying wedding details.
 /// Replaces FlutterFlow's InfoWeddingPinSheetWidget.
+/// Uses Lynewed Design System for consistent styling.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+import '/core/design/design.dart';
 import '../../domain/entities/wedding_details.dart';
 
 /// Wedding details bottom sheet
@@ -24,62 +26,64 @@ class WeddingDetailsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        color: LynewedColors.background,
+        borderRadius: LynewedBorders.sheetBorderRadius,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Handle bar
-          _buildHandleBar(colorScheme),
+          _buildHandleBar(),
           
           // Content
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            padding: EdgeInsets.fromLTRB(
+              LynewedSpacing.xl,
+              0,
+              LynewedSpacing.xl,
+              LynewedSpacing.xl,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Wedding header with heart icon
-                _buildWeddingHeader(context),
-                const SizedBox(height: 16),
+                _buildWeddingHeader(),
+                LynewedGap.verticalLg,
                 
                 // Event date
                 if (details.eventDate != null)
-                  _buildEventDateRow(context),
+                  _buildEventDateRow(),
                 
                 // Location
                 if (details.locationLabel != null)
-                  _buildLocationRow(context),
+                  _buildLocationRow(),
                 
                 // Budget range
-                _buildBudgetRow(context),
-                const SizedBox(height: 16),
+                _buildBudgetRow(),
+                LynewedGap.verticalLg,
                 
                 // Professions needed
                 if (details.hasProfessionsNeeded)
-                  _buildProfessionsNeeded(context),
+                  _buildProfessionsNeeded(),
                 
                 // Search radius
                 if (details.radiusFormatted != null)
-                  _buildSearchRadius(context),
+                  _buildSearchRadius(),
                 
                 // Guest count
                 if (details.guestCount != null)
-                  _buildGuestCount(context),
+                  _buildGuestCount(),
                 
-                const SizedBox(height: 16),
+                LynewedGap.verticalLg,
                 
                 // Bride info
-                _buildBrideInfo(context),
-                const SizedBox(height: 20),
+                _buildBrideInfo(),
+                LynewedGap.verticalXl,
                 
                 // Action button
-                _buildActionButton(context),
+                _buildActionButton(),
               ],
             ),
           ),
@@ -88,116 +92,97 @@ class WeddingDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildHandleBar(ColorScheme colorScheme) {
+  Widget _buildHandleBar() {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 12),
+      margin: EdgeInsets.symmetric(vertical: LynewedSpacing.md),
       width: 40,
       height: 4,
       decoration: BoxDecoration(
-        color: colorScheme.onSurface.withValues(alpha: 0.2),
+        color: LynewedColors.gray200,
         borderRadius: BorderRadius.circular(2),
       ),
     );
   }
 
-  Widget _buildWeddingHeader(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.pink.withValues(alpha: 0.1),
-            Colors.purple.withValues(alpha: 0.1),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.pink.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.pink.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.favorite,
-              color: Colors.pink,
-              size: 28,
-            ),
+  Widget _buildWeddingHeader() {
+    return Row(
+      children: [
+        Container(
+          padding: EdgeInsets.all(LynewedSpacing.md),
+          decoration: BoxDecoration(
+            color: LynewedColors.primary.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          child: Icon(
+            Icons.favorite,
+            color: LynewedColors.primary,
+            size: 28,
+          ),
+        ),
+        LynewedGap.horizontalLg,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Wedding',
+                style: LynewedTextStyles.titleLarge.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: LynewedColors.primary,
+                ),
+              ),
+              if (details.daysUntilWedding != null)
                 Text(
-                  'Wedding',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.pink.shade700,
+                  details.isPast
+                      ? 'Wedding has passed'
+                      : '${details.daysUntilWedding} days to go',
+                  style: LynewedTextStyles.bodyMedium.copyWith(
+                    color: LynewedColors.textSecondary,
                   ),
                 ),
-                if (details.daysUntilWedding != null)
-                  Text(
-                    details.isPast
-                        ? 'Wedding has passed'
-                        : '${details.daysUntilWedding} days to go',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: details.isPast
-                          ? Colors.grey
-                          : Colors.pink.shade600,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-              ],
+            ],
+          ),
+        ),
+        // Status badge
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: LynewedSpacing.sm,
+            vertical: LynewedSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: details.isUpcoming
+                ? LynewedColors.success.withValues(alpha: 0.1)
+                : LynewedColors.gray200,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            details.isUpcoming ? 'Upcoming' : 'Past',
+            style: LynewedTextStyles.labelSmall.copyWith(
+              color: details.isUpcoming ? LynewedColors.success : LynewedColors.textSecondary,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          // Status badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: details.isUpcoming
-                  ? Colors.green.withValues(alpha: 0.1)
-                  : Colors.grey.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              details.isUpcoming ? 'Upcoming' : 'Past',
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: details.isUpcoming ? Colors.green : Colors.grey,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildEventDateRow(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildEventDateRow() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: LynewedSpacing.md),
       child: Row(
         children: [
           Icon(
             Icons.event_outlined,
             size: 18,
-            color: Colors.pink.shade400,
+            color: LynewedColors.textSecondary, // Changed to secondary for consistency
           ),
-          const SizedBox(width: 8),
+          LynewedGap.horizontalSm,
           Text(
             details.eventDateFormatted!,
-            style: theme.textTheme.bodyMedium?.copyWith(
+            style: LynewedTextStyles.bodyMedium.copyWith(
               fontWeight: FontWeight.w600,
-              color: Colors.pink.shade700,
+              color: LynewedColors.primary,
             ),
           ),
         ],
@@ -205,24 +190,22 @@ class WeddingDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildLocationRow(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildLocationRow() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: LynewedSpacing.md),
       child: Row(
         children: [
           Icon(
             Icons.location_on_outlined,
             size: 18,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            color: LynewedColors.textSecondary,
           ),
-          const SizedBox(width: 8),
+          LynewedGap.horizontalSm,
           Expanded(
             child: Text(
               details.locationLabel!,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+              style: LynewedTextStyles.bodyMedium.copyWith(
+                color: LynewedColors.textPrimary,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -233,20 +216,18 @@ class WeddingDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildBudgetRow(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildBudgetRow() {
     return Row(
       children: [
         Icon(
           Icons.euro_outlined,
           size: 18,
-          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          color: LynewedColors.textSecondary,
         ),
-        const SizedBox(width: 8),
+        LynewedGap.horizontalSm,
         Text(
           details.budgetRange,
-          style: theme.textTheme.bodyMedium?.copyWith(
+          style: LynewedTextStyles.bodyMedium.copyWith(
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -254,35 +235,36 @@ class WeddingDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildProfessionsNeeded(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildProfessionsNeeded() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: LynewedSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Looking for',
-            style: theme.textTheme.titleSmall?.copyWith(
+            style: LynewedTextStyles.titleSmall.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 8),
+          LynewedGap.verticalSm,
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: LynewedSpacing.sm,
+            runSpacing: LynewedSpacing.sm,
             children: details.professionsNeeded.map((profession) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(
+                  horizontal: LynewedSpacing.md,
+                  vertical: LynewedSpacing.xs,
+                ),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer,
+                  color: LynewedColors.primary,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   profession.displayName,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: theme.colorScheme.onPrimaryContainer,
+                  style: LynewedTextStyles.labelMedium.copyWith(
+                    color: LynewedColors.textOnPrimary,
                   ),
                 ),
               );
@@ -293,123 +275,103 @@ class WeddingDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchRadius(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildSearchRadius() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: LynewedSpacing.md),
       child: Row(
         children: [
           Icon(
             Icons.radar_outlined,
             size: 18,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            color: LynewedColors.textSecondary,
           ),
-          const SizedBox(width: 8),
+          LynewedGap.horizontalSm,
           Text(
             'Search radius: ${details.radiusFormatted}',
-            style: theme.textTheme.bodyMedium,
+            style: LynewedTextStyles.bodyMedium,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildGuestCount(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildGuestCount() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: LynewedSpacing.md),
       child: Row(
         children: [
           Icon(
             Icons.people_outline,
             size: 18,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            color: LynewedColors.textSecondary,
           ),
-          const SizedBox(width: 8),
+          LynewedGap.horizontalSm,
           Text(
             '${details.guestCount} guests',
-            style: theme.textTheme.bodyMedium,
+            style: LynewedTextStyles.bodyMedium,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBrideInfo(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return InkWell(
-      onTap: onViewBrideProfile,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            // Bride avatar
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: Colors.pink.shade100,
-              backgroundImage: details.brideAvatarUrl != null
-                  ? CachedNetworkImageProvider(details.brideAvatarUrl!)
-                  : null,
-              child: details.brideAvatarUrl == null
-                  ? Icon(
-                      Icons.person,
-                      color: Colors.pink.shade400,
-                    )
-                  : null,
-            ),
-            const SizedBox(width: 12),
-            
-            // Bride info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    details.brideName ?? 'Bride',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+  Widget _buildBrideInfo() {
+    return Container(
+      padding: EdgeInsets.all(LynewedSpacing.md),
+      decoration: BoxDecoration(
+        color: LynewedColors.background,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: LynewedColors.border),
+      ),
+      child: Row(
+        children: [
+          // Bride avatar
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: LynewedColors.primary.withValues(alpha: 0.1),
+            backgroundImage: details.brideAvatarUrl != null
+                ? CachedNetworkImageProvider(details.brideAvatarUrl!)
+                : null,
+            child: details.brideAvatarUrl == null
+                ? Icon(
+                    Icons.person,
+                    color: LynewedColors.primary,
+                  )
+                : null,
+          ),
+          LynewedGap.horizontalMd,
+          
+          // Bride info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  details.brideName ?? 'Bride',
+                  style: LynewedTextStyles.titleSmall.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
-                  Text(
-                    'Wedding organizer',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
+                ),
+                Text(
+                  'Wedding organizer',
+                  style: LynewedTextStyles.bodySmall.copyWith(
+                    color: LynewedColors.textSecondary,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            
-            Icon(
-              Icons.chevron_right,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildActionButton(BuildContext context) {
+  Widget _buildActionButton() {
     return SizedBox(
       width: double.infinity,
-      child: FilledButton.icon(
+      child: ElevatedButton.icon(
         onPressed: details.isContactable && details.isUpcoming ? onContact : null,
-        style: FilledButton.styleFrom(
-          backgroundColor: Colors.pink,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
+        style: LynewedComponentStyles.primaryButton(),
         icon: const Icon(Icons.mail_outline),
         label: Text(
           details.isUpcoming
