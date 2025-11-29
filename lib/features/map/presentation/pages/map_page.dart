@@ -859,10 +859,24 @@ class _MapPageState extends State<MapPage> {
         );
       }
     } else {
-      // TODO: Navigate to create alert flow  
-      debugPrint('Create alert');
-      ScaffoldMessenger.of(ctx).showSnackBar(
-        const SnackBar(content: Text('Create Alert - Coming soon')),
+      // Show AlertCreateSheet for professionals
+      showModalBottomSheet(
+        context: ctx,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (c) => AlertCreateSheet(
+          onSaved: () {
+            // Invalidate cache to show new alert
+            MarkerDetailsServiceProvider.instance.clearCache();
+            ScaffoldMessenger.of(ctx).showSnackBar(
+              const SnackBar(
+                content: Text('Alert created successfully'),
+                backgroundColor: LynewedColors.success,
+              ),
+            );
+            _mapState.refresh(); // Refresh map to show new alert
+          },
+        ),
       );
     }
   }

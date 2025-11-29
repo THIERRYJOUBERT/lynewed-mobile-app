@@ -1,7 +1,7 @@
 # PROJECT TODO - Idées & Tâches à Venir
 
 **Document créé:** 2025-11-26  
-**Last Updated:** 2025-11-28 20:30  
+**Last Updated:** 2025-11-29 10:50  
 **Objectif:** Gestion des tâches à faire et idées d'améliorations techniques  
 **Version:** v2.0 (Structure spécialisée)
 
@@ -16,7 +16,20 @@
 - ✅ Enums Map (simplifié 4 valeurs)
 - ✅ Bugs corrigés (alertes expirées, navigation auteur)
 
-### 🚨 Prochaines Phases Map (22-31h restants)
+### 🚨 Prochaines Phases Map (16-24h restantes)
+
+**Phase 7 - Android Tests (4-6h):**
+- [ ] Test permissions Android (location, notifications)
+- [ ] Performance map sur différents appareils Android
+- [ ] Background behavior (WidgetsBindingObserver lifecycle)
+- [ ] Test rendering OpenGL vs Skia
+- [ ] Validation responsive sur tailles écran variées
+
+**Phase 8 - Documentation Finale (6-8h):**
+- [ ] Documentation technique complète module map
+- [ ] Guide de déploiement et monitoring
+- [ ] Séparation marché indien (si nécessaire)
+- [ ] Nettoyage code final et archives
 
 **Phase 5 - Wedding System:**
 - ✅ **Phase 5 base**: Tables, RPCs, WeddingCreateSheet **TERMINÉ**
@@ -29,15 +42,17 @@
   - ✅ Tous sheets → LynewedTheme (supprimer FlutterFlowTheme)
 
 **Phases 6-8:**
-- 🔴 **Phase 6**: Système Alertes (6-8h)
-  - 6.1 Backend: enum `alert_type` (4 valeurs), RPCs create/update/delete
-  - 6.2 Frontend: AlertCreateSheet, icônes par type, "Je peux aider" → Chat
-- 🟡 **Phase 7**: Android Tests (4-6h)
+- ✅ **Phase 6**: Système Alertes (6-8h) **TERMINÉ** (2025-11-29)
+  - ✅ Backend: enum `alert_type` (4 valeurs), RPCs create/update/delete/get_my_alerts
+  - ✅ Frontend: AlertCreateSheet avec Design System, icônes par type
+  - ✅ Dashboard: Real-time refresh via callbacks + lifecycle observers
+  - ✅ Intégration MapPage: FAB pour pros ouvre AlertCreateSheet
+- 🔴 **Phase 7**: Android Tests (4-6h)
 - 🟡 **Phase 8**: Documentation Finale (6-8h)
 
 **Ordre:**
 ```
-Phase 5.1 + 5.2 (parallèles) → Phase 6 → Phase 7 → Phase 8
+Phase 6 (Alertes) ✅ → Phase 7 (Android) → Phase 8 (Docs)
 ```
 
 ### 🚨 CONTACT SYSTEM - À REVOIR COMPLÈTEMENT (Partie B)
@@ -54,21 +69,26 @@ Phase 5.1 + 5.2 (parallèles) → Phase 6 → Phase 7 → Phase 8
 - [ ] Ajouter feedback utilisateur approprié (snackbar, loading states)
 - [ ] Tester tous les scénarios de contact avec les test users
 
-### 📝 BUGS CORRIGÉS - Partie A (2025-11-28)
+### 📝 BUGS CORRIGÉS - Partie A (2025-11-28/29)
 
-#### Session Matin
+#### Session Matin (2025-11-28)
 - ✅ Navigation View Profile: PublicProProfileViewWidget → ProDetailsWidget
 - ✅ Erreur "Error loading profile": RPC fallback query robuste
 - ✅ Icône favori visible côté Pro: paramètre showFavoriteButton
 - ✅ Wedding Sheet: Suppression chevron profil bride
 - ✅ Pro Sheet: Toggle Favori optimiste et réactif
 
-#### Session Après-midi (Bugs Alertes)
+#### Session Après-midi (Bugs Alertes) (2025-11-28)
 - ✅ **Alertes expirées visibles sur map**: `search_map_bundle` + filtre `expires_at > now()`
 - ✅ **Tap profil auteur silencieux**: Context invalidation après `Navigator.pop()` async
   - **Cause racine**: `_navigateToProProfileById` async appelé après pop → context invalide
   - **Solution**: Utiliser `actions.getProItemDetailsAction()` (même pattern que dashboard) + `this.context`
   - **Fichiers**: `map_page.dart`, `map_actions_service.dart`, `alert_details_sheet.dart`
+
+#### Session Dashboard Refresh (2025-11-29)
+- ✅ **Dashboard alerts pas rafraîchies**: Implémentation callbacks + lifecycle observers
+  - **Solution**: `alertsFuture` dans model + `onAlertDeleted` callback + `WidgetsBindingObserver`
+  - **Fichiers**: `dashboard_pro_model.dart`, `dashboard_pro_widget.dart`, `item_all_alert_widget.dart`
 
 #### À revoir Partie B
 - ⚠️ Contact non fonctionnel → Logique complète à implémenter

@@ -276,6 +276,96 @@ class SupabaseMapDatasource {
     }
   }
 
+  // ============== ALERT MANAGEMENT ==============
+
+  /// Crée une nouvelle alerte professionnelle
+  /// 
+  /// Utilise create_alert RPC avec validation:
+  /// - Max 3 alertes actives par pro
+  /// - event_date obligatoire et futur
+  /// - title max 100 caractères
+  Future<Map<String, dynamic>?> createAlert({
+    required String alertType,
+    required String title,
+    required String message,
+    required DateTime eventDate,
+    required double locationLat,
+    required double locationLng,
+    required String locationLabel,
+    int radiusKm = 50,
+    String? professionNeeded,
+  }) async {
+    try {
+      final response = await _client.rpc('create_alert', params: {
+        'p_alert_type': alertType,
+        'p_title': title,
+        'p_message': message,
+        'p_event_date': eventDate.toIso8601String().split('T').first,
+        'p_location_lat': locationLat,
+        'p_location_lng': locationLng,
+        'p_location_label': locationLabel,
+        'p_radius_km': radiusKm,
+        'p_profession_needed': professionNeeded,
+      });
+      return response as Map<String, dynamic>?;
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Met à jour une alerte existante
+  Future<Map<String, dynamic>?> updateAlert({
+    required String alertId,
+    String? title,
+    String? message,
+    DateTime? eventDate,
+    double? locationLat,
+    double? locationLng,
+    String? locationLabel,
+    String? status,
+  }) async {
+    try {
+      final response = await _client.rpc('update_alert', params: {
+        'p_alert_id': alertId,
+        'p_title': title,
+        'p_message': message,
+        'p_event_date': eventDate?.toIso8601String().split('T').first,
+        'p_location_lat': locationLat,
+        'p_location_lng': locationLng,
+        'p_location_label': locationLabel,
+        'p_status': status,
+      });
+      return response as Map<String, dynamic>?;
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Supprime une alerte (soft delete)
+  Future<Map<String, dynamic>?> deleteAlert(String alertId) async {
+    try {
+      final response = await _client.rpc('delete_alert', params: {
+        'p_alert_id': alertId,
+      });
+      return response as Map<String, dynamic>?;
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Récupère les alertes de l'utilisateur courant
+  Future<List<Map<String, dynamic>>> getMyAlerts() async {
+    try {
+      final response = await _client.rpc('get_my_alerts');
+      if (response is List) {
+        return response.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
   // --- Helpers privés ---
 
   /// Parse les coordonnées depuis différents formats

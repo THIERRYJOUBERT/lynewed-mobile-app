@@ -31,16 +31,20 @@ class DashboardProWidget extends StatefulWidget {
   State<DashboardProWidget> createState() => _DashboardProWidgetState();
 }
 
-class _DashboardProWidgetState extends State<DashboardProWidget> {
+class _DashboardProWidgetState extends State<DashboardProWidget> with WidgetsBindingObserver {
   late DashboardProModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   LatLng? currentUserLocationValue;
+  bool _isFirstBuild = true;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => DashboardProModel());
+    
+    // Initialize alerts future
+    _model.refreshAlerts();
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
@@ -63,24 +67,40 @@ class _DashboardProWidgetState extends State<DashboardProWidget> {
 
     getCurrentUserLocation(defaultLocation: const LatLng(0.0, 0.0), cached: true)
         .then((loc) => safeSetState(() => currentUserLocationValue = loc));
+    
+    // Register for app lifecycle events
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh alerts when returning to page (skip first build)
+    if (!_isFirstBuild && _model.alertsFuture != null) {
+      _refreshAlerts();
+    }
+    _isFirstBuild = false;
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _model.dispose();
-
     super.dispose();
   }
-
+  
   @override
-  void didPopNext() {
-    // Rafraîchir les compteurs quand on revient sur cette page
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      await actions.refreshUnreadCounts();
-      if (mounted) {
-        safeSetState(() {});
-      }
-    });
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Refresh when app comes back to foreground
+    if (state == AppLifecycleState.resumed) {
+      _refreshAlerts();
+    }
+  }
+  
+  /// Refresh alerts list (called after alert deletion or creation)
+  void _refreshAlerts() {
+    _model.refreshAlerts();
+    safeSetState(() {});
   }
 
   @override
@@ -237,14 +257,7 @@ class _DashboardProWidgetState extends State<DashboardProWidget> {
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             FutureBuilder<List<ProfessionalAlertsRow>>(
-                              future: ProfessionalAlertsTable().queryRows(
-                                queryFn: (q) => q
-                                    .eqOrNull(
-                                      'status',
-                                      'active',
-                                    )
-                                    .order('created_at'),
-                              ),
+                              future: _model.alertsFuture,
                               builder: (context, snapshot) {
                                 // Customize what your widget looks like when it's loading.
                                 if (!snapshot.hasData) {
@@ -342,6 +355,7 @@ class _DashboardProWidgetState extends State<DashboardProWidget> {
                                                             .authorProfileId ==
                                                         currentUserUid,
                                               ),
+                                              onAlertDeleted: _refreshAlerts,
                                             ),
                                           );
                                         },

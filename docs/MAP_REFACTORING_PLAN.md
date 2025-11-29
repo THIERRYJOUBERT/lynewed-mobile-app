@@ -1270,34 +1270,68 @@ ADD COLUMN event_date date;
 
 ---
 
-## 📊 RÉSUMÉ TIMELINE (Mise à jour 2025-11-28 20:00)
+## 📊 RÉSUMÉ TIMELINE (Mise à jour 2025-11-29 10:50)
 
 | Phase | Description | Durée | Statut |
 |-------|-------------|-------|--------|
 | 1-4 | Foundation, Filtres, Sheets, Enums | ~45h | ✅ FAIT |
 | 5 | Système Wedding base | 6-8h | ✅ FAIT |
-| 5.1 | Amélioration Wedding UI (AddressSearch, Validation) | 4-6h | 🔄 À FAIRE |
-| 5.2 | Design System Cohérence (Chips noir) | 2-3h | 🔄 À FAIRE |
-| 6 | Système Alertes structurées | 6-8h | 🔄 À FAIRE |
+| 5.1 | Amélioration Wedding UI (AddressSearch, Validation) | 4-6h | ✅ FAIT |
+| 5.2 | Design System Cohérence (Chips noir) | 2-3h | ✅ FAIT |
+| 6 | Système Alertes structurées + Dashboard Refresh | 6-8h | ✅ FAIT |
 | 7 | Android Tests & Optimisations | 4-6h | 🔄 À FAIRE |
 | 8 | Documentation Finale | 6-8h | 🔄 À FAIRE |
-| **TOTAL RESTANT** | | **22-31h** | |
+| **TOTAL RESTANT** | | **10-14h** | |
 
 ---
 
-## 🚀 QUICK START (2025-11-28 20:00)
+## 🚀 QUICK START (2025-11-29 10:50)
 
-**Où on est**: Phase 5 base terminée, Wedding création/édition fonctionnel
-**Prochaine action**: Phase 5.1 - AddressSearch + Validation
+**Où on est**: Phase 6 terminée avec dashboard refresh, prêt pour tests Android
+**Prochaine action**: Phase 7 - Tests Android (permissions, performance, rendering)
 
 **Ordre recommandé**:
 ```
-Phase 5.1 (Wedding UI) ────┐
-                           ├──► Phase 6 (Alertes) ──► Phase 7 (Android) ──► Phase 8 (Docs)
-Phase 5.2 (Design System) ─┘
+Phase 6 (Alertes + Dashboard) ✅ ──► Phase 7 (Android Tests) ──► Phase 8 (Documentation)
 ```
 
 **Phases 5.1 et 5.2 peuvent être faites en parallèle.**
+
+---
+
+## ✅ PHASE 6 COMPLÉTION - DÉTAILS TECHNIQUES (2025-11-29)
+
+### Backend Alert System
+- ✅ Enum `alert_type` créé (4 valeurs: backup_needed, gear_emergency, team_member, emergency_help)
+- ✅ Colonnes ajoutées: `alert_type`, `event_date`, `profession_needed`
+- ✅ RPCs implémentés: `create_alert`, `update_alert`, `delete_alert`, `get_my_alerts`
+- ✅ `search_map_bundle` mis à jour pour retourner `alertType`
+
+### Frontend Alert System
+- ✅ `AlertCreateSheet` (600 lignes) avec Design System complet
+- ✅ Dropdown avec icônes par type + descriptions
+- ✅ Profession chips avec "Any Profession" option
+- ✅ Intégration MapPage: FAB pour pros ouvre AlertCreateSheet
+
+### Dashboard Real-time Refresh
+- ✅ **Pattern**: `alertsFuture` dans model + callbacks parent
+- ✅ **Implémentation**:
+  - `dashboard_pro_model.dart`: `alertsFuture` + `refreshAlerts()`
+  - `dashboard_pro_widget.dart`: `WidgetsBindingObserver` + `didChangeDependencies`
+  - `item_all_alert_widget.dart`: `onAlertDeleted` callback
+- ✅ **Déclencheurs**: Suppression alerte, retour navigation, app lifecycle
+
+### ⚠️ Limitations Connues
+- `didChangeDependencies` se déclenche sur changements thème/InheritedWidget (pas seulement navigation)
+- `WidgetsBindingObserver` ne détecte que lifecycle app (foreground/background), pas navigation intra-app
+- **Note**: Approche simplifiée choisie pour rapidité, pourrait être optimisée avec RouteObserver plus tard
+
+### Fichiers Modifiés
+- `lib/features/map/presentation/sheets/alert_create_sheet.dart` (600 lignes)
+- `lib/pages/pro/dashboard_pro/dashboard_pro_model.dart`
+- `lib/pages/pro/dashboard_pro/dashboard_pro_widget.dart`
+- `lib/components/item_all_alert_widget.dart`
+- `lib/features/map/data/datasources/supabase_map_datasource.dart` (RPCs)
 
 ---
 

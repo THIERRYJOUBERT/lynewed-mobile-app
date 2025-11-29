@@ -1,4 +1,5 @@
 import '/backend/schema/structs/index.dart';
+import '/backend/supabase/supabase.dart';
 import '/components/item_all_alert_widget.dart';
 import '/components/nav/nav_bar_pro/nav_bar_pro_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -33,6 +34,18 @@ class DashboardProModel extends FlutterFlowModel<DashboardProWidget> {
   int? getUndeadNotifPro;
   // State field(s) for PageView widget.
   PageController? pageViewController;
+  
+  // Future for alerts list - allows refresh
+  Future<List<ProfessionalAlertsRow>>? alertsFuture;
+  
+  /// Refresh alerts list
+  void refreshAlerts() {
+    alertsFuture = ProfessionalAlertsTable().queryRows(
+      queryFn: (q) => q
+          .eqOrNull('status', 'active')
+          .order('created_at'),
+    );
+  }
 
   int get pageViewCurrentIndex => pageViewController != null &&
           pageViewController!.hasClients &&

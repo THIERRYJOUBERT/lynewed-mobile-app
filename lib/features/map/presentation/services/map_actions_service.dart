@@ -271,19 +271,14 @@ class MapActionsService {
     }
   }
 
-  /// Delete an alert
+  /// Delete an alert (uses cancel_professional_alert RPC)
   Future<bool> deleteAlert(String alertId) async {
     try {
-      final userId = _supabase.auth.currentUser?.id;
-      if (userId == null) return false;
-      
-      await _supabase
-          .from('alerts')
-          .delete()
-          .eq('id', alertId)
-          .eq('author_id', userId); // Safety: only delete own alerts
-      
-      return true;
+      final result = await _supabase.rpc(
+        'cancel_professional_alert',
+        params: {'p_alert_id': alertId},
+      );
+      return result == true;
     } catch (e) {
       debugPrint('Error deleting alert: $e');
       return false;

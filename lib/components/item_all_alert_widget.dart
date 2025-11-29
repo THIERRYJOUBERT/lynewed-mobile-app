@@ -12,9 +12,11 @@ class ItemAllAlertWidget extends StatefulWidget {
   const ItemAllAlertWidget({
     super.key,
     required this.alertInfos,
+    this.onAlertDeleted,
   });
 
   final AlertItemDataStruct? alertInfos;
+  final VoidCallback? onAlertDeleted;
 
   @override
   State<ItemAllAlertWidget> createState() => _ItemAllAlertWidgetState();
@@ -174,6 +176,8 @@ class _ItemAllAlertWidgetState extends State<ItemAllAlertWidget> {
                                       FlutterFlowTheme.of(context).success,
                                 ),
                               );
+                              // Notify parent to refresh alerts list
+                              widget.onAlertDeleted?.call();
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(

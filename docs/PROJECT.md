@@ -2,7 +2,7 @@
 
 **Version:** v1.1.1+59  
 **Branch:** develop  
-**Last Updated:** 2025-11-28 20:30  
+**Last Updated:** 2025-11-29 10:50  
 **Environment:** Development (hekyovgnovhfhmkpfrna)  
 
 ---
@@ -25,7 +25,11 @@
 - ✅ **Map Module PARTIE A COMPLÉTÉE** (2025-11-28)
 - ✅ **Phase 5 Wedding System** terminée (cache invalidation, tables nettoyées)
 - ✅ **Phase 5.1 & 5.2**: AddressSearch integration + Design System chips noir
-- 🔄 **Prochaine étape**: Phase 6 Alertes (4 types structurés)
+- ✅ **Phase 6 Alert System** terminée (2025-11-29)
+  - Backend: enum `alert_type` (4 valeurs), RPCs create/update/delete
+  - Frontend: AlertCreateSheet avec Design System, icônes par type
+  - Dashboard: Real-time refresh via callbacks + lifecycle observers
+- 🔄 **Prochaine étape**: Phase 7 Android Tests (4-6h)
 
 ### Key Metrics
 - **Codebase**: ~15,000+ lines of Dart code
@@ -106,12 +110,12 @@
 ### Next Immediate Priorities
 1. ✅ ~~Phases 1-4~~: Foundation, Filtres, Sheets, Enums **COMPLÉTÉ**
 2. ✅ **Phase 5**: Système Wedding (hub central bride) **TERMINÉ**
-3. 🔄 **Phase 6**: Système Alertes (4 types structurés) - 6-8h
-4. 🔄 **Phase 7**: Android (tests, optimisations) - 4-6h
+3. ✅ **Phase 6**: Système Alertes (4 types structurés + dashboard refresh) **TERMINÉ**
+4. 🔄 **Phase 7**: Android (tests, optimisations, permissions) - 4-6h
 5. 🔄 **Phase 8**: Séparation Indiens & Documentation - 6-8h
 
 ---
 
-**Last Updated**: 2025-11-28 20:30  
-**Status**: Phases 1-5.2 terminées, prêt pour Phase 6 (Alertes)  
-**Estimation restante**: 16-22h
+**Last Updated**: 2025-11-29 10:50  
+**Status**: Phases 1-6 terminées, dashboard refresh implémenté, prêt pour Phase 7 (Android Tests)  
+**Estimation restante**: 10-14h

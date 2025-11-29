@@ -160,6 +160,22 @@ enum AlertType {
     }
   }
 
+  /// Convert to backend enum value (snake_case)
+  String get toBackendValue {
+    switch (this) {
+      case AlertType.backupNeeded:
+        return 'backup_needed';
+      case AlertType.gearEmergency:
+        return 'gear_emergency';
+      case AlertType.teamMember:
+        return 'team_member';
+      case AlertType.emergencyHelp:
+        return 'emergency_help';
+      case AlertType.other:
+        return 'backup_needed'; // Default fallback
+    }
+  }
+
   static AlertType fromString(String? value) {
     if (value == null) return AlertType.other;
     final normalized = value.toLowerCase().replaceAll('_', '');

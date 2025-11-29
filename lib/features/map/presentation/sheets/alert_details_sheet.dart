@@ -66,9 +66,9 @@ class AlertDetailsSheet extends StatelessWidget {
                 _buildTimeInfo(),
                 LynewedGap.verticalLg,
                 
-                // Author info
-                _buildAuthorInfo(),
-                LynewedGap.verticalXl,
+                // Author info (only show if not our own alert)
+                if (!details.isOwn) _buildAuthorInfo(),
+                if (!details.isOwn) LynewedGap.verticalXl,
                 
                 // Action buttons
                 _buildActionButtons(),
@@ -164,12 +164,16 @@ class AlertDetailsSheet extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          details.displayTitle,
-          style: LynewedTextStyles.titleLarge.copyWith(
-            fontWeight: FontWeight.bold,
+        // Only show title if it's different from the alert type display name
+        // and not the raw alert code (e.g., "backup_needed", "gear_emergency")
+        if (details.displayTitle != details.alertType.displayName &&
+            details.displayTitle != details.alertType.toBackendValue)
+          Text(
+            details.displayTitle,
+            style: LynewedTextStyles.titleLarge.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
         if (details.message?.isNotEmpty == true) ...[
           LynewedGap.verticalSm,
           Text(
