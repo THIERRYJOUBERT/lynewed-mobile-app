@@ -242,13 +242,6 @@ class _LynewedMapWidgetState extends State<LynewedMapWidget> {
             right: 16,
             child: _ErrorBanner(message: _mapState.errorMessage),
           ),
-
-        // Markers count badge
-        Positioned(
-          top: 16,
-          right: 16,
-          child: _MarkerCountBadge(count: _mapState.visibleMarkersCount),
-        ),
       ],
     );
 
@@ -412,36 +405,3 @@ class _ErrorBanner extends StatelessWidget {
   }
 }
 
-class _MarkerCountBadge extends StatelessWidget {
-  const _MarkerCountBadge({required this.count});
-
-  final int count;
-
-  @override
-  Widget build(BuildContext context) {
-    if (count == 0) return const SizedBox.shrink();
-
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: LynewedSpacing.md,
-        vertical: LynewedSpacing.sm - 2,
-      ),
-      decoration: BoxDecoration(
-        color: LynewedColors.background,
-        borderRadius: LynewedBorders.borderRadiusLg,
-        boxShadow: [
-          BoxShadow(
-            color: LynewedColors.primary.withValues(alpha: 0.1),
-            blurRadius: 4,
-          ),
-        ],
-      ),
-      child: Text(
-        '$count',
-        style: LynewedTextStyles.bodyMedium.copyWith(
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-}

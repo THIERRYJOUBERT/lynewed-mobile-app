@@ -490,7 +490,7 @@ class _MapPageState extends State<MapPage> {
     setState(() => _isSearchExpanded = false);
   }
 
-  /// Filter chips row (layer toggles)
+  /// Filter chips row - shows toggles for marker types + count
   /// - Bride: Professionals + My Wedding (no alerts - pro-only feature)
   /// - Pro: Professionals + Alerts + Weddings
   /// Note: Professionals + Fixed Locations merged into single chip (proFixedLocation fusion)
@@ -500,48 +500,67 @@ class _MapPageState extends State<MapPage> {
         // Merged toggle: showPros controls both professionals and fixed locations
         final showPros = state.filter.toggles.showPros;
         final isBride = widget.userRole == 'bride';
+        final markerCount = state.visibleMarkersCount;
         
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              // Professionals (merged with Fixed Locations → proFixedLocation)
-              _buildFilterChip(
-                label: 'Professionals',
-                isActive: showPros,
-                onTap: () => state.updateToggles(
-                  state.filter.toggles.copyWith(
-                    showPros: !showPros,
-                    showFixedLocations: !showPros, // Keep in sync
-                  ),
+        return Row(
+          children: [
+            // Filter chips (left side)
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    // Professionals (merged with Fixed Locations → proFixedLocation)
+                    _buildFilterChip(
+                      label: 'Professionals',
+                      isActive: showPros,
+                      onTap: () => state.updateToggles(
+                        state.filter.toggles.copyWith(
+                          showPros: !showPros,
+                          showFixedLocations: !showPros, // Keep in sync
+                        ),
+                      ),
+                    ),
+                    // Alerts - PRO ONLY (not for brides)
+                    if (!isBride) ...[
+                      const SizedBox(width: 8.0),
+                      _buildFilterChip(
+                        label: 'Alerts',
+                        isActive: state.filter.toggles.showAlerts,
+                        onTap: () => state.updateToggles(
+                          state.filter.toggles.copyWith(
+                            showAlerts: !state.filter.toggles.showAlerts,
+                          ),
+                        ),
+                      ),
+                    ],
+                    // Weddings - different label for bride vs pro
+                    const SizedBox(width: 8.0),
+                    _buildFilterChip(
+                      label: isBride ? 'My Wedding' : 'Weddings',
+                      isActive: state.filter.toggles.showWeddings,
+                      onTap: () => state.updateToggles(
+                        state.filter.toggles.copyWith(
+                          showWeddings: !state.filter.toggles.showWeddings,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              // Alerts - PRO ONLY (not for brides)
-              if (!isBride) ...[
-                const SizedBox(width: 8.0),
-                _buildFilterChip(
-                  label: 'Alerts',
-                  isActive: state.filter.toggles.showAlerts,
-                  onTap: () => state.updateToggles(
-                    state.filter.toggles.copyWith(
-                      showAlerts: !state.filter.toggles.showAlerts,
-                    ),
-                  ),
-                ),
-              ],
-              // Weddings - different label for bride vs pro
-              const SizedBox(width: 8.0),
-              _buildFilterChip(
-                label: isBride ? 'My Wedding' : 'Weddings',
-                isActive: state.filter.toggles.showWeddings,
-                onTap: () => state.updateToggles(
-                  state.filter.toggles.copyWith(
-                    showWeddings: !state.filter.toggles.showWeddings,
-                  ),
+            ),
+            // Marker count (right side)
+            if (markerCount > 0) ...[
+              const SizedBox(width: 12.0),
+              Text(
+                '$markerCount',
+                style: LynewedTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: LynewedColors.textSecondary,
                 ),
               ),
             ],
-          ),
+          ],
         );
       },
     );
