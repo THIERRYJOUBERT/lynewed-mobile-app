@@ -555,7 +555,7 @@ class _MapPageState extends State<MapPage> {
               Text(
                 '$markerCount',
                 style: LynewedTextStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w300,
                   color: LynewedColors.textSecondary,
                 ),
               ),
@@ -637,6 +637,7 @@ class _MapPageState extends State<MapPage> {
       builder: (c) => _MarkerDetailsLoader(
         marker: marker,
         userRole: widget.userRole,
+        mapState: _mapState,
         onEditWedding: () => _showCreateSheet(context),
       ),
     );
@@ -811,11 +812,13 @@ class _MarkerDetailsLoader extends StatefulWidget {
   const _MarkerDetailsLoader({
     required this.marker,
     required this.userRole,
+    required this.mapState,
     this.onEditWedding,
   });
 
   final MapMarker marker;
   final String userRole;
+  final MapState mapState;
   final VoidCallback? onEditWedding;
 
   @override
@@ -1136,7 +1139,7 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
       
       if (success) {
         // Refresh map data to remove deleted alert marker
-        _mapState.refreshMapData();
+        widget.mapState.refresh();
         
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
