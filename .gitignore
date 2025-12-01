@@ -53,6 +53,11 @@ app.*.map.json
 ios/build/
 ios/Flutter/Flutter.framework
 ios/Flutter/Flutter.podspec
+# Ignore duplicate/ghost files (e.g. "Flutter 2.podspec")
+ios/Flutter/Flutter *.podspec
+ios/Flutter/Generated *.xcconfig
+ios/Flutter/flutter_export_environment *.sh
+.flutter-plugins-dependencies *
 ios/Pods/
 ios/Runner.xcworkspace/xcshareddata/
 
