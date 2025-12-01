@@ -8,5 +8,5 @@ library;
 export 'professional_details_sheet.dart';
 export 'alert_details_sheet.dart';
 export 'wedding_details_sheet.dart';
-export 'wedding_sheet.dart';
+export 'wedding_create_sheet.dart';
 export 'alert_create_sheet.dart';
