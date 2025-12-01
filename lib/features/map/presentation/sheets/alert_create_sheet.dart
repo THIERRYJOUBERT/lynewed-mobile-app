@@ -169,10 +169,19 @@ class _AlertCreateSheetState extends State<AlertCreateSheet> {
             // Description Section
             LynewedTextField(
               controller: _messageController,
-              label: 'Description',
-              hint: 'Provide more details about your request...',
+              label: 'Description *',
+              hint: 'Provide more details about your request (min 3 characters)...',
               maxLines: 4,
               maxLength: 500,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Description is required';
+                }
+                if (value.trim().length < 3) {
+                  return 'Description must be at least 3 characters';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 30),
 
