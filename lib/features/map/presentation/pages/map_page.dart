@@ -1114,11 +1114,25 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
     
     if (context.mounted) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(success ? 'Alert deleted' : 'Failed to delete alert'),
-        ),
-      );
+      
+      if (success) {
+        // Refresh map data to remove deleted alert marker
+        _mapState.refreshMapData();
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Alert deleted'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to delete alert'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
