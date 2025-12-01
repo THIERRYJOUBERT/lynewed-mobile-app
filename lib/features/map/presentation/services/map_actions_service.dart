@@ -271,14 +271,18 @@ class MapActionsService {
     }
   }
 
-  /// Delete an alert (uses cancel_professional_alert RPC)
+  /// Delete an alert (uses delete_alert RPC)
   Future<bool> deleteAlert(String alertId) async {
     try {
       final result = await _supabase.rpc(
-        'cancel_professional_alert',
+        'delete_alert',
         params: {'p_alert_id': alertId},
       );
-      return result == true;
+      // Result is jsonb: {success: true/false, ...}
+      if (result is Map) {
+        return result['success'] == true;
+      }
+      return false;
     } catch (e) {
       debugPrint('Error deleting alert: $e');
       return false;
