@@ -101,6 +101,8 @@ class SupabaseMapDatasource {
         ),
         metadata: {
           'isOwn': styleInfo['isOwn'] == true,
+          // Fixed location label (full address) for display in sheet
+          'locationLabel': styleInfo['locationLabel'] as String?,
         },
       );
     }).whereType<MapMarker>().toList();

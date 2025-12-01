@@ -918,15 +918,10 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
     switch (widget.marker.type) {
       case MapMarkerType.proFixedLocation:
         final proDetails = _details as ProfessionalDetails;
-        // Extract city from fixed location label (e.g., "15 Rue de Rivoli, 75001 Paris" -> "Paris")
-        final locationLabel = widget.marker.metadata['locationLabel'] as String?;
-        final fixedLocationCity = _extractCityFromAddress(locationLabel);
-        
         return ProfessionalDetailsSheet(
-          // Key ensures widget rebuilds when favorite status OR marker changes
-          key: ValueKey('pro_${widget.marker.id}_${proDetails.isFavorited}'),
+          // Key ensures widget rebuilds when favorite status changes
+          key: ValueKey('pro_${proDetails.id}_fav_${proDetails.isFavorited}'),
           details: proDetails,
-          fixedLocation: fixedLocationCity,
           onContact: () => _handleContact(context),
           onFavoriteToggle: () => _handleFavoriteToggle(context),
           onViewProfile: () => _handleViewProfile(context),
@@ -1175,38 +1170,5 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
     Navigator.pop(context);
     final details = _details as WeddingDetails;
     _actionsService.navigateToBrideProfile(context, details);
-  }
-
-  /// Extract city name from full address
-  /// 
-  /// Examples:
-  /// - "15 Rue de Rivoli, 75001 Paris" -> "Paris"
-  /// - "42 Avenue des Champs-Élysées, 75008 Paris" -> "Paris"
-  /// - "10 Downing Street, London SW1A 2AA" -> "London"
-  /// - null -> null
-  String? _extractCityFromAddress(String? fullAddress) {
-    if (fullAddress == null || fullAddress.isEmpty) return null;
-    
-    // Split by comma and take the last part (usually contains city)
-    final parts = fullAddress.split(',').map((p) => p.trim()).toList();
-    if (parts.isEmpty) return fullAddress;
-    
-    // Last part usually contains postal code + city
-    final lastPart = parts.last;
-    
-    // Try to extract city from "75001 Paris" format (French)
-    final frenchMatch = RegExp(r'\d{5}\s+(.+)$').firstMatch(lastPart);
-    if (frenchMatch != null) {
-      return frenchMatch.group(1)?.trim();
-    }
-    
-    // Try to extract city from "London SW1A 2AA" format (UK)
-    final ukMatch = RegExp(r'^([A-Za-z\s]+)\s+[A-Z]{1,2}\d').firstMatch(lastPart);
-    if (ukMatch != null) {
-      return ukMatch.group(1)?.trim();
-    }
-    
-    // Fallback: return last part as-is (might be just city name)
-    return lastPart;
   }
 }
