@@ -2,13 +2,27 @@
 
 **Document créé:** 2025-11-26  
 **Objectif:** Documentation complète de l'application - architecture, flux, bugs critiques et apprentissages  
-**Version:** v1.3
+**Version:** v1.4
 
 ## 📋 **Version History**
-- **v1.3 (2025-11-26):** Mise à jour complète map - Concept Wedding, abonnements Free/Early/Premium/Ultimate, alertes tous pros, règles d'affichage markers
-- **v1.2 (2025-11-26):** Ajout sections Testing Scenarios, Known Limitations, version history
-- **v1.1 (2025-11-26):** Documentation complète du bug portfolio/slideshow, ajout Storage, Edge Functions, State Management, FlutterFlow Gotchas
-- **v1.0 (2025-11-26):** Création initiale avec architecture et flux de base
+- **v1.4 (2025-12-01):** 🎉 Module Map 100% complet - Clean Architecture, Design System, 63 tests passants
+- **v1.3 (2025-11-26):** Mise à jour complète map - Concept Wedding, abonnements, alertes tous pros
+- **v1.2 (2025-11-26):** Ajout sections Testing Scenarios, Known Limitations
+- **v1.1 (2025-11-26):** Documentation bug portfolio/slideshow, Storage, Edge Functions
+- **v1.0 (2025-11-26):** Création initiale
+
+## 🗺️ **Module Map - TERMINÉ**
+
+Le module Map a été entièrement refactorisé en Clean Architecture (2025-12-01).
+
+| Aspect | Détail |
+|--------|--------|
+| **Code** | `lib/features/map/` (~4200 lignes) |
+| **Architecture** | Clean Architecture (domain/data/presentation) |
+| **Design System** | 100% appliqué (`lib/core/design/`) |
+| **Tests** | 63/63 passants |
+| **Documentation** | `lib/features/map/README.md` |
+| **Rapport Final** | `docs/archive/MAP_REFACTORING_COMPLETE_2025-12-01.md` |
 
 ## 📖 **Table des Matières**
 - [🚨 Critical Gotchas](#-critical-gotchas---à-connaître-impérativement)

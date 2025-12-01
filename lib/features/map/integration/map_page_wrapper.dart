@@ -28,12 +28,9 @@ import '/compo_finaux/info_pro_item_sheet/info_pro_item_sheet_widget.dart';
 import '/compo_finaux/info_poi_sheet/info_poi_sheet_widget.dart';
 import '/compo_finaux/info_wedding_pin_sheet/info_wedding_pin_sheet_widget.dart';
 import '/compo_finaux/info_alert_item_sheet/info_alert_item_sheet_widget.dart';
-import '/compo_finaux/add_filter_sheet/add_filter_sheet_widget.dart';
-import '/compo_finaux/address_search/address_search_widget.dart';
 
 // New map module
 import '../domain/entities/entities.dart';
-import '../data/models/marker_type_mapper.dart';
 import '../presentation/widgets/lynewed_map_widget.dart';
 import '../presentation/widgets/filter_sheet.dart';
 

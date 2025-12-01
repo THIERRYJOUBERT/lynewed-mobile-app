@@ -139,9 +139,7 @@ class ProfessionalDetailsSheet extends StatelessWidget {
             children: [
               Text(
                 details.displayName,
-                style: LynewedTextStyles.titleLarge.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: LynewedTextStyles.sheetTitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -182,7 +180,7 @@ class ProfessionalDetailsSheet extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: LynewedColors.primary,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(LynewedComponentStyles.chipBorderRadius),
           ),
           child: Text(
             details.profession.displayName,
@@ -318,9 +316,7 @@ class ProfessionalDetailsSheet extends StatelessWidget {
         children: [
           Text(
             'About',
-            style: LynewedTextStyles.titleSmall.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: LynewedTextStyles.sectionTitle,
           ),
           LynewedGap.verticalSm,
           Text(
@@ -347,9 +343,7 @@ class ProfessionalDetailsSheet extends StatelessWidget {
             children: [
               Text(
                 'Portfolio',
-                style: LynewedTextStyles.titleSmall.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: LynewedTextStyles.sectionTitle,
               ),
               if (details.portfolioImages.length > 4)
                 TextButton(
@@ -368,7 +362,7 @@ class ProfessionalDetailsSheet extends StatelessWidget {
               separatorBuilder: (_, __) => LynewedGap.horizontalSm,
               itemBuilder: (context, index) {
                 return ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(LynewedComponentStyles.inputBorderRadius),
                   child: CachedNetworkImage(
                     imageUrl: images[index],
                     width: 80,
@@ -487,17 +481,17 @@ class _SocialButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(LynewedComponentStyles.inputBorderRadius),
       child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: LynewedSpacing.md,
-          vertical: LynewedSpacing.sm,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12.0,
+          vertical: 10.0,
         ),
         decoration: BoxDecoration(
           border: Border.all(
-            color: LynewedColors.border,
+            color: LynewedColors.gray200,
           ),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(LynewedComponentStyles.inputBorderRadius),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

@@ -169,23 +169,26 @@ class _FilterSheetState extends State<FilterSheet> {
           runSpacing: LynewedSpacing.sm,
           children: Profession.values.map((profession) {
             final isSelected = _selectedProfessions.contains(profession);
-            // Using Design System chip styling - consistent with WeddingCreateSheet
+            // Using Design System chip styling - Standardized 4px radius
             return FilterChip(
               label: Text(
                 _professionLabel(profession),
-                style: LynewedComponentStyles.chipTextStyle(selected: isSelected),
+                style: LynewedTextStyles.bodyMedium.copyWith(
+                  color: isSelected ? Colors.white : LynewedColors.textPrimary,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                ),
               ),
               selected: isSelected,
               backgroundColor: LynewedColors.gray200,
-              selectedColor: LynewedColors.primary.withValues(alpha: 0.15),
-              checkmarkColor: LynewedColors.primary,
-              side: isSelected 
-                  ? const BorderSide(color: LynewedColors.primary, width: 1)
-                  : BorderSide.none,
+              selectedColor: LynewedColors.primary,
+              checkmarkColor: Colors.white,
+              showCheckmark: false, // Design preference for cleaner look with color change
+              side: BorderSide.none,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(4), // 4px max radius
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6), // Uniformized padding
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               onSelected: (selected) {
                 setState(() {
                   if (selected) {

@@ -116,8 +116,7 @@ class AlertDetailsSheet extends StatelessWidget {
             children: [
               Text(
                 details.alertType.displayName,
-                style: LynewedTextStyles.titleLarge.copyWith( // Increased from titleMedium
-                  fontWeight: FontWeight.bold,
+                style: LynewedTextStyles.sheetTitle.copyWith(
                   color: color,
                 ),
               ),
@@ -148,7 +147,7 @@ class AlertDetailsSheet extends StatelessWidget {
         color: isActive 
             ? LynewedColors.success.withValues(alpha: 0.1) 
             : LynewedColors.gray200,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(LynewedComponentStyles.chipBorderRadius),
       ),
       child: Text(
         isActive ? 'Active' : 'Expired',
@@ -170,9 +169,7 @@ class AlertDetailsSheet extends StatelessWidget {
             details.displayTitle != details.alertType.toBackendValue)
           Text(
             details.displayTitle,
-            style: LynewedTextStyles.titleLarge.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: LynewedTextStyles.sectionTitle,
           ),
         if (details.message?.isNotEmpty == true) ...[
           LynewedGap.verticalSm,
@@ -240,7 +237,7 @@ class AlertDetailsSheet extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: LynewedColors.warning.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(LynewedComponentStyles.chipBorderRadius),
             ),
             child: Text(
               details.timeRemaining!,
@@ -258,16 +255,16 @@ class AlertDetailsSheet extends StatelessWidget {
   Widget _buildAuthorInfo() {
     return Material(
       color: LynewedColors.background,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(LynewedComponentStyles.inputBorderRadius),
       clipBehavior: Clip.antiAlias, // Ensure ripple is clipped
       child: InkWell(
         onTap: onViewAuthorProfile,
         child: Container(
-          padding: EdgeInsets.all(LynewedSpacing.md),
+          padding: const EdgeInsets.all(12.0),
           decoration: BoxDecoration(
             // Color moved to Material widget to allow InkWell ripple effect
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: LynewedColors.border),
+            borderRadius: BorderRadius.circular(LynewedComponentStyles.inputBorderRadius),
+            border: Border.all(color: LynewedColors.gray200),
           ),
           child: Row(
           children: [
@@ -296,9 +293,7 @@ class AlertDetailsSheet extends StatelessWidget {
                 children: [
                   Text(
                     details.authorFullName ?? 'Unknown',
-                    style: LynewedTextStyles.titleSmall.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: LynewedTextStyles.sectionTitle,
                   ),
                   if (details.authorProfession != null)
                     Text(
@@ -320,7 +315,7 @@ class AlertDetailsSheet extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: LynewedColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(LynewedComponentStyles.chipBorderRadius),
                 ),
                 child: Text(
                   'Your alert',

@@ -143,6 +143,31 @@
 
 ---
 
+## 🇮🇳 Comptes Indiens (Market Separation Test)
+
+### Professionnels Indiens (3)
+| UUID | Email | Nom | Profession | Ville | Tier |
+|------|-------|-----|------------|-------|------|
+| `a1111111-1111-1111-1111-111111111111` | raj.sharma.photo@test.com | Raj Sharma | PHOTOGRAPHER | Mumbai | Ultimate |
+| `a2222222-2222-2222-2222-222222222222` | priya.patel.makeup@test.com | Priya Patel | MAKEUPARTIST | New Delhi | Ultimate |
+| `a3333333-3333-3333-3333-333333333333` | vikram.singh.venue@test.com | Vikram Singh | VENUE | Jaipur | Premium |
+
+### Bride Indienne (1)
+| UUID | Email | Nom | Wedding Location |
+|------|-------|-----|------------------|
+| `b1111111-1111-1111-1111-111111111111` | ananya.gupta.bride@test.com | Ananya Gupta | Bangalore |
+
+### Données de Test
+- **Fixed Locations:** Raj (Pune), Priya (Gurgaon)
+- **Alerts:** Raj (Mumbai - Second Shooter), Priya (Delhi - Makeup Assistant)
+- **Wedding:** Ananya & Arjun (Bangalore Palace)
+
+### Test Market Separation
+1. **Connexion avec compte indien** → Voit SEULEMENT les pros/alerts/weddings indiens
+2. **Connexion avec compte non-indien** → Voit SEULEMENT les pros/alerts/weddings non-indiens
+
+---
+
 ## 📝 Notes Techniques
 
 - **Trigger automatique:** `on_auth_user_created()` crée les profils dans la table `profiles`

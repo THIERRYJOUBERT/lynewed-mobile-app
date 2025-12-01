@@ -14,6 +14,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import '/compo_finaux/address_search/address_search_widget.dart';
+import '/core/widgets/currency_dropdown.dart';
 import 'onboarding_brides_wizard_model.dart';
 export 'onboarding_brides_wizard_model.dart';
 
@@ -504,56 +506,23 @@ class _OnboardingBridesWizardWidgetState
                                                         letterSpacing: 0.0,
                                                       ),
                                             ),
-                                            FlutterFlowDropDown<String>(
-                                              controller: _model
-                                                      .dropDownCurrencyValueController ??=
-                                                  FormFieldController<String>(
-                                                _model.dropDownCurrencyValue ??=
+                                            SizedBox(
+                                              width: 140,
+                                              child: CurrencyDropdown(
+                                                value: _model
+                                                        .dropDownCurrencyValue ??
                                                     valueOrDefault<String>(
-                                                  FFAppState()
-                                                      .currentUserPreferences
-                                                      .currency,
-                                                  'USD',
-                                                ),
+                                                      FFAppState()
+                                                          .currentUserPreferences
+                                                          .currency,
+                                                      'USD',
+                                                    ),
+                                                onChanged: (code) =>
+                                                    safeSetState(() => _model
+                                                        .dropDownCurrencyValue =
+                                                        code),
+                                                compact: true,
                                               ),
-                                              options: const [
-                                                'USD',
-                                                'EUR',
-                                                'GBP',
-                                                'CAD',
-                                                'CHF'
-                                              ],
-                                              onChanged: (val) => safeSetState(
-                                                  () => _model
-                                                          .dropDownCurrencyValue =
-                                                      val),
-                                              width: 90.0,
-                                              textStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        fontFamily:
-                                                            'Haas Grot Text Trial',
-                                                        letterSpacing: 0.0,
-                                                      ),
-                                              hintText: 'USD',
-                                              icon: Icon(
-                                                Icons.keyboard_arrow_right,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .secondaryText,
-                                                size: 14.0,
-                                              ),
-                                              elevation: 0.0,
-                                              borderColor: Colors.transparent,
-                                              borderWidth: 1.0,
-                                              borderRadius: 0.0,
-                                              margin: const EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      4.0, 0.0, 12.0, 10.0),
-                                              isOverButton: false,
-                                              isSearchable: false,
-                                              isMultiSelect: false,
                                             ),
                                           ],
                                         ),

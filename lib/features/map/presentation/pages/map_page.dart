@@ -23,6 +23,7 @@ import '../../data/datasources/supabase_map_datasource.dart';
 import '../state/map_state.dart';
 import '../widgets/lynewed_map_widget.dart';
 import '../widgets/filter_sheet.dart';
+import '../widgets/map_controls.dart';
 import '../sheets/sheets.dart';
 import '../services/map_actions_service.dart';
 
@@ -82,6 +83,7 @@ class _MapPageState extends State<MapPage> {
   final _datasource = SupabaseMapDatasource();
   bool _isSearchExpanded = false;
   bool _showMapStyleOptions = false;
+  bool _isLocating = false;
   bool _mounted = true;
 
   @override
@@ -149,30 +151,21 @@ class _MapPageState extends State<MapPage> {
                 alignment: Alignment.topRight,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 80.0, right: 20.0),
-                  child: _buildLocationButton(),
-                ),
-              ),
-
-              // 3. Zoom+ button - top right (padding: 0, 160, 20, 0)
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 160.0, right: 20.0),
-                  child: _buildZoomButton(
-                    icon: Icons.add,
-                    onPressed: _zoomIn,
+                  child: MapLocationButton(
+                    onPressed: _goToMyLocation,
+                    isLoading: _isLocating,
                   ),
                 ),
               ),
 
-              // 4. Zoom- button - top right (padding: 0, 210, 20, 0)
+              // 3. Zoom controls - top right (padding: 0, 160, 20, 0)
               Align(
                 alignment: Alignment.topRight,
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 210.0, right: 20.0),
-                  child: _buildZoomButton(
-                    icon: Icons.remove,
-                    onPressed: _zoomOut,
+                  padding: const EdgeInsets.only(top: 160.0, right: 20.0),
+                  child: MapZoomControls(
+                    onZoomIn: _zoomIn,
+                    onZoomOut: _zoomOut,
                   ),
                 ),
               ),
@@ -182,7 +175,13 @@ class _MapPageState extends State<MapPage> {
                 alignment: Alignment.topLeft,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 70.0, left: 20.0),
-                  child: _buildBackButton(),
+                  child: MapBackButton(
+                    onPressed: () {
+                      if (_mounted && Navigator.canPop(context)) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+                  ),
                 ),
               ),
 
@@ -216,81 +215,6 @@ class _MapPageState extends State<MapPage> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  // ============================================================
-  // LEGACY LAYOUT BUTTONS (exact positions from map_pro_large)
-  // ============================================================
-
-  /// Back button - top left, 40x40, circular, primary fill, white icon
-  Widget _buildBackButton() {
-    return Container(
-      width: 40.0,
-      height: 40.0,
-      decoration: BoxDecoration(
-        color: LynewedColors.primary,
-        shape: BoxShape.circle,
-      ),
-      child: IconButton(
-        onPressed: () {
-          if (_mounted && Navigator.canPop(context)) {
-            Navigator.of(context).pop();
-          }
-        },
-        icon: const Icon(
-          Icons.arrow_back_ios_rounded,
-          color: Colors.white,
-          size: 17.0,
-        ),
-        padding: EdgeInsets.zero,
-      ),
-    );
-  }
-
-  /// Location button - 40x40, rounded 4px, primary fill, white icon
-  Widget _buildLocationButton() {
-    return Container(
-      width: 40.0,
-      height: 40.0,
-      decoration: BoxDecoration(
-        color: LynewedColors.primary,
-        borderRadius: BorderRadius.circular(4.0),
-      ),
-      child: IconButton(
-        onPressed: _goToMyLocation,
-        icon: const Icon(
-          Icons.near_me,  // FontAwesome locationArrow equivalent
-          color: Colors.white,
-          size: 24.0,
-        ),
-        padding: EdgeInsets.zero,
-      ),
-    );
-  }
-
-  /// Zoom button - 40x40, rounded 8px, no fill, primary icon
-  Widget _buildZoomButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-  }) {
-    return Container(
-      width: 40.0,
-      height: 40.0,
-      decoration: BoxDecoration(
-        color: LynewedColors.background,
-        borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(color: LynewedColors.border, width: 1),
-      ),
-      child: IconButton(
-        onPressed: onPressed,
-        icon: Icon(
-          icon,
-          color: LynewedColors.primary,
-          size: 24.0,
-        ),
-        padding: EdgeInsets.zero,
       ),
     );
   }
@@ -685,16 +609,6 @@ class _MapPageState extends State<MapPage> {
         : 'Search location...';
   }
 
-  String _getDefaultTitle() {
-    return widget.userRole == 'bride' ? 'Find Vendors' : 'Explore Map';
-  }
-
-  void _onSearch(String query) {
-    if (!_mounted) return;
-    setState(() => _isSearchExpanded = false);
-    // TODO: Implement search with AddressSearchWidget
-  }
-
   void _onMarkerTap(MapMarker marker) {
     if (!_mounted) return;
     showModalBottomSheet(
@@ -730,6 +644,8 @@ class _MapPageState extends State<MapPage> {
   Future<void> _goToMyLocation() async {
     if (_mapController == null) return;
     
+    setState(() => _isLocating = true);
+
     try {
       // Check permissions
       final hasPermission = await _ensureLocationPermission();
@@ -751,6 +667,10 @@ class _MapPageState extends State<MapPage> {
       );
     } catch (e) {
       debugPrint('Error getting location: $e');
+    } finally {
+      if (_mounted) {
+        setState(() => _isLocating = false);
+      }
     }
   }
 
@@ -778,21 +698,6 @@ class _MapPageState extends State<MapPage> {
   Future<void> _zoomOut() async {
     if (_mapController == null) return;
     await _mapController!.animateCamera(gmaps.CameraUpdate.zoomOut());
-  }
-
-  void _showMapStyleMenu() {
-    if (!_mounted) return;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: LynewedColors.transparent,
-      builder: (sheetContext) => _MapStyleSheet(
-        currentStyle: _mapState.mapType,
-        onStyleSelected: (style) {
-          _mapState.setMapType(style);
-          Navigator.pop(sheetContext);
-        },
-      ),
-    );
   }
 
   void _showCreateSheet(BuildContext ctx) async {
@@ -879,128 +784,6 @@ class _MapPageState extends State<MapPage> {
         ),
       );
     }
-  }
-}
-
-/// Map style selection sheet
-class _MapStyleSheet extends StatelessWidget {
-  const _MapStyleSheet({
-    required this.currentStyle,
-    required this.onStyleSelected,
-  });
-
-  final gmaps.MapType currentStyle;
-  final ValueChanged<gmaps.MapType> onStyleSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: LynewedColors.background,
-        borderRadius: LynewedBorders.sheetBorderRadius,
-      ),
-      padding: LynewedSpacing.allLg,
-      child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Handle
-            Center(
-              child: Container(
-                margin: EdgeInsets.only(bottom: LynewedSpacing.lg),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: LynewedColors.gray200,
-                  borderRadius: LynewedBorders.borderRadiusSm,
-                ),
-              ),
-            ),
-            // Title
-            Text(
-              'Map Style',
-              style: LynewedTextStyles.titleLarge,
-            ),
-            LynewedGap.verticalLg,
-            // Options
-            _buildStyleOption(
-              context,
-              title: 'Normal',
-              icon: Icons.map_outlined,
-              style: gmaps.MapType.normal,
-            ),
-            _buildStyleOption(
-              context,
-              title: 'Satellite',
-              icon: Icons.satellite_alt,
-              style: gmaps.MapType.satellite,
-            ),
-            _buildStyleOption(
-              context,
-              title: 'Terrain',
-              icon: Icons.terrain,
-              style: gmaps.MapType.terrain,
-            ),
-            _buildStyleOption(
-              context,
-              title: 'Hybrid',
-              icon: Icons.layers,
-              style: gmaps.MapType.hybrid,
-            ),
-            LynewedGap.verticalMd,
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStyleOption(
-    BuildContext context, {
-    required String title,
-    required IconData icon,
-    required gmaps.MapType style,
-  }) {
-    final isSelected = currentStyle == style;
-    
-    return InkWell(
-      onTap: () => onStyleSelected(style),
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: LynewedSpacing.lg,
-          vertical: LynewedSpacing.md,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected ? LynewedColors.surface : LynewedColors.transparent,
-          borderRadius: LynewedBorders.borderRadiusMd,
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? LynewedColors.primary : LynewedColors.textSecondary,
-              size: 24,
-            ),
-            LynewedGap.horizontalMd,
-            Expanded(
-              child: Text(
-                title,
-                style: LynewedTextStyles.bodyLarge.copyWith(
-                  color: isSelected ? LynewedColors.primary : LynewedColors.textPrimary,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                ),
-              ),
-            ),
-            if (isSelected)
-              Icon(
-                Icons.check,
-                color: LynewedColors.primary,
-                size: 20,
-              ),
-          ],
-        ),
-      ),
-    );
   }
 }
 
@@ -1137,6 +920,7 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
       case MapMarkerType.wedding:
         return WeddingDetailsSheet(
           details: _details as WeddingDetails,
+          userRole: widget.userRole,
           onContact: () => _handleContactBride(context),
           onViewBrideProfile: () => _handleViewBrideProfile(context),
           onEdit: () => _handleEditWedding(context),

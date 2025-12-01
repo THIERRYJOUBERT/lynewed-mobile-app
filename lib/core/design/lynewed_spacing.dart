@@ -1,13 +1,20 @@
 import 'package:flutter/widgets.dart';
 
-/// Lynewed Spacing System - Based on MVP FlutterFlow analysis
+/// Lynewed Spacing System - Refined Visual Hierarchy
+/// 
+/// DESIGN PRINCIPLES:
+/// - 4px baseline grid
+/// - Consistent padding across sheets and forms
+/// - Values extracted from Profile page (reference of elegance)
+/// 
 /// See /docs/App/DESIGN_SYSTEM.md for complete usage guide
-/// All spacing values extracted from actual usage patterns
 class LynewedSpacing {
   LynewedSpacing._();
 
-  // Base spacing scale (4px baseline)
-  static const double xxs = 2.0; // Added for fine tuning
+  // ============================================================
+  // BASE SPACING SCALE (4px baseline)
+  // ============================================================
+  static const double xxs = 2.0;
   static const double xs = 4.0;
   static const double sm = 8.0;
   static const double md = 12.0;
@@ -16,15 +23,55 @@ class LynewedSpacing {
   static const double xxl = 24.0;
   static const double xxxl = 32.0;
 
-  // Safe area spacing (for mobile status bars and navigation)
+  // ============================================================
+  // SAFE AREA SPACING (Mobile status bars, navigation)
+  // ============================================================
   static const double safeTop = 70.0;
   static const double safeTopLarge = 84.0;
   static const double safeTopXL = 110.0;
   static const double safeTopXXL = 130.0;
 
-  // Component-specific spacing
+  // ============================================================
+  // COMPONENT HEIGHTS
+  // ============================================================
   static const double buttonHeight = 48.0;
   static const double inputHeight = 48.0;
+  static const double iconSize = 18.0;        // Standard icon size (from Profile)
+  static const double iconSizeLarge = 24.0;   // Larger icons
+
+  // ============================================================
+  // SHEET LAYOUT - Extracted from Profile page
+  // ============================================================
+  
+  /// Horizontal padding for sheet content (matches Profile: 20px)
+  static const double sheetHorizontalPadding = 20.0;
+  
+  /// Vertical padding for sheet content
+  static const double sheetVerticalPadding = 16.0;
+  
+  /// Sheet header vertical padding
+  static const double sheetHeaderVerticalPadding = 12.0;
+  
+  /// Gap between form sections (extracted from Profile: 14-20px)
+  static const double formSectionGap = 20.0;
+  
+  /// Gap between label and input field
+  static const double labelFieldGap = 10.0;
+  
+  /// Gap between items in a list (extracted from Profile: 14px)
+  static const double listItemGap = 14.0;
+  
+  /// Separator height
+  static const double separatorHeight = 1.0;
+
+  // ============================================================
+  // FORM LIST ITEM PADDING (Profile-style rows)
+  // ============================================================
+  
+  /// Vertical padding for list items (Profile: 12px top/bottom)
+  static const double listItemVerticalPadding = 12.0;
+
+  // Legacy aliases
   static const double cardPadding = xl;
   static const double sectionSpacing = xxxl;
 
@@ -92,6 +139,30 @@ class LynewedSpacing {
     // For now, return standard - can be enhanced based on actual safe area detection
     return EdgeInsets.only(top: standard);
   }
+
+  // ============================================================
+  // SHEET-SPECIFIC EDGE INSETS
+  // ============================================================
+  
+  /// Sheet header padding
+  static const EdgeInsets sheetHeader = EdgeInsets.symmetric(
+    horizontal: sheetHorizontalPadding,
+    vertical: sheetHeaderVerticalPadding,
+  );
+  
+  /// Sheet content padding
+  static const EdgeInsets sheetContent = EdgeInsets.symmetric(
+    horizontal: sheetHorizontalPadding,
+    vertical: sheetVerticalPadding,
+  );
+  
+  /// Sheet content with extra bottom padding (for button area)
+  static const EdgeInsets sheetContentWithBottom = EdgeInsets.only(
+    left: sheetHorizontalPadding,
+    right: sheetHorizontalPadding,
+    top: sheetVerticalPadding,
+    bottom: xxxl,
+  );
 }
 
 /// Gap utilities for consistent spacing between widgets

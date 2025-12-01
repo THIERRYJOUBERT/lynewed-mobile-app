@@ -8,6 +8,7 @@ import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/scheduler.dart';
+import '/core/widgets/currency_dropdown.dart';
 import 'preference_model.dart';
 export 'preference_model.dart';
 
@@ -110,75 +111,47 @@ class _PreferenceWidgetState extends State<PreferenceWidget> {
                                         fontWeight: FontWeight.normal,
                                       ),
                                 ),
-                                FlutterFlowDropDown<String>(
-                                  controller:
-                                      _model.dropDownCurrencyValueController ??=
-                                          FormFieldController<String>(
-                                    _model.dropDownCurrencyValue ??=
+                                SizedBox(
+                                  width: 200,
+                                  child: CurrencyDropdown(
+                                    value: _model.dropDownCurrencyValue ??
                                         valueOrDefault<String>(
-                                      FFAppState()
-                                          .currentUserPreferences
-                                          .currency,
-                                      'USD',
-                                    ),
-                                  ),
-                                  options: const ['USD', 'EUR', 'GBP', 'CAD', 'CHF'],
-                                  onChanged: (val) async {
-                                    safeSetState(() =>
-                                        _model.dropDownCurrencyValue = val);
-                                    FFAppState()
-                                        .updateCurrentUserPreferencesStruct(
-                                      (e) => e
-                                        ..currency =
-                                            _model.dropDownCurrencyValue,
-                                    );
-                                    safeSetState(() {});
-                                    _model.saveUserPreferencesCurrency =
-                                        await actions.saveUserPreferences(
-                                      FFAppState().currentUserPreferences,
-                                      '',
-                                    );
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Saved currency preference',
-                                          style: TextStyle(
-                                            color: FlutterFlowTheme.of(context)
-                                                .primaryText,
-                                          ),
+                                          FFAppState()
+                                              .currentUserPreferences
+                                              .currency,
+                                          'USD',
                                         ),
-                                        duration: const Duration(milliseconds: 2000),
-                                        backgroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .success,
-                                      ),
-                                    );
+                                    onChanged: (code) async {
+                                      safeSetState(() =>
+                                          _model.dropDownCurrencyValue = code);
+                                      FFAppState()
+                                          .updateCurrentUserPreferencesStruct(
+                                            (e) => e..currency = code,
+                                          );
+                                      safeSetState(() {});
+                                      _model.saveUserPreferencesCurrency =
+                                          await actions.saveUserPreferences(
+                                        FFAppState().currentUserPreferences,
+                                        '',
+                                      );
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Saved currency preference',
+                                            style: TextStyle(
+                                              color: FlutterFlowTheme.of(context)
+                                                  .primaryText,
+                                            ),
+                                          ),
+                                          duration: const Duration(milliseconds: 2000),
+                                          backgroundColor:
+                                              FlutterFlowTheme.of(context).success,
+                                        ),
+                                      );
 
-                                    safeSetState(() {});
-                                  },
-                                  width: 90.0,
-                                  textStyle: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        fontFamily: 'Haas Grot Text Trial',
-                                        letterSpacing: 0.0,
-                                      ),
-                                  hintText: 'USD',
-                                  icon: Icon(
-                                    Icons.keyboard_arrow_right,
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryText,
-                                    size: 14.0,
+                                      safeSetState(() {});
+                                    },
                                   ),
-                                  elevation: 0.0,
-                                  borderColor: Colors.transparent,
-                                  borderWidth: 1.0,
-                                  borderRadius: 0.0,
-                                  margin: const EdgeInsetsDirectional.fromSTEB(
-                                      4.0, 0.0, 12.0, 10.0),
-                                  isOverButton: false,
-                                  isSearchable: false,
-                                  isMultiSelect: false,
                                 ),
                               ].divide(const SizedBox(height: 10.0)),
                             ),

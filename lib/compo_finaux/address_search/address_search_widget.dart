@@ -394,7 +394,7 @@ class _AddressSearchWidgetState extends State<AddressSearchWidget> {
             color: Color(0xFF888888),
             letterSpacing: 0.0,
             fontSize: 14,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w300,
             height: 1.2,
           ),
           enabledBorder: OutlineInputBorder(
@@ -468,7 +468,7 @@ class _AddressSearchWidgetState extends State<AddressSearchWidget> {
           fontFamily: 'Haas Grot Text Trial',
           letterSpacing: 0.0,
           fontSize: 14,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w300,
           color: widget.enabled 
               ? FlutterFlowTheme.of(context).primaryText 
               : const Color(0xFF888888),
@@ -552,7 +552,7 @@ class _AddressPredictionItem extends StatelessWidget {
               style: FlutterFlowTheme.of(context).bodyMedium.override(
                 fontFamily: 'Haas Grot Text Trial',
                 letterSpacing: 0.0,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w300,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

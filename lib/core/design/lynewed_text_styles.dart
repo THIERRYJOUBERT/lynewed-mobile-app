@@ -1,148 +1,200 @@
 import 'package:flutter/material.dart';
 import 'lynewed_colors.dart';
 
-/// Lynewed Typography System - Based on MVP FlutterFlow analysis
+/// Lynewed Typography System - Refined Visual Hierarchy
+/// 
+/// DESIGN PRINCIPLES:
+/// - Font weights are INTENTIONALLY LIGHT (w400-w500 max) for elegance
+/// - Bold (w600+) should be used sparingly, only for CTAs
+/// - All values extracted from Profile page (reference of elegance)
+/// 
 /// See /docs/App/DESIGN_SYSTEM.md for complete usage guide
-/// All font sizes and weights extracted from actual usage
 class LynewedTextStyles {
   LynewedTextStyles._();
 
-  // Font Family - Unified across all styles
+  // ============================================================
+  // FONT FAMILY
+  // ============================================================
   static const String fontFamily = 'Haas Grot Text Trial';
 
-  // Display Styles (Hero titles)
+  // ============================================================
+  // DISPLAY STYLES (Hero / Splash screens only)
+  // ============================================================
   static const TextStyle displayLarge = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 64.0,
-    fontWeight: FontWeight.w600,
+    fontSize: 48.0,
+    fontWeight: FontWeight.w500,
     color: LynewedColors.textPrimary,
-    height: 1.2,
+    height: 1.15,
+    letterSpacing: -0.5,
   );
 
   static const TextStyle displayMedium = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 44.0,
-    fontWeight: FontWeight.w600,
+    fontSize: 36.0,
+    fontWeight: FontWeight.w500,
     color: LynewedColors.textPrimary,
     height: 1.2,
+    letterSpacing: -0.25,
   );
 
   static const TextStyle displaySmall = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 36.0,
-    fontWeight: FontWeight.w600,
+    fontSize: 28.0,
+    fontWeight: FontWeight.w500,
     color: LynewedColors.textPrimary,
     height: 1.2,
   );
 
-  // Headline Styles (Section titles)
+  // ============================================================
+  // HEADLINE STYLES (Page titles, major sections)
+  // ============================================================
   static const TextStyle headlineLarge = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 32.0,
-    fontWeight: FontWeight.w600,
+    fontSize: 24.0,
+    fontWeight: FontWeight.w500,
     color: LynewedColors.textPrimary,
-    height: 1.3,
+    height: 1.25,
   );
 
   static const TextStyle headlineMedium = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 28.0,
-    fontWeight: FontWeight.w600,
+    fontSize: 20.0,
+    fontWeight: FontWeight.w500,
     color: LynewedColors.textPrimary,
     height: 1.3,
   );
 
   static const TextStyle headlineSmall = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 24.0,
-    fontWeight: FontWeight.w600,
+    fontSize: 18.0,
+    fontWeight: FontWeight.w500,
     color: LynewedColors.textPrimary,
     height: 1.3,
   );
 
-  // Title Styles (Component titles)
+  // ============================================================
+  // TITLE STYLES (Sheet headers, dialog titles)
+  // Extracted from Profile page: 18px, w500
+  // ============================================================
   static const TextStyle titleLarge = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 22.0,
-    fontWeight: FontWeight.w600,
+    fontSize: 18.0,
+    fontWeight: FontWeight.w500,
     color: LynewedColors.textPrimary,
     height: 1.3,
+    letterSpacing: 0.0,
   );
 
   static const TextStyle titleMedium = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 20.0,
-    fontWeight: FontWeight.w600,
+    fontSize: 16.0,
+    fontWeight: FontWeight.w500,
     color: LynewedColors.textPrimary,
-    height: 1.3,
+    height: 1.35,
+    letterSpacing: 0.0,
   );
 
   static const TextStyle titleSmall = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 18.0,
-    fontWeight: FontWeight.w600,
+    fontSize: 14.0,
+    fontWeight: FontWeight.w500,
     color: LynewedColors.textPrimary,
-    height: 1.3,
+    height: 1.35,
+    letterSpacing: 0.0,
   );
 
-  // Body Styles (Content text)
+  // ============================================================
+  // BODY STYLES (Content, paragraphs, list items)
+  // bodyMedium = default text (14px, w400)
+  // ============================================================
   static const TextStyle bodyLarge = TextStyle(
     fontFamily: fontFamily,
     fontSize: 16.0,
-    fontWeight: FontWeight.normal,
+    fontWeight: FontWeight.w400,
     color: LynewedColors.textPrimary,
     height: 1.5,
+    letterSpacing: 0.0,
   );
 
   static const TextStyle bodyMedium = TextStyle(
     fontFamily: fontFamily,
     fontSize: 14.0,
-    fontWeight: FontWeight.normal,
+    fontWeight: FontWeight.w400,
     color: LynewedColors.textPrimary,
     height: 1.5,
+    letterSpacing: 0.0,
   );
 
   static const TextStyle bodySmall = TextStyle(
     fontFamily: fontFamily,
     fontSize: 13.0,
-    fontWeight: FontWeight.normal,
+    fontWeight: FontWeight.w400,
     color: LynewedColors.textPrimary,
-    height: 1.4,
+    height: 1.45,
+    letterSpacing: 0.0,
   );
 
-  // Label Styles (UI elements)
+  // ============================================================
+  // LABEL STYLES (Captions, hints, secondary info)
+  // ============================================================
   static const TextStyle labelLarge = TextStyle(
     fontFamily: fontFamily,
     fontSize: 12.0,
-    fontWeight: FontWeight.normal,
+    fontWeight: FontWeight.w400,
     color: LynewedColors.textSecondary,
     height: 1.4,
+    letterSpacing: 0.0,
   );
 
   static const TextStyle labelMedium = TextStyle(
     fontFamily: fontFamily,
     fontSize: 11.0,
-    fontWeight: FontWeight.normal,
+    fontWeight: FontWeight.w400,
     color: LynewedColors.textSecondary,
     height: 1.4,
+    letterSpacing: 0.0,
   );
 
   static const TextStyle labelSmall = TextStyle(
     fontFamily: fontFamily,
     fontSize: 10.0,
-    fontWeight: FontWeight.normal,
+    fontWeight: FontWeight.w400,
     color: LynewedColors.textSecondary,
     height: 1.4,
+    letterSpacing: 0.0,
   );
 
-  // Caption Style (Smallest text)
-  static const TextStyle caption = TextStyle(
-    fontFamily: fontFamily,
-    fontSize: 9.0,
-    fontWeight: FontWeight.normal,
-    color: LynewedColors.textSecondary,
-    height: 1.4,
+  // ============================================================
+  // SEMANTIC STYLES (Use these instead of raw styles)
+  // ============================================================
+  
+  /// Sheet header title (e.g., "Create Alert", "Edit Wedding")
+  /// 18px, w500 - matches Profile page header
+  static const TextStyle sheetTitle = titleLarge;
+  
+  /// Form section title (e.g., "Alert Type", "Wedding Date *")
+  /// 16px, w500 - matches Profile section headers
+  static const TextStyle sectionTitle = titleMedium;
+  
+  /// List item text (e.g., menu items, settings rows)
+  /// 14px, w400 - matches Profile list items
+  static const TextStyle listItem = bodyMedium;
+  
+  /// Input hint text
+  static TextStyle get inputHint => bodyMedium.copyWith(
+    color: LynewedColors.gray300,
   );
+  
+  /// Button text (primary action)
+  /// Slightly bolder for CTA emphasis
+  static TextStyle get buttonPrimary => bodyLarge.copyWith(
+    fontWeight: FontWeight.w500,
+    color: LynewedColors.textOnPrimary,
+  );
+  
+  /// Chip text (filter chips, tags)
+  static const TextStyle chipText = bodyMedium;
 
   // Special Color Variants
   static TextStyle textOnDark(TextStyle baseStyle) {

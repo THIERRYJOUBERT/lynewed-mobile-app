@@ -16,12 +16,15 @@ class WeddingDetailsSheet extends StatelessWidget {
   const WeddingDetailsSheet({
     super.key,
     required this.details,
+    this.userRole = 'bride',
     this.onContact,
     this.onViewBrideProfile,
     this.onEdit,
   });
 
   final WeddingDetails details;
+  /// User role: 'bride' or 'professional'
+  final String userRole;
   final VoidCallback? onContact;
   final VoidCallback? onViewBrideProfile;
   final VoidCallback? onEdit;
@@ -128,8 +131,7 @@ class WeddingDetailsSheet extends StatelessWidget {
             children: [
               Text(
                 'Wedding',
-                style: LynewedTextStyles.titleLarge.copyWith(
-                  fontWeight: FontWeight.bold,
+                style: LynewedTextStyles.sheetTitle.copyWith(
                   color: LynewedColors.primary,
                 ),
               ),
@@ -155,7 +157,7 @@ class WeddingDetailsSheet extends StatelessWidget {
             color: details.isUpcoming
                 ? LynewedColors.success.withValues(alpha: 0.1)
                 : LynewedColors.gray200,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(LynewedComponentStyles.chipBorderRadius),
           ),
           child: Text(
             details.isUpcoming ? 'Upcoming' : 'Past',
@@ -245,9 +247,7 @@ class WeddingDetailsSheet extends StatelessWidget {
         children: [
           Text(
             'Looking for',
-            style: LynewedTextStyles.titleSmall.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: LynewedTextStyles.sectionTitle,
           ),
           LynewedGap.verticalSm,
           Wrap(
@@ -261,7 +261,7 @@ class WeddingDetailsSheet extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: LynewedColors.primary,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(LynewedComponentStyles.chipBorderRadius),
                 ),
                 child: Text(
                   profession.displayName,
@@ -320,7 +320,7 @@ class WeddingDetailsSheet extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: LynewedColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(LynewedComponentStyles.chipBorderRadius),
             ),
             child: Text(
               details.status.displayName,
@@ -337,11 +337,11 @@ class WeddingDetailsSheet extends StatelessWidget {
 
   Widget _buildBrideInfo() {
     return Container(
-      padding: EdgeInsets.all(LynewedSpacing.md),
+      padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
         color: LynewedColors.background,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: LynewedColors.border),
+        borderRadius: BorderRadius.circular(LynewedComponentStyles.inputBorderRadius),
+        border: Border.all(color: LynewedColors.gray200),
       ),
       child: Row(
         children: [
@@ -368,9 +368,7 @@ class WeddingDetailsSheet extends StatelessWidget {
               children: [
                 Text(
                   details.brideName ?? 'Bride',
-                  style: LynewedTextStyles.titleSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: LynewedTextStyles.sectionTitle,
                 ),
                 Text(
                   'Wedding organizer',
@@ -387,8 +385,12 @@ class WeddingDetailsSheet extends StatelessWidget {
   }
 
   Widget _buildActionButton() {
-    // Own wedding: show edit button
-    if (details.isOwn) {
+    final isBride = userRole == 'bride';
+    final isPro = userRole == 'professional';
+    
+    // Bride viewing own wedding: show edit button
+    // Only show edit if user is bride AND it's their own wedding
+    if (isBride && details.isOwn) {
       return SizedBox(
         width: double.infinity,
         child: OutlinedButton.icon(
@@ -396,7 +398,7 @@ class WeddingDetailsSheet extends StatelessWidget {
           style: OutlinedButton.styleFrom(
             padding: EdgeInsets.symmetric(vertical: 12),
             side: BorderSide(color: LynewedColors.primary),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(LynewedComponentStyles.inputBorderRadius)),
           ),
           icon: Icon(Icons.edit, color: LynewedColors.primary),
           label: Text(
@@ -407,21 +409,26 @@ class WeddingDetailsSheet extends StatelessWidget {
       );
     }
     
-    // Pro viewing visible wedding: can request contact
-    final canContact = details.isUpcoming && details.isVisibleToPros;
-    
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: canContact ? onContact : null,
-        style: LynewedComponentStyles.primaryButton(),
-        icon: const Icon(Icons.mail_outline),
-        label: Text(
-          details.isUpcoming
-              ? (canContact ? 'Request Contact' : 'Not Available')
-              : 'Wedding Passed',
+    // Pro viewing visible wedding: can request contact with bride
+    if (isPro) {
+      final canContact = details.isUpcoming && details.isVisibleToPros;
+      
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: canContact ? onContact : null,
+          style: LynewedComponentStyles.primaryButton(),
+          icon: const Icon(Icons.mail_outline),
+          label: Text(
+            details.isUpcoming
+                ? (canContact ? 'Contact Bride' : 'Not Available')
+                : 'Wedding Passed',
+          ),
         ),
-      ),
-    );
+      );
+    }
+    
+    // Fallback for other cases (bride viewing other's wedding - shouldn't happen)
+    return const SizedBox.shrink();
   }
 }

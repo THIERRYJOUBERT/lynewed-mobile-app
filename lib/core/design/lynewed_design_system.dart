@@ -64,7 +64,7 @@ class LynewedTheme {
   TextStyle get labelLarge => LynewedTextStyles.labelLarge;
   TextStyle get labelMedium => LynewedTextStyles.labelMedium;
   TextStyle get labelSmall => LynewedTextStyles.labelSmall;
-  TextStyle get caption => LynewedTextStyles.caption;
+  // TextStyle get caption => LynewedTextStyles.caption; // Removed - not used in new system
 
   // Legacy typography properties (for compatibility)
   @Deprecated('Use displaySmall instead')

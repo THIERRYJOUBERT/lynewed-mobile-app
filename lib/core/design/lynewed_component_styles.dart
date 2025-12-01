@@ -228,52 +228,92 @@ class LynewedComponentStyles {
     );
   }
 
-  // Chip Styles - Professions, Filters, Tags
+  // ============================================================
+  // CHIP STYLES - Standard Design System (4px radius)
+  // ============================================================
+  
+  /// Standard chip border radius (4px for elegance)
+  static const double chipBorderRadius = 4.0;
+  
+  /// Standard chip padding
+  static const EdgeInsets chipPadding = EdgeInsets.symmetric(
+    horizontal: 8.0,
+    vertical: 6.0,
+  );
+
+  /// Chip decoration for custom Container-based chips
   static BoxDecoration chipDecoration({
     bool selected = false,
     Color? backgroundColor,
-    Color? borderColor,
+    Color? selectedBackgroundColor,
   }) {
     return BoxDecoration(
       color: selected 
-          ? (backgroundColor ?? LynewedColors.primary.withValues(alpha: 0.1))
-          : (backgroundColor ?? LynewedColors.gray100),
-      borderRadius: BorderRadius.circular(16.0),
-      border: selected
-          ? Border.all(color: borderColor ?? LynewedColors.primary, width: 1.0)
-          : null,
+          ? (selectedBackgroundColor ?? LynewedColors.primary)
+          : (backgroundColor ?? LynewedColors.gray200),
+      borderRadius: BorderRadius.circular(chipBorderRadius),
     );
   }
 
+  /// Chip text style
   static TextStyle chipTextStyle({
     bool selected = false,
     Color? color,
+    Color? selectedColor,
   }) {
-    return LynewedTextStyles.bodySmall.copyWith(
+    return LynewedTextStyles.chipText.copyWith(
       color: selected 
-          ? (color ?? LynewedColors.primary)
+          ? (selectedColor ?? LynewedColors.textOnPrimary)
           : (color ?? LynewedColors.textPrimary),
-      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+      fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
     );
   }
 
-  /// FilterChip theme with Lynewed styling
+  /// Standard FilterChip with Lynewed styling
+  /// Usage: Use this for all filter chips in the app
+  static FilterChip buildFilterChip({
+    required String label,
+    required bool selected,
+    required ValueChanged<bool> onSelected,
+  }) {
+    return FilterChip(
+      label: Text(
+        label,
+        style: chipTextStyle(selected: selected),
+      ),
+      selected: selected,
+      showCheckmark: false,
+      onSelected: onSelected,
+      backgroundColor: LynewedColors.gray200,
+      selectedColor: LynewedColors.primary,
+      side: BorderSide.none,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(chipBorderRadius),
+      ),
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      visualDensity: VisualDensity.compact,
+      padding: chipPadding,
+    );
+  }
+
+  /// ChipThemeData for ThemeData integration
   static ChipThemeData chipTheme({
     Color? backgroundColor,
     Color? selectedColor,
     Color? labelColor,
   }) {
     return ChipThemeData(
-      backgroundColor: backgroundColor ?? LynewedColors.gray100,
-      selectedColor: selectedColor ?? LynewedColors.primary.withValues(alpha: 0.15),
-      labelStyle: LynewedTextStyles.bodySmall.copyWith(
+      backgroundColor: backgroundColor ?? LynewedColors.gray200,
+      selectedColor: selectedColor ?? LynewedColors.primary,
+      labelStyle: LynewedTextStyles.chipText.copyWith(
         color: labelColor ?? LynewedColors.textPrimary,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+      padding: chipPadding,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.0),
+        borderRadius: BorderRadius.circular(chipBorderRadius),
       ),
-      checkmarkColor: LynewedColors.primary,
+      showCheckmark: false,
+      side: BorderSide.none,
     );
   }
 
@@ -294,6 +334,137 @@ class LynewedComponentStyles {
       shape: RoundedRectangleBorder(
         borderRadius: LynewedBorders.borderRadiusNone,
       ),
+    );
+  }
+
+  // ============================================================
+  // FORM FIELD STYLES - Standardized inputs
+  // ============================================================
+  
+  /// Standard border radius for form inputs (4px for elegance)
+  static const double inputBorderRadius = 4.0;
+  
+  /// Standard form field InputDecoration
+  /// Usage: TextField(decoration: LynewedComponentStyles.formInputDecoration(...))
+  static InputDecoration formInputDecoration({
+    String? hintText,
+    String? labelText,
+    Widget? suffixIcon,
+    Widget? prefixIcon,
+    bool hasError = false,
+  }) {
+    return InputDecoration(
+      hintText: hintText,
+      labelText: labelText,
+      hintStyle: LynewedTextStyles.inputHint,
+      labelStyle: LynewedTextStyles.bodyMedium.copyWith(
+        color: LynewedColors.textSecondary,
+      ),
+      suffixIcon: suffixIcon,
+      prefixIcon: prefixIcon,
+      filled: false,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 12.0,
+        vertical: 14.0,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(inputBorderRadius),
+        borderSide: const BorderSide(color: LynewedColors.gray200),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(inputBorderRadius),
+        borderSide: const BorderSide(color: LynewedColors.gray200),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(inputBorderRadius),
+        borderSide: const BorderSide(color: LynewedColors.textPrimary, width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(inputBorderRadius),
+        borderSide: const BorderSide(color: LynewedColors.error),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(inputBorderRadius),
+        borderSide: const BorderSide(color: LynewedColors.error, width: 1.5),
+      ),
+    );
+  }
+
+  /// Date picker / Selectable field decoration
+  static BoxDecoration selectableFieldDecoration({
+    bool hasValue = false,
+    bool hasError = false,
+  }) {
+    return BoxDecoration(
+      border: Border.all(
+        color: hasError 
+            ? LynewedColors.error 
+            : LynewedColors.gray200,
+      ),
+      borderRadius: BorderRadius.circular(inputBorderRadius),
+    );
+  }
+
+  // ============================================================
+  // SHEET STYLES - Bottom sheets, modals
+  // ============================================================
+  
+  /// Sheet header container decoration
+  static BoxDecoration sheetHeaderDecoration() {
+    return const BoxDecoration(
+      border: Border(
+        bottom: BorderSide(color: LynewedColors.gray200, width: 1),
+      ),
+    );
+  }
+  
+  /// Sheet header padding
+  static const EdgeInsets sheetHeaderPadding = EdgeInsets.symmetric(
+    horizontal: 16.0,
+    vertical: 12.0,
+  );
+  
+  /// Sheet content padding
+  static const EdgeInsets sheetContentPadding = EdgeInsets.symmetric(
+    horizontal: 20.0,
+    vertical: 16.0,
+  );
+  
+  /// Gap between form sections in sheets
+  static const double formSectionGap = 20.0;
+  
+  /// Gap between label and field
+  static const double labelFieldGap = 10.0;
+
+  // ============================================================
+  // ERROR BANNER STYLES
+  // ============================================================
+  
+  /// Error banner decoration
+  static BoxDecoration errorBannerDecoration() {
+    return BoxDecoration(
+      color: LynewedColors.error.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(inputBorderRadius),
+      border: Border.all(
+        color: LynewedColors.error.withValues(alpha: 0.3),
+      ),
+    );
+  }
+
+  // ============================================================
+  // SLIDER STYLES
+  // ============================================================
+  
+  /// Slider theme data
+  static SliderThemeData sliderTheme(BuildContext context) {
+    return SliderTheme.of(context).copyWith(
+      activeTrackColor: LynewedColors.primary,
+      inactiveTrackColor: LynewedColors.gray200,
+      thumbColor: LynewedColors.primary,
+      overlayColor: LynewedColors.primary.withValues(alpha: 0.12),
+      trackHeight: 3.0,
+      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
+      overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
     );
   }
 }

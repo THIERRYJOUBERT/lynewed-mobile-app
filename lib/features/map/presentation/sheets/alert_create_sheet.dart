@@ -2,34 +2,19 @@
 /// 
 /// Sheet for professionals to create or edit alerts.
 /// Phase 6: 4 structured alert types (backup_needed, gear_emergency, team_member, emergency_help)
-/// Uses Lynewed Design System for consistent styling.
+/// Refactored to use Lynewed Design System Widgets (v2.0).
 library;
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '/core/design/design.dart';
+import '/core/design/widgets/widgets.dart';
 import '/compo_finaux/address_search/address_search_widget.dart';
+import '/backend/schema/structs/index.dart';
 import '../../domain/entities/alert_details.dart';
 import '../../domain/entities/professional_details.dart';
 import '../../data/datasources/supabase_map_datasource.dart';
-
-// Design System color aliases for cleaner code
-const _white = Colors.white;
-const _gray100 = LynewedColors.gray100;
-const _gray200 = LynewedColors.gray200;
-const _gray300 = LynewedColors.gray300;
-const _textPrimary = LynewedColors.textPrimary;
-const _textSecondary = LynewedColors.textSecondary;
-const _primary = LynewedColors.primary;
-
-// Button text style (not in Design System yet)
-const _buttonTextStyle = TextStyle(
-  fontFamily: 'Haas Grot Text Trial',
-  fontSize: 14.0,
-  fontWeight: FontWeight.w500,
-  color: Colors.white,
-);
 
 /// Alert create/edit bottom sheet
 class AlertCreateSheet extends StatefulWidget {
@@ -123,115 +108,211 @@ class _AlertCreateSheetState extends State<AlertCreateSheet> {
     super.dispose();
   }
 
+  // Allowed radius steps for the slider
+  static const List<int> _allowedRadii = [10, 20, 30, 50, 100];
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.9,
-      ),
-      decoration: const BoxDecoration(
-        color: _white,
-        borderRadius: LynewedBorders.sheetBorderRadius,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+    return LynewedSheet(
+      title: _isEditing ? 'Edit Alert' : 'Create Alert',
+      onClose: () => Navigator.of(context).pop(),
+      bottomAction: Column(
         children: [
-          _buildHeader(),
-          Flexible(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: LynewedSpacing.xl,
-                vertical: LynewedSpacing.md,
-              ),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildAlertTypeSection(),
-                    const SizedBox(height: LynewedSpacing.xl),
-                    _buildTitleField(),
-                    const SizedBox(height: LynewedSpacing.lg),
-                    _buildMessageField(),
-                    const SizedBox(height: LynewedSpacing.xl),
-                    _buildEventDateSection(),
-                    const SizedBox(height: LynewedSpacing.xl),
-                    _buildLocationField(),
-                    const SizedBox(height: LynewedSpacing.xl),
-                    _buildProfessionSection(),
-                    const SizedBox(height: LynewedSpacing.xl),
-                    _buildRadiusField(),
-                    const SizedBox(height: LynewedSpacing.xxl),
-                    if (_errorMessage != null) _buildErrorMessage(),
-                    _buildActionButtons(),
-                    const SizedBox(height: LynewedSpacing.lg),
-                  ],
-                ),
-              ),
-            ),
+          LynewedButton(
+            text: _isEditing ? 'Update Alert' : 'Create Alert',
+            onPressed: _isLoading ? null : _saveAlert,
+            isLoading: _isLoading,
+            width: double.infinity,
           ),
+          if (_isEditing) ...[
+            const SizedBox(height: 12),
+            LynewedButton(
+              text: 'Delete Alert',
+              onPressed: _isDeleting ? null : _deleteAlert,
+              isLoading: _isDeleting,
+              type: LynewedButtonType.destructive,
+              width: double.infinity,
+            ),
+          ],
         ],
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (_errorMessage != null) _buildErrorBanner(),
+
+            // Alert Type Section
+            _buildSectionTitle('Alert Type *'),
+            _buildAlertTypeDropdown(),
+            const SizedBox(height: 30),
+
+            // Title Section
+            LynewedTextField(
+              controller: _titleController,
+              label: 'Title *',
+              hint: 'Ex: Photographer needed for Dec 12',
+              maxLength: 100,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Title is required';
+                }
+                if (value.trim().length < 5) {
+                  return 'Title must be at least 5 characters';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 30),
+
+            // Description Section
+            LynewedTextField(
+              controller: _messageController,
+              label: 'Description',
+              hint: 'Provide more details about your request...',
+              maxLines: 4,
+              maxLength: 500,
+            ),
+            const SizedBox(height: 30),
+
+            // Event Date Section
+            _buildSectionTitle('Event Date *'),
+            _buildDateInput(
+              date: _eventDate,
+              placeholder: 'Select date',
+              onTap: _selectEventDate,
+            ),
+            const SizedBox(height: 30),
+
+            // Location Section
+            _buildSectionTitle('Location *'),
+            AddressSearchWidget(
+              hintText: 'Search city or address...',
+              initialValue: _locationController.text,
+              locale: 'fr',
+              useOverlay: true,
+              suggestionsPosition: SuggestionsPosition.below,
+              onAddressSelected: (PlaceDetailsDataStruct details) {
+                setState(() {
+                  _locationController.text = details.formattedAddress;
+                  if (details.coords != null) {
+                    _locationLat = details.coords!.latitude;
+                    _locationLng = details.coords!.longitude;
+                  }
+                });
+              },
+              onAddressCleared: () {
+                setState(() {
+                  _locationController.clear();
+                  _locationLat = null;
+                  _locationLng = null;
+                });
+              },
+            ),
+            if (_locationController.text.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _buildLocationStatus(),
+            ],
+            const SizedBox(height: 30),
+
+            // Profession Section
+            _buildSectionTitle('Profession Needed'),
+            _buildProfessionSelection(),
+            const SizedBox(height: 30),
+
+            // Search Radius Section
+            _buildSectionTitle('Search Radius'),
+            LynewedSlider(
+              value: _radiusKm,
+              steps: _allowedRadii,
+              suffix: 'km',
+              onChanged: (value) => setState(() => _radiusKm = value),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.all(LynewedSpacing.md),
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: _gray200, width: 1),
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Text(
+        title,
+        style: LynewedTextStyles.bodyLarge.copyWith(
+          fontWeight: FontWeight.w600,
         ),
+      ),
+    );
+  }
+
+  Widget _buildErrorBanner() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: LynewedColors.error.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: LynewedColors.error.withOpacity(0.3)),
       ),
       child: Row(
         children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.close, color: _gray100),
-          ),
+          const Icon(Icons.error_outline, color: LynewedColors.error, size: 20),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
-              _isEditing ? 'Edit Alert' : 'Create Alert',
-              style: LynewedTextStyles.headlineMedium,
-              textAlign: TextAlign.center,
+              _errorMessage!,
+              style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.error),
             ),
           ),
-          const SizedBox(width: 48), // Balance the close button
+          IconButton(
+            icon: const Icon(Icons.close, size: 16),
+            onPressed: () => setState(() => _errorMessage = null),
+            color: LynewedColors.error,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildAlertTypeSection() {
+  Widget _buildAlertTypeDropdown() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Alert Type',
-          style: LynewedTextStyles.labelMedium.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: LynewedSpacing.sm),
         Container(
+          height: 48,
           decoration: BoxDecoration(
-            border: Border.all(color: _gray300),
-            borderRadius: LynewedBorders.inputBorderRadius,
+            border: Border.all(color: LynewedColors.gray200),
+            borderRadius: BorderRadius.circular(4),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<AlertType>(
               value: _selectedAlertType,
               isExpanded: true,
-              padding: const EdgeInsets.symmetric(
-                horizontal: LynewedSpacing.md,
-                vertical: LynewedSpacing.xs,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              borderRadius: BorderRadius.circular(4),
+              style: LynewedTextStyles.bodyMedium.copyWith(
+                fontWeight: FontWeight.w300,
               ),
-              borderRadius: LynewedBorders.inputBorderRadius,
               items: AlertType.values
                   .where((t) => t != AlertType.other)
                   .map((type) => DropdownMenuItem(
                         value: type,
-                        child: _buildAlertTypeItem(type),
+                        child: Row(
+                          children: [
+                            Icon(_getAlertTypeIcon(type), size: 20, color: LynewedColors.textPrimary),
+                            const SizedBox(width: 8),
+                            Text(
+                              type.displayName,
+                              style: LynewedTextStyles.bodyMedium.copyWith(
+                                fontWeight: FontWeight.w300,
+                              ),
+                            ),
+                          ],
+                        ),
                       ))
                   .toList(),
               onChanged: (value) {
@@ -242,38 +323,12 @@ class _AlertCreateSheetState extends State<AlertCreateSheet> {
             ),
           ),
         ),
-        const SizedBox(height: LynewedSpacing.xs),
+        const SizedBox(height: 8),
         Text(
           _selectedAlertType.description,
-          style: LynewedTextStyles.bodySmall.copyWith(
-            color: _textSecondary,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAlertTypeItem(AlertType type) {
-    return Row(
-      children: [
-        Icon(
-          _getAlertTypeIcon(type),
-          size: 20,
-          color: _textPrimary,
-        ),
-        const SizedBox(width: LynewedSpacing.sm),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                type.displayName,
-                style: LynewedTextStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+          style: LynewedTextStyles.labelSmall.copyWith(
+            color: LynewedColors.textSecondary,
+            fontWeight: FontWeight.w300,
           ),
         ),
       ],
@@ -295,140 +350,40 @@ class _AlertCreateSheetState extends State<AlertCreateSheet> {
     }
   }
 
-  Color _getAlertTypeColor(AlertType type) => _textPrimary; // Unused but kept for interface compatibility
-
-  Widget _buildTitleField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Title',
-          style: LynewedTextStyles.labelMedium.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: LynewedSpacing.sm),
-        TextFormField(
-          controller: _titleController,
-          decoration: InputDecoration(
-            hintText: 'Ex: Photographer needed for Dec 12',
-            hintStyle: LynewedTextStyles.bodyMedium.copyWith(
-              color: _gray300,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: _gray200),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: _gray200),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: _textPrimary),
-            ),
-            contentPadding: const EdgeInsets.all(LynewedSpacing.md),
-          ),
-          style: LynewedTextStyles.bodyMedium,
-          maxLength: 100,
-          validator: (value) {
-            if (value == null || value.trim().isEmpty) {
-              return 'Title is required';
-            }
-            if (value.trim().length < 5) {
-              return 'Title must be at least 5 characters';
-            }
-            return null;
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMessageField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Description',
-          style: LynewedTextStyles.labelMedium.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: LynewedSpacing.sm),
-        TextFormField(
-          controller: _messageController,
-          decoration: InputDecoration(
-            hintText: 'Provide more details about your request...',
-            hintStyle: LynewedTextStyles.bodyMedium.copyWith(
-              color: _gray300,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: _gray200),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: _gray200),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: _textPrimary),
-            ),
-            contentPadding: const EdgeInsets.all(LynewedSpacing.md),
-          ),
-          style: LynewedTextStyles.bodyMedium,
-          maxLines: 4,
-          maxLength: 500,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildEventDateSection() {
+  Widget _buildDateInput({
+    required DateTime? date,
+    required String placeholder,
+    required VoidCallback? onTap,
+  }) {
     final dateFormat = DateFormat('EEEE, MMMM d, yyyy');
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Event Date *',
-          style: LynewedTextStyles.labelMedium.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(4),
+      child: Container(
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          border: Border.all(color: LynewedColors.gray200),
+          borderRadius: BorderRadius.circular(4),
         ),
-        const SizedBox(height: LynewedSpacing.sm),
-        InkWell(
-          onTap: _selectEventDate,
-          borderRadius: BorderRadius.circular(8),
-          child: Container(
-            padding: const EdgeInsets.all(LynewedSpacing.md),
-            decoration: BoxDecoration(
-              border: Border.all(color: _gray200),
-              borderRadius: BorderRadius.circular(8),
+        child: Row(
+          children: [
+            Icon(
+              Icons.calendar_today_outlined,
+              size: 18,
+              color: date != null ? LynewedColors.textPrimary : LynewedColors.textSecondary,
             ),
-            child: Row(
-              children: [
-                const Icon(Icons.calendar_today_outlined, color: _textPrimary),
-                const SizedBox(width: LynewedSpacing.sm),
-                Expanded(
-                  child: Text(
-                    _eventDate != null
-                        ? dateFormat.format(_eventDate!)
-                        : 'Select date',
-                    style: LynewedTextStyles.bodyMedium.copyWith(
-                      color: _eventDate != null
-                          ? _textPrimary
-                          : _textSecondary,
-                    ),
-                  ),
-                ),
-                const Icon(Icons.chevron_right, color: _textSecondary),
-              ],
+            const SizedBox(width: 8),
+            Text(
+              date != null ? dateFormat.format(date) : placeholder,
+              style: LynewedTextStyles.bodyMedium.copyWith(
+                color: date != null ? LynewedColors.textPrimary : LynewedColors.textSecondary,
+                fontWeight: FontWeight.w300,
+              ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -443,10 +398,8 @@ class _AlertCreateSheetState extends State<AlertCreateSheet> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: _primary,
-              onPrimary: _white,
-              surface: _white,
-              onSurface: _textPrimary,
+              primary: LynewedColors.primary,
+              onPrimary: LynewedColors.textOnPrimary,
             ),
           ),
           child: child!,
@@ -458,229 +411,73 @@ class _AlertCreateSheetState extends State<AlertCreateSheet> {
     }
   }
 
-  Widget _buildProfessionSection() {
+  Widget _buildLocationStatus() {
+    final hasLocation = _locationLat != null && _locationLng != null;
+    return Row(
+      children: [
+        Icon(
+          hasLocation ? Icons.check_circle : Icons.warning_amber_rounded,
+          size: 16,
+          color: hasLocation ? LynewedColors.success : LynewedColors.warning,
+        ),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            hasLocation
+                ? 'Location confirmed - alert will appear on map'
+                : 'Please select an address from suggestions',
+            style: LynewedTextStyles.labelSmall.copyWith(
+              color: hasLocation ? LynewedColors.success : LynewedColors.warning,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfessionSelection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Profession Needed',
-          style: LynewedTextStyles.labelMedium.copyWith(
-            fontWeight: FontWeight.w600,
+        if (!_anyProfession && _selectedProfession != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Text(
+              '1 selected',
+              style: LynewedTextStyles.labelSmall.copyWith(
+                color: LynewedColors.textSecondary,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: LynewedSpacing.sm),
         Wrap(
-          spacing: 8.0,
-          runSpacing: 8.0,
+          spacing: 8,
+          runSpacing: 8,
           children: [
-            _buildProfessionChip(
+            LynewedChip(
               label: 'Any Profession',
-              isSelected: _anyProfession,
-              onTap: () {
+              selected: _anyProfession,
+              onSelected: (selected) {
                 setState(() {
                   _anyProfession = true;
                   _selectedProfession = null;
                 });
               },
             ),
-            ...Profession.values
-                .where((p) => p != Profession.other)
-                .map((profession) => _buildProfessionChip(
-                      label: profession.displayName,
-                      isSelected: !_anyProfession && _selectedProfession == profession,
-                      onTap: () {
-                        setState(() {
-                          _anyProfession = false;
-                          _selectedProfession = profession;
-                        });
-                      },
-                    )),
+            ...Profession.values.where((p) => p != Profession.other).map((profession) {
+              return LynewedChip(
+                label: profession.displayName,
+                selected: !_anyProfession && _selectedProfession == profession,
+                onSelected: (selected) {
+                  setState(() {
+                    _anyProfession = false;
+                    _selectedProfession = profession;
+                  });
+                },
+              );
+            }),
           ],
         ),
-      ],
-    );
-  }
-
-  Widget _buildProfessionChip({
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return FilterChip(
-      label: Text(
-        label,
-        style: LynewedTextStyles.bodySmall.copyWith(
-          color: isSelected ? _white : _textPrimary,
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-        ),
-      ),
-      selected: isSelected,
-      showCheckmark: false,
-      onSelected: (_) => onTap(),
-      backgroundColor: _gray200,
-      selectedColor: _primary,
-      side: BorderSide.none,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      visualDensity: VisualDensity.compact,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-    );
-  }
-
-  Widget _buildLocationField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Location',
-          style: LynewedTextStyles.labelMedium.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: LynewedSpacing.sm),
-        AddressSearchWidget(
-          initialValue: _locationController.text,
-          hintText: 'Search city or address',
-          onAddressSelected: (address) {
-            if (address != null && address.hasCoords()) {
-              setState(() {
-                _locationController.text = address.formattedAddress;
-                _locationLat = address.coords?.latitude;
-                _locationLng = address.coords?.longitude;
-              });
-            }
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRadiusField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Search Radius: $_radiusKm km',
-          style: LynewedTextStyles.labelMedium.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: LynewedSpacing.sm),
-        SliderTheme(
-          data: SliderTheme.of(context).copyWith(
-            activeTrackColor: _primary,
-            inactiveTrackColor: _gray200,
-            thumbColor: _primary,
-            overlayColor: _primary.withAlpha(32),
-            trackHeight: 4.0,
-            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10.0),
-            overlayShape: const RoundSliderOverlayShape(overlayRadius: 20.0),
-          ),
-          child: Slider(
-            value: _radiusKm.toDouble(),
-            min: 10,
-            max: 100,
-            divisions: 9,
-            onChanged: (value) {
-              setState(() => _radiusKm = value.round());
-            },
-          ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [10, 30, 50, 70, 100].map((r) => Text(
-            '${r}km',
-            style: LynewedTextStyles.labelSmall.copyWith(
-              color: _textSecondary,
-            ),
-          )).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildErrorMessage() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: LynewedSpacing.md),
-      padding: const EdgeInsets.all(LynewedSpacing.md),
-      decoration: BoxDecoration(
-        color: Colors.red.shade50,
-        borderRadius: LynewedBorders.cardBorderRadius,
-        border: Border.all(color: Colors.red.shade200),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
-          const SizedBox(width: LynewedSpacing.sm),
-          Expanded(
-            child: Text(
-              _errorMessage!,
-              style: LynewedTextStyles.bodySmall.copyWith(
-                color: Colors.red.shade700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Column(
-      children: [
-        SizedBox(
-          width: double.infinity,
-          height: LynewedSpacing.buttonHeight,
-          child: ElevatedButton(
-            onPressed: _isLoading ? null : _saveAlert,
-            style: LynewedComponentStyles.primaryButton(),
-            child: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(_white),
-                    ),
-                  )
-                : Text(
-                    _isEditing ? 'Update Alert' : 'Create Alert',
-                    style: _buttonTextStyle,
-                  ),
-          ),
-        ),
-        if (_isEditing) ...[
-          const SizedBox(height: LynewedSpacing.sm),
-          SizedBox(
-            width: double.infinity,
-            height: LynewedSpacing.buttonHeight,
-            child: OutlinedButton(
-              onPressed: _isDeleting ? null : _deleteAlert,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.red,
-                side: const BorderSide(color: Colors.red),
-                shape: RoundedRectangleBorder(
-                  borderRadius: LynewedBorders.buttonBorderRadius,
-                ),
-              ),
-              child: _isDeleting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
-                      ),
-                    )
-                  : Text(
-                      'Delete Alert',
-                      style: _buttonTextStyle.copyWith(color: Colors.red),
-                    ),
-            ),
-          ),
-        ],
       ],
     );
   }

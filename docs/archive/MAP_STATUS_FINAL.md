@@ -1,12 +1,12 @@
 # Map Module Status
 
-**Dernière MAJ:** 2025-11-29 10:50  
-**Phase Actuelle:** ✅ Phase 6 Terminée - Prêt pour Phase 7 (Android Tests)  
+**Dernière MAJ:** 2025-12-01 10:55  
+**Phase Actuelle:** ✅ Phase 7.2 Terminée - Prêt pour Phase 7.3 (UI/UX Final)  
 **Plan détaillé:** `docs/MAP_REFACTORING_PLAN.md`
 
 ---
 
-## ✅ TRAVAIL TERMINÉ (Phases 1-6)
+## ✅ TRAVAIL TERMINÉ (Phases 1-7.2)
 
 | Phase | Description | Fichiers clés |
 |-------|-------------|---------------|
@@ -16,6 +16,8 @@
 | 4 | Enums | `map_marker.dart` (4→3 valeurs) |
 | 5 | **Wedding System** | `weddings` table, `wedding_create_sheet.dart` |
 | 6 | **Alert System** | `alert_type` enum, `alert_create_sheet.dart` |
+| 7.1 | **Sécurité Supabase** | RLS audit, RPCs sécurisés, contraintes |
+| 7.2 | **Marché Indien** | Séparation IN/GLOBAL, devises globales |
 
 **Phase 6 - Complétée (2025-11-29):**
 - ✅ Enum `alert_type` créé (4 valeurs: backup_needed, gear_emergency, team_member, emergency_help)
@@ -29,18 +31,18 @@
 
 ---
 
-## 🔄 TRAVAIL RESTANT (Phases 7-8)
+## 🔄 TRAVAIL RESTANT (Phases 7.3-8)
 
 | Phase | Description | Durée | Status |
 |-------|-------------|-------|--------|
-| 7 | Android Tests | 4-6h | 🔴 PRIORITÉ |
-| 8 | Documentation Finale | 6-8h | 🟡 MOYENNE |
+| 7.3 | UI/UX Final | 2-3h | 🟡 MOYENNE |
+| 8 | Documentation & Cleanup | 3-4h | 🟡 MOYENNE |
 
 ```
-Phase 6 (Alertes) ✅ ──► Phase 7 (Android) ──► Phase 8 (Docs)
+Phase 7.1 (Sécurité) ✅ ──► Phase 7.2 (Marché) ✅ ──► Phase 7.3 (UI/UX) ──► Phase 8 (Docs)
 ```
 
-**Estimation restante:** 10-14h (Phases 7-8)
+**Estimation restante:** 5-7h
 
 ---
 
@@ -63,11 +65,15 @@ Phase 6 (Alertes) ✅ ──► Phase 7 (Android) ──► Phase 8 (Docs)
 - `lib/features/map/presentation/sheets/wedding_create_sheet.dart` - Création mariage
 - `lib/features/map/presentation/sheets/alert_create_sheet.dart` - Création alerte
 - `lib/features/map/data/datasources/supabase_map_datasource.dart` - RPCs wedding + alerts
+- `lib/core/constants/currencies.dart` - Système de devises global
+- `lib/core/widgets/currency_dropdown.dart` - Widget devise réutilisable
 
 **Backend:**
 - Table `weddings` - Hub central per bride
 - Table `wedding_participants` - Pros confirmés
 - RPC `search_map_bundle` - Retourne type 'wedding'
+- Migration `20251201093000_security_phase7_map_audit.sql` - Sécurité
+- Migration `20251201100500_phase7_2_indian_market_separation.sql` - Marché
 
 **Docs:**
 - `MAP_REFACTORING_PLAN.md` - Plan détaillé

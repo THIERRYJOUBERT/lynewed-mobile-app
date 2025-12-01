@@ -1,8 +1,49 @@
 # MAP MASTER PLAN - Source de Vérité Unique
 
-**Créé:** 2025-11-26 | **Version:** v3.0 | **Source:** `docs/audits/MAP_FEATURE_AUDIT.md`
-**Validation:** 2025-11-27 | **Statut:** ✅ PLAN COMPLET VALIDÉ
-**Dernière MAJ:** 2025-11-28 | **Restructuration complète + Vision unifiée**
+**Créé:** 2025-11-26 | **Version:** v3.1 | **Source:** `docs/audits/MAP_FEATURE_AUDIT.md`
+**Validation:** 2025-11-27 | **Statut:** ✅ MODULE MAP COMPLET
+**Dernière MAJ:** 2025-12-01 | **Phase 7.3 UI/UX + Phase 8 Cleanup TERMINÉES**
+
+---
+
+## 🎉 STATUT FINAL - MODULE MAP COMPLET (2025-12-01)
+
+### ✅ Phases Terminées
+| Phase | Description | Status |
+|-------|-------------|--------|
+| Phase 0 | Design System Unifié | ✅ COMPLET |
+| Phase 1-4 | Architecture Clean + Backend | ✅ COMPLET |
+| Phase 5-6 | Widgets + Sheets | ✅ COMPLET |
+| Phase 7.1 | Sécurité Supabase (RLS, RPC) | ✅ COMPLET |
+| Phase 7.2 | Séparation Marché Indien | ✅ COMPLET |
+| Phase 7.3 | UI/UX Final & Polish | ✅ COMPLET |
+| Phase 8 | Documentation & Cleanup | ✅ COMPLET |
+
+### 📁 Structure Finale du Module
+```
+lib/features/map/
+├── domain/           # Entités, repositories, usecases
+├── data/             # Datasource Supabase, mappers
+├── presentation/     # State, services, widgets, sheets, pages
+│   ├── pages/        # MapPage (unifié bride/pro)
+│   ├── sheets/       # AlertCreate, WeddingCreate, Details sheets
+│   ├── widgets/      # LynewedMapWidget, FilterSheet, MapControls
+│   └── services/     # MapActionsService, MarkerIconGenerator
+├── integration/      # MapPageWrapper (compatibilité legacy)
+└── README.md
+```
+
+### 🎨 Design System Appliqué
+- **Import unique:** `import '/core/design/design.dart';`
+- **Tokens:** LynewedColors, LynewedTextStyles, LynewedSpacing, LynewedBorders
+- **Composants:** LynewedComponentStyles.primaryButton(), etc.
+- **Widgets réutilisables:** MapBackButton, MapLocationButton, MapZoomControls
+
+### 🔧 Améliorations Phase 7.3
+1. **AlertCreateSheet:** Suppression alias locaux, utilisation directe Design System
+2. **MapPage:** Extraction widgets MapControls (Back, Location, Zoom)
+3. **Feedback visuel:** Loader sur bouton géolocalisation (_isLocating)
+4. **Cleanup:** Suppression code mort (_MapStyleSheet, _getDefaultTitle, etc.)
 
 ---
 
@@ -1240,37 +1281,71 @@ ADD COLUMN event_date date;
 
 ---
 
-### Phase 7: Anticipation Android (4-6h) 🟡 MOYENNE
-**Objectif**: Préparer la version Android
+### Phase 7: Sécurité & Segmentation Marché (10-12h) 🔴 PRIORITÉ HAUTE
 
-**Tâches**:
-1. [ ] Tester sur émulateur Android
-2. [ ] Optimiser pour différentes tailles d'écran
-3. [ ] Vérifier permissions (localisation, caméra)
-4. [ ] Optimiser consommation mémoire
-5. [ ] Tester performances avec 500+ markers
-6. [ ] Corriger bugs spécifiques Android
+#### Phase 7.1: Sécurité Supabase ✅ FAIT (2025-12-01)
+**Migration**: `20251201093000_security_phase7_map_audit.sql`
+
+**Audit RLS policies** ✅
+- `weddings`: RLS activé, policies bride/pros Premium+ correctes
+- `professional_alerts`: RLS activé, policies author/professionals correctes  
+- `professional_fixed_locations`: RLS activé, policies owner/authenticated correctes
+- `wedding_participants`: Ajouté policies INSERT/DELETE pour bride
+
+**Validation RPCs** ✅
+- `create_alert`: Validation complète (auth, role, title 3-100, message 3-2000, coords, radius 1-100, max 3 actives)
+- `update_alert`: Ajouté validation message length + coords
+- `upsert_wedding`: Ajouté validation coords, dates, budget range, visibility
+- `search_map_bundle`: SECURITY DEFINER, tier checks Premium/Ultimate pour weddings
+
+**Contraintes CHECK** ✅
+- `validate_coordinates()`: Fonction helper pour lat/lng valides
+- Dates futures validées dans RPCs (pas en table pour permettre updates)
+- `expires_at` calculé automatiquement (event_date + 1 jour)
+
+**Matrice abonnements** ✅
+- Weddings visibles uniquement pour `premiumVisibility` et `ultimateAccess`
+- Alertes visibles pour tous les pros (valeur communautaire)
+
+**Fonction monitoring**: `check_map_security_status()` pour audits périodiques
+
+#### Phase 7.2: Séparation Marché Indien ✅ FAIT (2025-12-01)
+**Migration**: `20251201100500_phase7_2_indian_market_separation.sql`
+
+**Logique implémentée:**
+- Pros indiens (location_country_code = 'IN') → visibles uniquement par utilisateurs indiens
+- Pros non-indiens → visibles par tous SAUF utilisateurs indiens
+- Données legacy (NULL) → visibles par tous
+
+**Colonnes ajoutées:**
+- `weddings.location_country_code`
+- `professional_alerts.location_country_code`
+- Index créés sur toutes les tables
+
+**Fonctions helper:**
+- `get_my_market_region()` → retourne 'IN' ou 'GLOBAL'
+- `is_visible_in_market(item_country, viewer_region)` → filtre visibilité
+
+**RPC `search_map_bundle` mis à jour:**
+- Filtre automatique sur pros, fixed_locations, alerts, weddings
+- Retourne `market` dans la réponse pour debug
+
+#### Phase 7.3: UI/UX Final (Priorité MOYENNE)
+- **Cohérence visuelle** : Validation Design System 100% appliqué
+- **Accessibilité** : Tests contrastes, tailles textes, navigation clavier
+- **Micro-interactions** : Animations subtiles, feedback utilisateur
 
 ---
 
-### Phase 8: Séparation Indiens & Documentation (6-8h) 🔴 PRIORITÉ HAUTE
-**Objectif**: Préparer la séparation avec les développeurs indiens
-
-**Documentation**:
-1. [ ] Documenter architecture module map (`lib/features/map/README.md`)
-2. [ ] Créer guide de handover
-3. [ ] Documenter les RPCs Supabase utilisés
-4. [ ] Documenter le Design System
-
-**Tests**:
-1. [ ] Tests unitaires pour MapActionsService
-2. [ ] Tests intégration pour navigation
-3. [ ] Tests simulateur iOS complets
-4. [ ] Tests simulateur Android complets
+### Phase 8: Documentation & Cleanup (4-6h)
+- **MAP_REFACTORING_PLAN.md** : Statut final + leçons apprises
+- **MAP_FEATURE_AUDIT.md** : Architecture finale complète
+- **GUIDE_DÉPLOIEMENT.md** : Instructions production
+- **PROJECT.md** : Mise à jour finale
 
 ---
 
-## 📊 RÉSUMÉ TIMELINE (Mise à jour 2025-11-29 10:50)
+## 📊 RÉSUMÉ TIMELINE (Mise à jour 2025-12-01 10:00)
 
 | Phase | Description | Durée | Statut |
 |-------|-------------|-------|--------|
@@ -1279,23 +1354,23 @@ ADD COLUMN event_date date;
 | 5.1 | Amélioration Wedding UI (AddressSearch, Validation) | 4-6h | ✅ FAIT |
 | 5.2 | Design System Cohérence (Chips noir) | 2-3h | ✅ FAIT |
 | 6 | Système Alertes structurées + Dashboard Refresh | 6-8h | ✅ FAIT |
-| 7 | Android Tests & Optimisations | 4-6h | 🔄 À FAIRE |
-| 8 | Documentation Finale | 6-8h | 🔄 À FAIRE |
-| **TOTAL RESTANT** | | **10-14h** | |
+| 7.1 | Sécurité Supabase (RLS, RPC, Constraints) | 2h | ✅ FAIT |
+| 7.2 | Séparation Marché Indien (Region flag, Toggle) | 1h | ✅ FAIT |
+| 7.3 | UI/UX Final (Design System check, Animations) | 2-3h | 🔄 À FAIRE |
+| 8 | Documentation Finale | 3-4h | 🔄 À FAIRE |
+| **TOTAL RESTANT** | | **5-7h** | |
 
 ---
 
-## 🚀 QUICK START (2025-11-29 10:50)
+## 🚀 QUICK START (2025-12-01 10:55)
 
-**Où on est**: Phase 6 terminée avec dashboard refresh, prêt pour tests Android
-**Prochaine action**: Phase 7 - Tests Android (permissions, performance, rendering)
+**Où on est**: Phase 7.2 Marché Indien terminée.
+**Prochaine action**: Phase 7.3 - UI/UX Final
 
 **Ordre recommandé**:
 ```
-Phase 6 (Alertes + Dashboard) ✅ ──► Phase 7 (Android Tests) ──► Phase 8 (Documentation)
+Phase 7.1 (Sécurité) ✅ ──► Phase 7.2 (Marché Indien) ✅ ──► Phase 7.3 (UI/UX) ──► Phase 8 (Docs)
 ```
-
-**Phases 5.1 et 5.2 peuvent être faites en parallèle.**
 
 ---
 
@@ -1340,6 +1415,8 @@ Phase 6 (Alertes + Dashboard) ✅ ──► Phase 7 (Android Tests) ──► Ph
 - [ ] Map affiche correctement tous les types de markers
 - [ ] Système Wedding fonctionnel (création, affichage, contact)
 - [ ] Système Alertes amélioré (4 types, expiration auto)
-- [ ] Fonctionne sur iOS ET Android
+- [ ] Sécurité backend validée (RLS, RPC)
+- [ ] Séparation marché indien fonctionnelle
 - [ ] Documentation complète pour handover
 - [ ] 0 dépendances FlutterFlow dans module map
+

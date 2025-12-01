@@ -86,8 +86,8 @@ class DesignSystemTestWidget extends StatelessWidget {
           style: theme.labelMedium,
         ),
         Text(
-          'Caption (9px)',
-          style: theme.caption,
+          'Caption (10px)',
+          style: theme.labelSmall,
         ),
         Text(
           'Text on Dark Background',

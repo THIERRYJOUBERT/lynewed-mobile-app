@@ -1,49 +1,65 @@
 # Lynewed Design System - Guide Unifié
 
-**Version:** 1.0  
-**Date:** 2025-11-27  
-**Objectif:** Documenter et unifier l'identité visuelle existante du MVP approuvée par Thierry  
-**Philosophie:** "Documenter & Unifier" PAS "Redéfinir"
+**Version:** 2.0  
+**Date:** 2025-12-01  
+**Objectif:** Design System raffiné pour élégance et cohérence visuelle  
+**Philosophie:** "Fins et Élégants" - Typographie légère (w400-w500 max)
 
 ---
 
 ## 🎯 Principes Fondamentaux
 
 ### Design Philosophy
-- **Minimalisme Élégant**: Noir et blanc dominants avec touches de gris
-- **Clarté Hiérarchique**: Typographie forte avec contrastes nets
-- **Design Carré**: Bordures droites (0.0) pour les boutons, arrondies (24.0) pour les sheets
-- **Professionnel Luxe**: Esthétique haut de gamme pour l'industrie du mariage
+- **Élégance Minimale**: Typographie fine et légère (éviter le bold excessif)
+- **Hiérarchie Subtile**: Différenciation par taille, pas par graisse
+- **Arrondis Subtils**: **4px maximum** pour tous les composants
+- **Noir & Blanc**: Couleurs uniquement pour états (succès, erreur)
 
 ### Font Family Unifiée
 ```
 Haas Grot Text Trial - TOUTE la typographie
 ```
 
+### ⚠️ Règles Critiques
+1. **Poids max w500** pour tous les textes (sauf CTAs)
+2. **Border radius 4px** pour chips, inputs, cards
+3. **Border radius 24px** uniquement pour les sheets (top corners)
+
 ---
 
 ## 📝 Typographie Sémantique
 
-### Échelle Complète (basée sur l'usage réel MVP)
+### Styles Principaux (Extraits de la page Profile)
 
-| Token | Taille | Weight | Usage Context | Exemples MVP |
-|-------|--------|--------|---------------|-------------|
-| **displayLarge** | 64.0 | w600 | Titres hero | Pages d'accueil |
-| **displayMedium** | 44.0 | w600 | Gros titres | ONBOARDING |
-| **displaySmall** | 36.0 | w600 | Sous-titres hero | - |
-| **headlineLarge** | 32.0 | w600 | Titres sections | AuthWelcome, Onboarding |
-| **headlineMedium** | 28.0 | w600 | Titres secondaires | - |
-| **headlineSmall** | 24.0 | w600 | Sous-titres | - |
-| **titleLarge** | 22.0 | w600 | Titres cards | Onboarding |
-| **titleMedium** | 20.0 | w600 | Titres modules | FlutterFlowTheme |
-| **titleSmall** | 18.0 | w600 | Titres petits | Onboarding, Home |
-| **bodyLarge** | 16.0 | normal | Texte principal | Messages, Profile |
-| **bodyMedium** | 14.0 | normal | Texte secondaire | Boutons, descriptions |
-| **bodySmall** | 13.0 | normal | Petits textes | Onboarding |
-| **labelLarge** | 12.0 | normal | Labels, métadonnées | Edit Profile |
-| **labelMedium** | 11.0 | normal | Très petit texte | Home, Feed |
-| **labelSmall** | 10.0 | normal | Mini textes | Messages |
-| **caption** | 9.0 | normal | Légendes, timestamps | Messages |
+| Token | Taille | Weight | Usage |
+|-------|--------|--------|-------|
+| **sheetTitle** | 18px | w500 | Titres de sheets ("Create Alert", "Edit Wedding") |
+| **sectionTitle** | 16px | w500 | Titres de section de formulaire |
+| **bodyMedium** | 14px | w400 | Texte courant, list items |
+| **bodySmall** | 13px | w400 | Texte secondaire |
+| **labelSmall** | 10px | w400 | Captions, hints |
+| **buttonPrimary** | 16px | w500 | Texte de boutons (blanc sur noir) |
+| **chipText** | 14px | w400/w500 | Texte des chips |
+
+### Échelle Complète
+
+| Token | Taille | Weight | Usage Context |
+|-------|--------|--------|---------------|
+| **displayLarge** | 48px | w500 | Splash, hero |
+| **displayMedium** | 36px | w500 | Titres principaux |
+| **displaySmall** | 28px | w500 | Sous-titres hero |
+| **headlineLarge** | 24px | w500 | Titres de pages |
+| **headlineMedium** | 20px | w500 | Sections majeures |
+| **headlineSmall** | 18px | w500 | Sous-sections |
+| **titleLarge** | 18px | w500 | Headers de sheets |
+| **titleMedium** | 16px | w500 | Section headers |
+| **titleSmall** | 14px | w500 | Sous-titres |
+| **bodyLarge** | 16px | w400 | Texte principal |
+| **bodyMedium** | 14px | w400 | Texte standard |
+| **bodySmall** | 13px | w400 | Petits textes |
+| **labelLarge** | 12px | w400 | Labels |
+| **labelMedium** | 11px | w400 | Petits labels |
+| **labelSmall** | 10px | w400 | Captions |
 
 ### Couleurs de Texte
 
@@ -439,7 +455,26 @@ ElevatedButton(
 #### Bordures (patterns observés)
 - **0.0**: Boutons, cards (design carré)
 - **2.0**: Champs de formulaire
+- **4.0**: Chips (FilterChip, ChoiceChip)
 - **24.0**: Bottom sheets, modales
+
+### 🧩 Composants Standards (Map Refactoring v1.1)
+
+#### Chips (Filtres, Sélections)
+- **Forme**: Carré arrondi 4px (`BorderRadius.circular(4)`)
+- **Padding**: H:8px, V:6px (`EdgeInsets.symmetric(horizontal: 8, vertical: 6)`)
+- **État Sélectionné**: Fond Noir (`LynewedColors.primary`), Texte Blanc, Sans bordure
+- **État Non-Sélectionné**: Fond Gris (`LynewedColors.gray200`), Texte Noir, Sans bordure
+
+#### Titres de Section (Sheets)
+- **Style**: `LynewedTextStyles.bodyLarge` + `FontWeight.w600`
+- **Espacement**: `LynewedGap.verticalMd` (16px) après le titre
+- **Exemple**: "Professionals Needed *", "Search Radius", "Alert Type"
+
+#### Boutons Flottants (Map Controls)
+- **Fond**: Noir (`LynewedColors.primary`)
+- **Icône**: Blanc (`Colors.white`)
+- **Ombre**: `BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 8, offset: Offset(0, 2))`
 
 ---
 
@@ -484,6 +519,201 @@ MaterialApp(
 ### Documentation Complémentaire
 - `docs/App/APP_SOURCE_OF_TRUTH.md` - Architecture et flux applicatifs
 - `docs/App/ENUMS.md` - Énumérations et valeurs valides
+
+---
+
+## 📄 Sheet Patterns (Reference: wedding_create_sheet.dart)
+
+### Structure de Base
+
+```dart
+import '/core/design/design.dart';
+import '/core/design/widgets/widgets.dart';
+
+// Utiliser LynewedSheet comme wrapper
+return LynewedSheet(
+  title: 'Sheet Title',
+  onClose: () => Navigator.of(context).pop(),
+  bottomAction: LynewedButton(...), // Boutons en bas
+  child: Form(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Sections du formulaire
+      ],
+    ),
+  ),
+);
+```
+
+### Widgets Design System Disponibles
+
+| Widget | Usage | Import |
+|--------|-------|--------|
+| **LynewedSheet** | Wrapper de bottom sheet (80% max, scroll) | `widgets.dart` |
+| **LynewedButton** | Boutons (primary, secondary, ghost, destructive) | `widgets.dart` |
+| **LynewedTextField** | Champs texte avec label | `widgets.dart` |
+| **LynewedChip** | Chips sélectionnables | `widgets.dart` |
+| **LynewedSlider** | Slider single value avec bulle | `widgets.dart` |
+| **LynewedRangeSlider** | Slider range avec bulles | `widgets.dart` |
+
+### Règles de Typographie (Sheets)
+
+| Élément | FontWeight | Taille |
+|---------|------------|--------|
+| **Header title** | w500 | 20px |
+| **Section titles** | w600 | bodyLarge (16px) |
+| **Input text** | w300 | 14px |
+| **Chips text** | w300 | 14px |
+| **Button text** | w400 | 15px |
+| **Labels/hints** | w300 | 12px |
+| **Légendes chips** | w300 | labelSmall |
+
+### Espacements Standards (Sheets)
+
+| Élément | Espacement |
+|---------|------------|
+| **Entre titre section et contenu** | 10px |
+| **Entre sections** | 30px |
+| **Chips spacing** | 8px (horizontal & vertical) |
+| **Buttons gap** | 12px |
+
+### Pattern Section Title
+
+```dart
+Widget _buildSectionTitle(String title) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Text(
+      title,
+      style: LynewedTextStyles.bodyLarge.copyWith(
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  );
+}
+```
+
+### Pattern Chips avec Légende
+
+```dart
+// Section Professions avec compteur
+_buildSectionTitle('Professionals Needed *'),
+if (_selectedProfessions.isNotEmpty)
+  Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Text(
+      '${_selectedProfessions.length} selected',
+      style: LynewedTextStyles.labelSmall.copyWith(
+        color: LynewedColors.textSecondary,
+        fontWeight: FontWeight.w300,
+      ),
+    ),
+  ),
+Wrap(
+  spacing: 8,
+  runSpacing: 8,
+  children: items.map((item) => LynewedChip(
+    label: item.displayName,
+    selected: selectedItems.contains(item),
+    onSelected: (selected) { ... },
+  )).toList(),
+),
+```
+
+### Pattern Date Selector
+
+```dart
+Widget _buildDateInput({
+  required DateTime? date,
+  required String placeholder,
+  required VoidCallback? onTap,
+}) {
+  return InkWell(
+    onTap: onTap,
+    child: Container(
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        border: Border.all(color: LynewedColors.gray200),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.calendar_today_outlined, size: 18, 
+            color: date != null ? LynewedColors.textPrimary : LynewedColors.textSecondary),
+          const SizedBox(width: 8),
+          Text(
+            date != null ? dateFormat.format(date) : placeholder,
+            style: LynewedTextStyles.bodyMedium.copyWith(
+              color: date != null ? LynewedColors.textPrimary : LynewedColors.textSecondary,
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+```
+
+### Pattern Action Buttons (Bottom)
+
+```dart
+bottomAction: Column(
+  children: [
+    LynewedButton(
+      text: 'Primary Action',
+      onPressed: _isLoading ? null : _onSave,
+      isLoading: _isLoading,
+      width: double.infinity,
+    ),
+    if (_isEditing) ...[
+      const SizedBox(height: 12),
+      LynewedButton(
+        text: 'Delete',
+        onPressed: _isDeleting ? null : _onDelete,
+        isLoading: _isDeleting,
+        type: LynewedButtonType.destructive,
+        width: double.infinity,
+      ),
+    ],
+  ],
+),
+```
+
+### Pattern Error Banner
+
+```dart
+Widget _buildErrorBanner() {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 16),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: LynewedColors.error.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(4),
+      border: Border.all(color: LynewedColors.error.withOpacity(0.3)),
+    ),
+    child: Row(
+      children: [
+        Icon(Icons.error_outline, color: LynewedColors.error, size: 20),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            _errorMessage!,
+            style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.error),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.close, size: 16),
+          onPressed: () => setState(() => _errorMessage = null),
+          color: LynewedColors.error,
+        ),
+      ],
+    ),
+  );
+}
+```
 
 ---
 
