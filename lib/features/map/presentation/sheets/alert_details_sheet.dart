@@ -1,17 +1,30 @@
 /// Alert details sheet widget
 /// 
 /// Clean, modern sheet for displaying alert details.
-/// Replaces FlutterFlow's InfoAlertItemSheetWidget.
-/// Uses Lynewed Design System for consistent styling.
+/// Refactored to use LynewedDetailsSheet widget and Design System v2.
+/// 
+/// DESIGN SYSTEM v2 APPLIED:
+/// - FontWeight max w500 (except CTAs)
+/// - Border radius 4px for chips/badges
+/// - LynewedColors, LynewedTextStyles tokens
+/// - Reusable widgets: LynewedDetailsSheet, LynewedButton, etc.
+/// - Spacing: 10px label→content, 30px between sections
 library;
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '/core/design/design.dart';
+import '/core/design/widgets/widgets.dart';
 import '../../domain/entities/alert_details.dart';
 
 /// Alert details bottom sheet
+/// 
+/// Layout:
+/// - Header: Alert type icon + Title + Status badge
+/// - About section: Location & Time info + Message
+/// - Author section (if not own alert)
+/// - Action buttons: Delete (own) or Help (other)
 class AlertDetailsSheet extends StatelessWidget {
   const AlertDetailsSheet({
     super.key,
@@ -28,223 +41,87 @@ class AlertDetailsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: LynewedColors.background,
-        borderRadius: LynewedBorders.sheetBorderRadius,
-      ),
+    return LynewedDetailsSheet(
+      headerIcon: _getAlertTypeIcon(details.alertType),
+      headerIconColor: LynewedColors.primary,
+      titleWidget: _buildHeaderTitleRow(),
+      subtitle: _buildHeaderSubtitleRow(),
+      actions: _buildActionButtons(),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Handle bar
-          _buildHandleBar(),
+          // About section with location, time, and message
+          _buildAboutSection(),
           
-          // Content
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-              LynewedSpacing.xl,
-              0,
-              LynewedSpacing.xl,
-              LynewedSpacing.xl,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Alert type header
-                _buildAlertTypeHeader(),
-                LynewedGap.verticalLg,
-                
-                // Title and message
-                _buildTitleAndMessage(),
-                LynewedGap.verticalLg,
-                
-                // Location
-                if (details.locationLabel != null)
-                  _buildLocationRow(),
-                
-                // Time info
-                _buildTimeInfo(),
-                LynewedGap.verticalLg,
-                
-                // Author info (only show if not our own alert)
-                if (!details.isOwn) _buildAuthorInfo(),
-                if (!details.isOwn) LynewedGap.verticalXl,
-                
-                // Action buttons
-                _buildActionButtons(),
-              ],
-            ),
-          ),
+          // Author info (only for other's alerts)
+          if (!details.isOwn)
+            _buildAuthorSection(),
         ],
       ),
     );
   }
 
-  Widget _buildHandleBar() {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: LynewedSpacing.md),
-      width: 40,
-      height: 4,
-      decoration: BoxDecoration(
-        color: LynewedColors.gray200,
-        borderRadius: BorderRadius.circular(2),
-      ),
-    );
-  }
-
-  Widget _buildAlertTypeHeader() {
-    final color = _getAlertTypeColor(details.alertType);
-    
-    return Row(
-      children: [
-        Container(
-          padding: EdgeInsets.all(LynewedSpacing.md),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            _getAlertTypeIcon(details.alertType),
-            color: color,
-            size: 28, // Increased from 24 to match Wedding sheet
-          ),
-        ),
-        LynewedGap.horizontalLg, // Increased from Md to match Wedding sheet
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                details.alertType.displayName,
-                style: LynewedTextStyles.sheetTitle.copyWith(
-                  color: color,
-                ),
-              ),
-              Text(
-                details.alertType.description,
-                style: LynewedTextStyles.bodyMedium.copyWith( // Increased from bodySmall
-                  color: LynewedColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Status badge
-        _buildStatusBadge(),
-      ],
-    );
-  }
-
-  Widget _buildStatusBadge() {
+  /// Header title row: Title + Status badge
+  Widget _buildHeaderTitleRow() {
     final isActive = details.isActive;
     
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: LynewedSpacing.sm,
-        vertical: LynewedSpacing.xxs,
-      ),
-      decoration: BoxDecoration(
-        color: isActive 
-            ? LynewedColors.success.withValues(alpha: 0.1) 
-            : LynewedColors.gray200,
-        borderRadius: BorderRadius.circular(LynewedComponentStyles.chipBorderRadius),
-      ),
-      child: Text(
-        isActive ? 'Active' : 'Expired',
-        style: LynewedTextStyles.labelSmall.copyWith(
-          color: isActive ? LynewedColors.success : LynewedColors.textSecondary,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTitleAndMessage() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Only show title if it's different from the alert type display name
-        // and not the raw alert code (e.g., "backup_needed", "gear_emergency")
-        if (details.displayTitle != details.alertType.displayName &&
-            details.displayTitle != details.alertType.toBackendValue)
-          Text(
-            details.displayTitle,
-            style: LynewedTextStyles.sectionTitle,
-          ),
-        if (details.message?.isNotEmpty == true) ...[
-          LynewedGap.verticalSm,
-          Text(
-            details.message!,
-            style: LynewedTextStyles.bodyMedium.copyWith(
-              color: LynewedColors.textPrimary,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildLocationRow() {
-    return Padding(
-      padding: EdgeInsets.only(bottom: LynewedSpacing.md),
-      child: Row(
-        children: [
-          Icon(
-            Icons.location_on_outlined,
-            size: 18,
-            color: LynewedColors.textSecondary,
-          ),
-          LynewedGap.horizontalSm,
-          Expanded(
-            child: Text(
-              details.locationLabel!,
-              style: LynewedTextStyles.bodyMedium.copyWith(
-                color: LynewedColors.textPrimary,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimeInfo() {
     return Row(
       children: [
-        // Start time
-        if (details.startAt != null) ...[
-          Icon(
-            Icons.schedule_outlined,
-            size: 18,
-            color: LynewedColors.textSecondary,
+        Expanded(
+          child: Text(
+            details.alertType.displayName,
+            style: LynewedTextStyles.sheetTitle.copyWith(
+              color: LynewedColors.primary,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          LynewedGap.horizontalSm,
+        ),
+        const SizedBox(width: 8),
+        // Status badge
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: isActive 
+                ? LynewedColors.success.withValues(alpha: 0.1) 
+                : LynewedColors.gray200,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            isActive ? 'Active' : 'Expired',
+            style: LynewedTextStyles.labelSmall.copyWith(
+              color: isActive ? LynewedColors.success : LynewedColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Header subtitle row: Description + Time remaining
+  Widget _buildHeaderSubtitleRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            details.alertType.description,
+            style: LynewedTextStyles.bodyMedium.copyWith(
+              color: LynewedColors.textSecondary,
+              fontWeight: FontWeight.w400,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        // Time remaining (aligned with status badge)
+        if (details.timeRemaining != null && details.isActive) ...[  
+          const SizedBox(width: 8),
           Text(
-            _formatDateTime(details.startAt!),
-            style: LynewedTextStyles.bodyMedium,
-          ),
-        ],
-        
-        // Time remaining (only for active alerts)
-        if (details.timeRemaining != null && details.isActive) ...[
-          const Spacer(),
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: LynewedSpacing.sm,
-              vertical: LynewedSpacing.xxs,
-            ),
-            decoration: BoxDecoration(
-              color: LynewedColors.warning.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(LynewedComponentStyles.chipBorderRadius),
-            ),
-            child: Text(
-              details.timeRemaining!,
-              style: LynewedTextStyles.labelSmall.copyWith(
-                color: LynewedColors.warning,
-                fontWeight: FontWeight.w500,
-              ),
+            details.timeRemaining!,
+            style: LynewedTextStyles.bodySmall.copyWith(
+              color: LynewedColors.textPrimary,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -252,154 +129,188 @@ class AlertDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildAuthorInfo() {
-    return Material(
-      color: LynewedColors.background,
-      borderRadius: BorderRadius.circular(LynewedComponentStyles.inputBorderRadius),
-      clipBehavior: Clip.antiAlias, // Ensure ripple is clipped
-      child: InkWell(
-        onTap: onViewAuthorProfile,
-        child: Container(
-          padding: const EdgeInsets.all(12.0),
-          decoration: BoxDecoration(
-            // Color moved to Material widget to allow InkWell ripple effect
-            borderRadius: BorderRadius.circular(LynewedComponentStyles.inputBorderRadius),
-            border: Border.all(color: LynewedColors.gray200),
+  /// About section: Location, Time, Message
+  Widget _buildAboutSection() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 30),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section title
+          const Text('Details', style: LynewedTextStyles.sectionTitle),
+          const SizedBox(height: 10),
+          
+          // Location & Time inline
+          Row(
+            children: [
+              // Location
+              if (details.locationLabel != null) ...[
+                LynewedInfoRow(
+                  icon: Icons.location_on_outlined,
+                  text: details.locationLabel!,
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  width: 1,
+                  height: 16,
+                  color: LynewedColors.gray200,
+                ),
+                const SizedBox(width: 10),
+              ],
+              
+              // Time
+              if (details.startAt != null)
+                LynewedInfoRow(
+                  icon: Icons.schedule_outlined,
+                  text: _formatDateTime(details.startAt!),
+                ),
+            ],
           ),
-          child: Row(
-          children: [
-            // Author avatar
-            CircleAvatar(
-              radius: 24, // Increased to match Bride avatar size in Wedding sheet
-              backgroundColor: LynewedColors.gray100,
-              backgroundImage: details.authorAvatarUrl != null
-                  ? CachedNetworkImageProvider(details.authorAvatarUrl!)
-                  : null,
-              child: details.authorAvatarUrl == null
-                  ? Text(
-                      _getInitials(details.authorFullName ?? '?'),
-                      style: LynewedTextStyles.labelMedium.copyWith(
-                        color: LynewedColors.textSecondary,
-                      ),
-                    )
-                  : null,
+          
+          // Message (if different from title)
+          if (details.message?.isNotEmpty == true) ...[
+            const SizedBox(height: 10),
+            Text(
+              details.message!,
+              style: LynewedTextStyles.bodyMedium.copyWith(
+                color: LynewedColors.textPrimary,
+                fontWeight: FontWeight.w400,
+              ),
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
             ),
-            LynewedGap.horizontalMd,
-            
-            // Author info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    details.authorFullName ?? 'Unknown',
-                    style: LynewedTextStyles.sectionTitle,
-                  ),
-                  if (details.authorProfession != null)
-                    Text(
-                      details.authorProfession!.displayName,
-                      style: LynewedTextStyles.bodySmall.copyWith(
-                        color: LynewedColors.textSecondary,
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Author section with avatar and info
+  Widget _buildAuthorSection() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 30),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Posted by', style: LynewedTextStyles.sectionTitle),
+          const SizedBox(height: 10),
+          
+          Material(
+            color: LynewedColors.background,
+            borderRadius: BorderRadius.circular(4),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onViewAuthorProfile,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: LynewedColors.gray200),
+                ),
+                child: Row(
+                  children: [
+                    // Author avatar
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: LynewedColors.gray100,
+                      backgroundImage: details.authorAvatarUrl != null
+                          ? CachedNetworkImageProvider(details.authorAvatarUrl!)
+                          : null,
+                      child: details.authorAvatarUrl == null
+                          ? Text(
+                              _getInitials(details.authorFullName ?? '?'),
+                              style: LynewedTextStyles.labelMedium.copyWith(
+                                color: LynewedColors.textSecondary,
+                              ),
+                            )
+                          : null,
+                    ),
+                    const SizedBox(width: 12),
+                    
+                    // Author info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            details.authorFullName ?? 'Unknown',
+                            style: LynewedTextStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          if (details.authorProfession != null)
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.work_outline,
+                                  size: 14,
+                                  color: LynewedColors.textSecondary,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  details.authorProfession!.displayName,
+                                  style: LynewedTextStyles.bodySmall.copyWith(
+                                    color: LynewedColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
                       ),
                     ),
-                ],
+                    
+                    // Chevron
+                    const Icon(
+                      Icons.chevron_right,
+                      color: LynewedColors.textSecondary,
+                    ),
+                  ],
+                ),
               ),
             ),
-            
-            // Own badge
-            if (details.isOwn)
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: LynewedSpacing.sm,
-                  vertical: LynewedSpacing.xxs,
-                ),
-                decoration: BoxDecoration(
-                  color: LynewedColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(LynewedComponentStyles.chipBorderRadius),
-                ),
-                child: Text(
-                  'Your alert',
-                  style: LynewedTextStyles.labelSmall.copyWith(
-                    color: LynewedColors.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              )
-            else
-              Icon(
-                Icons.chevron_right,
-                color: LynewedColors.textSecondary,
-              ),
-          ],
-        ),
+          ),
+        ],
       ),
-    ));
+    );
   }
 
   Widget _buildActionButtons() {
     if (details.isOwn) {
-      // Own alert - show delete button
-      return SizedBox(
+      // Own alert - show red filled delete button
+      return LynewedButton(
+        text: 'Delete Alert',
+        onPressed: onDelete,
+        type: LynewedButtonType.destructiveFilled,
+        icon: Icons.delete_outline,
         width: double.infinity,
-        child: OutlinedButton.icon(
-          onPressed: onDelete,
-          style: OutlinedButton.styleFrom(
-            foregroundColor: LynewedColors.error,
-            side: BorderSide(color: LynewedColors.error),
-            minimumSize: Size(0, LynewedSpacing.buttonHeight),
-            shape: RoundedRectangleBorder(
-              borderRadius: LynewedBorders.borderRadiusNone,
-            ),
-          ),
-          icon: const Icon(Icons.delete_outline),
-          label: const Text('Delete Alert'),
-        ),
       );
     }
     
-    // Other's alert - show help button
-    return SizedBox(
+    // Other's alert - show black primary button to help
+    final canHelp = details.isContactable && details.isActive;
+    return LynewedButton(
+      text: details.isActive
+          ? (canHelp ? 'I Can Help' : 'Not Available')
+          : 'Alert Expired',
+      onPressed: canHelp ? onHelp : null,
+      type: LynewedButtonType.primary,
+      icon: Icons.handshake_outlined,
       width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: details.isContactable && details.isActive ? onHelp : null,
-        style: LynewedComponentStyles.primaryButton(),
-        icon: const Icon(Icons.handshake_outlined),
-        label: Text(
-          details.isActive
-              ? (details.isContactable ? 'I Can Help' : 'Not Available')
-              : 'Alert Expired',
-        ),
-      ),
     );
-  }
-
-  Color _getAlertTypeColor(AlertType type) {
-    switch (type) {
-      case AlertType.backupNeeded:
-        return LynewedColors.primary;
-      case AlertType.gearEmergency:
-        return LynewedColors.primary;
-      case AlertType.teamMember:
-        return LynewedColors.primary;
-      case AlertType.emergencyHelp:
-        return LynewedColors.primary;
-      case AlertType.other:
-        return LynewedColors.primary;
-    }
   }
 
   IconData _getAlertTypeIcon(AlertType type) {
     switch (type) {
       case AlertType.backupNeeded:
-        return Icons.person_add; // Filled version
+        return Icons.person_add;
       case AlertType.gearEmergency:
-        return Icons.camera_alt; // Filled version
+        return Icons.camera_alt;
       case AlertType.teamMember:
-        return Icons.group_add; // Filled version
+        return Icons.group_add;
       case AlertType.emergencyHelp:
-        return Icons.warning; // Filled version
+        return Icons.warning;
       case AlertType.other:
-        return Icons.notifications; // Filled version, better than question mark
+        return Icons.notifications;
     }
   }
 

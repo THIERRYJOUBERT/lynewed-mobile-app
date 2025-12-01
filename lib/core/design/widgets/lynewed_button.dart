@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import '../design.dart';
 
 enum LynewedButtonType {
-  primary,    // Black background, white text
-  secondary,  // Transparent background, border
-  ghost,      // Text only, no background/border
-  destructive // Red text, ghost style usually
+  primary,         // Black background, white text
+  secondary,       // Transparent background, border
+  ghost,           // Text only, no background/border
+  destructive,     // Red text, ghost style
+  destructiveFilled // Red background, white text
 }
 
 class LynewedButton extends StatelessWidget {
@@ -79,6 +80,13 @@ class LynewedButton extends StatelessWidget {
           child: content,
         );
         break;
+      case LynewedButtonType.destructiveFilled:
+        button = ElevatedButton(
+          onPressed: onPressed,
+          style: style,
+          child: content,
+        );
+        break;
     }
 
     if (width != null) {
@@ -104,7 +112,7 @@ class LynewedButton extends StatelessWidget {
         return OutlinedButton.styleFrom(
           backgroundColor: Colors.transparent,
           foregroundColor: LynewedColors.textPrimary,
-          side: const BorderSide(color: LynewedColors.border),
+          side: const BorderSide(color: LynewedColors.primary),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(0),
           ),
@@ -126,6 +134,16 @@ class LynewedButton extends StatelessWidget {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16),
         );
+      case LynewedButtonType.destructiveFilled:
+        return ElevatedButton.styleFrom(
+          backgroundColor: LynewedColors.error,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(0),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+        );
     }
   }
 
@@ -144,6 +162,12 @@ class LynewedButton extends StatelessWidget {
         return LynewedTextStyles.bodyMedium.copyWith(
           fontWeight: FontWeight.w400,
           color: LynewedColors.error,
+        );
+      case LynewedButtonType.destructiveFilled:
+        return LynewedTextStyles.bodyMedium.copyWith(
+          fontSize: 15,
+          fontWeight: FontWeight.w400,
+          color: Colors.white,
         );
     }
   }
