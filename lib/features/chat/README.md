@@ -1,8 +1,8 @@
 # Chat Module
 
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Created:** 2025-12-02  
-**Status:** 🚧 In Progress (Phase 2)
+**Status:** 🚧 In Progress (Phase 3 Complete)
 
 ## Overview
 
@@ -175,11 +175,68 @@ flutter test lib/features/chat/test/domain/repositories/contact_repository_test.
 ## Phases
 
 - [x] **Phase 1**: Backend - Logique Contact
-- [x] **Phase 2**: Foundation Frontend (current)
-- [ ] **Phase 3**: Messages Page Unifiée
-- [ ] **Phase 4**: Chat Details Refactorisé
+- [x] **Phase 2**: Foundation Frontend
+- [x] **Phase 3**: Messages Page Unifiée
+- [ ] **Phase 4**: Chat Details + Realtime (current)
 - [ ] **Phase 5**: Modération
 - [ ] **Phase 6**: Tests & Cleanup
+
+### Phase 4 Details: Chat Details Refactorisé + Realtime
+
+**Objectif:** Créer la page ChatDetails avec gestion complète du temps réel
+
+**Composants à créer:**
+- `ChatRoomNotifier` - State management pour un room (ChangeNotifier)
+- `MessageList` - Liste des messages avec pagination
+- `MessageBubble` - Widget pour afficher un message
+- `MessageComposer` - Composer pour écrire/envoyer messages
+- `chat_details_page.dart` - Page principale
+
+**Realtime à implémenter:**
+
+1. **MessagesPage (Messagerie) - Realtime:**
+   ```dart
+   // ConversationsNotifier doit écouter:
+   - Nouveaux messages (via subscribeToMessages)
+   - Nouvelles demandes de contact (via subscribeToContactRequests)
+   - Changements de statut (accepté/refusé)
+   
+   // Auto-refresh quand:
+   - Nouveau message arrive
+   - Nouvelle demande arrive
+   - Demande acceptée/refusée
+   ```
+
+2. **ChatDetails (Chat) - Realtime:**
+   ```dart
+   // ChatRoomNotifier doit écouter:
+   - Nouveaux messages en temps réel
+   - Suppression/édition de messages
+   - Changement de statut room
+   
+   // Affichage immédiat:
+   - Nouveau message apparaît
+   - Indicateur "en train d'écrire" (optionnel Phase 5)
+   - Accusé de réception (optionnel Phase 5)
+   ```
+
+**Gestion ChangeNotifier:**
+- Chaque notifier gère ses propres subscriptions
+- Dispose correctement les streams
+- Notifie l'UI à chaque changement
+- Gère les erreurs de connexion
+
+**Fonctionnalités:**
+- ✅ Affichage messages avec pagination
+- ✅ Envoi texte/image/audio
+- ✅ Suppression propre message
+- ✅ Mode "contact request" (Accept/Decline dans chat)
+- ✅ Bouton appel vidéo (Agora préservé)
+- ✅ Realtime messages
+- ✅ Realtime demandes (MessagesPage)
+- ✅ Design System 100%
+
+**Estimation:** 12-16h
 
 ## Related Documentation
 

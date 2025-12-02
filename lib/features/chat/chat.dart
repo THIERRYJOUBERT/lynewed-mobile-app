@@ -64,5 +64,8 @@ export 'domain/repositories/repositories.dart';
 export 'data/datasources/datasources.dart';
 export 'data/repositories/repositories.dart';
 
-// Presentation layer - Sheets
-export 'presentation/sheets/contact_request_sheet.dart';
+// Presentation layer
+export 'presentation/bloc/bloc.dart';
+export 'presentation/pages/pages.dart';
+export 'presentation/widgets/widgets.dart';
+export 'presentation/sheets/sheets.dart';
