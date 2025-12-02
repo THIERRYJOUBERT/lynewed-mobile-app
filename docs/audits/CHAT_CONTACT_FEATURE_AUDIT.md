@@ -1,7 +1,7 @@
 # Chat & Contact Feature Audit
 
 **Document créé:** 2025-12-02  
-**Version:** v1.1 (Décisions validées)  
+**Version:** v1.2 (MessagesPage + BlockedUsersSheet validés)  
 **Objectif:** Audit complet du module Chat & Contact pour préparer la refactorisation Clean Architecture
 
 ---
@@ -1028,7 +1028,42 @@ Phase 1 (Backend) ──┬──► Phase 2 (Foundation) ──► Phase 3 (Mes
 - `LynewedButton` pour les boutons d'action
 - Spacing: 12px texte→icônes, 10px entre icônes
 
-### 11.3 Règles Design System pour les Sheets
+### 11.3 MessagesPage ✅ (2025-12-02)
+
+**Fichier:** `lib/features/chat/presentation/pages/messages_page.dart`
+
+**Fonctionnalités:**
+- Page unifiée pour Brides et Pros
+- Header: Back button + titre (sheetTitle + 20px) + action circle 44px
+- Section "Contact Requests" (horizontal scroll avatars)
+- Section "Conversations" (list items gris clair)
+- Bouton archive pour accéder aux utilisateurs bloqués
+
+**Design System appliqué:**
+- Titre page: `sheetTitle.copyWith(fontSize: 20)`
+- Section titles: `sectionTitle` (16px, w500)
+- Divider: `gray200`
+- List items: fond `surface`, radius 4px
+- Spacing: 30px entre sections, 10px label→content
+- Bouton action: cercle 44px, fond `surface`
+
+### 11.4 BlockedUsersSheet ✅ (2025-12-02)
+
+**Fichier:** `lib/features/chat/presentation/sheets/blocked_users_sheet.dart`
+
+**Fonctionnalités:**
+- Modal sheet pour afficher les utilisateurs bloqués
+- Liste avec action "Unblock" par utilisateur
+- Empty state si aucun utilisateur bloqué
+
+**Design System appliqué:**
+- Header: Titre "Archived" à gauche, close icon à droite (style LynewedSheet)
+- Divider: `gray200`
+- Handle bar: 40x4px, `gray200`
+- Max height: 70% de l'écran
+- Border radius: 24px top corners
+
+### 11.5 Règles Design System pour les Sheets
 
 **Widgets réutilisables (`lib/core/design/widgets/`):**
 
@@ -1036,7 +1071,7 @@ Phase 1 (Backend) ──┬──► Phase 2 (Foundation) ──► Phase 3 (Mes
 |--------|-------|
 | `LynewedSheet` | Container pour sheets de formulaire/action |
 | `LynewedDetailsSheet` | Container pour sheets de détails (avec avatar/header) |
-| `LynewedSectionTitle` | Titre de section (`bodyLarge` + `w600`) |
+| `LynewedSectionTitle` | Titre de section (16px, w500) |
 | `LynewedTextField` | Champ de texte (fond gris par défaut) |
 | `LynewedButton` | Bouton d'action (48px, noir primaire) |
 | `LynewedHeaderActions` | Actions header (fav + menu 3 points) |
@@ -1047,13 +1082,15 @@ Phase 1 (Backend) ──┬──► Phase 2 (Foundation) ──► Phase 3 (Mes
 - **12px** entre bloc texte et icônes header
 - **10px** entre icônes dans `LynewedHeaderActions`
 
-**Règles:**
+**Règles CRITIQUES (voir docs/App/DESIGN_SYSTEM.md):**
 1. TOUJOURS utiliser les widgets du Design System
 2. JAMAIS créer de styles inline, utiliser `LynewedTextStyles`
 3. JAMAIS créer de couleurs inline, utiliser `LynewedColors`
-4. Fond TextField: gris (`isValueInput: false`) sauf pour inputs de valeur
-5. Boutons: `LynewedButton` avec type approprié (primary, secondary, destructive)
-6. **TOUS les textes UI doivent être en ANGLAIS** (l'app est nativement en anglais)
+4. **Font weight max w500** (sauf exceptions documentées)
+5. **Dividers: `gray200`** (pas `border`)
+6. **List items: fond `surface`, radius 4px**
+7. **Boutons icône: cercle 44px**
+8. **TOUS les textes UI doivent être en ANGLAIS** (l'app est nativement en anglais)
 
 ---
 
@@ -1096,6 +1133,6 @@ chat_backup_2025-12-02/
 ---
 
 **Document rédigé le:** 2025-12-02  
-**Dernière mise à jour:** 2025-12-02  
-**Statut:** ✅ Phases 1-5 terminées, Phase 6 en cours (tests manuels)  
-**Prochaine étape:** Finaliser tests manuels, puis cleanup code FlutterFlow
+**Dernière mise à jour:** 2025-12-02 17:30  
+**Statut:** ✅ MessagesPage + BlockedUsersSheet validés, ChatDetailsPage à refactoriser  
+**Prochaine étape:** Refactoriser ChatDetailsPage avec Design System v3

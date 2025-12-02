@@ -8,6 +8,7 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/index.dart';
+import '/features/chat/presentation/pages/messages_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/scheduler.dart';
@@ -658,8 +659,13 @@ class _HomeBridesWidgetState extends State<HomeBridesWidget> {
                                   hoverColor: Colors.transparent,
                                   highlightColor: Colors.transparent,
                                   onTap: () async {
-                                    context.pushNamed(
-                                        MessagesBridesWidget.routeName);
+                                    // Navigate to new MessagesPage (Clean Architecture)
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const MessagesPage(),
+                                      ),
+                                    );
                                   },
                                   child: SizedBox(
                                     width: 32.0,

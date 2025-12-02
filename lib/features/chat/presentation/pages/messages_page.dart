@@ -2,6 +2,12 @@
 /// 
 /// Unified messages page for both Brides and Professionals.
 /// Replaces MessagesBridesWidget and MessagesProWidget.
+/// 
+/// DESIGN SYSTEM v2 APPLIED:
+/// - Header: Back button (left) + Title (left-aligned) + Blocked icon (right)
+/// - Divider under header
+/// - Typography: bodyLarge + w600 for section titles
+/// - Spacing: 30px inter-section, 12px label→content
 library;
 
 import 'package:flutter/material.dart';
@@ -12,10 +18,11 @@ import '../bloc/conversations_cubit.dart';
 import '../bloc/conversations_state.dart';
 import '../widgets/contact_request_avatar.dart';
 import '../widgets/conversation_tile.dart';
-import '../widgets/blocked_user_tile.dart';
 import '../widgets/empty_state_widget.dart';
 import '../sheets/conversation_actions_sheet.dart';
 import '../sheets/contact_request_review_sheet.dart';
+import '../sheets/blocked_users_sheet.dart';
+import 'chat_details_page.dart';
 
 /// Unified Messages page
 class MessagesPage extends StatefulWidget {
@@ -28,8 +35,7 @@ class MessagesPage extends StatefulWidget {
   State<MessagesPage> createState() => _MessagesPageState();
 }
 
-class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _MessagesPageState extends State<MessagesPage> {
   late ConversationsNotifier _notifier;
   
   String get _currentUserId => Supabase.instance.client.auth.currentUser?.id ?? '';
@@ -37,7 +43,6 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _notifier = ConversationsNotifier();
     _notifier.addListener(_onStateChanged);
     _notifier.loadAll();
@@ -49,7 +54,6 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
 
   @override
   void dispose() {
-    _tabController.dispose();
     _notifier.removeListener(_onStateChanged);
     _notifier.dispose();
     super.dispose();
@@ -60,12 +64,20 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
   }
 
   void _onConversationTap(Conversation conversation) {
-    // TODO: Navigate to ChatDetails page
-    // For now, just print
-    debugPrint('Navigate to chat: ${conversation.roomId}');
-    
-    // Navigation will be implemented in Phase 4
-    // Navigator.pushNamed(context, '/chatDetails', arguments: {...});
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChatDetailsPage(
+          roomId: conversation.roomId,
+          isPublicRoom: conversation.isPublic,
+          otherProfileId: conversation.otherProfileId,
+          otherFullName: conversation.otherFullName,
+          otherAvatarUrl: conversation.otherAvatarUrl,
+          otherRole: conversation.otherRole,
+          publicRoomTitle: conversation.isPublic ? conversation.otherFullName : null,
+        ),
+      ),
+    );
   }
 
   void _onConversationLongPress(Conversation conversation) {
@@ -99,10 +111,9 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
     if (!mounted) return;
 
     if (result == ContactRequestReviewResult.accepted) {
-      // TODO: Navigate to the new chat room
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Demande acceptée de ${request.otherFullName}'),
+          content: Text('Request accepted from ${request.otherFullName}'),
           backgroundColor: LynewedColors.primary,
           behavior: SnackBarBehavior.floating,
         ),
@@ -110,21 +121,118 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
     } else if (result == ContactRequestReviewResult.declined) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Demande refusée'),
+          content: Text('Request declined'),
           behavior: SnackBarBehavior.floating,
         ),
       );
     }
   }
 
+  void _showBlockedUsersSheet() {
+    final state = _notifier.state;
+    if (state is! ConversationsLoaded) return;
+
+    BlockedUsersSheet.show(
+      context: context,
+      blockedUsers: state.blockedUsers,
+      onUnblock: (user) async {
+        final success = await _notifier.unblockUser(user.blockedProfileId);
+        return success;
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = _notifier.state;
+    final blockedCount = state is ConversationsLoaded ? state.blockedUsers.length : 0;
 
     return Scaffold(
       backgroundColor: LynewedColors.background,
-      appBar: _buildAppBar(),
-      body: _buildBody(state),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Header
+            _buildHeader(blockedCount),
+            
+            // Divider - same as LynewedSheet
+            const Divider(height: 1, color: LynewedColors.gray200),
+            
+            // Body
+            Expanded(
+              child: _buildBody(state),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Header with back button, title, and archive icon (blocked users)
+  /// Matches LynewedSheet header style for consistency
+  Widget _buildHeader(int blockedCount) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+      child: Row(
+        children: [
+          // Back button
+          GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: const Icon(
+              Icons.chevron_left,
+              size: 28,
+              color: LynewedColors.textPrimary,
+            ),
+          ),
+          
+          const SizedBox(width: 12),
+          
+          // Title - same style as LynewedSheet
+          Expanded(
+            child: Text(
+              'Messages',
+              style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 20),
+            ),
+          ),
+          
+          // Archive icon button (blocked users) - circle 44px
+          GestureDetector(
+            onTap: _showBlockedUsersSheet,
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: const BoxDecoration(
+                color: LynewedColors.surface,
+                shape: BoxShape.circle,
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Icon(
+                    Icons.archive_outlined,
+                    size: 22,
+                    color: LynewedColors.textSecondary,
+                  ),
+                  // Badge for blocked count
+                  if (blockedCount > 0)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: LynewedColors.error,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -139,74 +247,47 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
 
     if (state is ConversationsError) {
       return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 48,
-              color: LynewedColors.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              state.message,
-              textAlign: TextAlign.center,
-              style: LynewedTextStyles.bodyMedium.copyWith(
-                color: LynewedColors.textSecondary,
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.error_outline,
+                size: 48,
+                color: LynewedColors.error,
               ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => _notifier.loadAll(),
-              style: LynewedComponentStyles.primaryButton(),
-              child: const Text('Réessayer'),
-            ),
-          ],
+              const SizedBox(height: 16),
+              Text(
+                state.message,
+                textAlign: TextAlign.center,
+                style: LynewedTextStyles.bodyMedium.copyWith(
+                  color: LynewedColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => _notifier.loadAll(),
+                  style: LynewedComponentStyles.primaryButton(),
+                  child: const Text('Retry'),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
 
     if (state is ConversationsLoaded) {
-      return TabBarView(
-        controller: _tabController,
-        children: [
-          _buildConversationsTab(state),
-          _buildBlockedTab(state),
-        ],
-      );
+      return _buildConversationsContent(state);
     }
 
     return const SizedBox.shrink();
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: LynewedColors.background,
-      elevation: 0,
-      title: const Text(
-        'Messagerie',
-        style: LynewedTextStyles.titleMedium,
-      ),
-      centerTitle: true,
-      bottom: TabBar(
-        controller: _tabController,
-        labelColor: LynewedColors.primary,
-        unselectedLabelColor: LynewedColors.textSecondary,
-        indicatorColor: LynewedColors.primary,
-        indicatorWeight: 2,
-        labelStyle: LynewedTextStyles.labelMedium.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
-        unselectedLabelStyle: LynewedTextStyles.labelMedium,
-        tabs: const [
-          Tab(text: 'Conversations'),
-          Tab(text: 'Blocked'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildConversationsTab(ConversationsLoaded state) {
+  Widget _buildConversationsContent(ConversationsLoaded state) {
     return RefreshIndicator(
       onRefresh: _onRefresh,
       color: LynewedColors.primary,
@@ -222,15 +303,13 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
             ),
           ],
 
-          // Conversations Section
+          // Conversations Section Title - 30px top spacing, 10px bottom
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+              padding: const EdgeInsets.fromLTRB(20, 30, 20, 10),
               child: Text(
                 'Conversations',
-                style: LynewedTextStyles.bodyLarge.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: LynewedTextStyles.sectionTitle, // 16px, w500
               ),
             ),
           ),
@@ -240,7 +319,7 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
             const SliverFillRemaining(
               hasScrollBody: false,
               child: ChatEmptyState(
-                message: 'No conversations',
+                message: 'No conversations yet',
                 icon: Icons.chat_bubble_outline,
               ),
             )
@@ -265,7 +344,7 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
               ),
             ),
 
-          // Bottom padding
+          // Bottom padding for safe area
           const SliverToBoxAdapter(
             child: SizedBox(height: 100),
           ),
@@ -287,15 +366,16 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Section title - 30px top spacing, 10px bottom
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+          padding: const EdgeInsets.fromLTRB(20, 30, 20, 10),
           child: Text(
             'Contact Requests',
-            style: LynewedTextStyles.bodyLarge.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: LynewedTextStyles.sectionTitle, // 16px, w500
           ),
         ),
+        
+        // Horizontal list of request avatars
         SizedBox(
           height: 80,
           child: ListView.separated(
@@ -313,56 +393,9 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
             },
           ),
         ),
-        const SizedBox(height: 16),
+        
+        const SizedBox(height: 30),
       ],
-    );
-  }
-
-  Widget _buildBlockedTab(ConversationsLoaded state) {
-    if (!state.hasBlockedUsers) {
-      return const ChatEmptyState(
-        message: 'No blocked users',
-        icon: Icons.block,
-      );
-    }
-
-    return ListView.separated(
-      padding: const EdgeInsets.all(20),
-      itemCount: state.blockedUsers.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
-      itemBuilder: (context, index) {
-        final blockedUser = state.blockedUsers[index];
-        return BlockedUserTile(
-          blockedUser: blockedUser,
-          onUnblock: () async {
-            final confirm = await _showUnblockConfirmation(blockedUser);
-            if (confirm == true) {
-              await _notifier.unblockUser(blockedUser.blockedProfileId);
-            }
-          },
-        );
-      },
-    );
-  }
-
-  Future<bool?> _showUnblockConfirmation(BlockedUser user) {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Unblock'),
-        content: Text('Do you want to unblock ${user.fullName ?? 'this user'}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: LynewedComponentStyles.primaryButton(),
-            child: const Text('Unblock'),
-          ),
-        ],
-      ),
     );
   }
 }

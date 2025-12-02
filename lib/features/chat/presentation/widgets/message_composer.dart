@@ -214,6 +214,15 @@ class _MessageComposerState extends State<MessageComposer> {
     );
   }
 
+  /// Determines if mic button should be shown (no text, no images, no audio)
+  bool get _showMicButton {
+    return !widget.firstMessageTextOnly &&
+        widget.onSendAudio != null &&
+        !_isRecording &&
+        _textController.text.trim().isEmpty &&
+        _selectedImages.isEmpty;
+  }
+
   Widget _buildInputRow() {
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -223,67 +232,142 @@ class _MessageComposerState extends State<MessageComposer> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // Image picker button
-          if (!widget.firstMessageTextOnly) ...[
+          // Image picker button (left side) - only show if not recording
+          if (!widget.firstMessageTextOnly && !_isRecording) ...[
             _buildActionButton(
-              icon: Icons.image_outlined,
+              icon: Icons.add,
               onTap: _canAddMedia ? _pickImages : null,
               enabled: _canAddMedia,
             ),
             const SizedBox(width: LynewedSpacing.sm),
           ],
 
-          // Audio button (placeholder - needs audio recording implementation)
-          if (!widget.firstMessageTextOnly && widget.onSendAudio != null) ...[
-            _buildActionButton(
-              icon: _isRecording ? Icons.stop : Icons.mic_outlined,
-              onTap: _canAddMedia ? _toggleRecording : null,
-              enabled: _canAddMedia,
-              isActive: _isRecording,
-            ),
-            const SizedBox(width: LynewedSpacing.sm),
-          ],
-
-          // Text input
+          // Text input (expanded)
           Expanded(
             child: Container(
               constraints: const BoxConstraints(maxHeight: 120),
               decoration: BoxDecoration(
                 color: LynewedColors.surface,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(24),
               ),
-              child: TextField(
-                controller: _textController,
-                focusNode: _focusNode,
-                enabled: widget.isEnabled && !widget.isSending,
-                maxLength: widget.maxLength,
-                maxLines: null,
-                textInputAction: TextInputAction.newline,
-                style: LynewedTextStyles.bodyMedium,
-                decoration: InputDecoration(
-                  hintText: widget.placeholder,
-                  hintStyle: LynewedTextStyles.bodyMedium.copyWith(
-                    color: LynewedColors.textSecondary,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  counterText: '', // Hide character counter
-                ),
-                onChanged: (_) => setState(() {}),
-              ),
+              child: _isRecording
+                  ? _buildRecordingIndicator()
+                  : TextField(
+                      controller: _textController,
+                      focusNode: _focusNode,
+                      enabled: widget.isEnabled && !widget.isSending,
+                      maxLength: widget.maxLength,
+                      maxLines: null,
+                      textInputAction: TextInputAction.newline,
+                      style: LynewedTextStyles.bodyMedium,
+                      decoration: InputDecoration(
+                        hintText: widget.placeholder,
+                        hintStyle: LynewedTextStyles.bodyMedium.copyWith(
+                          color: LynewedColors.textSecondary,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        counterText: '', // Hide character counter
+                      ),
+                      onChanged: (_) => setState(() {}),
+                    ),
             ),
           ),
 
           const SizedBox(width: LynewedSpacing.sm),
 
-          // Send button
-          _buildSendButton(),
+          // Right button: Mic OR Send (stacked at same position)
+          _buildRightActionButton(),
         ],
       ),
     );
+  }
+
+  /// Recording indicator shown inside text field area
+  Widget _buildRecordingIndicator() {
+    return Container(
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: const BoxDecoration(
+              color: LynewedColors.error,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            'Recording...',
+            style: LynewedTextStyles.bodyMedium.copyWith(
+              color: LynewedColors.textSecondary,
+            ),
+          ),
+          const Spacer(),
+          GestureDetector(
+            onTap: _cancelRecording,
+            child: const Icon(
+              Icons.close,
+              size: 20,
+              color: LynewedColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Right action button: shows Mic when empty, Send when has content
+  Widget _buildRightActionButton() {
+    // If recording, show stop button
+    if (_isRecording) {
+      return GestureDetector(
+        onTap: _stopRecording,
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: const BoxDecoration(
+            color: LynewedColors.error,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.stop,
+            size: 20,
+            color: LynewedColors.textOnPrimary,
+          ),
+        ),
+      );
+    }
+
+    // Show mic button when no content
+    if (_showMicButton) {
+      return GestureDetector(
+        onTap: _canAddMedia ? _startRecording : null,
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: LynewedColors.surface,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.mic_none,
+            size: 22,
+            color: _canAddMedia
+                ? LynewedColors.textPrimary
+                : LynewedColors.textSecondary,
+          ),
+        ),
+      );
+    }
+
+    // Show send button when has content
+    return _buildSendButton();
   }
 
   Widget _buildActionButton({
@@ -343,21 +427,40 @@ class _MessageComposerState extends State<MessageComposer> {
     );
   }
 
-  void _toggleRecording() {
-    // TODO: Implement audio recording
-    // This would require audio_recorder package
+  void _startRecording() {
+    // TODO: Implement actual audio recording with record package
+    // For now, show recording state
     setState(() {
-      _isRecording = !_isRecording;
+      _isRecording = true;
     });
+    
+    // Show info that recording is not yet implemented
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Audio recording - implementation pending'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
 
-    if (!_isRecording) {
-      // Recording stopped - would send audio here
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Enregistrement audio non implémenté'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
+  void _stopRecording() {
+    // TODO: Stop recording and get audio file
+    setState(() {
+      _isRecording = false;
+    });
+    
+    // For now, just show a message
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Audio recording stopped - file not saved (pending implementation)'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _cancelRecording() {
+    setState(() {
+      _isRecording = false;
+    });
   }
 }

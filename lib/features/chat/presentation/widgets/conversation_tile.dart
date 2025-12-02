@@ -28,8 +28,8 @@ class ConversationTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
-          color: LynewedColors.background,
-          borderRadius: BorderRadius.circular(2),
+          color: LynewedColors.surface, // Gris clair pour les items
+          borderRadius: BorderRadius.circular(4), // 4px radius
         ),
         child: Row(
           children: [

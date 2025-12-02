@@ -24,13 +24,17 @@ class ChatRemoteDatasource {
   // ============================================================
 
   /// Get all conversations for current user
+  /// RPC returns: { items: [...] }
   Future<List<Conversation>> getConversations() async {
     final response = await _client.rpc('get_rooms_with_unread_counts');
     
     if (response == null) return [];
     
-    final List<dynamic> data = response as List<dynamic>;
-    return data
+    // RPC returns { items: [...] }, extract the items array
+    final Map<String, dynamic> data = response as Map<String, dynamic>;
+    final List<dynamic> items = data['items'] as List<dynamic>? ?? [];
+    
+    return items
         .map((item) => Conversation.fromMap(item as Map<String, dynamic>))
         .toList();
   }
@@ -452,35 +456,40 @@ class ChatRemoteDatasource {
   // ============================================================
 
   /// Upload image to chat storage
+  /// Bucket: chat-images (with hyphen, not underscore)
   Future<String> uploadImage({
     required String roomId,
     required String filePath,
     required String fileName,
   }) async {
     final file = File(filePath);
-    final path = '$roomId/$fileName';
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final path = '$roomId/${timestamp}_$fileName';
     
-    await _client.storage.from('chat_images').upload(path, file);
+    await _client.storage.from('chat-images').upload(path, file);
     
     return path;
   }
 
   /// Upload audio to chat storage
+  /// Bucket: chat-audio (with hyphen, not underscore)
   Future<String> uploadAudio({
     required String roomId,
     required String filePath,
     required String fileName,
   }) async {
     final file = File(filePath);
-    final path = '$roomId/$fileName';
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final path = '$roomId/${timestamp}_$fileName';
     
-    await _client.storage.from('chat_audio').upload(path, file);
+    await _client.storage.from('chat-audio').upload(path, file);
     
     return path;
   }
 
   /// Get signed URL for media
-  Future<String> getSignedUrl(String path, {String bucket = 'chat_images'}) async {
+  /// Default bucket: chat-images
+  Future<String> getSignedUrl(String path, {String bucket = 'chat-images'}) async {
     final response = await _client.storage
         .from(bucket)
         .createSignedUrl(path, 3600); // 1 hour
