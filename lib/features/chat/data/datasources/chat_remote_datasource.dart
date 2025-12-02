@@ -419,8 +419,29 @@ class ChatRemoteDatasource {
     // Create support ticket
     await _client.from('support_tickets').insert({
       'profile_id': _currentUserId,
+      'ticket_type': 'message_report',
       'subject': '[REPORT] Message signalé',
       'message': 'Raison: ${reason.displayLabel}\n${details ?? ''}\nMessage ID: $messageId',
+      'report_reason': reason.toBackendValue(),
+      'status': 'pending',
+      'updated_at': DateTime.now().toIso8601String(),
+    });
+  }
+
+  /// Report a user (profile)
+  Future<void> reportUser({
+    required String reportedProfileId,
+    required ReportReason reason,
+    String? details,
+  }) async {
+    // Create support ticket for user report
+    await _client.from('support_tickets').insert({
+      'profile_id': _currentUserId,
+      'ticket_type': 'user_report',
+      'reported_profile_id': reportedProfileId,
+      'subject': '[REPORT] Utilisateur signalé',
+      'message': 'Raison: ${reason.displayLabel}\n${details ?? ''}\nProfile ID: $reportedProfileId',
+      'report_reason': reason.toBackendValue(),
       'status': 'pending',
       'updated_at': DateTime.now().toIso8601String(),
     });

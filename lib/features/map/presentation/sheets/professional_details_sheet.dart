@@ -35,6 +35,7 @@ class ProfessionalDetailsSheet extends StatelessWidget {
     this.onContact,
     this.onFavoriteToggle,
     this.onViewProfile,
+    this.onReport,
     this.showFavoriteButton = true,
   });
 
@@ -43,6 +44,7 @@ class ProfessionalDetailsSheet extends StatelessWidget {
   final VoidCallback? onContact;
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onViewProfile;
+  final VoidCallback? onReport;
   final bool showFavoriteButton;
 
   @override
@@ -52,7 +54,7 @@ class ProfessionalDetailsSheet extends StatelessWidget {
       headerAvatarInitials: _getInitials(details.fullName),
       titleWidget: _buildTitleWidget(),
       subtitle: _buildHeaderSubtitle(), // Profession in header
-      trailing: showFavoriteButton ? _buildFavoriteButton() : null,
+      trailing: _buildTrailingActions(),
       actions: _buildActionButtons(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,13 +134,34 @@ class ProfessionalDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildFavoriteButton() {
-    return IconButton(
-      onPressed: onFavoriteToggle,
-      icon: Icon(
-        details.isFavorited ? Icons.favorite : Icons.favorite_border,
-        color: details.isFavorited ? LynewedColors.error : LynewedColors.textSecondary,
-      ),
+  Widget? _buildTrailingActions() {
+    final hasActions = showFavoriteButton || onReport != null;
+    if (!hasActions) return null;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Report button
+        if (onReport != null)
+          IconButton(
+            onPressed: onReport,
+            icon: const Icon(
+              Icons.flag_outlined,
+              color: LynewedColors.textSecondary,
+            ),
+            tooltip: 'Signaler',
+          ),
+        // Favorite button
+        if (showFavoriteButton)
+          IconButton(
+            onPressed: onFavoriteToggle,
+            icon: Icon(
+              details.isFavorited ? Icons.favorite : Icons.favorite_border,
+              color: details.isFavorited ? LynewedColors.error : LynewedColors.textSecondary,
+            ),
+            tooltip: details.isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris',
+          ),
+      ],
     );
   }
 

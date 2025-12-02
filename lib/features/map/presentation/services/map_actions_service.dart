@@ -22,6 +22,11 @@ import '../../domain/entities/professional_details.dart' show SubscriptionTier;
 import '../../domain/entities/alert_details.dart' show AlertDetails;
 import '../../domain/entities/wedding_details.dart' show WeddingDetails;
 
+// Chat module imports for moderation
+import '/features/chat/presentation/sheets/sheets.dart';
+import '/features/chat/domain/repositories/contact_repository.dart';
+import '/features/chat/data/repositories/contact_repository_impl.dart';
+
 /// Service singleton for map-related actions
 class MapActionsService {
   MapActionsService._();
@@ -30,6 +35,7 @@ class MapActionsService {
   static MapActionsService get instance => _instance;
   
   final SupabaseClient _supabase = Supabase.instance.client;
+  final ContactRepository _contactRepository = ContactRepositoryImpl();
   
   // Simple cache for profile data to improve performance
   final Map<String, Map<String, dynamic>> _profileCache = {};
@@ -287,6 +293,49 @@ class MapActionsService {
       debugPrint('Error deleting alert: $e');
       return false;
     }
+  }
+
+  // ============================================================
+  // MODERATION ACTIONS
+  // ============================================================
+
+  /// Show report user sheet and handle submission
+  void showReportUserSheet(
+    BuildContext context, {
+    required String profileId,
+    required String userName,
+    String? userAvatarUrl,
+  }) {
+    ReportUserSheet.show(
+      context: context,
+      userName: userName,
+      userAvatarUrl: userAvatarUrl,
+      onReport: (reason, details) async {
+        final result = await _contactRepository.reportUser(
+          reportedProfileId: profileId,
+          reason: reason,
+          details: details,
+        );
+        
+        if (context.mounted) {
+          if (result.isSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Signalement envoyé'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(result.error ?? 'Erreur lors du signalement'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      },
+    );
   }
 
   // ============================================================

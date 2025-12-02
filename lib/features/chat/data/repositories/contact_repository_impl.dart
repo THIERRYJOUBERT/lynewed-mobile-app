@@ -151,4 +151,22 @@ class ContactRepositoryImpl implements ContactRepository {
       return ChatResult.failure('Failed to report message: $e');
     }
   }
+
+  @override
+  Future<ChatResult<void>> reportUser({
+    required String reportedProfileId,
+    required ReportReason reason,
+    String? details,
+  }) async {
+    try {
+      await _datasource.reportUser(
+        reportedProfileId: reportedProfileId,
+        reason: reason,
+        details: details,
+      );
+      return const ChatResult.success(null);
+    } catch (e) {
+      return ChatResult.failure('Failed to report user: $e');
+    }
+  }
 }

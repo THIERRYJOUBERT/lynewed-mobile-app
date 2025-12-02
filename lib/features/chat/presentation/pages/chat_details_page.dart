@@ -454,12 +454,27 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
         onBlock: !isOwnMessage
             ? () async {
                 Navigator.pop(sheetContext);
-                // Block will be handled in Phase 5
-                scaffoldMessenger.showSnackBar(
-                  const SnackBar(
-                    content: Text('Blocage - Phase 5'),
-                  ),
-                );
+                final confirm = await _showBlockConfirmation();
+                if (confirm == true) {
+                  final success = await _notifier.blockUser();
+                  if (success && mounted) {
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Utilisateur bloqué'),
+                        backgroundColor: LynewedColors.success,
+                      ),
+                    );
+                    // Navigate back to messages list
+                    Navigator.of(context).pop();
+                  } else if (mounted) {
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Erreur lors du blocage'),
+                        backgroundColor: LynewedColors.error,
+                      ),
+                    );
+                  }
+                }
               }
             : null,
       ),
@@ -469,6 +484,37 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
   void _handleImageTap(ChatMessage message) {
     // TODO: Implement fullscreen image viewer
     debugPrint('Image tapped: ${message.attachmentUrl}');
+  }
+
+  Future<bool?> _showBlockConfirmation() {
+    final state = _notifier.state;
+    final userName = state is ChatRoomLoaded 
+        ? state.otherFullName ?? 'cet utilisateur'
+        : 'cet utilisateur';
+
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Bloquer'),
+        content: Text(
+          'Voulez-vous bloquer $userName ?\n\n'
+          'Vous ne recevrez plus de messages de cette personne.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: LynewedColors.error,
+            ),
+            child: const Text('Bloquer'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildComposer() {

@@ -66,4 +66,11 @@ abstract class ContactRepository {
     required ReportReason reason,
     String? details,
   });
+
+  /// Report a user (profile)
+  Future<ChatResult<void>> reportUser({
+    required String reportedProfileId,
+    required ReportReason reason,
+    String? details,
+  });
 }

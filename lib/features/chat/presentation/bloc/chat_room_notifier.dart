@@ -396,6 +396,26 @@ class ChatRoomNotifier extends ChangeNotifier {
   }
 
   // ============================================================
+  // BLOCKING
+  // ============================================================
+
+  /// Block the other user in this conversation
+  Future<bool> blockUser() async {
+    final currentState = _state;
+    if (currentState is! ChatRoomLoaded) return false;
+    if (currentState.otherProfileId == null) return false;
+
+    try {
+      final result = await _contactRepository.blockUser(
+        currentState.otherProfileId!,
+      );
+      return result.isSuccess;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // ============================================================
   // MEDIA
   // ============================================================
 

@@ -13,6 +13,9 @@ import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
+// Chat module imports for reporting
+import '/features/chat/presentation/sheets/sheets.dart';
+import '/features/chat/data/repositories/contact_repository_impl.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart'
     as smooth_page_indicator;
 import 'package:flutter/material.dart';
@@ -105,6 +108,45 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
     _model.dispose();
 
     super.dispose();
+  }
+
+  /// Show report user sheet
+  Future<void> _showReportSheet() async {
+    final proDetails = widget.proDetails;
+    if (proDetails == null) return;
+
+    final contactRepository = ContactRepositoryImpl();
+
+    await ReportUserSheet.show(
+      context: context,
+      userName: proDetails.fullName,
+      userAvatarUrl: proDetails.avatarUrl,
+      onReport: (reason, details) async {
+        final result = await contactRepository.reportUser(
+          reportedProfileId: proDetails.proProfileId,
+          reason: reason,
+          details: details,
+        );
+
+        if (mounted) {
+          if (result.isSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Signalement envoyé'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(result.error ?? 'Erreur lors du signalement'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      },
+    );
   }
 
   @override
@@ -685,6 +727,27 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                       Row(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
+                                          // Report button - always visible (except for own profile)
+                                          if (widget.proDetails?.proProfileId != currentUserUid)
+                                            Container(
+                                              width: 40.0,
+                                              height: 40.0,
+                                              decoration: const BoxDecoration(),
+                                              child: InkWell(
+                                                splashColor: Colors.transparent,
+                                                focusColor: Colors.transparent,
+                                                hoverColor: Colors.transparent,
+                                                highlightColor: Colors.transparent,
+                                                onTap: () async {
+                                                  await _showReportSheet();
+                                                },
+                                                child: Icon(
+                                                  Icons.flag_outlined,
+                                                  color: FlutterFlowTheme.of(context).secondaryText,
+                                                  size: 24.0,
+                                                ),
+                                              ),
+                                            ),
                                           // Only show favorite button for brides (adds to wishlist)
                                           if (FFAppState().currentUserRole == UserRole.bride)
                                             Align(

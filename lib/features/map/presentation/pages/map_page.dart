@@ -930,6 +930,7 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
           onContact: () => _handleContact(context),
           onFavoriteToggle: () => _handleFavoriteToggle(context),
           onViewProfile: () => _handleViewProfile(context),
+          onReport: () => _handleReportPro(context),
           // Only show favorite button for brides (adds to wishlist)
           showFavoriteButton: widget.userRole == 'bride',
         );
@@ -1175,6 +1176,18 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
     Navigator.pop(context);
     final details = _details as WeddingDetails;
     _actionsService.navigateToBrideProfile(context, details);
+  }
+
+  /// Handle report professional action
+  void _handleReportPro(BuildContext context) {
+    final details = _details as ProfessionalDetails;
+    Navigator.pop(context);
+    _actionsService.showReportUserSheet(
+      context,
+      profileId: details.id,
+      userName: details.displayName,
+      userAvatarUrl: details.avatarUrl,
+    );
   }
 
   /// Extract city name from full address
