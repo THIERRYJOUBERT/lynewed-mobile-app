@@ -1,177 +1,282 @@
 ---
-description: Git Commit & Push to develop branch (SAFETY-FIRST - NO DELETION)
+description: Git Commit & Push to develop branch (CASCADE'S SAFE METHOD)
 ---
 
-## 🚨 CRITICAL SAFETY WORKFLOW - READ EVERY TIME
+# 🚨 CASCADE'S SAFE COMMIT WORKFLOW
 
-### 📋 WHY THIS EXISTS
+## 📋 WHY THIS WORKFLOW EXISTS
 > **Incident**: `alert_create_sheet.dart` was permanently deleted by `git clean -fd` without backup.
 > **Rule**: NEVER trust automated cleanup. ALWAYS verify what will be deleted.
 
-### 🔒 GOLDEN SAFETY RULES
-1. **NEVER USE `git clean`** - This command permanently deletes files without any recovery option.
-2. **NEVER USE `git add .` WITHOUT REVIEW** - Always check `git status` first.
-3. **ALWAYS VERIFY DELETIONS** - If you see files marked as "deleted" in `git status`, confirm you intended to delete them.
-4. **BACKUP BEFORE MAJOR CHANGES** - Use `git stash` or create a backup branch.
+## 🎯 OBJECTIVE
+Create a **safe, automated commit process** that:
+1. **NEVER deletes files accidentally**
+2. **ALWAYS verifies changes before staging**
+3. **Provides clear commit messages**
+4. **Pushes safely to develop branch**
 
 ---
 
-## 🔄 COMPLETE SAFE COMMIT PROCESS
+## 🤖 ASSISTANT PROMPT - COMPLETE IMPLEMENTATION
 
-### STEP 0: PRE-COMMIT SAFETY CHECKLIST
-**Answer these questions BEFORE proceeding:**
-- [ ] Did you run `git status` and review EVERY line?
-- [ ] Are there any files marked as "deleted" that you didn't expect?
-- [ ] Are you about to run `git clean`? (IF YES, STOP!)
-- [ ] Have you backed up important files you're modifying?
+When user runs `/commit-github-develop`, execute this EXACT workflow:
 
-### STEP 1: CLEAN GHOST FILES (SAFE ONLY)
+### STEP 1: INITIAL STATUS CHECK
 ```bash
-# ONLY remove known duplicate files ( NEVER use git clean )
-find ios/Flutter -name "* *" -type f -delete
-find . -maxdepth 1 -name ".flutter-plugins-dependencies *" -type f -delete
-```
-
-### STEP 2: SUPABASE SYNC ( MANUAL PROCESS )
-**Problem**: Supabase CI checks if local migrations match remote database.
-**Cause**: You made changes via Dashboard/MCP, but GitHub doesn't know.
-**Solution**: Pull remote state to match.
-
-```bash
-# Attempt to sync ( database migrations )
-# If this fails, it's OK - your app will still work
-supabase db pull --schema-only
-```
-
-**If sync fails** ( the usual case ):
-- Don't worry about the "Supabase Preview" check failure
-- Your database is already up-to-date
-- The check failure is just GitHub being confused
-
-### STEP 3: DETAILED STATUS REVIEW
-```bash
+# First, check current state
 git status --porcelain
 ```
-**Review EVERY line:**
-- `M` = Modified ( OK to commit )
-- `A` = Added ( OK to commit )
-- `D` = DELETED ( ⚠️ DANGER - VERIFY! )
-- `??` = Untracked ( Usually OK, but review )
 
-### STEP 4: SELECTIVE STAGING ( the safe way )
+**Analysis:**
+- Look for `D` markers (deleted files) - these need special attention
+- Count `M` (modified), `A` (added), `??` (untracked) files
+- If any `D` files are found, STOP and ask user to confirm
+
+### STEP 2: DETAILED STATUS REVIEW
 ```bash
-# Add files ONE BY ONE or by type to avoid accidents
-git add lib/           # Add all lib changes
-git add docs/          # Add documentation
-git add .gitignore     # Add gitignore changes
+# Get full status for analysis
+git status
+```
 
-# NEVER do this without reviewing git status first:
-# git add .            # ⚠️ DANGEROUS - can stage unwanted deletions
+**Safety Checklist:**
+- ✅ Are there any files marked as "deleted" that you didn't expect?
+- ✅ Are there any `??` files that should be ignored (build artifacts, temp files)?
+- ✅ Is this a normal commit or a refactor with intentional deletions?
+
+### STEP 3: CLEAN GHOST FILES (SAFE ONLY)
+```bash
+# ONLY remove known duplicate/build files (NEVER use git clean)
+find ios -maxdepth 1 -name "Podfile *" -type f -delete
+find . -maxdepth 1 -name ".flutter-plugins-dependencies *" -type f -delete
+find ios/Flutter -name "* *" -type f -delete 2>/dev/null || true
+```
+
+### STEP 4: SELECTIVE STAGING - THE SAFE WAY
+
+**PATTERN 1: Normal commit (no deletions)**
+```bash
+# Stage by folder for safety
+git add lib/           # All lib changes
+git add docs/          # Documentation changes  
+git add supabase/      # Database changes
+git add .windsurf/     # Workflow changes
+git add test/          # Test changes
+```
+
+**PATTERN 2: Refactor with intentional deletions**
+```bash
+# Stage everything BUT verify deletions first
+git add -A
+# Then show what will be deleted for confirmation
+git status --short | grep "^D"
 ```
 
 ### STEP 5: FINAL VERIFICATION
 ```bash
+# Check what will be committed
 git status --short
 ```
-**Confirm:**
-- No important files are marked for deletion
-- Only intended changes are staged
 
-### STEP 6: COMMIT WITH CLEAR MESSAGE
+**Confirm:**
+- ✅ No unexpected `D` (deleted file markers)
+- ✅ Only intended changes are staged
+- ✅ Build artifacts are not included
+
+### STEP 6: COMMIT WITH DETAILED MESSAGE
+
+**Template for commit message:**
 ```bash
 git commit -m "type(scope): brief description
 
 Detailed explanation:
 - What changed and why
-- Impact on the application
+- Impact on the application  
 - Any breaking changes
 
-Files modified:
-- lib/features/map/alert_create_sheet.dart: restored file
-- docs/PROJECT.md: updated status
+Files added: X (Y Dart + Z Markdown + ...)
+Files modified: N
+Files deleted: M (if any, explain why)
+
+Key features:
+- ✅ Feature 1 implemented
+- ✅ Feature 2 added
+- ✅ Integration with module X
+
+Architecture:
+- Clean Architecture maintained
+- Design System integration
+- Performance considerations
 "
 ```
 
+**Commit Types:**
+- `feat`: New feature
+- `fix`: Bug fix  
+- `refactor`: Code refactoring (no functional changes)
+- `docs`: Documentation only
+- `style`: Code style changes (formatting, etc.)
+- `test`: Adding or updating tests
+- `chore`: Maintenance tasks
+
 ### STEP 7: PUSH TO DEVELOP
 ```bash
+# Push to develop branch
 git push origin develop
+```
+
+### STEP 8: FINAL VERIFICATION
+```bash
+# Confirm working tree is clean
+git status
+```
+
+**Expected output:**
+```
+On branch develop
+Your branch is up to date with 'origin/develop'.
+
+nothing to commit, working tree clean
 ```
 
 ---
 
-## 🚨 EMERGENCY RECOVERY PROCEDURES
+## 🚨 EMERGENCY HANDLING
 
-### If you accidentally deleted a file:
-1. **IMMEDIATELY STOP** - Don't run any more git commands
-2. **Check reflog**:
-   ```bash
-   git reflog --all --grep="deleted" --oneline
-   ```
-3. **Restore from reflog**:
-   ```bash
-   git checkout <commit_hash> -- path/to/deleted/file.dart
-   ```
-4. **Commit the restored file**:
-   ```bash
-   git add path/to/deleted/file.dart
-   git commit -m "restore: accidentally deleted file"
-   ```
+### IF YOU SEE UNEXPECTED DELETIONS:
+1. **STOP IMMEDIATELY** - Don't commit
+2. **Ask user**: "I see files marked for deletion: [list]. Is this intentional?"
+3. **If accidental**: Use `git restore <file>` to recover
+4. **If intentional**: Proceed with staging
 
-### If you pushed the deletion:
-1. **Find the last good commit**:
-   ```bash
-   git log --oneline --follow path/to/deleted/file.dart
-   ```
-2. **Create recovery branch**:
-   ```bash
-   git checkout -b recovery <good_commit_hash>
-   git checkout recovery -- path/to/deleted/file.dart
-   git checkout develop
-   git merge recovery --no-ff
-   git push origin develop
-   ```
+### IF COMMIT FAILS:
+1. **Check error message** - Usually merge conflicts
+2. **Pull latest changes**: `git pull origin develop`
+3. **Resolve conflicts** if any
+4. **Retry commit**
+
+### IF PUSH FAILS:
+1. **Check network** - Simple connectivity issue
+2. **Force push only if necessary**: `git push --force-with-lease origin develop`
+3. **Otherwise**: `git pull origin develop` then retry
 
 ---
 
-## ⚠️ COMMON DANGERS & SOLUTIONS
+## 📊 EXAMPLE EXECUTIONS
 
-| Danger | What Happens | Safe Alternative |
-|--------|--------------|------------------|
-| `git clean -fd` | Deletes untracked files PERMANENTLY | `find . -name "*.tmp" -delete` ( specific only |
-| `git add .` | Stages EVERYTHING including accidental deletions | `git add lib/ docs/` ( specific folders |
-| `git reset --hard` | Loses staged changes | `git reset --soft` ( keeps changes staged |
-| Ignoring `git status` | Misses accidental deletions | ALWAYS review `git status --porcelain` |
+### Example 1: Normal Feature Commit
+```
+$ git status --porcelain
+ M lib/features/chat/data/repositories/chat_repository_impl.dart
+ M lib/features/chat/presentation/pages/chat_details_page.dart
+ ?? docs/CHAT_PHASE4_MASTER_PROMPT.md
+
+$ git add lib/ docs/
+
+$ git status --short  
+M lib/features/chat/data/repositories/chat_repository_impl.dart
+M lib/features/chat/presentation/pages/chat_details_page.dart
+A  docs/CHAT_PHASE4_MASTER_PROMPT.md
+
+$ git commit -m "feat(chat): Phase 4 - Chat Details implementation
+
+- Added ChatDetails page with realtime message updates
+- Implemented message composer and list widgets
+- Added contact request handling in chat
+- Created comprehensive documentation
+
+Files added: 1 (Markdown)
+Files modified: 2"
+
+$ git push origin develop
+```
+
+### Example 2: Refactor with Deletions
+```
+$ git status --porcelain
+ D docs/CHAT_PHASE4_REALTIME_SPEC.md
+ M lib/features/chat/README.md
+ A docs/CHAT_PHASE4_MASTER_PROMPT.md
+
+# Assistant should ask:
+"I see docs/CHAT_PHASE4_REALTIME_SPEC.md will be deleted. Is this intentional?"
+
+# After user confirmation:
+$ git add -A
+
+$ git status --short
+A docs/CHAT_PHASE4_MASTER_PROMPT.md  
+D docs/CHAT_PHASE4_REALTIME_SPEC.md
+M lib/features/chat/README.md
+
+$ git commit -m "refactor(chat): Consolidate Phase 4 documentation
+
+- Replaced CHAT_PHASE4_REALTIME_SPEC.md with CHAT_PHASE4_MASTER_PROMPT.md
+- Updated README.md with consolidated spec
+- Centralized all Phase 4 implementation details
+
+Files added: 1
+Files modified: 1  
+Files deleted: 1 (replaced with master prompt)"
+
+$ git push origin develop
+```
 
 ---
 
-## 📝 SUPABASE SYNC EXPLAINED
+## ✅ SUCCESS CRITERIA
 
-### Why the "Supabase Preview" check fails:
-1. You made schema changes via Dashboard/MCP
-2. Supabase applied them to your database
-3. GitHub sees these migrations in your database
-4. But GitHub doesn't find the corresponding SQL files in your branch
-5. GitHub thinks you're missing migrations and fails the check
-
-### This is NOT a problem for your app because:
-- Your database already has the changes
-- Your Flutter code works with the updated schema
-- The check failure is just a "documentation" mismatch
-
-### To fix it ( manual process ):
-1. Pull remote migrations: `supabase db pull`
-2. If that fails, your app still works
-3. The check failure can be ignored for now
+A successful commit workflow results in:
+1. ✅ **No accidental file deletions**
+2. ✅ **Clear, detailed commit message** 
+3. ✅ **Working tree clean** after push
+4. ✅ **All changes pushed to develop**
+5. ✅ **Build artifacts excluded**
 
 ---
 
-## ✅ FINAL CHECKLIST BEFORE COMMIT
+## 🔧 TROUBLESHOOTING
 
-- [ ] Reviewed `git status --porcelain` line by line
-- [ ] No unexpected `D` ( deleted file markers |
-- [ ] Used `git add <specific>` instead of `git add .`
-- [ ] Backed up any important changes
-- [ ] Written clear commit message
-- [ ] Ready to push to `develop`
+### Common Issues:
+- **"Changes not staged for commit"**: Run `git add` again
+- **"Nothing to commit"**: All changes already committed
+- **"Failed to push"**: Check network or pull latest changes
+- **"Merge conflicts"**: Pull and resolve before pushing
+
+### Recovery Commands:
+```bash
+# Unstage all changes (safe)
+git reset
+
+# Restore specific file from last commit
+git restore <file>
+
+# See commit history
+git log --oneline -10
+
+# Undo last commit (keep changes)
+git reset --soft HEAD~1
+```
+
+---
+
+## 📝 NOTES FOR ASSISTANT
+
+1. **ALWAYS run `git status --porcelain` first** - This is your safety net
+2. **NEVER use `git clean`** - Permanent deletion risk
+3. **NEVER use `git add .` without review** - Can stage accidental deletions
+4. **ALWAYS explain what you're doing** - User should understand each step
+5. **ALWAYS verify deletions are intentional** - Ask if unsure
+6. **ALWAYS provide detailed commit messages** - Future you will thank you
 
 **Remember**: It's better to commit slowly and safely than to lose hours of work to a single bad command.
+
+---
+
+## 🎉 FINAL RESULT
+
+When executed correctly, this workflow provides:
+- **Zero-risk commits** (no accidental deletions)
+- **Clear documentation** (detailed commit messages)
+- **Clean repository** (no build artifacts)
+- **Traceable history** (structured commits)
+- **Peace of mind** (safe, repeatable process)
