@@ -1,0 +1,194 @@
+/// Chat module enums - Clean Architecture
+/// 
+/// Defines all enums used in the chat module.
+/// These replace FlutterFlow's verbose enum definitions.
+library;
+
+/// Status returned by open_or_prepare_contact_context RPC
+enum ChatEntryStatus {
+  /// Room is ready, can navigate to chat
+  roomReady,
+  
+  /// A contact request is pending (Pro→Bride)
+  requestPending,
+  
+  /// Pro→Bride: Must show ContactRequestSheet first (new flow)
+  requiresRequest,
+  
+  /// Contact not allowed (tier, role, etc.)
+  notAllowed,
+  
+  /// User is blocked
+  blocked,
+  
+  /// Error occurred
+  error;
+
+  /// Parse from string (Supabase RPC response)
+  static ChatEntryStatus? fromString(String? value) {
+    if (value == null) return null;
+    return ChatEntryStatus.values.cast<ChatEntryStatus?>().firstWhere(
+      (e) => e?.name == value,
+      orElse: () => null,
+    );
+  }
+}
+
+/// Conversation status in chat_room_participants
+enum ConversationStatus {
+  pending,
+  active,
+  declined,
+  blocked,
+  reportedPending,
+  archived;
+
+  static ConversationStatus? fromString(String? value) {
+    if (value == null) return null;
+    return ConversationStatus.values.cast<ConversationStatus?>().firstWhere(
+      (e) => e?.name == value,
+      orElse: () => null,
+    );
+  }
+}
+
+/// Connection request status
+enum ConnectionRequestStatus {
+  pending,
+  accepted,
+  declined;
+
+  static ConnectionRequestStatus? fromString(String? value) {
+    if (value == null) return null;
+    return ConnectionRequestStatus.values.cast<ConnectionRequestStatus?>().firstWhere(
+      (e) => e?.name == value,
+      orElse: () => null,
+    );
+  }
+}
+
+/// Source of contact request (renamed in Phase 1)
+enum ContactRequestSource {
+  fromWishlist,
+  fromWedding,
+  fromAlert,
+  fromProfile;
+
+  static ContactRequestSource? fromString(String? value) {
+    if (value == null) return null;
+    return ContactRequestSource.values.cast<ContactRequestSource?>().firstWhere(
+      (e) => e?.name == value,
+      orElse: () => null,
+    );
+  }
+  
+  /// Display label for UI
+  String get displayLabel {
+    switch (this) {
+      case ContactRequestSource.fromWishlist:
+        return 'Depuis vos favoris';
+      case ContactRequestSource.fromWedding:
+        return 'Depuis un mariage';
+      case ContactRequestSource.fromAlert:
+        return 'Depuis une alerte';
+      case ContactRequestSource.fromProfile:
+        return 'Depuis le profil';
+    }
+  }
+}
+
+/// Message type
+enum MessageType {
+  text,
+  image,
+  audio;
+
+  static MessageType? fromString(String? value) {
+    if (value == null) return null;
+    return MessageType.values.cast<MessageType?>().firstWhere(
+      (e) => e?.name == value,
+      orElse: () => null,
+    );
+  }
+}
+
+/// Room type
+enum RoomType {
+  private,
+  public;
+
+  static RoomType? fromString(String? value) {
+    if (value == null) return null;
+    return RoomType.values.cast<RoomType?>().firstWhere(
+      (e) => e?.name == value,
+      orElse: () => null,
+    );
+  }
+}
+
+/// User role (shared with other modules)
+enum UserRole {
+  bride,
+  professional;
+
+  static UserRole? fromString(String? value) {
+    if (value == null) return null;
+    return UserRole.values.cast<UserRole?>().firstWhere(
+      (e) => e?.name == value,
+      orElse: () => null,
+    );
+  }
+}
+
+/// Report reason for message moderation
+enum ReportReason {
+  spam,
+  harassment,
+  inappropriateContent,
+  other;
+
+  static ReportReason? fromString(String? value) {
+    if (value == null) return null;
+    // Handle snake_case from backend
+    switch (value) {
+      case 'spam':
+        return ReportReason.spam;
+      case 'harassment':
+        return ReportReason.harassment;
+      case 'inappropriate_content':
+        return ReportReason.inappropriateContent;
+      case 'other':
+        return ReportReason.other;
+      default:
+        return null;
+    }
+  }
+
+  /// Convert to snake_case for backend
+  String toBackendValue() {
+    switch (this) {
+      case ReportReason.spam:
+        return 'spam';
+      case ReportReason.harassment:
+        return 'harassment';
+      case ReportReason.inappropriateContent:
+        return 'inappropriate_content';
+      case ReportReason.other:
+        return 'other';
+    }
+  }
+
+  /// Display label for UI
+  String get displayLabel {
+    switch (this) {
+      case ReportReason.spam:
+        return 'Spam';
+      case ReportReason.harassment:
+        return 'Harcèlement';
+      case ReportReason.inappropriateContent:
+        return 'Contenu inapproprié';
+      case ReportReason.other:
+        return 'Autre';
+    }
+  }
+}
