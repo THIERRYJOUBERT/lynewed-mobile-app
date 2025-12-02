@@ -81,6 +81,11 @@ class ContactRepositoryImpl implements ContactRepository {
     }
   }
 
+  @override
+  Stream<ContactRequest> subscribeToContactRequests() {
+    return _datasource.subscribeToContactRequests();
+  }
+
   // ============================================================
   // BLOCKING
   // ============================================================

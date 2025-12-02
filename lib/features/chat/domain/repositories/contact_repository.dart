@@ -37,6 +37,9 @@ abstract class ContactRepository {
   /// Decline a contact request (as Bride)
   Future<ChatResult<void>> declineContactRequest(String requestId);
 
+  /// Subscribe to new contact requests (realtime)
+  Stream<ContactRequest> subscribeToContactRequests();
+
   // ============================================================
   // BLOCKING
   // ============================================================

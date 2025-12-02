@@ -74,6 +74,9 @@ abstract class ChatRepository {
   /// Subscribe to new messages in a room
   Stream<ChatMessage> subscribeToMessages(String roomId);
 
+  /// Subscribe to conversation updates (new messages in any room)
+  Stream<void> subscribeToConversationUpdates();
+
   /// Dispose realtime subscriptions
   void disposeSubscriptions();
 

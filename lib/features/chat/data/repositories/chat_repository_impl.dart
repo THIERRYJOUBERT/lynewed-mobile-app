@@ -151,6 +151,11 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
+  Stream<void> subscribeToConversationUpdates() {
+    return _datasource.subscribeToConversationUpdates();
+  }
+
+  @override
   void disposeSubscriptions() {
     _datasource.disposeSubscriptions();
   }

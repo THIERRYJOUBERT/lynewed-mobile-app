@@ -1,8 +1,10 @@
 /// Conversations notifier - Clean Architecture
 /// 
 /// Manages state for the Messages page using ChangeNotifier.
+/// Includes realtime subscriptions for new messages and contact requests.
 library;
 
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/entities.dart';
 import '../../domain/repositories/chat_repository.dart';
@@ -21,6 +23,9 @@ class ConversationsNotifier extends ChangeNotifier {
 
   final ChatRepository _chatRepository;
   final ContactRepository _contactRepository;
+
+  StreamSubscription<void>? _messagesSubscription;
+  StreamSubscription<ContactRequest>? _requestsSubscription;
 
   ConversationsState _state = const ConversationsInitial();
   ConversationsState get state => _state;
@@ -56,9 +61,48 @@ class ConversationsNotifier extends ChangeNotifier {
         pendingRequests: requestsResult.data ?? [],
         blockedUsers: blockedResult.data ?? [],
       ));
+
+      // Setup realtime subscriptions after initial load
+      _setupRealtimeListeners();
     } catch (e) {
       _emit(ConversationsError('Error loading data: $e'));
     }
+  }
+
+  /// Setup realtime subscriptions for new messages and contact requests
+  void _setupRealtimeListeners() {
+    // Cancel existing subscriptions
+    _messagesSubscription?.cancel();
+    _requestsSubscription?.cancel();
+
+    // 1. Listen for new messages (refresh conversations list)
+    _messagesSubscription = _chatRepository
+        .subscribeToConversationUpdates()
+        .listen((_) {
+          // Debounce: only refresh if not already refreshing
+          final currentState = _state;
+          if (currentState is ConversationsLoaded && !currentState.isRefreshing) {
+            refresh();
+          }
+        }, onError: (error) {
+          debugPrint('Conversations realtime error: $error');
+        });
+
+    // 2. Listen for new contact requests
+    _requestsSubscription = _contactRepository
+        .subscribeToContactRequests()
+        .listen((request) {
+          final currentState = _state;
+          if (currentState is ConversationsLoaded) {
+            // Check if request already exists
+            if (!currentState.pendingRequests.any((r) => r.id == request.id)) {
+              final updatedRequests = [request, ...currentState.pendingRequests];
+              _emit(currentState.copyWith(pendingRequests: updatedRequests));
+            }
+          }
+        }, onError: (error) {
+          debugPrint('Contact requests realtime error: $error');
+        });
   }
 
   /// Refresh conversations only (background refresh)
@@ -169,5 +213,13 @@ class ConversationsNotifier extends ChangeNotifier {
     }
     
     return false;
+  }
+
+  @override
+  void dispose() {
+    _messagesSubscription?.cancel();
+    _requestsSubscription?.cancel();
+    _chatRepository.disposeSubscriptions();
+    super.dispose();
   }
 }

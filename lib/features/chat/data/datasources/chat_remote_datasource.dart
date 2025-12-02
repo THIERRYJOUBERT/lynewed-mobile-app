@@ -5,6 +5,7 @@ library;
 
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/entities.dart';
 
@@ -169,6 +170,77 @@ class ChatRemoteDatasource {
       channel.unsubscribe();
     }
     _subscriptions.clear();
+  }
+
+  /// Subscribe to conversation updates (new messages in any room)
+  /// Used by MessagesPage to refresh when new messages arrive
+  Stream<void> subscribeToConversationUpdates() {
+    final controller = StreamController<void>.broadcast();
+
+    // Unsubscribe from previous subscription if exists
+    _subscriptions['conversations']?.unsubscribe();
+
+    final channel = _client
+        .channel('chat_messages:all')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'chat_messages',
+          callback: (payload) {
+            // Just notify that something changed
+            controller.add(null);
+          },
+        )
+        .subscribe();
+
+    _subscriptions['conversations'] = channel;
+
+    controller.onCancel = () {
+      channel.unsubscribe();
+      _subscriptions.remove('conversations');
+    };
+
+    return controller.stream;
+  }
+
+  /// Subscribe to new contact requests
+  /// Used by MessagesPage to show new pending requests
+  Stream<ContactRequest> subscribeToContactRequests() {
+    final controller = StreamController<ContactRequest>.broadcast();
+
+    // Unsubscribe from previous subscription if exists
+    _subscriptions['contact_requests']?.unsubscribe();
+
+    final channel = _client
+        .channel('connection_requests:new')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'connection_requests',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'bride_profile_id',
+            value: _currentUserId,
+          ),
+          callback: (payload) {
+            try {
+              final request = ContactRequest.fromMap(payload.newRecord);
+              controller.add(request);
+            } catch (e) {
+              debugPrint('Error parsing contact request: $e');
+            }
+          },
+        )
+        .subscribe();
+
+    _subscriptions['contact_requests'] = channel;
+
+    controller.onCancel = () {
+      channel.unsubscribe();
+      _subscriptions.remove('contact_requests');
+    };
+
+    return controller.stream;
   }
 
   // ============================================================

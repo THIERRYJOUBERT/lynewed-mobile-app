@@ -932,13 +932,15 @@ lib/features/chat/
 - [ ] Section "Bloqués" (utilisateurs bloqués)
 - [ ] Appliquer Design System
 
-#### Phase 4: Chat Details Refactorisé (12-16h)
-- [ ] Créer ChatRoomBloc (état, realtime)
-- [ ] Refactoriser MessageList en composants
-- [ ] Refactoriser MessageComposer
-- [ ] Gérer mode "contact request" (Accept/Decline)
+#### Phase 4: Chat Details + Realtime (12-16h)
+- [ ] Créer ChatRoomNotifier (ChangeNotifier) avec état et realtime
+- [ ] Refactoriser MessageList en composants (MessageBubble, MessageList, MessageComposer)
+- [ ] Implémenter Realtime messages (subscriptions Supabase)
+- [ ] Ajouter Realtime MessagesPage (nouvelles demandes + messages)
+- [ ] Gérer mode "contact request" (Accept/Decline dans chat)
 - [ ] Préserver fonctionnalités médias (images, audio)
 - [ ] Préserver bouton appel vidéo (Agora)
+- [ ] Appliquer Design System 100%
 
 #### Phase 5: Modération (6-8h) - DERNIER
 - [ ] Créer `ReportMessageSheet` (4 raisons)
