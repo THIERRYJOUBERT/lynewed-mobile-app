@@ -81,7 +81,7 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
     if (request.initiatorId == _currentUserId) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('En attente de réponse...'),
+          content: Text('Waiting for response...'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -200,7 +200,7 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
         unselectedLabelStyle: LynewedTextStyles.labelMedium,
         tabs: const [
           Tab(text: 'Conversations'),
-          Tab(text: 'Bloqués'),
+          Tab(text: 'Blocked'),
         ],
       ),
     );
@@ -240,7 +240,7 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
             const SliverFillRemaining(
               hasScrollBody: false,
               child: ChatEmptyState(
-                message: 'Aucune conversation',
+                message: 'No conversations',
                 icon: Icons.chat_bubble_outline,
               ),
             )
@@ -290,7 +290,7 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
           child: Text(
-            'Demandes de contact',
+            'Contact Requests',
             style: LynewedTextStyles.bodyLarge.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -321,7 +321,7 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
   Widget _buildBlockedTab(ConversationsLoaded state) {
     if (!state.hasBlockedUsers) {
       return const ChatEmptyState(
-        message: 'Aucun utilisateur bloqué',
+        message: 'No blocked users',
         icon: Icons.block,
       );
     }
@@ -349,17 +349,17 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Débloquer'),
-        content: Text('Voulez-vous débloquer ${user.fullName ?? 'cet utilisateur'} ?'),
+        title: const Text('Unblock'),
+        content: Text('Do you want to unblock ${user.fullName ?? 'this user'}?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Annuler'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: LynewedComponentStyles.primaryButton(),
-            child: const Text('Débloquer'),
+            child: const Text('Unblock'),
           ),
         ],
       ),

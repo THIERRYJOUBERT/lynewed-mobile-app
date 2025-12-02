@@ -2,10 +2,12 @@
 /// 
 /// Bottom sheet for reporting a user (professional) from profile views.
 /// Can be used from ProfessionalDetailsSheet, ProDetailsPage, or any profile view.
+/// Uses LynewedSheet for consistent design with other sheets.
 library;
 
 import 'package:flutter/material.dart';
 import '/core/design/design.dart';
+import '/core/design/widgets/widgets.dart';
 import '../../domain/entities/entities.dart';
 
 /// Callback for report action
@@ -89,143 +91,89 @@ class _ReportUserSheetState extends State<ReportUserSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: LynewedComponentStyles.bottomSheetDecoration(),
-      child: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildHeader(),
-              const Divider(color: LynewedColors.border, height: 1),
-              _buildUserInfo(),
-              const Divider(color: LynewedColors.border, height: 1),
-              _buildReasonSelection(),
-              _buildDetailsInput(),
-              _buildSubmitButton(),
-              const SizedBox(height: LynewedSpacing.md),
-            ],
-          ),
+    return LynewedSheet(
+      title: 'Report User',
+      onClose: () => Navigator.pop(context),
+      bottomAction: SizedBox(
+        width: double.infinity,
+        child: LynewedButton(
+          text: 'Submit Report',
+          onPressed: _canSubmit ? _handleSubmit : null,
+          isLoading: _isSubmitting,
         ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // User info
+          _buildUserInfo(),
+          const SizedBox(height: 30), // Design System: 30px inter-section
+          
+          // Reason selection
+          const LynewedSectionTitle('Reason for Report'),
+          const SizedBox(height: 10), // Design System: 10px label→content
+          ...ReportReason.values.map((reason) => _buildReasonOption(reason)),
+          const SizedBox(height: 30), // Design System: 30px inter-section
+          
+          // Details input (grey background for visual consistency)
+          LynewedTextField(
+            controller: _detailsController,
+            label: 'Additional Details (optional)',
+            hint: 'Describe the issue...',
+            maxLines: 3,
+            maxLength: 500,
+            isValueInput: false, // Grey background for consistency
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildHeader() {
-    return Column(
+  Widget _buildUserInfo() {
+    return Row(
       children: [
-        // Handle bar
-        Container(
-          width: 40,
-          height: 4,
-          margin: const EdgeInsets.only(top: 12, bottom: 8),
-          decoration: BoxDecoration(
-            color: LynewedColors.gray200,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-        // Title with close button
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: LynewedSpacing.md,
-            vertical: LynewedSpacing.sm,
-          ),
-          child: Row(
-            children: [
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close, size: 24),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              const SizedBox(width: LynewedSpacing.sm),
-              Expanded(
-                child: Text(
-                  'Signaler un utilisateur',
-                  style: LynewedTextStyles.titleSmall.copyWith(
-                    fontWeight: FontWeight.w600,
+        // Avatar
+        CircleAvatar(
+          radius: 24,
+          backgroundColor: LynewedColors.gray100,
+          backgroundImage: widget.userAvatarUrl != null
+              ? NetworkImage(widget.userAvatarUrl!)
+              : null,
+          child: widget.userAvatarUrl == null
+              ? Text(
+                  _getInitials(widget.userName),
+                  style: LynewedTextStyles.bodyMedium.copyWith(
+                    color: LynewedColors.textSecondary,
+                    fontWeight: FontWeight.w500,
                   ),
+                )
+              : null,
+        ),
+        const SizedBox(width: 16),
+        // Name and info
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.userName,
+                style: LynewedTextStyles.bodyLarge.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'You are about to report this profile',
+                style: LynewedTextStyles.bodySmall.copyWith(
+                  color: LynewedColors.textSecondary,
                 ),
               ),
             ],
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildUserInfo() {
-    return Padding(
-      padding: const EdgeInsets.all(LynewedSpacing.md),
-      child: Row(
-        children: [
-          // Avatar
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: LynewedColors.gray100,
-            backgroundImage: widget.userAvatarUrl != null
-                ? NetworkImage(widget.userAvatarUrl!)
-                : null,
-            child: widget.userAvatarUrl == null
-                ? Text(
-                    _getInitials(widget.userName),
-                    style: LynewedTextStyles.bodyMedium.copyWith(
-                      color: LynewedColors.textSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  )
-                : null,
-          ),
-          const SizedBox(width: LynewedSpacing.md),
-          // Name and info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.userName,
-                  style: LynewedTextStyles.bodyLarge.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Vous êtes sur le point de signaler ce profil',
-                  style: LynewedTextStyles.bodySmall.copyWith(
-                    color: LynewedColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReasonSelection() {
-    return Padding(
-      padding: const EdgeInsets.all(LynewedSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Raison du signalement',
-            style: LynewedTextStyles.bodyMedium.copyWith(
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: LynewedSpacing.sm),
-          ...ReportReason.values.map((reason) => _buildReasonOption(reason)),
-        ],
-      ),
     );
   }
 
@@ -237,12 +185,12 @@ class _ReportUserSheetState extends State<ReportUserSheet> {
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: LynewedSpacing.md,
-          vertical: LynewedSpacing.sm,
+          horizontal: 16,
+          vertical: 12,
         ),
-        margin: const EdgeInsets.only(bottom: LynewedSpacing.xs),
+        margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          color: isSelected ? LynewedColors.gray100 : Colors.transparent,
+          color: Colors.transparent, // Always transparent background
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? LynewedColors.primary : LynewedColors.border,
@@ -256,7 +204,7 @@ class _ReportUserSheetState extends State<ReportUserSheet> {
               size: 20,
               color: isSelected ? LynewedColors.primary : LynewedColors.textSecondary,
             ),
-            const SizedBox(width: LynewedSpacing.sm),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -282,53 +230,6 @@ class _ReportUserSheetState extends State<ReportUserSheet> {
     );
   }
 
-  Widget _buildDetailsInput() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: LynewedSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Détails supplémentaires (optionnel)',
-            style: LynewedTextStyles.bodyMedium.copyWith(
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: LynewedSpacing.sm),
-          TextField(
-            controller: _detailsController,
-            maxLines: 3,
-            maxLength: 500,
-            decoration: LynewedComponentStyles.inputDecoration(
-              hintText: 'Décrivez le problème...',
-            ),
-            style: LynewedTextStyles.bodyMedium,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSubmitButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: LynewedSpacing.md),
-      child: ElevatedButton(
-        onPressed: _canSubmit ? _handleSubmit : null,
-        style: LynewedComponentStyles.primaryButton(),
-        child: _isSubmitting
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: LynewedColors.textOnPrimary,
-                ),
-              )
-            : const Text('Envoyer le signalement'),
-      ),
-    );
-  }
-
   String _getInitials(String name) {
     final parts = name.trim().split(' ');
     if (parts.isEmpty) return '?';
@@ -339,13 +240,13 @@ class _ReportUserSheetState extends State<ReportUserSheet> {
   String _getReasonDescription(ReportReason reason) {
     switch (reason) {
       case ReportReason.spam:
-        return 'Messages non sollicités ou publicité';
+        return 'Unsolicited messages or advertising';
       case ReportReason.harassment:
-        return 'Comportement abusif ou intimidant';
+        return 'Abusive or intimidating behavior';
       case ReportReason.inappropriateContent:
-        return 'Contenu offensant ou inapproprié';
+        return 'Offensive or inappropriate content';
       case ReportReason.other:
-        return 'Autre raison non listée';
+        return 'Other reason not listed';
     }
   }
 }

@@ -74,7 +74,7 @@ class _ContactRequestReviewSheetState extends State<ContactRequestReviewSheet> {
       
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Erreur lors de l\'acceptation'),
+          content: Text('Error accepting request'),
           backgroundColor: LynewedColors.error,
         ),
       );
@@ -101,7 +101,7 @@ class _ContactRequestReviewSheetState extends State<ContactRequestReviewSheet> {
       
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Erreur lors du refus'),
+          content: Text('Error declining request'),
           backgroundColor: LynewedColors.error,
         ),
       );
@@ -146,12 +146,12 @@ class _ContactRequestReviewSheetState extends State<ContactRequestReviewSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Demande de contact',
+                          'Contact Request',
                           style: LynewedTextStyles.titleSmall,
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          widget.request.otherFullName ?? 'Professionnel',
+                          widget.request.otherFullName ?? 'Professional',
                           style: LynewedTextStyles.bodySmall.copyWith(
                             color: LynewedColors.textSecondary,
                           ),
@@ -255,7 +255,7 @@ class _ContactRequestReviewSheetState extends State<ContactRequestReviewSheet> {
                                       color: LynewedColors.primary,
                                     ),
                                   )
-                                : const Text('Refuser'),
+                                : const Text('Decline'),
                           ),
                         ),
                       ),
@@ -278,7 +278,7 @@ class _ContactRequestReviewSheetState extends State<ContactRequestReviewSheet> {
                                       color: LynewedColors.textOnPrimary,
                                     ),
                                   )
-                                : const Text('Accepter'),
+                                : const Text('Accept'),
                           ),
                         ),
                       ),
@@ -338,11 +338,11 @@ class _ContactRequestReviewSheetState extends State<ContactRequestReviewSheet> {
     final diff = now.difference(date);
     
     if (diff.inDays == 0) {
-      return 'Aujourd\'hui';
+      return 'Today';
     } else if (diff.inDays == 1) {
-      return 'Hier';
+      return 'Yesterday';
     } else if (diff.inDays < 7) {
-      return 'Il y a ${diff.inDays} jours';
+      return '${diff.inDays} days ago';
     } else {
       return '${date.day}/${date.month}/${date.year}';
     }

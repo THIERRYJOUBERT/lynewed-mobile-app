@@ -260,7 +260,7 @@ class _MapPageState extends State<MapPage> {
     return Container(
       width: 40.0,
       height: 40.0,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: LynewedColors.primary,
         shape: BoxShape.circle,
       ),
@@ -309,7 +309,7 @@ class _MapPageState extends State<MapPage> {
               child: Container(
                 width: 40.0,
                 height: 40.0,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: LynewedColors.primary,
                   shape: BoxShape.circle,
                 ),
@@ -460,7 +460,7 @@ class _MapPageState extends State<MapPage> {
             return IconButton(
               icon: Badge(
                 isLabelVisible: hasActiveFilters,
-                child: Icon(Icons.tune, color: LynewedColors.primary),
+                child: const Icon(Icons.tune, color: LynewedColors.primary),
               ),
               onPressed: () => _showFilterSheet(context),
             );
@@ -600,7 +600,7 @@ class _MapPageState extends State<MapPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.search, size: 48, color: LynewedColors.gray300),
+        const Icon(Icons.search, size: 48, color: LynewedColors.gray300),
         const SizedBox(height: 12.0),
         Text(
           'Search for a location',
@@ -673,7 +673,9 @@ class _MapPageState extends State<MapPage> {
       
       // Get current position
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
       
       if (!_mounted || _mapController == null) return;
@@ -724,6 +726,10 @@ class _MapPageState extends State<MapPage> {
     if (!_mounted) return;
     final isBride = widget.userRole == 'bride';
     
+    // Capture references before async gaps
+    final navigator = Navigator.of(ctx);
+    final scaffoldMessenger = ScaffoldMessenger.of(ctx);
+    
     if (isBride) {
       // Show loader while fetching existing wedding
       showDialog(
@@ -737,8 +743,10 @@ class _MapPageState extends State<MapPage> {
         final existingWedding = await _datasource.getMyWedding();
         
         if (!_mounted) return;
-        Navigator.of(ctx).pop(); // Hide loader
+        navigator.pop(); // Hide loader
 
+        if (!ctx.mounted) return;
+        
         // Show create/edit sheet
         showModalBottomSheet(
           context: ctx,
@@ -749,7 +757,7 @@ class _MapPageState extends State<MapPage> {
             onSaved: () {
               // Invalidate cache to show updated data
               MarkerDetailsServiceProvider.instance.clearCache();
-              ScaffoldMessenger.of(ctx).showSnackBar(
+              scaffoldMessenger.showSnackBar(
                 SnackBar(
                   content: Text(
                     existingWedding != null 
@@ -762,7 +770,7 @@ class _MapPageState extends State<MapPage> {
               _mapState.refresh(); // Refresh map
             },
             onDeleted: () {
-              ScaffoldMessenger.of(ctx).showSnackBar(
+              scaffoldMessenger.showSnackBar(
                 const SnackBar(
                   content: Text('Wedding deleted successfully'),
                   backgroundColor: LynewedColors.success,
@@ -774,9 +782,9 @@ class _MapPageState extends State<MapPage> {
         );
       } catch (e) {
         if (!_mounted) return;
-        Navigator.of(ctx).pop(); // Hide loader on error
+        navigator.pop(); // Hide loader on error
         
-        ScaffoldMessenger.of(ctx).showSnackBar(
+        scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text('Error loading wedding: $e'),
             backgroundColor: LynewedColors.error,
@@ -793,7 +801,7 @@ class _MapPageState extends State<MapPage> {
           onSaved: () {
             // Invalidate cache to show new alert
             MarkerDetailsServiceProvider.instance.clearCache();
-            ScaffoldMessenger.of(ctx).showSnackBar(
+            scaffoldMessenger.showSnackBar(
               const SnackBar(
                 content: Text('Alert created successfully'),
                 backgroundColor: LynewedColors.success,
@@ -861,12 +869,12 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: LynewedColors.background,
           borderRadius: LynewedBorders.sheetBorderRadius,
         ),
-        padding: EdgeInsets.all(LynewedSpacing.xxxl + LynewedSpacing.sm),
-        child: Center(
+        padding: const EdgeInsets.all(LynewedSpacing.xxxl + LynewedSpacing.sm),
+        child: const Center(
           child: CircularProgressIndicator(
             color: LynewedColors.primary,
             strokeWidth: 2,
@@ -877,16 +885,16 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
 
     if (_error != null || _details == null) {
       return Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: LynewedColors.background,
           borderRadius: LynewedBorders.sheetBorderRadius,
         ),
-        padding: EdgeInsets.all(LynewedSpacing.xxxl + LynewedSpacing.sm),
+        padding: const EdgeInsets.all(LynewedSpacing.xxxl + LynewedSpacing.sm),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              const Icon(
                 Icons.error_outline,
                 size: 48,
                 color: LynewedColors.error,
@@ -1074,6 +1082,10 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
   Future<void> _handleViewAuthorProfile(BuildContext context) async {
     final alertDetails = _details as AlertDetails;
     
+    // Capture navigator and scaffoldMessenger before async gap
+    final navigator = Navigator.of(context);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    
     // EXACT same logic as ItemAllAlertWidget (lines 222-256)
     // This is the code that WORKS in dashboard_pro
     final proDetails = await actions.getProItemDetailsAction(
@@ -1084,7 +1096,7 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
     
     if (proDetails?.proProfileId != null && proDetails!.proProfileId.isNotEmpty) {
       // Close the sheet first
-      Navigator.of(context).pop();
+      navigator.pop();
       
       // Then navigate using the PARENT context (widget.context is MapPage context)
       // We need a small delay to let the sheet close
@@ -1103,7 +1115,7 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
         }.withoutNulls,
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Text('Unable to load author profile'),
           duration: Duration(milliseconds: 2000),

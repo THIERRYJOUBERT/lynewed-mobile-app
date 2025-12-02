@@ -22,8 +22,9 @@ import '../../domain/entities/professional_details.dart' show SubscriptionTier;
 import '../../domain/entities/alert_details.dart' show AlertDetails;
 import '../../domain/entities/wedding_details.dart' show WeddingDetails;
 
-// Chat module imports for moderation
+// Chat module imports for moderation and navigation
 import '/features/chat/presentation/sheets/sheets.dart';
+import '/features/chat/presentation/pages/chat_details_page.dart';
 import '/features/chat/domain/repositories/contact_repository.dart';
 import '/features/chat/data/repositories/contact_repository_impl.dart';
 
@@ -199,24 +200,58 @@ class MapActionsService {
   }
 
   /// Navigate to chat with professional
+  /// Uses ContactRepository to prepare context and get/create room
   Future<void> navigateToChat(
     BuildContext context,
     String otherProfileId, {
     String? existingRoomId,
   }) async {
-    // Check for existing chat room or create new one
-    final roomId = existingRoomId ?? await _getOrCreateChatRoom(otherProfileId);
+    // Use ContactRepository to prepare contact context
+    final result = await _contactRepository.prepareContactContext(otherProfileId);
     
     if (!context.mounted) return;
     
-    context.pushNamed(
-      ChatDetailsWidget.routeName,
-      queryParameters: {
-        'otherProfileId': otherProfileId,
-        if (roomId != null) 'roomId': roomId,
-        'isRoomEmpty': serializeParam(roomId == null, ParamType.bool),
-      }.withoutNulls,
-    );
+    if (result.isFailure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.error ?? 'Unable to start conversation'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
+    final chatContext = result.data!;
+    
+    // If requires contact request (Pro→Bride), show request sheet
+    if (chatContext.requiresContactRequest) {
+      // TODO: Show ContactRequestSheet for Pro→Bride flow
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Contact request required - coming soon'),
+        ),
+      );
+      return;
+    }
+    
+    // Navigate to chat details page
+    if (chatContext.canNavigateToChat && chatContext.roomId != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ChatDetailsPage(
+            roomId: chatContext.roomId!,
+            otherProfileId: chatContext.otherProfileId ?? otherProfileId,
+          ),
+        ),
+      );
+    } else if (chatContext.hasError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(chatContext.reason ?? 'Unable to start conversation'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   /// Navigate to contact bride (initiate chat request)
@@ -498,31 +533,6 @@ class MapActionsService {
         'proDetails': serializeParam(proDetails, ParamType.DataStruct),
       }.withoutNulls,
     );
-  }
-
-  /// Get or create a chat room with another user
-  Future<String?> _getOrCreateChatRoom(String otherProfileId) async {
-    try {
-      final userId = _supabase.auth.currentUser?.id;
-      if (userId == null) return null;
-
-      // Check for existing room
-      final existingRoom = await _supabase
-          .from('chat_rooms')
-          .select('id')
-          .or('and(user1_id.eq.$userId,user2_id.eq.$otherProfileId),and(user1_id.eq.$otherProfileId,user2_id.eq.$userId)')
-          .maybeSingle();
-
-      if (existingRoom != null) {
-        return existingRoom['id'] as String;
-      }
-
-      // No existing room, return null to create on first message
-      return null;
-    } catch (e) {
-      debugPrint('Error getting chat room: $e');
-      return null;
-    }
   }
 }
 

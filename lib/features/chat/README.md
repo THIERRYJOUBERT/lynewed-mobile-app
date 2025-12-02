@@ -1,8 +1,9 @@
 # Chat Module
 
-**Version:** 1.1.0  
+**Version:** 2.0.0  
 **Created:** 2025-12-02  
-**Status:** 🚧 In Progress (Phase 3 Complete)
+**Updated:** 2025-12-02  
+**Status:** ✅ Complete (Phase 6)
 
 ## Overview
 
@@ -35,11 +36,32 @@ lib/features/chat/
 │       ├── contact_repository_impl.dart # Contact implementation
 │       └── repositories.dart            # Barrel export
 ├── presentation/
-│   ├── bloc/                        # State management (TODO)
-│   ├── pages/                       # Full-screen pages (TODO)
-│   ├── widgets/                     # Reusable widgets (TODO)
+│   ├── bloc/
+│   │   ├── conversations_cubit.dart     # Messages page state
+│   │   ├── conversations_state.dart     # Conversations state
+│   │   ├── chat_room_notifier.dart      # Chat room state
+│   │   ├── chat_room_state.dart         # Room state
+│   │   └── bloc.dart                    # Barrel export
+│   ├── pages/
+│   │   ├── messages_page.dart           # Unified messages list
+│   │   ├── chat_details_page.dart       # Chat conversation
+│   │   └── pages.dart                   # Barrel export
+│   ├── widgets/
+│   │   ├── conversation_tile.dart       # Conversation list item
+│   │   ├── contact_request_avatar.dart  # Request avatar
+│   │   ├── blocked_user_tile.dart       # Blocked user item
+│   │   ├── message_bubble.dart          # Chat message bubble
+│   │   ├── message_composer.dart        # Text/media input
+│   │   ├── message_list.dart            # Scrollable messages
+│   │   ├── empty_state_widget.dart      # Empty states
+│   │   └── widgets.dart                 # Barrel export
 │   └── sheets/
-│       └── contact_request_sheet.dart   # Pro→Bride request sheet
+│       ├── contact_request_sheet.dart       # Pro→Bride request
+│       ├── contact_request_review_sheet.dart # Bride review
+│       ├── conversation_actions_sheet.dart  # Archive/actions
+│       ├── message_actions_sheet.dart       # Delete/report/block
+│       ├── report_user_sheet.dart           # Report user
+│       └── sheets.dart                      # Barrel export
 ├── chat.dart                        # Module barrel export
 └── README.md                        # This file
 ```
@@ -177,69 +199,84 @@ flutter test lib/features/chat/test/domain/repositories/contact_repository_test.
 - [x] **Phase 1**: Backend - Logique Contact
 - [x] **Phase 2**: Foundation Frontend
 - [x] **Phase 3**: Messages Page Unifiée
-- [ ] **Phase 4**: Chat Details + Realtime (current)
-- [ ] **Phase 5**: Modération
-- [ ] **Phase 6**: Tests & Cleanup
+- [x] **Phase 4**: Chat Details + Realtime
+- [x] **Phase 5**: Modération
+- [x] **Phase 6**: Tests & Cleanup
 
-### Phase 4 Details: Chat Details Refactorisé + Realtime
+## Features
 
-**Objectif:** Créer la page ChatDetails avec gestion complète du temps réel
+### Messaging
+- ✅ Unified messages page (Brides & Pros)
+- ✅ Real-time message updates
+- ✅ Text, image, and audio messages
+- ✅ Message pagination (infinite scroll)
+- ✅ Unread count badges
+- ✅ Archive conversations
 
-**Composants à créer:**
-- `ChatRoomNotifier` - State management pour un room (ChangeNotifier)
-- `MessageList` - Liste des messages avec pagination
-- `MessageBubble` - Widget pour afficher un message
-- `MessageComposer` - Composer pour écrire/envoyer messages
-- `chat_details_page.dart` - Page principale
+### Contact System
+- ✅ Bride → Pro: Direct chat
+- ✅ Pro → Bride: Request sheet with message
+- ✅ Pro → Pro: Direct chat
+- ✅ Contact request review (Accept/Decline)
+- ✅ Real-time request notifications
 
-**Realtime à implémenter:**
+### Moderation
+- ✅ Report messages (spam, harassment, inappropriate, other)
+- ✅ Report users from profile sheets
+- ✅ Block users from chat
+- ✅ Blocked users list with unblock
+- ✅ Support tickets creation
 
-1. **MessagesPage (Messagerie) - Realtime:**
-   ```dart
-   // ConversationsNotifier doit écouter:
-   - Nouveaux messages (via subscribeToMessages)
-   - Nouvelles demandes de contact (via subscribeToContactRequests)
-   - Changements de statut (accepté/refusé)
-   
-   // Auto-refresh quand:
-   - Nouveau message arrive
-   - Nouvelle demande arrive
-   - Demande acceptée/refusée
-   ```
+### Video Calls
+- ✅ Agora integration preserved
+- ✅ Video call button in chat header
 
-2. **ChatDetails (Chat) - Realtime:**
-   ```dart
-   // ChatRoomNotifier doit écouter:
-   - Nouveaux messages en temps réel
-   - Suppression/édition de messages
-   - Changement de statut room
-   
-   // Affichage immédiat:
-   - Nouveau message apparaît
-   - Indicateur "en train d'écrire" (optionnel Phase 5)
-   - Accusé de réception (optionnel Phase 5)
-   ```
+## Moderation Flow
 
-**Gestion ChangeNotifier:**
-- Chaque notifier gère ses propres subscriptions
-- Dispose correctement les streams
-- Notifie l'UI à chaque changement
-- Gère les erreurs de connexion
+### Report Message
+1. Long press on message → Actions sheet
+2. Select "Signaler" → Report reasons
+3. Choose reason + optional details
+4. Submit → Message hidden + support ticket created
 
-**Fonctionnalités:**
-- ✅ Affichage messages avec pagination
-- ✅ Envoi texte/image/audio
-- ✅ Suppression propre message
-- ✅ Mode "contact request" (Accept/Decline dans chat)
-- ✅ Bouton appel vidéo (Agora préservé)
-- ✅ Realtime messages
-- ✅ Realtime demandes (MessagesPage)
-- ✅ Design System 100%
+### Report User
+1. From Pro profile (map sheet or full page)
+2. Tap flag icon → Report sheet
+3. Choose reason + optional details
+4. Submit → Support ticket created
 
-**Estimation:** 12-16h
+### Block User
+1. Long press on message → Actions sheet
+2. Select "Bloquer" → Confirmation dialog
+3. Confirm → User blocked, navigate back
+4. Blocked users visible in "Bloqués" tab
+5. Unblock available from blocked list
+
+## Supabase Tables
+
+| Table | Purpose |
+|-------|---------|
+| `chat_rooms` | Conversation rooms |
+| `chat_messages` | Messages |
+| `connection_requests` | Pro→Bride requests |
+| `user_blocks` | Blocked users |
+| `support_tickets` | Reports & support |
+| `reports` | Message reports |
+
+## Realtime Subscriptions
+
+```dart
+// ConversationsNotifier (Messages page)
+- subscribeToConversationUpdates() // New messages
+- subscribeToContactRequests()     // New requests
+
+// ChatRoomNotifier (Chat details)
+- subscribeToMessages(roomId)      // Room messages
+```
 
 ## Related Documentation
 
 - `docs/audits/CHAT_CONTACT_FEATURE_AUDIT.md` - Complete audit
 - `docs/App/DESIGN_SYSTEM.md` - UI guidelines
 - `docs/archive/chat_backup_2025-12-02/` - FlutterFlow backup
+- `.windsurf/CHAT_REFACTORING_PROMPT.md` - Refactoring plan

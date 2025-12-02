@@ -169,9 +169,9 @@ class LynewedDetailsSheet extends StatelessWidget {
             ),
           ],
           
-          // Trailing
+          // Trailing (12px spacing from text block)
           if (trailing != null) ...[
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
             trailing!,
           ],
         ],

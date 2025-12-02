@@ -98,7 +98,7 @@ class _MessageActionsSheetState extends State<MessageActionsSheet> {
           // Delete option (own messages)
           _buildOptionTile(
             icon: Icons.delete_outline,
-            label: 'Supprimer le message',
+            label: 'Delete Message',
             onTap: widget.onDelete,
             isDestructive: true,
           ),
@@ -106,7 +106,7 @@ class _MessageActionsSheetState extends State<MessageActionsSheet> {
           // Report option (other's messages)
           _buildOptionTile(
             icon: Icons.flag_outlined,
-            label: 'Signaler ce message',
+            label: 'Report Message',
             onTap: () {
               setState(() {
                 _showReportOptions = true;
@@ -117,7 +117,7 @@ class _MessageActionsSheetState extends State<MessageActionsSheet> {
           // Block option (other's messages)
           _buildOptionTile(
             icon: Icons.block,
-            label: 'Bloquer cet utilisateur',
+            label: 'Block User',
             onTap: widget.onBlock,
             isDestructive: true,
           ),
@@ -126,7 +126,7 @@ class _MessageActionsSheetState extends State<MessageActionsSheet> {
         // Cancel
         _buildOptionTile(
           icon: Icons.close,
-          label: 'Annuler',
+          label: 'Cancel',
           onTap: () => Navigator.pop(context),
         ),
 
@@ -174,7 +174,7 @@ class _MessageActionsSheetState extends State<MessageActionsSheet> {
               ),
               const SizedBox(width: LynewedSpacing.sm),
               Text(
-                'Signaler le message',
+                'Report Message',
                 style: LynewedTextStyles.titleSmall.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -192,7 +192,7 @@ class _MessageActionsSheetState extends State<MessageActionsSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Raison du signalement',
+                'Reason for Report',
                 style: LynewedTextStyles.labelMedium.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -206,7 +206,7 @@ class _MessageActionsSheetState extends State<MessageActionsSheet> {
 
               // Details field (optional)
               Text(
-                'Détails (optionnel)',
+                'Details (optional)',
                 style: LynewedTextStyles.labelMedium.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -217,7 +217,7 @@ class _MessageActionsSheetState extends State<MessageActionsSheet> {
                 maxLines: 3,
                 maxLength: 500,
                 decoration: LynewedComponentStyles.formInputDecoration(
-                  hintText: 'Décrivez le problème...',
+                  hintText: 'Describe the issue...',
                 ),
                 style: LynewedTextStyles.bodyMedium,
               ),
@@ -239,7 +239,7 @@ class _MessageActionsSheetState extends State<MessageActionsSheet> {
                         }
                       : null,
                   style: LynewedComponentStyles.primaryButton(),
-                  child: const Text('Envoyer le signalement'),
+                  child: const Text('Submit Report'),
                 ),
               ),
             ],

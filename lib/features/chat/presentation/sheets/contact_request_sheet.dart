@@ -98,7 +98,7 @@ class _ContactRequestSheetState extends State<ContactRequestSheet> {
       // Show success toast
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Demande envoyée à ${widget.targetName}'),
+          content: Text('Request sent to ${widget.targetName}'),
           backgroundColor: LynewedColors.primary,
           behavior: SnackBarBehavior.floating,
         ),
@@ -114,25 +114,25 @@ class _ContactRequestSheetState extends State<ContactRequestSheet> {
   }
 
   String _getErrorMessage(String? error) {
-    if (error == null) return 'Une erreur est survenue';
+    if (error == null) return 'An error occurred';
     
     if (error.contains('INSUFFICIENT_TIER')) {
-      return 'Votre abonnement ne permet pas de contacter cette personne';
+      return 'Your subscription does not allow contacting this person';
     }
     if (error.contains('REQUEST_ALREADY_PENDING')) {
-      return 'Une demande est déjà en attente';
+      return 'A request is already pending';
     }
     if (error.contains('ALREADY_CONNECTED')) {
-      return 'Vous êtes déjà en contact';
+      return 'You are already connected';
     }
     if (error.contains('BLOCKED')) {
-      return 'Contact impossible';
+      return 'Contact not possible';
     }
     if (error.contains('MESSAGE_REQUIRED')) {
-      return 'Le message est obligatoire';
+      return 'Message is required';
     }
     
-    return 'Une erreur est survenue';
+    return 'An error occurred';
   }
 
   @override
@@ -202,7 +202,7 @@ class _ContactRequestSheetState extends State<ContactRequestSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Contacter ${widget.targetName}',
+                          'Contact ${widget.targetName}',
                           style: LynewedTextStyles.titleSmall,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -239,7 +239,7 @@ class _ContactRequestSheetState extends State<ContactRequestSheet> {
                   children: [
                     // Info text
                     Text(
-                      'Présentez-vous et expliquez pourquoi vous souhaitez entrer en contact.',
+                      'Introduce yourself and explain why you want to get in touch.',
                       style: LynewedTextStyles.bodySmall.copyWith(
                         color: LynewedColors.textSecondary,
                       ),
@@ -251,7 +251,7 @@ class _ContactRequestSheetState extends State<ContactRequestSheet> {
                     TextFormField(
                       controller: _messageController,
                       decoration: LynewedComponentStyles.formInputDecoration(
-                        hintText: 'Votre message...',
+                        hintText: 'Your message...',
                         labelText: 'Message',
                       ),
                       maxLines: 4,
@@ -259,10 +259,10 @@ class _ContactRequestSheetState extends State<ContactRequestSheet> {
                       textCapitalization: TextCapitalization.sentences,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Le message est obligatoire';
+                          return 'Message is required';
                         }
                         if (value.trim().length < 10) {
-                          return 'Le message doit contenir au moins 10 caractères';
+                          return 'Message must be at least 10 characters';
                         }
                         return null;
                       },
@@ -312,7 +312,7 @@ class _ContactRequestSheetState extends State<ContactRequestSheet> {
                                   color: LynewedColors.textOnPrimary,
                                 ),
                               )
-                            : const Text('Envoyer la demande'),
+                            : const Text('Send Request'),
                       ),
                     ),
                     
@@ -324,7 +324,7 @@ class _ContactRequestSheetState extends State<ContactRequestSheet> {
                       child: TextButton(
                         onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
                         style: LynewedComponentStyles.textButton(),
-                        child: const Text('Annuler'),
+                        child: const Text('Cancel'),
                       ),
                     ),
                   ],

@@ -299,7 +299,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
               ),
               const SizedBox(height: LynewedSpacing.md),
               const Text(
-                'Erreur de chargement',
+                'Loading Error',
                 style: LynewedTextStyles.titleMedium,
               ),
               const SizedBox(height: LynewedSpacing.sm),
@@ -314,7 +314,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
               ElevatedButton(
                 onPressed: () => _notifier.loadMessages(),
                 style: LynewedComponentStyles.primaryButton(),
-                child: const Text('Réessayer'),
+                child: const Text('Retry'),
               ),
             ],
           ),
@@ -362,14 +362,14 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Demande de contact',
+            'Contact Request',
             style: LynewedTextStyles.titleSmall.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: LynewedSpacing.sm),
           Text(
-            'Ce professionnel souhaite vous contacter. Acceptez pour démarrer la conversation.',
+            'This professional wants to contact you. Accept to start the conversation.',
             style: LynewedTextStyles.bodySmall.copyWith(
               color: LynewedColors.textSecondary,
             ),
@@ -381,7 +381,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
                 child: OutlinedButton(
                   onPressed: _handleDeclineRequest,
                   style: LynewedComponentStyles.secondaryButton(),
-                  child: const Text('Refuser'),
+                  child: const Text('Decline'),
                 ),
               ),
               const SizedBox(width: LynewedSpacing.md),
@@ -389,7 +389,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
                 child: ElevatedButton(
                   onPressed: _handleAcceptRequest,
                   style: LynewedComponentStyles.primaryButton(),
-                  child: const Text('Accepter'),
+                  child: const Text('Accept'),
                 ),
               ),
             ],
@@ -404,7 +404,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
     if (roomId != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Demande acceptée'),
+          content: Text('Request accepted'),
           backgroundColor: LynewedColors.success,
         ),
       );
@@ -445,7 +445,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
                 );
                 scaffoldMessenger.showSnackBar(
                   const SnackBar(
-                    content: Text('Message signalé'),
+                    content: Text('Message reported'),
                     backgroundColor: LynewedColors.success,
                   ),
                 );
@@ -460,7 +460,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
                   if (success && mounted) {
                     scaffoldMessenger.showSnackBar(
                       const SnackBar(
-                        content: Text('Utilisateur bloqué'),
+                        content: Text('User blocked'),
                         backgroundColor: LynewedColors.success,
                       ),
                     );
@@ -469,7 +469,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
                   } else if (mounted) {
                     scaffoldMessenger.showSnackBar(
                       const SnackBar(
-                        content: Text('Erreur lors du blocage'),
+                        content: Text('Error blocking user'),
                         backgroundColor: LynewedColors.error,
                       ),
                     );
@@ -489,28 +489,28 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
   Future<bool?> _showBlockConfirmation() {
     final state = _notifier.state;
     final userName = state is ChatRoomLoaded 
-        ? state.otherFullName ?? 'cet utilisateur'
-        : 'cet utilisateur';
+        ? state.otherFullName ?? 'this user'
+        : 'this user';
 
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Bloquer'),
+        title: const Text('Block User'),
         content: Text(
-          'Voulez-vous bloquer $userName ?\n\n'
-          'Vous ne recevrez plus de messages de cette personne.',
+          'Do you want to block $userName?\n\n'
+          'You will no longer receive messages from this person.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Annuler'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: LynewedColors.error,
             ),
-            child: const Text('Bloquer'),
+            child: const Text('Block'),
           ),
         ],
       ),
@@ -543,7 +543,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
         child: SafeArea(
           top: false,
           child: Text(
-            'En attente de réponse...',
+            'Waiting for response...',
             style: LynewedTextStyles.bodyMedium.copyWith(
               color: LynewedColors.textSecondary,
             ),

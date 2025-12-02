@@ -41,7 +41,7 @@ class BlockedUserTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  blockedUser.fullName ?? 'Utilisateur',
+                  blockedUser.fullName ?? 'User',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: LynewedTextStyles.bodyMedium.copyWith(
@@ -77,7 +77,7 @@ class BlockedUserTile extends StatelessWidget {
                         color: LynewedColors.error,
                       ),
                     )
-                  : const Text('Débloquer'),
+                  : const Text('Unblock'),
             ),
           ),
         ],
@@ -132,11 +132,11 @@ class BlockedUserTile extends StatelessWidget {
   String _getRoleLabel() {
     switch (blockedUser.role) {
       case UserRole.bride:
-        return 'Mariée';
+        return 'Bride';
       case UserRole.professional:
-        return 'Professionnel';
+        return 'Professional';
       default:
-        return 'Utilisateur';
+        return 'User';
     }
   }
 }

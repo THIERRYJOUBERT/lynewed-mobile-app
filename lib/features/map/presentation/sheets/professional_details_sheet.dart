@@ -54,7 +54,7 @@ class ProfessionalDetailsSheet extends StatelessWidget {
       headerAvatarInitials: _getInitials(details.fullName),
       titleWidget: _buildTitleWidget(),
       subtitle: _buildHeaderSubtitle(), // Profession in header
-      trailing: _buildTrailingActions(),
+      trailing: _buildHeaderActions(), // More menu + Favorite in header
       actions: _buildActionButtons(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,32 +134,21 @@ class ProfessionalDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget? _buildTrailingActions() {
-    final hasActions = showFavoriteButton || onReport != null;
-    if (!hasActions) return null;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Report button
+  /// Header actions: More menu (with report) + Favorite button
+  Widget? _buildHeaderActions() {
+    final hasAnyAction = showFavoriteButton || onReport != null;
+    if (!hasAnyAction) return null;
+    
+    return LynewedHeaderActions(
+      isFavorited: details.isFavorited,
+      onFavoriteToggle: onFavoriteToggle,
+      showFavorite: showFavoriteButton,
+      menuItems: [
         if (onReport != null)
-          IconButton(
-            onPressed: onReport,
-            icon: const Icon(
-              Icons.flag_outlined,
-              color: LynewedColors.textSecondary,
-            ),
-            tooltip: 'Signaler',
-          ),
-        // Favorite button
-        if (showFavoriteButton)
-          IconButton(
-            onPressed: onFavoriteToggle,
-            icon: Icon(
-              details.isFavorited ? Icons.favorite : Icons.favorite_border,
-              color: details.isFavorited ? LynewedColors.error : LynewedColors.textSecondary,
-            ),
-            tooltip: details.isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris',
+          LynewedMenuItem(
+            icon: Icons.flag_outlined,
+            label: 'Report',
+            onTap: onReport!,
           ),
       ],
     );

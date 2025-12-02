@@ -942,17 +942,18 @@ lib/features/chat/
 - [ ] Préserver bouton appel vidéo (Agora)
 - [ ] Appliquer Design System 100%
 
-#### Phase 5: Modération (6-8h) - DERNIER
-- [ ] Créer `ReportMessageSheet` (4 raisons)
-- [ ] Améliorer `MessageActionsSheet` (+ bloquer)
-- [ ] Implémenter création ticket `support_tickets`
-- [ ] UI déblocage dans section Bloqués
+#### Phase 5: Modération (6-8h) ✅ TERMINÉ
+- [x] Créer `ReportMessageSheet` (4 raisons) → `MessageActionsSheet` intégré
+- [x] Créer `ReportUserSheet` (signalement profil)
+- [x] Améliorer `MessageActionsSheet` (+ bloquer)
+- [x] Implémenter création ticket `support_tickets`
+- [x] UI déblocage dans section Bloqués
 
-#### Phase 6: Tests & Cleanup (4-6h)
-- [ ] Tests unitaires repositories
-- [ ] Tests widgets critiques
-- [ ] Supprimer ancien code FlutterFlow
-- [ ] Documentation README
+#### Phase 6: Tests & Cleanup (4-6h) ✅ EN COURS
+- [x] Documentation README (`lib/features/chat/README.md`)
+- [x] Analyse statique (0 erreurs)
+- [ ] Tests manuels en cours
+- [ ] Supprimer ancien code FlutterFlow (après validation)
 
 ### 10.3 Risques et Mitigations
 
@@ -989,6 +990,70 @@ Phase 1 (Backend) ──┬──► Phase 2 (Foundation) ──► Phase 3 (Mes
                                                               ▼
                                                         Phase 6 (Tests)
 ```
+
+---
+
+## 11. Sheets Terminés ✅ (2025-12-02)
+
+### 11.1 ReportUserSheet ✅
+
+**Fichier:** `lib/features/chat/presentation/sheets/report_user_sheet.dart`
+
+**Fonctionnalités:**
+- Signalement d'un utilisateur (professionnel) depuis les profils
+- 4 raisons de signalement: spam, harassment, inappropriate_content, other
+- Création de ticket dans `support_tickets` (type: `user_report`)
+- Intégré dans `ProfessionalDetailsSheet` et `ProDetailsPage`
+
+**Design System appliqué:**
+- Utilise `LynewedSheet` pour le container (cohérent avec autres sheets)
+- `LynewedSectionTitle` pour les titres de section
+- `LynewedTextField` avec fond gris (`isValueInput: false`)
+- `LynewedButton` pour le bouton d'action (48px, noir)
+- Spacing: 30px inter-section, 10px label→content
+
+### 11.2 ProfessionalDetailsSheet ✅
+
+**Fichier:** `lib/features/map/presentation/sheets/professional_details_sheet.dart`
+
+**Fonctionnalités:**
+- Affichage détails professionnel depuis la map
+- Actions: View Profile, Contact, Favorite, Report (via menu)
+- Bouton Contact fonctionnel → `ChatDetailsPage`
+
+**Design System appliqué:**
+- Utilise `LynewedDetailsSheet` pour le container
+- `LynewedHeaderActions` pour les actions header (fav + more menu)
+- `LynewedAboutSection` pour la section About
+- `LynewedButton` pour les boutons d'action
+- Spacing: 12px texte→icônes, 10px entre icônes
+
+### 11.3 Règles Design System pour les Sheets
+
+**Widgets réutilisables (`lib/core/design/widgets/`):**
+
+| Widget | Usage |
+|--------|-------|
+| `LynewedSheet` | Container pour sheets de formulaire/action |
+| `LynewedDetailsSheet` | Container pour sheets de détails (avec avatar/header) |
+| `LynewedSectionTitle` | Titre de section (`bodyLarge` + `w600`) |
+| `LynewedTextField` | Champ de texte (fond gris par défaut) |
+| `LynewedButton` | Bouton d'action (48px, noir primaire) |
+| `LynewedHeaderActions` | Actions header (fav + menu 3 points) |
+
+**Spacing Design System:**
+- **30px** entre sections
+- **10px** entre label et contenu
+- **12px** entre bloc texte et icônes header
+- **10px** entre icônes dans `LynewedHeaderActions`
+
+**Règles:**
+1. TOUJOURS utiliser les widgets du Design System
+2. JAMAIS créer de styles inline, utiliser `LynewedTextStyles`
+3. JAMAIS créer de couleurs inline, utiliser `LynewedColors`
+4. Fond TextField: gris (`isValueInput: false`) sauf pour inputs de valeur
+5. Boutons: `LynewedButton` avec type approprié (primary, secondary, destructive)
+6. **TOUS les textes UI doivent être en ANGLAIS** (l'app est nativement en anglais)
 
 ---
 
@@ -1031,5 +1096,6 @@ chat_backup_2025-12-02/
 ---
 
 **Document rédigé le:** 2025-12-02  
-**Statut:** ✅ Audit complet terminé  
-**Prochaine étape:** Validation avec chef de projet, puis lancement Phase 1
+**Dernière mise à jour:** 2025-12-02  
+**Statut:** ✅ Phases 1-5 terminées, Phase 6 en cours (tests manuels)  
+**Prochaine étape:** Finaliser tests manuels, puis cleanup code FlutterFlow
