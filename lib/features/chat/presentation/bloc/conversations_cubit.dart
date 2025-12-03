@@ -238,6 +238,57 @@ class ConversationsNotifier extends ChangeNotifier {
     return false;
   }
 
+  /// Block a user from a conversation
+  Future<bool> blockUser(String profileId) async {
+    final currentState = _state;
+    if (currentState is! ConversationsLoaded) return false;
+
+    final result = await _contactRepository.blockUser(profileId);
+    
+    if (result.isSuccess) {
+      // Update conversation status to blocked
+      final updatedConversations = currentState.conversations.map((c) {
+        if (c.otherProfileId == profileId) {
+          return c.copyWith(conversationStatus: ConversationStatus.blocked);
+        }
+        return c;
+      }).toList();
+      
+      // Refresh blocked users list
+      final blockedResult = await _contactRepository.getBlockedUsers();
+      
+      _emit(currentState.copyWith(
+        conversations: updatedConversations,
+        blockedUsers: blockedResult.data ?? currentState.blockedUsers,
+      ));
+      return true;
+    }
+    
+    return false;
+  }
+
+  /// Report a user
+  /// Note: Reporting creates a support ticket but does NOT change conversation status
+  /// The conversation remains visible with normal functionality
+  Future<bool> reportUser({
+    required String profileId,
+    required ReportReason reason,
+    String? details,
+  }) async {
+    final currentState = _state;
+    if (currentState is! ConversationsLoaded) return false;
+
+    final result = await _contactRepository.reportUser(
+      reportedProfileId: profileId,
+      reason: reason,
+      details: details,
+    );
+    
+    // Report just creates a ticket - conversation stays as-is
+    // No local state change needed
+    return result.isSuccess;
+  }
+
   @override
   void dispose() {
     _messagesSubscription?.cancel();

@@ -5,14 +5,18 @@ import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 import '/features/chat/presentation/pages/chat_details_page.dart';
 import '/features/chat/domain/entities/chat_enums.dart' as chat_enums;
+import '/features/chat/domain/entities/entities.dart' show ContactRequestSource;
+import '/features/chat/presentation/sheets/contact_request_sheet.dart';
 import '/core/services/unread_counter_service.dart';
 import 'package:flutter/material.dart';
 
 /// Navigate to chat with a target profile
 /// Uses Clean Architecture ChatDetailsPage with full data passing
+/// [source] - Origin of contact (fromWedding, fromWishlist, fromProfile, fromAlert)
 Future contactChatRoom(
   BuildContext context, {
   required String? targetProfileID,
+  ContactRequestSource source = ContactRequestSource.fromProfile,
 }) async {
   if (targetProfileID == null || targetProfileID.isEmpty) {
     _showErrorDialog(context, 'Invalid target profile');
@@ -25,57 +29,74 @@ Future contactChatRoom(
     targetProfileID,
   );
   
-  if ((contactContext.status == ChatEntryStatus.roomReady) ||
-      (contactContext.status == ChatEntryStatus.requestPending)) {
-    
+  if (contactContext.status == ChatEntryStatus.roomReady) {
+    // Room exists - navigate to chat
     if (!context.mounted) return;
     
-    // Only pass pendingRequestId if status is actually requestPending
-    // This prevents showing "Waiting for response" when room is ready
-    final bool isActuallyPending = contactContext.status == ChatEntryStatus.requestPending;
-    
-    // Use Clean Architecture ChatDetailsPage with full data
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => ChatDetailsPage(
           roomId: contactContext!.roomId ?? '',
           isPublicRoom: contactContext.isPublic,
-          pendingRequestId: isActuallyPending ? contactContext.requestId : null,
+          pendingRequestId: null,
           otherProfileId: contactContext.otherProfileId,
           otherFullName: contactContext.otherFullName,
           otherAvatarUrl: contactContext.otherAvatarUrl,
           otherRole: _convertUserRole(contactContext.otherRole),
-          viewerIsReviewer: isActuallyPending ? contactContext.viewerIsReviewer : false,
+          viewerIsReviewer: false,
           firstMessageTextOnly: contactContext.firstMessageTextOnly,
         ),
       ),
     );
     // Refresh global unread counter after returning from chat
     UnreadCounterService.instance.forceRefresh();
+  } else if (contactContext.status == ChatEntryStatus.requestPending) {
+    // Request is pending - show info to user
+    // Pro (sender): Show "waiting for response" message
+    // Bride (receiver): Should see this in MessagesPage pending requests section
+    if (!context.mounted) return;
+    
+    final bool isReviewer = contactContext.viewerIsReviewer;
+    if (isReviewer) {
+      // Bride viewing - navigate to pending request review (handled in MessagesPage)
+      _showInfoDialog(
+        context,
+        title: 'Pending Request',
+        message: 'You have a pending contact request from ${contactContext.otherFullName}. Check your Messages to review it.',
+      );
+    } else {
+      // Pro viewing their own pending request
+      _showInfoDialog(
+        context,
+        title: 'Request Pending',
+        message: 'Your contact request to ${contactContext.otherFullName} is waiting for a response.',
+      );
+    }
   } else if (contactContext.status == ChatEntryStatus.requiresRequest) {
     // Pro→Bride: Must send a contact request first
-    // TODO: Show ContactRequestSheet when implemented
     if (!context.mounted) return;
-    _showInfoDialog(
-      context,
-      title: 'Demande de contact requise',
-      message: 'Pour contacter cette mariée, vous devez d\'abord envoyer une demande de contact. Cette fonctionnalité sera bientôt disponible.',
+    await ContactRequestSheet.show(
+      context: context,
+      targetProfileId: targetProfileID,
+      targetName: contactContext.otherFullName ?? '',
+      source: source,
+      targetAvatarUrl: contactContext.otherAvatarUrl,
     );
   } else if (contactContext.status == ChatEntryStatus.notAllowed) {
     if (!context.mounted) return;
     _showInfoDialog(
       context,
-      title: 'Contact non disponible',
+      title: 'Contact Unavailable',
       message: contactContext.reason == 'INSUFFICIENT_TIER' 
-          ? 'Votre abonnement ne permet pas de contacter les mariées. Passez à Premium pour débloquer cette fonctionnalité.'
-          : 'Vous ne pouvez pas contacter ce profil.',
+          ? 'Your subscription does not allow contacting brides. Upgrade to Premium to unlock this feature.'
+          : 'You cannot contact this profile.',
     );
   } else if (contactContext.status == ChatEntryStatus.blocked) {
     if (!context.mounted) return;
     _showInfoDialog(
       context,
-      title: 'Contact bloqué',
-      message: 'Vous ne pouvez pas contacter ce profil.',
+      title: 'Contact Blocked',
+      message: 'You cannot contact this profile.',
     );
   } else {
     if (!context.mounted) return;

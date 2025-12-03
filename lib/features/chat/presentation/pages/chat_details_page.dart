@@ -35,6 +35,8 @@ class ChatDetailsPage extends StatefulWidget {
     this.publicRoomTitle,
     this.viewerIsReviewer = false,
     this.firstMessageTextOnly = false,
+    this.conversationStatus,
+    this.onUnblock,
   });
 
   /// Room ID
@@ -66,6 +68,12 @@ class ChatDetailsPage extends StatefulWidget {
 
   /// Whether first message must be text only
   final bool firstMessageTextOnly;
+
+  /// Conversation status (blocked, reported, etc.)
+  final ConversationStatus? conversationStatus;
+
+  /// Callback when user unblocks the conversation
+  final Future<bool> Function()? onUnblock;
 
   static const String routeName = 'ChatDetails';
   static const String routePath = '/chatDetails';
@@ -556,32 +564,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
                 );
               }
             : null,
-        onBlock: !isOwnMessage
-            ? () async {
-                Navigator.pop(sheetContext);
-                final confirm = await _showBlockConfirmation();
-                if (confirm == true) {
-                  final success = await _notifier.blockUser();
-                  if (success && mounted) {
-                    scaffoldMessenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('User blocked'),
-                        backgroundColor: LynewedColors.success,
-                      ),
-                    );
-                    // Navigate back to messages list
-                    Navigator.of(context).pop();
-                  } else if (mounted) {
-                    scaffoldMessenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('Error blocking user'),
-                        backgroundColor: LynewedColors.error,
-                      ),
-                    );
-                  }
-                }
-              }
-            : null,
+        // NOTE: Block User moved to ConversationActionsSheet (long press on conversation in MessagesPage)
       ),
     );
   }
@@ -600,37 +583,6 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
     );
   }
 
-  Future<bool?> _showBlockConfirmation() {
-    final state = _notifier.state;
-    final userName = state is ChatRoomLoaded 
-        ? state.otherFullName ?? 'this user'
-        : 'this user';
-
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Block User'),
-        content: Text(
-          'Do you want to block $userName?\n\n'
-          'You will no longer receive messages from this person.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: LynewedColors.error,
-            ),
-            child: const Text('Block'),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildComposer() {
     final state = _notifier.state;
     final isLoaded = state is ChatRoomLoaded;
@@ -644,6 +596,13 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
     final isPendingWait = loadedState != null &&
         loadedState.isPendingRequest &&
         !loadedState.viewerIsReviewer;
+
+    // Check if conversation is blocked
+    final isBlocked = widget.conversationStatus == ConversationStatus.blocked;
+
+    if (isBlocked) {
+      return _buildUnblockBar();
+    }
 
     if (isPendingWait) {
       return Container(
@@ -678,5 +637,64 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
           _notifier.sendAudioMessage(filePath: filePath, fileName: fileName),
       onSendingComplete: () => _notifier.markSendingComplete(),
     );
+  }
+
+  Widget _buildUnblockBar() {
+    return Container(
+      padding: const EdgeInsets.all(LynewedSpacing.md),
+      decoration: const BoxDecoration(
+        color: LynewedColors.surface,
+        border: Border(
+          top: BorderSide(color: LynewedColors.border),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'You have blocked this user',
+              style: LynewedTextStyles.bodyMedium.copyWith(
+                color: LynewedColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: LynewedSpacing.sm),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _handleUnblock,
+                style: LynewedComponentStyles.secondaryButton(),
+                child: const Text('Unblock'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleUnblock() async {
+    if (widget.onUnblock == null) return;
+
+    final success = await widget.onUnblock!();
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('User unblocked'),
+          backgroundColor: LynewedColors.success,
+        ),
+      );
+      // Pop back to messages list to refresh
+      Navigator.of(context).pop();
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error unblocking user'),
+          backgroundColor: LynewedColors.error,
+        ),
+      );
+    }
   }
 }

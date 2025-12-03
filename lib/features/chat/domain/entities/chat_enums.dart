@@ -86,13 +86,13 @@ enum ContactRequestSource {
   String get displayLabel {
     switch (this) {
       case ContactRequestSource.fromWishlist:
-        return 'Depuis vos favoris';
+        return 'From wishlist';
       case ContactRequestSource.fromWedding:
-        return 'Depuis un mariage';
+        return 'From wedding';
       case ContactRequestSource.fromAlert:
-        return 'Depuis une alerte';
+        return 'From alert';
       case ContactRequestSource.fromProfile:
-        return 'Depuis le profil';
+        return 'From profile';
     }
   }
 }
@@ -184,11 +184,11 @@ enum ReportReason {
       case ReportReason.spam:
         return 'Spam';
       case ReportReason.harassment:
-        return 'Harcèlement';
+        return 'Harassment';
       case ReportReason.inappropriateContent:
-        return 'Contenu inapproprié';
+        return 'Inappropriate content';
       case ReportReason.other:
-        return 'Autre';
+        return 'Other';
     }
   }
 }

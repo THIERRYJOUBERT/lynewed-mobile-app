@@ -1,39 +1,58 @@
 /// Conversation actions sheet - Clean Architecture
 /// 
-/// Bottom sheet for conversation actions (archive, etc.)
+/// Bottom sheet for conversation actions (archive, report, block).
+/// Block User action moved here from MessageActionsSheet for better UX.
 library;
 
 import 'package:flutter/material.dart';
 import '/core/design/design.dart';
 import '../../domain/entities/entities.dart';
+import 'report_user_sheet.dart';
+
+/// Callback for report action (conversation context)
+typedef ConversationReportCallback = Future<void> Function(ReportReason reason, String? details);
 
 /// Sheet for conversation actions
-class ConversationActionsSheet extends StatelessWidget {
+class ConversationActionsSheet extends StatefulWidget {
   const ConversationActionsSheet({
     super.key,
     required this.conversation,
     required this.onArchive,
+    this.onBlock,
+    this.onReport,
   });
 
   final Conversation conversation;
   final VoidCallback onArchive;
+  final VoidCallback? onBlock;
+  final ConversationReportCallback? onReport;
 
   /// Show the sheet
   static Future<void> show({
     required BuildContext context,
     required Conversation conversation,
     required VoidCallback onArchive,
+    VoidCallback? onBlock,
+    ConversationReportCallback? onReport,
   }) {
     return showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) => ConversationActionsSheet(
         conversation: conversation,
         onArchive: onArchive,
+        onBlock: onBlock,
+        onReport: onReport,
       ),
     );
   }
 
+  @override
+  State<ConversationActionsSheet> createState() => _ConversationActionsSheetState();
+}
+
+class _ConversationActionsSheetState extends State<ConversationActionsSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -67,7 +86,7 @@ class ConversationActionsSheet extends StatelessWidget {
                   // Name
                   Expanded(
                     child: Text(
-                      conversation.displayName,
+                      widget.conversation.displayName,
                       style: LynewedTextStyles.titleSmall,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -88,13 +107,30 @@ class ConversationActionsSheet extends StatelessWidget {
             const Divider(height: 1, color: LynewedColors.gray200),
             
             // Actions
+            if (widget.onReport != null)
+              _buildActionTile(
+                context: context,
+                icon: Icons.flag_outlined,
+                label: 'Report User',
+                onTap: () => _showReportUserOptions(context),
+              ),
+            
+            if (widget.onBlock != null)
+              _buildActionTile(
+                context: context,
+                icon: Icons.block_outlined,
+                label: 'Block User',
+                color: LynewedColors.error,
+                onTap: () => _showBlockConfirmation(context),
+              ),
+            
             _buildActionTile(
               context: context,
               icon: Icons.archive_outlined,
-              label: 'Archiver la conversation',
+              label: 'Archive Conversation',
               onTap: () {
                 Navigator.of(context).pop();
-                onArchive();
+                widget.onArchive();
               },
             ),
             
@@ -106,7 +142,7 @@ class ConversationActionsSheet extends StatelessWidget {
   }
 
   Widget _buildAvatar() {
-    final avatarUrl = conversation.displayAvatarUrl;
+    final avatarUrl = widget.conversation.displayAvatarUrl;
     
     return ClipOval(
       child: avatarUrl != null && avatarUrl.isNotEmpty
@@ -161,6 +197,52 @@ class ConversationActionsSheet extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showReportUserOptions(BuildContext sheetContext) {
+    Navigator.of(sheetContext).pop();
+    
+    // Use the existing ReportUserSheet (same as professional_details_sheet)
+    ReportUserSheet.show(
+      context: context,
+      userName: widget.conversation.displayName,
+      userAvatarUrl: widget.conversation.displayAvatarUrl,
+      onReport: (reason, details) async {
+        await widget.onReport?.call(reason, details);
+      },
+    );
+  }
+
+  void _showBlockConfirmation(BuildContext sheetContext) {
+    Navigator.of(sheetContext).pop();
+    
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Block User'),
+        content: Text(
+          'Are you sure you want to block ${widget.conversation.displayName}?\n\n'
+          'You will no longer receive messages from this user.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              widget.onBlock?.call();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: LynewedColors.error,
+              foregroundColor: LynewedColors.textOnPrimary,
+            ),
+            child: const Text('Block'),
+          ),
+        ],
       ),
     );
   }

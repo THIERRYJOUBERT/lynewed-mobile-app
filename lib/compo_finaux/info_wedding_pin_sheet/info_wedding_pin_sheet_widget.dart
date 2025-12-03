@@ -6,6 +6,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/actions/actions.dart' as action_blocks;
 import '/custom_code/actions/index.dart' as actions;
+import '/features/chat/domain/entities/entities.dart' show ContactRequestSource;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import 'package:flutter/material.dart';
 import 'info_wedding_pin_sheet_model.dart';
@@ -296,6 +297,7 @@ class _InfoWeddingPinSheetWidgetState extends State<InfoWeddingPinSheetWidget> {
                   await action_blocks.contactChatRoom(
                     context,
                     targetProfileID: widget.weddingPinData?.brideProfileId,
+                    source: ContactRequestSource.fromWedding,
                   );
                 }
 

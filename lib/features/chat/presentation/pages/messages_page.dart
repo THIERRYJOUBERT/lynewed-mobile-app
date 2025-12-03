@@ -21,7 +21,7 @@ import '../widgets/conversation_tile.dart';
 import '../widgets/empty_state_widget.dart';
 import '../sheets/conversation_actions_sheet.dart';
 import '../sheets/contact_request_review_sheet.dart';
-import '../sheets/blocked_users_sheet.dart';
+import '../sheets/blocked_users_sheet.dart'; // ArchivedSheet
 import 'chat_details_page.dart';
 
 /// Unified Messages page
@@ -75,6 +75,10 @@ class _MessagesPageState extends State<MessagesPage> {
           otherAvatarUrl: conversation.otherAvatarUrl,
           otherRole: conversation.otherRole,
           publicRoomTitle: conversation.isPublic ? conversation.otherFullName : null,
+          conversationStatus: conversation.conversationStatus,
+          onUnblock: conversation.otherProfileId != null
+              ? () => _notifier.unblockUser(conversation.otherProfileId!)
+              : null,
         ),
       ),
     );
@@ -85,10 +89,56 @@ class _MessagesPageState extends State<MessagesPage> {
   }
 
   void _onConversationLongPress(Conversation conversation) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    
     ConversationActionsSheet.show(
       context: context,
       conversation: conversation,
       onArchive: () => _notifier.archiveConversation(conversation.roomId),
+      onBlock: conversation.otherProfileId != null
+          ? () async {
+              final success = await _notifier.blockUser(conversation.otherProfileId!);
+              if (success && mounted) {
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('User blocked'),
+                    backgroundColor: LynewedColors.success,
+                  ),
+                );
+              } else if (mounted) {
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Error blocking user'),
+                    backgroundColor: LynewedColors.error,
+                  ),
+                );
+              }
+            }
+          : null,
+      onReport: conversation.otherProfileId != null
+          ? (reason, details) async {
+              final success = await _notifier.reportUser(
+                profileId: conversation.otherProfileId!,
+                reason: reason,
+                details: details,
+              );
+              if (success && mounted) {
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('User reported'),
+                    backgroundColor: LynewedColors.success,
+                  ),
+                );
+              } else if (mounted) {
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Error reporting user'),
+                    backgroundColor: LynewedColors.error,
+                  ),
+                );
+              }
+            }
+          : null,
     );
   }
 
@@ -132,13 +182,17 @@ class _MessagesPageState extends State<MessagesPage> {
     }
   }
 
-  void _showBlockedUsersSheet() {
+  void _showArchivedSheet() {
     final state = _notifier.state;
     if (state is! ConversationsLoaded) return;
 
-    BlockedUsersSheet.show(
+    ArchivedSheet.show(
       context: context,
+      archivedConversations: state.archivedConversations,
       blockedUsers: state.blockedUsers,
+      onUnarchive: (conversation) async {
+        await _notifier.unarchiveConversation(conversation.roomId);
+      },
       onUnblock: (user) async {
         final success = await _notifier.unblockUser(user.blockedProfileId);
         return success;
@@ -149,7 +203,9 @@ class _MessagesPageState extends State<MessagesPage> {
   @override
   Widget build(BuildContext context) {
     final state = _notifier.state;
-    final blockedCount = state is ConversationsLoaded ? state.blockedUsers.length : 0;
+    final archivedCount = state is ConversationsLoaded 
+        ? state.archivedConversations.length + state.blockedUsers.length 
+        : 0;
 
     return Scaffold(
       backgroundColor: LynewedColors.background,
@@ -157,7 +213,7 @@ class _MessagesPageState extends State<MessagesPage> {
         child: Column(
           children: [
             // Header
-            _buildHeader(blockedCount),
+            _buildHeader(archivedCount),
             
             // Divider - same as LynewedSheet
             const Divider(height: 1, color: LynewedColors.gray200),
@@ -172,9 +228,9 @@ class _MessagesPageState extends State<MessagesPage> {
     );
   }
 
-  /// Header with back button, title, and archive icon (blocked users)
+  /// Header with back button, title, and archive icon (archived/blocked)
   /// Matches LynewedSheet header style for consistency
-  Widget _buildHeader(int blockedCount) {
+  Widget _buildHeader(int archivedCount) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 20, 20, 12),
       child: Row(
@@ -192,9 +248,9 @@ class _MessagesPageState extends State<MessagesPage> {
             ),
           ),
           
-          // Archive icon button (blocked users) - circle 44px
+          // Archive icon button (archived/blocked) - circle 44px
           GestureDetector(
-            onTap: _showBlockedUsersSheet,
+            onTap: _showArchivedSheet,
             child: Container(
               width: 44,
               height: 44,
@@ -210,8 +266,8 @@ class _MessagesPageState extends State<MessagesPage> {
                     size: 22,
                     color: LynewedColors.textSecondary,
                   ),
-                  // Badge for blocked count
-                  if (blockedCount > 0)
+                  // Badge for archived count
+                  if (archivedCount > 0)
                     Positioned(
                       top: 8,
                       right: 8,

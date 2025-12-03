@@ -43,14 +43,20 @@ class ConversationsLoaded extends ConversationsState {
   /// Whether we're refreshing in background
   final bool isRefreshing;
 
-  /// Filter conversations by status - Active only
+  /// Filter conversations by status - Active (includes reported, excludes archived/blocked)
+  /// Reported conversations show a badge but remain in the main list
   List<Conversation> get activeConversations => conversations
-      .where((c) => c.conversationStatus == ConversationStatus.active)
+      .where((c) => 
+          c.conversationStatus == ConversationStatus.active ||
+          c.conversationStatus == ConversationStatus.reportedPending ||
+          c.conversationStatus == ConversationStatus.pending)
       .toList();
 
   /// Filter conversations by status - Archived only
   List<Conversation> get archivedConversations => conversations
-      .where((c) => c.conversationStatus == ConversationStatus.archived)
+      .where((c) => 
+          c.conversationStatus == ConversationStatus.archived ||
+          c.conversationStatus == ConversationStatus.blocked)
       .toList();
 
   /// Has archived conversations

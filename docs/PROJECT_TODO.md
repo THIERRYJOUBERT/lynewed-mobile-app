@@ -57,6 +57,30 @@ Le module Map est 100% complet. Voir rapport final: `docs/archive/MAP_REFACTORIN
 - ✅ **Pro→Bride Contact Flow**: Status `requiresRequest` géré
   - Ajouté à enum `ChatEntryStatus`
   - Messages UX appropriés (demande requise, tier insuffisant, bloqué)
+- ✅ **ContactRequestSheet**: Flux complet validé
+  - Sheet s'ouvre pour Pro Premium+ contactant Bride
+  - Validation message (10+ caractères)
+  - Source correcte passée (fromWedding, fromProfile, etc.)
+  - Textes traduits en anglais
+- ✅ **ContactRequestReviewSheet**: Flux acceptation validé
+  - Demandes visibles dans MessagesPage section "Contact Requests"
+  - Accept crée room ET insère message initial
+  - Decline supprime demande
+- ✅ **Backend RPCs**: Corrigées et optimisées
+  - `accept_connection_request`: Insère `initial_message` comme 1er message
+  - `get_rooms_with_unread_counts`: Inclut rooms sans messages
+  - `conn_req_before_insert`: Nouvelles valeurs enum
+  - Données test nettoyées (demandes anormales supprimées)
+- ✅ **Frontend Core**: Actions et traductions
+  - `actions.dart`: Param `source`, séparation `roomReady`/`requestPending`
+  - `chat_enums.dart`: `displayLabel` traduits EN
+  - `contact_request_avatar.dart`: Labels "Waiting"/"New"
+  - `chat_remote_datasource.dart`: Parsing `{items: [...]}` corrigé
+- ⏳ **UX Block/Report**: Réorganisation en cours
+  - MessageActionsSheet: Block retiré (Report uniquement)
+  - ConversationActionsSheet: À ajouter Block/Report/Archive
+  - MessagesPage: À afficher statut "Blocked"/"Reported"
+  - ChatDetailsPage: À ajouter bouton "Unblock"
 
 ### Décisions Validées (2025-12-02)
 - ✅ Plans: `inactive`, `earlyAccess`, `premiumVisibility`, `ultimateAccess`

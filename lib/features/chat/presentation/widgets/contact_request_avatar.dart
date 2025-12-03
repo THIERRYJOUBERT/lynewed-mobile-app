@@ -59,7 +59,7 @@ class ContactRequestAvatar extends StatelessWidget {
             
             // Status label
             Text(
-              isWaiting ? 'En attente' : 'Nouveau',
+              isWaiting ? 'Waiting' : 'New',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: LynewedTextStyles.labelSmall.copyWith(

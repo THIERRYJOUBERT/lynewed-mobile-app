@@ -290,6 +290,8 @@ class ChatRemoteDatasource {
     required ContactRequestSource source,
     required String message,
   }) async {
+    debugPrint('[ContactRequest] Creating request: target=$targetId, source=${source.name}, message=${message.length} chars');
+    
     final response = await _client.rpc(
       'create_contact_request',
       params: {
@@ -299,12 +301,18 @@ class ChatRemoteDatasource {
       },
     );
 
+    debugPrint('[ContactRequest] Response: $response');
+    
     final result = response as Map<String, dynamic>;
     if (result['status'] != 'ok') {
-      throw Exception(result['reason'] ?? 'Unknown error');
+      final reason = result['reason'] ?? 'Unknown error';
+      debugPrint('[ContactRequest] Error: $reason');
+      throw Exception(reason);
     }
 
-    return result['requestId'] as String;
+    final requestId = result['requestId'] as String;
+    debugPrint('[ContactRequest] Success: requestId=$requestId');
+    return requestId;
   }
 
   /// Get pending contact requests for current user
@@ -313,8 +321,11 @@ class ChatRemoteDatasource {
     
     if (response == null) return [];
     
-    final List<dynamic> data = response as List<dynamic>;
-    return data
+    // RPC returns { items: [...] }
+    final Map<String, dynamic> result = response as Map<String, dynamic>;
+    final List<dynamic> items = result['items'] as List<dynamic>? ?? [];
+    
+    return items
         .map((item) => ContactRequest.fromMap(item as Map<String, dynamic>))
         .toList();
   }

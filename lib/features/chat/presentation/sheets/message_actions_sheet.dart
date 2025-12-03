@@ -1,24 +1,27 @@
 /// Message actions sheet - Clean Architecture
 /// 
-/// Bottom sheet for message actions (delete, report, block).
+/// Bottom sheet for message actions (delete, report).
 library;
 
 import 'package:flutter/material.dart';
 import '/core/design/design.dart';
 import '../../domain/entities/entities.dart';
+import 'report_message_sheet.dart';
 
 /// Callback for report action
 typedef ReportCallback = Future<void> Function(ReportReason reason, String? details);
 
 /// Bottom sheet for message actions
-class MessageActionsSheet extends StatefulWidget {
+/// 
+/// NOTE: Block User action moved to ConversationActionsSheet (long press on conversation)
+/// This sheet only handles Report Message for other's messages.
+class MessageActionsSheet extends StatelessWidget {
   const MessageActionsSheet({
     super.key,
     required this.message,
     required this.isOwnMessage,
     this.onDelete,
     this.onReport,
-    this.onBlock,
   });
 
   /// The message to act on
@@ -33,36 +36,18 @@ class MessageActionsSheet extends StatefulWidget {
   /// Callback to report message (other's messages only)
   final ReportCallback? onReport;
 
-  /// Callback to block user (other's messages only)
-  final VoidCallback? onBlock;
-
-  @override
-  State<MessageActionsSheet> createState() => _MessageActionsSheetState();
-}
-
-class _MessageActionsSheetState extends State<MessageActionsSheet> {
-  bool _showReportOptions = false;
-  ReportReason? _selectedReason;
-  final TextEditingController _detailsController = TextEditingController();
-
-  @override
-  void dispose() {
-    _detailsController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: LynewedComponentStyles.bottomSheetDecoration(),
       child: SafeArea(
         top: false,
-        child: _showReportOptions ? _buildReportOptions() : _buildMainOptions(),
+        child: _buildMainOptions(context),
       ),
     );
   }
 
-  Widget _buildMainOptions() {
+  Widget _buildMainOptions(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -94,37 +79,38 @@ class _MessageActionsSheetState extends State<MessageActionsSheet> {
         const Divider(color: LynewedColors.border, height: 1),
 
         // Options
-        if (widget.isOwnMessage) ...[
+        if (isOwnMessage) ...[
           // Delete option (own messages)
           _buildOptionTile(
+            context: context,
             icon: Icons.delete_outline,
             label: 'Delete Message',
-            onTap: widget.onDelete,
+            onTap: onDelete,
             isDestructive: true,
           ),
         ] else ...[
           // Report option (other's messages)
+          // NOTE: Block User moved to ConversationActionsSheet
           _buildOptionTile(
+            context: context,
             icon: Icons.flag_outlined,
             label: 'Report Message',
             onTap: () {
-              setState(() {
-                _showReportOptions = true;
-              });
+              Navigator.pop(context);
+              // Open ReportMessageSheet with same design as ReportUserSheet
+              ReportMessageSheet.show(
+                context: context,
+                onReport: (reason, details) async {
+                  await onReport?.call(reason, details);
+                },
+              );
             },
-          ),
-
-          // Block option (other's messages)
-          _buildOptionTile(
-            icon: Icons.block,
-            label: 'Block User',
-            onTap: widget.onBlock,
-            isDestructive: true,
           ),
         ],
 
         // Cancel
         _buildOptionTile(
+          context: context,
           icon: Icons.close,
           label: 'Cancel',
           onTap: () => Navigator.pop(context),
@@ -135,123 +121,8 @@ class _MessageActionsSheetState extends State<MessageActionsSheet> {
     );
   }
 
-  Widget _buildReportOptions() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Handle bar
-        Container(
-          width: 40,
-          height: 4,
-          margin: const EdgeInsets.only(top: 12, bottom: 8),
-          decoration: BoxDecoration(
-            color: LynewedColors.gray200,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-
-        // Header with back button
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: LynewedSpacing.md,
-            vertical: LynewedSpacing.sm,
-          ),
-          child: Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _showReportOptions = false;
-                    _selectedReason = null;
-                    _detailsController.clear();
-                  });
-                },
-                child: const Icon(
-                  Icons.arrow_back_ios,
-                  size: 20,
-                  color: LynewedColors.primary,
-                ),
-              ),
-              const SizedBox(width: LynewedSpacing.sm),
-              Text(
-                'Report Message',
-                style: LynewedTextStyles.titleSmall.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        const Divider(color: LynewedColors.border, height: 1),
-
-        // Report reasons
-        Padding(
-          padding: const EdgeInsets.all(LynewedSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Reason for Report',
-                style: LynewedTextStyles.labelMedium.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: LynewedSpacing.sm),
-
-              // Reason options
-              ...ReportReason.values.map((reason) => _buildReasonOption(reason)),
-
-              const SizedBox(height: LynewedSpacing.md),
-
-              // Details field (optional)
-              Text(
-                'Details (optional)',
-                style: LynewedTextStyles.labelMedium.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: LynewedSpacing.sm),
-              TextField(
-                controller: _detailsController,
-                maxLines: 3,
-                maxLength: 500,
-                decoration: LynewedComponentStyles.formInputDecoration(
-                  hintText: 'Describe the issue...',
-                ),
-                style: LynewedTextStyles.bodyMedium,
-              ),
-
-              const SizedBox(height: LynewedSpacing.md),
-
-              // Submit button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _selectedReason != null
-                      ? () {
-                          widget.onReport?.call(
-                            _selectedReason!,
-                            _detailsController.text.isNotEmpty
-                                ? _detailsController.text
-                                : null,
-                          );
-                        }
-                      : null,
-                  style: LynewedComponentStyles.primaryButton(),
-                  child: const Text('Submit Report'),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: LynewedSpacing.md),
-      ],
-    );
-  }
-
   Widget _buildOptionTile({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required VoidCallback? onTap,
@@ -273,52 +144,6 @@ class _MessageActionsSheetState extends State<MessageActionsSheet> {
             Text(
               label,
               style: LynewedTextStyles.bodyMedium.copyWith(color: color),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildReasonOption(ReportReason reason) {
-    final isSelected = _selectedReason == reason;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedReason = reason;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: LynewedSpacing.md,
-          vertical: LynewedSpacing.sm,
-        ),
-        margin: const EdgeInsets.only(bottom: LynewedSpacing.xs),
-        decoration: BoxDecoration(
-          color: isSelected ? LynewedColors.primary : LynewedColors.surface,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected ? LynewedColors.primary : LynewedColors.border,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-              size: 20,
-              color: isSelected
-                  ? LynewedColors.textOnPrimary
-                  : LynewedColors.textSecondary,
-            ),
-            const SizedBox(width: LynewedSpacing.sm),
-            Text(
-              reason.displayLabel,
-              style: LynewedTextStyles.bodyMedium.copyWith(
-                color: isSelected
-                    ? LynewedColors.textOnPrimary
-                    : LynewedColors.textPrimary,
-              ),
             ),
           ],
         ),

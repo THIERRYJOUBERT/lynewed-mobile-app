@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 import '/core/design/design.dart';
+import '/core/design/widgets/widgets.dart';
 import '../../domain/entities/entities.dart';
 import '../../data/repositories/contact_repository_impl.dart';
 
@@ -135,201 +136,101 @@ class _ContactRequestSheetState extends State<ContactRequestSheet> {
     return 'An error occurred';
   }
 
+  String _getInitials(String name) {
+    final parts = name.trim().split(' ');
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1) return parts[0].isNotEmpty ? parts[0][0].toUpperCase() : '?';
+    return '${parts[0][0]}${parts.last[0]}'.toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
-    
-    return Container(
-      decoration: LynewedComponentStyles.bottomSheetDecoration(),
-      padding: EdgeInsets.only(bottom: bottomPadding),
-      child: SafeArea(
+    return LynewedDetailsSheet(
+      headerAvatarUrl: widget.targetAvatarUrl,
+      headerAvatarInitials: _getInitials(widget.targetName),
+      title: 'Contact ${widget.targetName}',
+      subtitle: Text(
+        widget.source.displayLabel,
+        style: LynewedTextStyles.bodySmall.copyWith(
+          color: LynewedColors.textSecondary,
+        ),
+      ),
+      trailing: IconButton(
+        onPressed: () => Navigator.of(context).pop(),
+        icon: const Icon(Icons.close),
+        iconSize: 24,
+        color: LynewedColors.gray300,
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(),
+      ),
+      actions: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Submit button
+          LynewedButton(
+            text: 'Send Request',
+            onPressed: _isLoading ? null : _submitRequest,
+            isLoading: _isLoading,
+            width: double.infinity,
+          ),
+          const SizedBox(height: 8),
+          // Cancel button
+          LynewedButton(
+            text: 'Cancel',
+            onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+            type: LynewedButtonType.ghost,
+            width: double.infinity,
+          ),
+        ],
+      ),
+      child: Form(
+        key: _formKey,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Handle bar
-            Center(
-              child: Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: LynewedColors.gray300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            
-            // Header
-            Container(
-              padding: LynewedComponentStyles.sheetHeaderPadding,
-              decoration: LynewedComponentStyles.sheetHeaderDecoration(),
-              child: Row(
-                children: [
-                  // Avatar
-                  if (widget.targetAvatarUrl != null)
-                    Container(
-                      width: 40,
-                      height: 40,
-                      margin: const EdgeInsets.only(right: 12),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: DecorationImage(
-                          image: NetworkImage(widget.targetAvatarUrl!),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    )
-                  else
-                    Container(
-                      width: 40,
-                      height: 40,
-                      margin: const EdgeInsets.only(right: 12),
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: LynewedColors.gray200,
-                      ),
-                      child: const Icon(
-                        Icons.person,
-                        color: LynewedColors.gray300,
-                        size: 24,
-                      ),
-                    ),
-                  
-                  // Title
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Contact ${widget.targetName}',
-                          style: LynewedTextStyles.titleSmall,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          widget.source.displayLabel,
-                          style: LynewedTextStyles.labelSmall.copyWith(
-                            color: LynewedColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  // Close button
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close),
-                    iconSize: 24,
-                    color: LynewedColors.textSecondary,
-                  ),
-                ],
-              ),
-            ),
-            
-            // Content
-            Padding(
-              padding: LynewedComponentStyles.sheetContentPadding,
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+            // Error message
+            if (_errorMessage != null) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: LynewedComponentStyles.errorBannerDecoration(),
+                child: Row(
                   children: [
-                    // Info text
-                    Text(
-                      'Introduce yourself and explain why you want to get in touch.',
-                      style: LynewedTextStyles.bodySmall.copyWith(
-                        color: LynewedColors.textSecondary,
-                      ),
+                    const Icon(
+                      Icons.error_outline,
+                      color: LynewedColors.error,
+                      size: 20,
                     ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Message field
-                    TextFormField(
-                      controller: _messageController,
-                      decoration: LynewedComponentStyles.formInputDecoration(
-                        hintText: 'Your message...',
-                        labelText: 'Message',
-                      ),
-                      maxLines: 4,
-                      maxLength: 1000,
-                      textCapitalization: TextCapitalization.sentences,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Message is required';
-                        }
-                        if (value.trim().length < 10) {
-                          return 'Message must be at least 10 characters';
-                        }
-                        return null;
-                      },
-                    ),
-                    
-                    // Error message
-                    if (_errorMessage != null) ...[
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: LynewedComponentStyles.errorBannerDecoration(),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.error_outline,
-                              color: LynewedColors.error,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                _errorMessage!,
-                                style: LynewedTextStyles.bodySmall.copyWith(
-                                  color: LynewedColors.error,
-                                ),
-                              ),
-                            ),
-                          ],
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _errorMessage!,
+                        style: LynewedTextStyles.bodySmall.copyWith(
+                          color: LynewedColors.error,
                         ),
-                      ),
-                    ],
-                    
-                    const SizedBox(height: 20),
-                    
-                    // Submit button
-                    SizedBox(
-                      height: LynewedSpacing.buttonHeight,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _submitRequest,
-                        style: LynewedComponentStyles.primaryButton(),
-                        child: _isLoading
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: LynewedColors.textOnPrimary,
-                                ),
-                              )
-                            : const Text('Send Request'),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 8),
-                    
-                    // Cancel button
-                    SizedBox(
-                      height: LynewedSpacing.buttonHeight,
-                      child: TextButton(
-                        onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-                        style: LynewedComponentStyles.textButton(),
-                        child: const Text('Cancel'),
                       ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(height: LynewedSpacing.lg),
+            ],
+            
+            // Message field with LynewedTextField (grey background)
+            LynewedTextField(
+              controller: _messageController,
+              label: 'Message',
+              hint: 'Introduce yourself and explain why you want to get in touch...',
+              maxLines: 5,
+              maxLength: 1000,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Message is required';
+                }
+                if (value.trim().length < 10) {
+                  return 'Message must be at least 10 characters';
+                }
+                return null;
+              },
             ),
           ],
         ),

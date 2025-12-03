@@ -20,6 +20,12 @@ class ConversationTile extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onLongPress;
 
+  /// Whether this conversation is blocked
+  bool get _isBlocked => conversation.conversationStatus == ConversationStatus.blocked;
+
+  /// Whether this conversation is reported (pending review)
+  bool get _isReported => conversation.conversationStatus == ConversationStatus.reportedPending;
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -79,7 +85,7 @@ class ConversationTile extends StatelessWidget {
                         child: Text(
                           conversation.lastMessagePreview.isNotEmpty 
                               ? conversation.lastMessagePreview 
-                              : 'Aucun message',
+                              : 'No messages',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: LynewedTextStyles.bodySmall.copyWith(
@@ -87,7 +93,12 @@ class ConversationTile extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (conversation.unreadCount > 0)
+                      // Status badges
+                      if (_isBlocked)
+                        _buildStatusChip('Blocked', LynewedColors.error)
+                      else if (_isReported)
+                        _buildStatusChip('Reported', LynewedColors.warning)
+                      else if (conversation.unreadCount > 0)
                         _buildUnreadBadge(),
                     ],
                   ),
@@ -158,18 +169,37 @@ class ConversationTile extends StatelessWidget {
     );
   }
 
+  Widget _buildStatusChip(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        label,
+        style: LynewedTextStyles.labelSmall.copyWith(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
   String _formatTime(DateTime dateTime) {
     final now = DateTime.now();
     final diff = now.difference(dateTime);
     
     if (diff.inMinutes < 1) {
-      return 'À l\'instant';
+      return 'Just now';
     } else if (diff.inHours < 1) {
-      return '${diff.inMinutes}min';
+      return '${diff.inMinutes}m';
     } else if (diff.inDays < 1) {
       return '${diff.inHours}h';
     } else if (diff.inDays < 7) {
-      return '${diff.inDays}j';
+      return '${diff.inDays}d';
     } else {
       return '${dateTime.day}/${dateTime.month}';
     }

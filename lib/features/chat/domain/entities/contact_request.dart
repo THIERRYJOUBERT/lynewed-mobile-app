@@ -61,18 +61,28 @@ class ContactRequest {
   bool get isPending => status == ConnectionRequestStatus.pending;
 
   /// Factory from Supabase row
+  /// Handles both direct table queries and RPC responses
   factory ContactRequest.fromMap(Map<String, dynamic> map) {
+    // RPC uses camelCase, direct queries use snake_case
+    final id = map['requestId'] as String? ?? map['id'] as String? ?? '';
+    final initiatorId = map['initiatorId'] as String? ?? map['initiator_id'] as String? ?? '';
+    
+    // For RPC response, we may not have pro/bride IDs directly
+    // but we have otherProfileId and can infer based on initiator
+    final proProfileId = map['pro_profile_id'] as String? ?? map['proProfileId'] as String? ?? '';
+    final brideProfileId = map['bride_profile_id'] as String? ?? map['brideProfileId'] as String? ?? '';
+    
     return ContactRequest(
-      id: map['id'] as String? ?? map['requestId'] as String,
-      proProfileId: map['pro_profile_id'] as String? ?? '',
-      brideProfileId: map['bride_profile_id'] as String? ?? '',
-      initiatorId: map['initiator_id'] as String? ?? map['initiatorId'] as String? ?? '',
+      id: id,
+      proProfileId: proProfileId,
+      brideProfileId: brideProfileId,
+      initiatorId: initiatorId,
       source: ContactRequestSource.fromString(map['source'] as String?) ?? ContactRequestSource.fromProfile,
-      initialMessage: map['initial_message'] as String? ?? map['initialMessage'] as String?,
+      initialMessage: map['initialMessage'] as String? ?? map['initial_message'] as String?,
       status: ConnectionRequestStatus.fromString(map['status'] as String?) ?? ConnectionRequestStatus.pending,
-      createdAt: _parseDateTime(map['created_at'] ?? map['createdAt']) ?? DateTime.now(),
-      respondedAt: _parseDateTime(map['responded_at'] ?? map['respondedAt']),
-      // Joined profile info
+      createdAt: _parseDateTime(map['createdAt'] ?? map['created_at']) ?? DateTime.now(),
+      respondedAt: _parseDateTime(map['respondedAt'] ?? map['responded_at']),
+      // Joined profile info (from RPC)
       otherFullName: map['otherFullName'] as String? ?? map['other_full_name'] as String?,
       otherAvatarUrl: map['otherAvatarUrl'] as String? ?? map['other_avatar_url'] as String?,
       otherRole: UserRole.fromString(map['otherRole'] as String? ?? map['other_role'] as String?),
