@@ -1,6 +1,14 @@
 // supabase/functions/notifications_outbox_drain/index.ts
-// Version FCM HTTP v1 - Notifications instantanées v22 (fix claimSingleEvent)
+// Version FCM HTTP v1 - Notifications instantanées v24
 // Déployé: 2025-12-03
+// 
+// ARCHITECTURE:
+// - Cette Edge Function gère les notifications TRANSACTIONNELLES (1-to-1)
+// - Les notifications BROADCAST (Wedding of the Week, Replays) sont gérées par
+//   l'Edge Function send-broadcast-notification appelée depuis l'Admin Panel
+// 
+// TYPES ACTIFS: chatMessage, connectionRequest, connectionRequestAccepted, wishlistAdd, videoIncoming
+// TYPES BROADCAST (Admin Panel): broadcast avec deep links lynewed://[page]
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { create } from "https://deno.land/x/djwt@v2.8/mod.ts";
@@ -137,7 +145,9 @@ async function sendFcmV1(token, title, body, data, isHighPriority = false, ttlSe
     ok: true
   };
 }
-// --- MAPPINGS / I18N (inchangé sauf si mention) ---
+// --- MAPPINGS / I18N ---
+// NOTE: wedPublished et replayPublished sont gérés par l'Edge Function send-broadcast-notification
+// appelée depuis l'Admin Panel. Ils ne passent PAS par cette Edge Function.
 const EVENT_TO_NOTIFICATION_TYPE = {
   chatMessageCreated: "chatMessage",
   connectionRequestCreated: "connectionRequest",
@@ -146,7 +156,8 @@ const EVENT_TO_NOTIFICATION_TYPE = {
   wishlistAdded: "wishlistAdd",
   // professionalAlertReminder24h: SUPPRIMÉ - Code mort
   videoIncoming: "videoIncoming",
-  wedPublished: "wedPublished"
+  // wedPublished: SUPPRIMÉ - Géré par send-broadcast-notification (Admin Panel)
+  // replayPublished: SUPPRIMÉ - Géré par send-broadcast-notification (Admin Panel)
 };
 const I18N_TEMPLATES = {
   chatMessage: {
@@ -170,13 +181,7 @@ const I18N_TEMPLATES = {
     },
     body: (_, locale)=>locale === "fr" ? `Votre demande de contact a été acceptée.` : `Your contact request was accepted.`
   },
-  connectionRequestDeclined: {
-    title: {
-      en: "Request declined",
-      fr: "Demande refusée"
-    },
-    body: (_, locale)=>locale === "fr" ? `Votre demande de contact a été refusée.` : `Your contact request was declined.`
-  },
+  // connectionRequestDeclined: SUPPRIMÉ - On ne notifie plus les refus
   wishlistAdd: {
     title: {
       en: "Wishlist",
@@ -184,13 +189,7 @@ const I18N_TEMPLATES = {
     },
     body: (ctx, locale)=>locale === "fr" ? `${ctx.sender_full_name || "Quelqu'un"} vous a ajouté à sa wishlist.` : `${ctx.sender_full_name || "Someone"} added you to their wishlist.`
   },
-  professionalAlertReminder24h: {
-    title: {
-      en: "Alert expiring soon",
-      fr: "Alerte bientôt expirée"
-    },
-    body: (_, locale)=>locale === "fr" ? `Votre alerte expire dans moins de 24h.` : `Your alert expires in less than 24h.`
-  },
+  // professionalAlertReminder24h: SUPPRIMÉ - Code mort
   videoIncoming: {
     title: {
       en: "Incoming Video Call",
@@ -198,13 +197,8 @@ const I18N_TEMPLATES = {
     },
     body: (ctx, locale)=>locale === "fr" ? `${ctx.sender_full_name || "Quelqu'un"} vous appelle en vidéo...` : `${ctx.sender_full_name || "Someone"} is calling you...`
   },
-  wedPublished: {
-    title: {
-      en: "Wedding of the Week",
-      fr: "Mariage de la Semaine"
-    },
-    body: (ctx, locale)=>locale === "fr" ? `Découvrez le nouveau mariage de la semaine !` : `Check out the new wedding of the week!`
-  }
+  // wedPublished: SUPPRIMÉ - Géré par send-broadcast-notification (Admin Panel)
+  // replayPublished: SUPPRIMÉ - Géré par send-broadcast-notification (Admin Panel)
 };
 // --- HELPERS DB ---
 // Claim un seul event par son ID (pour le trigger realtime)
@@ -468,73 +462,8 @@ async function processWishlistAdded(ev) {
   return actions;
 }
 // processAlertReminder SUPPRIMÉ - Code mort, jamais déclenché
-
-// Nouveau processeur pour Wedding of the Week
-async function processWedPublished(ev) {
-  const actions = {
-    inApp: [],
-    push: []
-  };
-  const type = EVENT_TO_NOTIFICATION_TYPE[ev.event_type];
-  if (!type) return actions;
-  
-  const articleId = ev.payload?.article_id;
-  const targetRegion = ev.payload?.target_region || 'all';
-  if (!articleId) throw new Error("wedPublished missing article_id");
-  
-  // Récupérer tous les users qui doivent recevoir cette notification
-  // Pour l'instant, on notifie tous les users actifs (on pourrait filtrer par région)
-  const { data: allProfiles, error: profilesError } = await supabase
-    .from("profiles")
-    .select("id")
-    .limit(500); // Limite pour éviter les abus
-  
-  if (profilesError) throw new Error(`profiles error: ${profilesError.message}`);
-  
-  const tmpl = I18N_TEMPLATES[type];
-  const ctx = {};
-  
-  for (const profile of (allProfiles || [])) {
-    const recipientId = profile.id;
-    const setting = await getNotificationSetting(recipientId, type);
-    if (!setting.in_app && !setting.push) continue;
-    
-    const locale = await getUserLocale(recipientId);
-    const title = tmpl.title[locale] || tmpl.title.en;
-    const body = tmpl.body(ctx, locale);
-    
-    const basePayload = {
-      article_id: articleId,
-      target_region: targetRegion
-    };
-    
-    if (setting.in_app) {
-      actions.inApp.push({
-        profile_id: recipientId,
-        type,
-        payload: basePayload
-      });
-    }
-    
-    if (setting.push) {
-      const tokens = await getDeviceTokens(recipientId);
-      tokens.forEach((t) => actions.push.push({
-        token: t.token,
-        platform: t.platform,
-        title,
-        body,
-        isHighPriority: false,
-        ttlSeconds: 3600, // 1h TTL pour les articles
-        data: {
-          type,
-          article_id: String(articleId)
-        }
-      }));
-    }
-  }
-  
-  return actions;
-}
+// processWedPublished SUPPRIMÉ - Géré par send-broadcast-notification (Admin Panel)
+// Les notifications Wedding of the Week et Replays passent par le broadcast Admin Panel
 async function processVideoIncoming(ev) {
   const actions = {
     inApp: [],
@@ -633,9 +562,8 @@ async function processEvent(ev) {
     case "videoIncoming":
       actions = await processVideoIncoming(ev);
       break;
-    case "wedPublished":
-      actions = await processWedPublished(ev);
-      break;
+    // wedPublished: SUPPRIMÉ - Géré par send-broadcast-notification (Admin Panel)
+    // replayPublished: SUPPRIMÉ - Géré par send-broadcast-notification (Admin Panel)
     default:
       console.warn(`Unknown event_type: ${ev.event_type}`);
       return { inApp: 0, push: 0 };

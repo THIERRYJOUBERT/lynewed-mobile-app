@@ -9,8 +9,9 @@
 
 ## 📋 PLAN VALIDÉ
 
-### Types de Notifications v1 (Final)
+### Types de Notifications v1 (Final) - 7 Types Actifs
 
+#### Système 1: Transactionnel (instantané < 2s)
 | Type | Rôle cible | Déclencheur | Action Tap | Données requises |
 |------|-----------|-------------|------------|------------------|
 | `chatMessage` | Tous | Nouveau message privé | ChatDetailsPage | `room_id` |
@@ -18,9 +19,14 @@
 | `connectionRequestAccepted` | Pro | Demande acceptée | MessagesPage | `room_id` |
 | `videoIncoming` | Tous | Appel vidéo entrant | VideoCallPage + joinChannel | `video_session_id`, `agora_channel_name` |
 | `wishlistAdd` | Pro (Ultimate) | Bride ajoute en favori | DashboardPro | `bride_profile_id` |
-| `wedPublished` | Tous | Nouveau Wedding of Week | WeddingOfTheWeekPage | `article_id` |
 
-### Types SUPPRIMÉS (code mort)
+#### Système 2: Broadcast (batch depuis Admin Panel)
+| Type | Rôle cible | Déclencheur | Action Tap | Deep Link |
+|------|-----------|-------------|------------|-----------|
+| `wedPublished` | Tous | Admin publie WOW | WeddingOfTheWeek | `lynewed://wedding` |
+| `replayPublished` | Tous | Admin publie Replay | ContentReplay | `lynewed://replays` |
+
+#### Types SUPPRIMÉS (code mort)
 - ~~`connectionRequestDeclined`~~ - On ne notifie que le succès
 - ~~`professionalAlert`~~ - Jamais déclenché
 - ~~`professionalAlertReminder24h`~~ - Jamais déclenché
@@ -54,29 +60,35 @@
 - [x] CRÉER trigger `wedPublished` (table `wed_articles`) ✅
 - [x] SUPPRIMER code pour `connectionRequestDeclined` ✅
 
-### Phase 4: FLUTTER - Redirections ⏳
-- [ ] Valider `chatMessage` → ChatDetailsPage (room_id)
-- [ ] Valider `connectionRequest` → MessagesPage
-- [ ] Valider `connectionRequestAccepted` → MessagesPage (room_id)
-- [ ] Valider `videoIncoming` → VideoCallPage + joinChannel
-- [ ] AJOUTER `wishlistAdd` → DashboardPro
-- [ ] AJOUTER `wedPublished` → WeddingOfTheWeekPage
+### Phase 4: FLUTTER - Redirections ✅ COMPLET
+- [x] Valider `chatMessage` → ChatDetailsPage (room_id)
+- [x] Valider `connectionRequest` → MessagesPage (section demandes)
+- [x] Valider `connectionRequestAccepted` → ChatDetails (room_id) ou MessagesPage
+- [x] Valider `videoIncoming` → VideoCallPage + joinChannel
+- [x] AJOUTER `wishlistAdd` → DashboardPro
+- [x] AJOUTER `wedPublished` → WeddingOfTheWeekPage
+- [x] Supprimer `connectionRequestDeclined` (code mort)
 
-### Phase 5: GESTION PAR RÔLE ⏳
-- [ ] Définir types par rôle (Bride vs Pro)
-- [ ] Adapter `notification_settings` par rôle
-- [ ] Adapter `NotificationSettingsWidget` UI
+### Phase 5: GESTION PAR RÔLE ✅ COMPLET
+- [x] Définir types par rôle (Bride vs Pro) - `NotificationTypeConfig`
+- [x] Adapter `notification_settings` par rôle - `NotificationTypesConfig.getVisibleTypes()`
+- [x] Créer `NotificationSettingsPage` Clean Architecture
 
-### Phase 6: FLUTTER - UI Pages ⏳
-- [ ] Refactoriser `NotificationsPage` (Design System v3)
-- [ ] Refactoriser `NotificationSettingsWidget` (Design System v3)
-- [ ] Supprimer options obsolètes
+### Phase 6: FLUTTER - UI Pages ✅ COMPLET
+- [x] Créer `lib/features/notifications/` module Clean Architecture
+- [x] Refactoriser `NotificationsPage` (Design System v3)
+- [x] Refactoriser `NotificationSettingsPage` (Design System v3)
+- [x] Supprimer options obsolètes (`professionalAlertReminder24h`)
+- [x] Ajouter documentation enum `NotificationType`
 
-### Phase 7: NETTOYAGE FINAL ⏳
-- [ ] Supprimer cron job définitivement
-- [ ] Nettoyer enums Supabase
-- [ ] Nettoyer enums Flutter
-- [ ] Synchroniser `ConnectionRequestSource`
+### Phase 7: NETTOYAGE FINAL ✅ COMPLET
+- [x] Supprimer trigger `trg_outbox_wed_published` (migré vers broadcast Admin Panel)
+- [x] Supprimer fonction `outbox_on_wed_published()`
+- [x] Nettoyer notifications `wedPublished` existantes (49 supprimées)
+- [x] Mettre à jour Edge Function `notifications_outbox_drain` (supprimer wedPublished)
+- [x] Ajouter type `broadcast` dans Flutter (deep links)
+- [x] Documenter l'architecture à deux systèmes
+- [x] Restaurer trigger realtime sécurisé (notifications < 2 secondes) ✅
 
 ---
 
@@ -163,6 +175,182 @@ INSERT wed_articles (is_published=true)
 - Edge Function v23 déployée
 - Notifications in-app: instantanées (< 100ms)
 - Push: différé (cron)
+
+---
+
+### 2025-12-03 19:30 - Phases 4-6 Flutter Frontend ✅
+
+**Actions Phase 4 (Redirections):**
+- ✅ Refactorisé `handle_notification_redirection.dart`
+- ✅ Ajouté cas `wishlistAdd` → DashboardPro
+- ✅ Ajouté cas `wedPublished` → WeddingOfTheWeek
+- ✅ Amélioré logs avec emojis pour chaque type
+- ✅ Supprimé `connectionRequestDeclined` (code mort)
+
+**Actions Phase 5 (Gestion par rôle):**
+- ✅ Créé `lib/features/notifications/` module Clean Architecture
+- ✅ Créé `NotificationTypeConfig` avec règles de visibilité par rôle
+- ✅ Créé `NotificationTypesConfig.getVisibleTypes()` pour filtrage dynamique
+- ✅ Implémenté logique de tier d'abonnement pour `wishlistAdd` (Ultimate only)
+
+**Actions Phase 6 (UI Refactoring):**
+- ✅ Créé `NotificationsPage` avec Design System v3
+- ✅ Créé `NotificationSettingsPage` avec Design System v3
+- ✅ Documenté enum `NotificationType` avec @Deprecated pour types obsolètes
+- ✅ Supprimé option `professionalAlertReminder24h` (code mort)
+
+**Fichiers créés:**
+```
+lib/features/notifications/
+├── notifications.dart                           # Barrel export
+├── domain/entities/
+│   ├── notification_setting.dart               # Entity
+│   └── notification_type_config.dart           # Config par rôle
+└── presentation/pages/
+    ├── notifications_page.dart                 # Liste notifications
+    └── notification_settings_page.dart         # Settings
+```
+
+**Fichiers modifiés:**
+- `lib/custom_code/actions/handle_notification_redirection.dart`
+- `lib/backend/schema/enums/enums.dart`
+
+---
+
+### 2025-12-03 19:45 - Phase 7 Nettoyage + Architecture Broadcast ✅
+
+**Découverte importante:**
+L'équipe CRM utilise une Edge Function `send-broadcast-notification` pour les notifications de masse:
+- Wedding of the Week
+- Replays
+- Annonces générales
+
+**Décision: Option A - Unifier vers Broadcast**
+- ✅ Supprimé trigger SQL `trg_outbox_wed_published`
+- ✅ Supprimé fonction `outbox_on_wed_published()`
+- ✅ Nettoyé 49 notifications `wedPublished` orphelines
+- ✅ Mis à jour Edge Function `notifications_outbox_drain` v24
+- ✅ Ajouté type `broadcast` + deep links dans Flutter
+
+---
+
+### 2025-12-03 20:00 - Corrections Backend Complètes ✅
+
+**Corrections de sécurité:**
+- ✅ Supprimé trigger `trg_outbox_realtime_process` (warning search_path mutable)
+- ✅ Supprimé fonction `trigger_process_outbox_realtime()` (non fonctionnel car settings manquants)
+- ✅ Le système utilise le cron job `notifications_outbox_drain_every_minute` (plus robuste)
+
+**Corrections trigger connection_request:**
+- ✅ Mis à jour `outbox_on_connection_request_aiu()` pour ne plus créer `connectionRequestDeclined`
+- ✅ Seul `connectionRequestAccepted` est notifié (pas les refus - meilleure UX)
+
+**Nettoyage notification_settings:**
+- ✅ Supprimé 245 settings pour types obsolètes (connectionRequestDeclined, professionalAlert, professionalAlertReminder24h, weddingPinMatch, wedPublished)
+- ✅ Types actifs restants: chatMessage, connectionRequest, connectionRequestAccepted, wishlistAdd, videoIncoming
+
+**Nettoyage Edge Function v24:**
+- ✅ Supprimé templates I18N obsolètes
+- ✅ Documentation architecture mise à jour
+- ✅ Déployée avec succès
+
+**Architecture Finale - Deux Systèmes:**
+
+| Système | Edge Function | Types | Déclencheur |
+|---------|---------------|-------|-------------|
+| **Transactionnel** | `notifications_outbox_drain` v24 | chatMessage, connectionRequest, connectionRequestAccepted, wishlistAdd, videoIncoming | Triggers SQL + Cron 1min |
+| **Broadcast** | `send-broadcast-notification` v1 | broadcast (avec deep link) | Admin Panel manuel |
+
+**Deep Links supportés (lynewed://[page]):**
+- `home` → HomeBrides / DashboardPro
+- `wedding` → WeddingOfTheWeek
+- `replays` → ContentReplay
+- `feed` → Feed
+- `profile` → ProfileBridesAndPro
+- `settings` → Settings
+- `chat` → MessagesBrides / MessagesPro
+- `notifications` → NotificationsPage
+
+**État final du système:**
+- `notifications_outbox`: 0 pending, 6 processed ✅
+- `notifications`: 6 ✅
+- `device_tokens`: 2 (iOS + Android) ✅
+- `notification_settings`: 245 (5 types × 49 users) ✅
+
+---
+
+### 2025-12-03 20:15 - Correction Trigger Realtime ✅
+
+**Problème identifié:**
+J'avais supprimé par erreur le trigger `trg_outbox_realtime_process` pensant qu'il était inutile.
+En réalité, c'est le mécanisme PRINCIPAL pour les notifications instantanées.
+Le cron job toutes les minutes est juste un BACKUP, pas le système principal.
+
+**Correction:**
+- ✅ Restauré `trigger_process_outbox_realtime()` avec `search_path` défini (sécurité)
+- ✅ URL et token hardcodés dans la fonction (comme le cron job)
+- ✅ Trigger `trg_outbox_realtime_process` AFTER INSERT sur `notifications_outbox`
+
+**Test de performance:**
+```
+Message créé      → 18:46:41.833
+Event claimed     → 18:46:43.230 (trigger → Edge Function)
+Event processed   → 18:46:43.702
+─────────────────────────────────
+TOTAL: 1.87 secondes ✅
+```
+
+**Architecture Finale:**
+```
+[Action utilisateur] → [Trigger SQL] → [notifications_outbox]
+                                              ↓ (AFTER INSERT)
+                           [trigger_process_outbox_realtime]
+                                              ↓ (pg_net.http_post)
+                           [Edge Function notifications_outbox_drain]
+                                              ↓ (~400ms)
+                           [Notification créée] → Push FCM
+                           
+TEMPS TOTAL: < 2 secondes ✅
+```
+
+**Cron job:** Reste actif comme backup/catch-up pour les events manqués.
+
+---
+
+### 2025-12-03 20:30 - Ajout replayPublished + Refonte Broadcast ✅
+
+**Décision architecturale:**
+Types séparés `wedPublished` et `replayPublished` plutôt qu'un seul type `broadcast` car:
+- Meilleur tracking/analytics
+- Préférences utilisateur distinctes (désactiver WOW mais garder Replays)
+- Maintenabilité
+
+**Modifications Backend:**
+- ✅ Ajouté `replayPublished` à l'enum Supabase `notificationType`
+- ✅ Ajouté colonne `notification_type` à `broadcast_history`
+- ✅ Créé settings pour `wedPublished` et `replayPublished` (49 users chacun)
+- ✅ Mis à jour Edge Function `send-broadcast-notification` v2:
+  - Crée notifications IN-APP (pas seulement push)
+  - Respecte les préférences utilisateur
+  - Supporte 3 types: `wedPublished`, `replayPublished`, `broadcast`
+  - Batch processing pour milliers de notifications
+
+**Modifications Flutter:**
+- ✅ Ajouté `replayPublished` à l'enum `NotificationType`
+- ✅ Ajouté case `replayPublished` dans `handle_notification_redirection.dart`
+- ✅ Ajouté config dans `NotificationTypesConfig` (settings page)
+- ✅ Ajouté icône et titre dans `NotificationsPage`
+
+**État final - 7 types actifs:**
+| Type | Système | In-App | Push | Settings |
+|------|---------|--------|------|----------|
+| chatMessage | Transactionnel | ✅ | ✅ | ✅ |
+| connectionRequest | Transactionnel | ✅ | ✅ | ✅ |
+| connectionRequestAccepted | Transactionnel | ✅ | ✅ | ✅ |
+| wishlistAdd | Transactionnel | ✅ | ✅ | ✅ |
+| videoIncoming | Transactionnel | ✅ | ✅ | ✅ |
+| wedPublished | Broadcast | ✅ | ✅ | ✅ |
+| replayPublished | Broadcast | ✅ | ✅ | ✅ |
 
 ---
 

@@ -208,11 +208,55 @@ Future<void> handleNotificationRedirection(
       }
 
     case 'chatMessage':
-    case 'connectionRequest':
-    case 'connectionRequestAccepted':
-    case 'connectionRequestDeclined':
       {
+        // chatMessage: Ouvrir la conversation directement
         final roomId = (data['room_id'] as String?) ?? '';
+        if (roomId.isNotEmpty) {
+          SecureLogger.info('💬 chatMessage: Opening ChatDetails with room_id=$roomId');
+          router.pushNamed(
+            'ChatDetails',
+            queryParameters: {'roomId': roomId},
+            extra: <String, dynamic>{
+              kTransitionInfoKey: const TransitionInfo(
+                hasTransition: true,
+                transitionType: PageTransitionType.fade,
+                duration: Duration(milliseconds: 0),
+              ),
+            },
+          );
+        } else {
+          SecureLogger.warning('chatMessage: No room_id, falling back to Messages page');
+          if (userRole == UserRole.professional) {
+            router.pushNamed('MessagesPro');
+          } else {
+            router.pushNamed('MessagesBrides');
+          }
+        }
+        break;
+      }
+
+    case 'connectionRequest':
+      {
+        // connectionRequest: Pour les Brides - aller vers la page Messages (section demandes)
+        // Le request_id est dans le payload pour référence future
+        final requestId = (data['request_id'] as String?) ?? '';
+        SecureLogger.info('📩 connectionRequest: request_id=$requestId');
+        
+        // Naviguer vers la page Messages - les demandes sont visibles dans la section dédiée
+        if (userRole == UserRole.professional) {
+          router.pushNamed('MessagesPro');
+        } else {
+          router.pushNamed('MessagesBrides');
+        }
+        break;
+      }
+
+    case 'connectionRequestAccepted':
+      {
+        // connectionRequestAccepted: Pour les Pros - ouvrir la conversation si room_id disponible
+        final roomId = (data['room_id'] as String?) ?? '';
+        SecureLogger.info('✅ connectionRequestAccepted: room_id=$roomId');
+        
         if (roomId.isNotEmpty) {
           router.pushNamed(
             'ChatDetails',
@@ -226,6 +270,7 @@ Future<void> handleNotificationRedirection(
             },
           );
         } else {
+          // Fallback vers la page Messages
           if (userRole == UserRole.professional) {
             router.pushNamed('MessagesPro');
           } else {
@@ -235,15 +280,140 @@ Future<void> handleNotificationRedirection(
         break;
       }
 
+    case 'wishlistAdd':
+      {
+        // wishlistAdd: Pour les Pros Ultimate - aller vers le Dashboard Pro
+        // Le bride_profile_id est dans le payload pour référence future (afficher la bride qui a ajouté)
+        final brideProfileId = (data['bride_profile_id'] as String?) ?? '';
+        SecureLogger.info('💖 wishlistAdd: bride_profile_id=$brideProfileId');
+        
+        // Naviguer vers le Dashboard Pro où la wishlist est visible
+        router.pushNamed('DashboardPro');
+        break;
+      }
+
+    case 'wedPublished':
+      {
+        // wedPublished: Nouveau Wedding of the Week - ouvrir la page dédiée
+        // Peut venir du système broadcast (Admin Panel) ou d'un deep link
+        final link = (data['link'] as String?) ?? '';
+        final referenceId = (data['reference_id'] as String?) ?? '';
+        SecureLogger.info('💒 wedPublished: reference_id=$referenceId, link=$link');
+        
+        // Naviguer vers la page Wedding of the Week
+        router.pushNamed('WeddingOfTheWeek');
+        break;
+      }
+
+    case 'replayPublished':
+      {
+        // replayPublished: Nouveau Replay disponible - ouvrir la page Replays
+        final link = (data['link'] as String?) ?? '';
+        final referenceId = (data['reference_id'] as String?) ?? '';
+        SecureLogger.info('🎬 replayPublished: reference_id=$referenceId, link=$link');
+        
+        // Naviguer vers la page des Replays
+        router.pushNamed('ContentReplay');
+        break;
+      }
+
+    // connectionRequestDeclined: SUPPRIMÉ - Le backend ne notifie plus les refus
+    // professionalAlert: CODE MORT - Jamais déclenché
+    // professionalAlertReminder24h: CODE MORT - Jamais déclenché
+    // weddingPinMatch: CODE MORT - Concept obsolète
+
+    case 'broadcast':
+      {
+        // Broadcast générique depuis Admin Panel - utiliser le deep link
+        // Pour les annonces qui ne sont pas wedPublished ou replayPublished
+        final link = (data['link'] as String?) ?? '';
+        SecureLogger.info('📢 broadcast: link=$link');
+        
+        if (link.isNotEmpty) {
+          _handleDeepLink(context, router, link, userRole);
+        } else {
+          // Fallback vers home si pas de deep link
+          if (userRole == UserRole.professional) {
+            router.pushNamed('DashboardPro');
+          } else {
+            router.pushNamed('HomeBrides');
+          }
+        }
+        break;
+      }
+
     default:
       {
-        // Logique pour les autres cas
+        SecureLogger.warning('Unknown notification type: $type');
+        // Fallback vers la page d'accueil appropriée
         if (userRole == UserRole.professional) {
           router.pushNamed('DashboardPro');
         } else {
           router.pushNamed('HomeBrides');
         }
         break;
+      }
+  }
+}
+
+/// Gère les deep links au format lynewed://[page]
+/// Utilisé par les notifications broadcast de l'Admin Panel
+void _handleDeepLink(
+  BuildContext context,
+  GoRouter router,
+  String link,
+  UserRole userRole,
+) {
+  final uri = Uri.tryParse(link);
+  if (uri == null || uri.scheme != 'lynewed') {
+    SecureLogger.warning('Invalid deep link format: $link');
+    return;
+  }
+  
+  final page = uri.host.toLowerCase();
+  SecureLogger.info('🔗 Deep link page: $page');
+  
+  // Mapping des deep links vers les routes Flutter
+  // Définis dans l'Admin Panel (voir GUIDE_EQUIPE_APP_MOBILE.md)
+  switch (page) {
+    case 'home':
+      if (userRole == UserRole.professional) {
+        router.pushNamed('DashboardPro');
+      } else {
+        router.pushNamed('HomeBrides');
+      }
+      break;
+    case 'wedding':
+      router.pushNamed('WeddingOfTheWeek');
+      break;
+    case 'replays':
+      router.pushNamed('ContentReplay');
+      break;
+    case 'feed':
+      router.pushNamed('Feed');
+      break;
+    case 'profile':
+      router.pushNamed('ProfileBridesAndPro');
+      break;
+    case 'settings':
+      router.pushNamed('Settings');
+      break;
+    case 'chat':
+      if (userRole == UserRole.professional) {
+        router.pushNamed('MessagesPro');
+      } else {
+        router.pushNamed('MessagesBrides');
+      }
+      break;
+    case 'notifications':
+      router.pushNamed('NotificationsPage');
+      break;
+    default:
+      SecureLogger.warning('Unknown deep link page: $page');
+      if (userRole == UserRole.professional) {
+        router.pushNamed('DashboardPro');
+      } else {
+        router.pushNamed('HomeBrides');
       }
   }
 }

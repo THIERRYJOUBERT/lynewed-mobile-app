@@ -95,16 +95,50 @@ enum VideoSessionStatus {
   cancelled,
 }
 
+/// Types de notifications actifs dans l'application.
+/// 
+/// ## Architecture à 2 systèmes:
+/// 
+/// ### Système 1: Transactionnel (instantané < 2s)
+/// Edge Function: `notifications_outbox_drain` v24
+/// - chatMessage: Nouveau message privé
+/// - connectionRequest: Demande de contact (Pro→Bride)
+/// - connectionRequestAccepted: Demande acceptée
+/// - wishlistAdd: Bride ajoute Pro en favoris (Ultimate only)
+/// - videoIncoming: Appel vidéo entrant
+/// 
+/// ### Système 2: Broadcast (batch depuis Admin Panel)
+/// Edge Function: `send-broadcast-notification` v2
+/// - wedPublished: Nouveau Wedding of the Week (in-app + push)
+/// - replayPublished: Nouveau Replay disponible (in-app + push)
+/// - broadcast: Annonce générique avec deep link personnalisé
+/// 
+/// ## Types OBSOLÈTES (conservés pour compatibilité DB):
+/// - connectionRequestDeclined: SUPPRIMÉ - On ne notifie plus les refus
+/// - professionalAlert: CODE MORT - Jamais déclenché
+/// - professionalAlertReminder24h: CODE MORT - Pas de cron job
+/// - weddingPinMatch: CODE MORT - Concept obsolète
 enum NotificationType {
+  // === SYSTÈME 1: TRANSACTIONNEL (instantané) ===
   chatMessage,
   connectionRequest,
   connectionRequestAccepted,
-  connectionRequestDeclined,
   wishlistAdd,
-  professionalAlert,
-  professionalAlertReminder24h,
   videoIncoming,
-  wedPublished,
+  
+  // === SYSTÈME 2: BROADCAST (Admin Panel) ===
+  wedPublished,      // Wedding of the Week - deep link: lynewed://wedding
+  replayPublished,   // Nouveau Replay - deep link: lynewed://replays
+  // Note: 'broadcast' générique n'est pas un enum, c'est un type FCM avec deep link custom
+  
+  // === TYPES OBSOLÈTES ===
+  @Deprecated('Backend ne notifie plus les refus - supprimé en v23')
+  connectionRequestDeclined,
+  @Deprecated('Code mort - jamais déclenché')
+  professionalAlert,
+  @Deprecated('Code mort - pas de cron job')
+  professionalAlertReminder24h,
+  @Deprecated('Concept obsolète - remplacé par weddings')
   weddingPinMatch,
 }
 
