@@ -15,6 +15,8 @@ ChatEntryStatus _entryStatusFromString(String? s) {
       return ChatEntryStatus.roomReady;
     case 'requestpending':
       return ChatEntryStatus.requestPending;
+    case 'requiresrequest':
+      return ChatEntryStatus.requiresRequest;
     case 'notallowed':
       return ChatEntryStatus.notAllowed;
     case 'blocked':

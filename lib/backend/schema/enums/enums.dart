@@ -131,6 +131,7 @@ enum MapStyleType {
 enum ChatEntryStatus {
   roomReady,
   requestPending,
+  requiresRequest, // Pro→Bride: Must show ContactRequestSheet first
   notAllowed,
   blocked,
   error,

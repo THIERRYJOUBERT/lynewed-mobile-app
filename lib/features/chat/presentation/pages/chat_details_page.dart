@@ -8,6 +8,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '/core/design/design.dart';
+import '/core/services/unread_counter_service.dart';
+import '/backend/schema/enums/enums.dart' show PermissionType;
+import '/custom_code/actions/index.dart' as actions;
+import '/flutter_flow/flutter_flow_util.dart';
+import '/index.dart' show VideoCallPageWidget;
 import '../../domain/entities/entities.dart';
 import '../bloc/chat_room_notifier.dart';
 import '../bloc/chat_room_state.dart';
@@ -96,6 +101,8 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
   void dispose() {
     _notifier.removeListener(_onStateChange);
     _notifier.dispose();
+    // Refresh global unread counter when leaving chat (messages were read)
+    UnreadCounterService.instance.forceRefresh();
     super.dispose();
   }
 
@@ -279,18 +286,95 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
   }
 
   Future<void> _handleVideoCall() async {
-    // TODO: Implement video call using existing Agora actions
-    // This preserves the Agora functionality from FlutterFlow
-    // Steps:
-    // 1. Check camera/microphone permissions
-    // 2. Create video session via startVideoSessionAction
-    // 3. Get Agora token via getAgoraTokenAction
-    // 4. Navigate to VideoCallPage
+    final state = _notifier.state;
+    if (state is! ChatRoomLoaded) return;
     
+    final otherProfileId = state.otherProfileId ?? widget.otherProfileId;
+    if (otherProfileId == null || otherProfileId.isEmpty) {
+      _showSnackBar('Unable to start video call', isError: true);
+      return;
+    }
+
+    // Step 1: Check camera permission
+    final cameraPermission = await actions.checkAndRequestPermission(
+      PermissionType.CAMERA,
+    );
+    if (cameraPermission != 'granted') {
+      if (!mounted) return;
+      _showSnackBar(
+        'Camera permission is required for video calls',
+        isError: true,
+      );
+      return;
+    }
+
+    // Step 2: Check microphone permission
+    final micPermission = await actions.checkAndRequestPermission(
+      PermissionType.MICROPHONE,
+    );
+    if (micPermission != 'granted') {
+      if (!mounted) return;
+      _showSnackBar(
+        'Microphone permission is required for video calls',
+        isError: true,
+      );
+      return;
+    }
+
+    // Step 3: Create video session
+    final videoSession = await actions.startVideoSessionAction(otherProfileId);
+    if (videoSession == null) {
+      if (!mounted) return;
+      _showSnackBar(
+        'Unable to create video session. Please try again.',
+        isError: true,
+      );
+      return;
+    }
+
+    // Step 4: Validate session data
+    if (videoSession.id.isEmpty || videoSession.agoraChannelName.isEmpty) {
+      if (!mounted) return;
+      _showSnackBar(
+        'Invalid video session. Please try again.',
+        isError: true,
+      );
+      return;
+    }
+
+    // Step 5: Get Agora token
+    final agoraToken = await actions.getAgoraTokenAction(
+      videoSession.agoraChannelName,
+      _currentUserId,
+    );
+    if (agoraToken == null || agoraToken.isEmpty) {
+      if (!mounted) return;
+      _showSnackBar(
+        'Unable to get video token. Please try again.',
+        isError: true,
+      );
+      return;
+    }
+
+    // Step 6: Navigate to video call page
+    if (!mounted) return;
+    context.goNamed(
+      VideoCallPageWidget.routeName,
+      queryParameters: {
+        'videoSessionId': serializeParam(videoSession.id, ParamType.String),
+        'channelName': serializeParam(videoSession.agoraChannelName, ParamType.String),
+        'agoraToken': serializeParam(agoraToken, ParamType.String),
+        'isInitiator': serializeParam(true, ParamType.bool),
+      }.withoutNulls,
+    );
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Video call - Agora integration pending'),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? LynewedColors.error : LynewedColors.primary,
+        duration: const Duration(seconds: 3),
       ),
     );
   }

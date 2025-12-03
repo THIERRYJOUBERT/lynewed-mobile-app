@@ -60,6 +60,15 @@ class ChatRemoteDatasource {
         .eq('profile_id', _currentUserId);
   }
 
+  /// Unarchive a conversation (restore to active)
+  Future<void> unarchiveConversation(String roomId) async {
+    await _client
+        .from('chat_room_participants')
+        .update({'conversation_status': 'active'})
+        .eq('room_id', roomId)
+        .eq('profile_id', _currentUserId);
+  }
+
   // ============================================================
   // MESSAGES
   // ============================================================
@@ -124,7 +133,7 @@ class ChatRemoteDatasource {
   Future<void> markRoomAsRead(String roomId) async {
     await _client
         .from('chat_room_participants')
-        .update({'last_read_at': DateTime.now().toIso8601String()})
+        .update({'last_read_at': DateTime.now().toUtc().toIso8601String()})
         .eq('room_id', roomId)
         .eq('profile_id', _currentUserId);
   }
@@ -178,6 +187,9 @@ class ChatRemoteDatasource {
 
   /// Subscribe to conversation updates (new messages in any room)
   /// Used by MessagesPage to refresh when new messages arrive
+  /// 
+  /// Note: Supabase Realtime respects RLS policies, so users only receive
+  /// notifications for messages they have access to (rooms they participate in).
   Stream<void> subscribeToConversationUpdates() {
     final controller = StreamController<void>.broadcast();
 
@@ -191,8 +203,11 @@ class ChatRemoteDatasource {
           schema: 'public',
           table: 'chat_messages',
           callback: (payload) {
-            // Just notify that something changed
-            controller.add(null);
+            // Only notify if the message is from someone else
+            final senderId = payload.newRecord['profile_id'] as String?;
+            if (senderId != _currentUserId) {
+              controller.add(null);
+            }
           },
         )
         .subscribe();

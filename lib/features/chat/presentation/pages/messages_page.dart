@@ -63,8 +63,8 @@ class _MessagesPageState extends State<MessagesPage> {
     await _notifier.refresh();
   }
 
-  void _onConversationTap(Conversation conversation) {
-    Navigator.push(
+  void _onConversationTap(Conversation conversation) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ChatDetailsPage(
@@ -78,6 +78,10 @@ class _MessagesPageState extends State<MessagesPage> {
         ),
       ),
     );
+    // Refresh conversations when returning from chat (messages were read)
+    if (mounted) {
+      _notifier.refresh();
+    }
   }
 
   void _onConversationLongPress(Conversation conversation) {

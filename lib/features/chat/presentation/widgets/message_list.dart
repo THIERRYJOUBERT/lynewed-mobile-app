@@ -168,17 +168,17 @@ class _MessageListState extends State<MessageList> {
               // Check if we need to show date separator
               final showDateSeparator = _shouldShowDateSeparator(index);
 
-              // Check if we should show avatar (only for first message in a group)
+              // Check if we should show avatar (only for last message in a sender group)
               final showAvatar = _shouldShowAvatar(index);
 
-              // Check if this is first message from this sender (for 30px spacing)
-              final isFirstFromSender = _isFirstFromSender(index);
+              // Check if this message needs 30px spacing (different sender above)
+              final needsLargeSpacing = _needsLargeSpacing(index);
 
               return Column(
                 children: [
                   if (showDateSeparator)
                     _buildDateSeparator(message.createdAt),
-                  _buildMessageBubble(message, isOwnMessage, showAvatar, isFirstFromSender),
+                  _buildMessageBubble(message, isOwnMessage, showAvatar, needsLargeSpacing),
                 ],
               );
             },
@@ -261,19 +261,29 @@ class _MessageListState extends State<MessageList> {
     return timeDiff.abs() > 2;
   }
 
-  /// Check if this message is the first from this sender in a group
-  /// (previous message in time was from a different sender)
-  bool _isFirstFromSender(int index) {
+  /// Check if this message needs extra spacing (30px) because the NEXT message
+  /// visually (which is the message BELOW in the reversed list = index - 1)
+  /// is from a different sender.
+  /// 
+  /// With reverse:true ListView:
+  /// - index 0 = newest message (bottom of screen)
+  /// - index N = oldest message (top of screen)
+  /// - Visually: index 0 is at bottom, index N is at top
+  /// - "top" padding pushes the item DOWN (away from older messages)
+  /// 
+  /// So we need 30px spacing when the message ABOVE us (older = index + 1) 
+  /// is from a different sender.
+  bool _needsLargeSpacing(int index) {
     final messages = widget.state.messages;
     
-    // First message in list (newest) - check if previous (older) is from different sender
-    if (index == 0) return false; // No extra spacing for newest message
+    // Last message in list (oldest, at top of screen) - no spacing above it
+    if (index == messages.length - 1) return false;
     
     final currentMessage = messages[index];
-    final previousMessage = messages[index - 1]; // Previous in list = newer in time
+    final olderMessage = messages[index + 1]; // Older message = visually above
 
-    // This is first from sender if the newer message was from someone else
-    return currentMessage.profileId != previousMessage.profileId;
+    // Need 30px if the message above is from a different sender
+    return currentMessage.profileId != olderMessage.profileId;
   }
 
   Widget _buildDateSeparator(DateTime date) {
@@ -297,7 +307,7 @@ class _MessageListState extends State<MessageList> {
     );
   }
 
-  Widget _buildMessageBubble(ChatMessage message, bool isOwnMessage, bool showAvatar, bool isFirstFromSender) {
+  Widget _buildMessageBubble(ChatMessage message, bool isOwnMessage, bool showAvatar, bool needsLargeSpacing) {
     // Use cached signed URL (synchronous) - triggers async load if not cached
     final signedUrl = _getCachedSignedUrl(message.attachmentUrl);
     
@@ -308,7 +318,7 @@ class _MessageListState extends State<MessageList> {
       senderName: isOwnMessage ? null : widget.otherProfileName,
       senderAvatarUrl: isOwnMessage ? null : widget.otherProfileAvatarUrl,
       showAvatar: showAvatar,
-      isFirstFromSender: isFirstFromSender,
+      needsLargeSpacing: needsLargeSpacing,
       signedMediaUrl: signedUrl,
       onLongPress: widget.onMessageLongPress,
       onImageTap: widget.onImageTap != null

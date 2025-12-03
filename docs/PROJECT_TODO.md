@@ -1,8 +1,8 @@
 # PROJECT TODO - Tâches de Développement LYNEWED
 
 **Document créé:** 2025-11-26  
-**Last Updated:** 2025-12-02  
-**Version:** v4.0
+**Last Updated:** 2025-12-03 13:35  
+**Version:** v4.2
 
 ---
 
@@ -30,6 +30,34 @@ Le module Map est 100% complet. Voir rapport final: `docs/archive/MAP_REFACTORIN
 **Backup code:** `docs/archive/chat_backup_2025-12-02/`  
 **Estimation:** 44-60 heures
 
+### Travail Complété (2025-12-03)
+- ✅ **Audio Player**: Refactorisé design compact (FlutterFlow style)
+  - Removed waveform visualization
+  - Added play/pause, timeline slider, duration, speed control
+  - Fixed signed URL timing issue
+- ✅ **Message Loading**: Optimisé avec cache synchrone + preloading
+  - Replaced FutureBuilder with sync cache
+  - Implemented _preloadSignedUrls() for async loading
+  - Added ValueKey for widget reconstruction
+- ✅ **Audio Recorder**: Améliorations UI/UX
+  - Slowed animation (50ms → 100ms)
+  - Reduced amplitude at silence (cubic curve)
+  - Unified typography with player
+  - Reduced spacing to 10px
+- ✅ **Message Spacing**: Logique corrigée pour liste inversée
+  - 8px entre messages du même utilisateur
+  - 30px entre messages d'utilisateurs différents
+  - Renommé `_isFirstFromSender` → `_needsLargeSpacing`
+- ✅ **Map Sheets Navigation**: Contact depuis sheets fonctionne
+  - `MapActionsService.navigateToChat()` utilise `action_blocks.contactChatRoom()`
+  - Charge correctement nom, avatar, rôle du contact
+- ✅ **ChatDetailsPage "Waiting" Bug**: Corrigé
+  - `pendingRequestId` passé uniquement si `status == requestPending`
+  - Évite "Waiting for response" pour rooms actives
+- ✅ **Pro→Bride Contact Flow**: Status `requiresRequest` géré
+  - Ajouté à enum `ChatEntryStatus`
+  - Messages UX appropriés (demande requise, tier insuffisant, bloqué)
+
 ### Décisions Validées (2025-12-02)
 - ✅ Plans: `inactive`, `earlyAccess`, `premiumVisibility`, `ultimateAccess`
 - ✅ Bride→Pro: Contact direct (pas de demande)
@@ -40,14 +68,15 @@ Le module Map est 100% complet. Voir rapport final: `docs/archive/MAP_REFACTORIN
 - ✅ Rooms publiques: Conservées (Brides only)
 
 ### Phases de Refactorisation
-| Phase | Description | Heures | Priorité |
-|-------|-------------|--------|----------|
-| 1 | Backend - Logique Contact | 6-8h | 🔴 |
-| 2 | Foundation Frontend | 8-10h | 🔴 |
-| 3 | Messages Page Unifiée | 8-12h | 🔴 |
-| 4 | Chat Details | 12-16h | 🟡 |
-| 5 | Modération | 6-8h | 🟢 |
-| 6 | Tests & Cleanup | 4-6h | 🟢 |
+| Phase | Description | Heures | Priorité | Status |
+|-------|-------------|--------|----------|--------|
+| 0 | Audio Player & Message Loading | 4-6h | 🔴 | ✅ 2025-12-03 |
+| 1 | Backend - Logique Contact | 6-8h | 🔴 | ⏳ |
+| 2 | Foundation Frontend | 8-10h | 🔴 | ⏳ |
+| 3 | Messages Page Unifiée | 8-12h | 🔴 | ⏳ |
+| 4 | Chat Details | 12-16h | 🟡 | ⏳ |
+| 5 | Modération | 6-8h | 🟢 | ⏳ |
+| 6 | Tests & Cleanup | 4-6h | 🟢 | ⏳ |
 
 ### Tâches Backend Critiques
 - [ ] Supprimer trigger `trg_on_first_msg_pro_bride`
@@ -56,7 +85,7 @@ Le module Map est 100% complet. Voir rapport final: `docs/archive/MAP_REFACTORIN
 - [ ] Renommer enum `connectionRequestSource`
 
 ### Tâches Frontend Critiques
-- [ ] Créer `ContactRequestSheet` (demande Pro→Bride)
+- [ ] Créer `ContactRequestSheet` (demande Pro→Bride) ⚠️ **PRIORITÉ** - UX placeholder actuel
 - [ ] Unifier `MessagesPage` (bride + pro)
 - [ ] Ajouter section "Bloqués" dans Messagerie
 - [ ] Créer `ReportMessageSheet` (4 raisons)

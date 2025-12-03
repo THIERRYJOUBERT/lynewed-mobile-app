@@ -32,6 +32,9 @@ abstract class ChatRepository {
   /// Archive a conversation
   Future<ChatResult<void>> archiveConversation(String roomId);
 
+  /// Unarchive a conversation
+  Future<ChatResult<void>> unarchiveConversation(String roomId);
+
   // ============================================================
   // MESSAGES
   // ============================================================

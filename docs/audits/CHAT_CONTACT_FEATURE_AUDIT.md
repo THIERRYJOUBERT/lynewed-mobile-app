@@ -1,7 +1,8 @@
 # Chat & Contact Feature Audit
 
 **Document créé:** 2025-12-02  
-**Version:** v1.2 (MessagesPage + BlockedUsersSheet validés)  
+**Version:** v1.4 (Contact Flow + Navigation Fixes)  
+**Dernière mise à jour:** 2025-12-03 13:40  
 **Objectif:** Audit complet du module Chat & Contact pour préparer la refactorisation Clean Architecture
 
 ---
@@ -9,6 +10,33 @@
 ## ⚠️ DÉCISIONS VALIDÉES (2025-12-02)
 
 > Les sections 4, 5, 9 et 10 ont été mises à jour suite aux décisions QCM validées.
+
+---
+
+## 🔧 CORRECTIONS RÉCENTES (2025-12-03)
+
+### Message Spacing ✅
+- Logique corrigée pour liste inversée (`reverse: true`)
+- **8px** entre messages du même utilisateur
+- **30px** entre messages d'utilisateurs différents
+- Renommé `_isFirstFromSender` → `_needsLargeSpacing`
+
+### Navigation Chat depuis Map Sheets ✅
+- `MapActionsService.navigateToChat()` utilise maintenant `action_blocks.contactChatRoom()`
+- Charge correctement les infos du contact (nom, avatar, rôle)
+- Fonctionne pour: `professional_details_sheet`, `wedding_details_sheet`, `alert_details_sheet`
+
+### Bug "Waiting for response" ✅
+- `pendingRequestId` et `viewerIsReviewer` passés uniquement si `status == requestPending`
+- Évite l'affichage incorrect de "Waiting for response..." pour les rooms actives
+
+### Flux Pro→Bride: Status `requiresRequest` ✅
+- Ajouté `requiresRequest` à l'enum `ChatEntryStatus` (FlutterFlow)
+- Ajouté parsing dans `open_or_prepare_contact_action.dart`
+- Messages UX appropriés:
+  - `requiresRequest` → "Demande de contact requise" (placeholder pour ContactRequestSheet)
+  - `notAllowed` + `INSUFFICIENT_TIER` → Message sur abonnement Premium requis
+  - `blocked` → "Contact bloqué"
 
 ---
 
@@ -730,12 +758,58 @@ id, event_type, payload (jsonb), attempts, last_error, processed_at, claimed_at
 4. Afficher Image.network ou AudioPlayerWidget
 ```
 
-### 7.4 Points d'Attention
+### 7.4 Audio Player Optimisations ✅ COMPLÉTÉES (2025-12-03)
+
+#### Problèmes Corrigés
+- **Timing URL signée**: FutureBuilder recréait une nouvelle Future à chaque rebuild
+- **Player initialization**: Player recevait `attachmentUrl` brut (pas une URL valide)
+- **Widget reconstruction**: AudioPlayerWidget ne gérait pas les changements d'URL
+
+#### Solutions Implémentées
+```dart
+// 1. Cache synchrone avec pré-chargement
+final Map<String, String> _signedUrlCache = {};
+final Set<String> _loadingUrls = {};
+
+// 2. Preload dans didUpdateWidget
+void didUpdateWidget() {
+  _preloadSignedUrls(); // Charge URLs en async
+}
+
+// 3. Cache synchrone dans build
+Widget _buildMessageBubble() {
+  final signedUrl = _getCachedSignedUrl(message.attachmentUrl);
+  return MessageBubble(signedMediaUrl: signedUrl);
+}
+
+// 4. didUpdateWidget dans AudioPlayerWidget
+void didUpdateWidget(oldWidget) {
+  if (oldWidget.audioUrl != widget.audioUrl) {
+    _initializePlayer(); // Réinitialise si URL change
+  }
+}
+```
+
+#### Audio Player Design Refactor
+- **Layout**: Horizontal compact (FlutterFlow style)
+- **Composants**: Play/pause + slider + duration + speed
+- **Waveform**: Supprimée pour design épuré
+- **Taille**: minWidth 220px, maxWidth 280px
+
+#### Audio Recorder Optimisations
+- **Animation**: 50ms → 100ms (2x plus lente)
+- **Amplitude**: Courbe cubique, 2-20px au silence
+- **Couleur**: Uniforme `textSecondary` (pas de dégradé)
+- **Timer**: `w400`, `labelSmall`, 11px
+- **Spacing**: 10px entre croix et waveform
+
+### 7.5 Points d'Attention
 
 - Les URLs signées expirent après 1h
 - Le cache est en mémoire (perdu au redémarrage)
 - Pas de compression côté serveur pour les avatars
 - Pas de limite de taille visible côté frontend
+- ✅ **Audio loading**: Cache synchrone + preloading résolu
 
 ---
 
@@ -909,6 +983,21 @@ lib/features/chat/
 ### 10.2 Phases de Refactorisation (Ordre Révisé)
 
 > **Priorité:** Clarifier les règles/conditions AVANT de coder. La modération arrive en dernier.
+
+#### Phase 0: Audio Player & Message Loading ✅ COMPLÉTÉE (2025-12-03)
+- [x] **Audio Player Refactor**: Design compact horizontal (FlutterFlow style)
+  - Removed waveform visualization
+  - Added play/pause, timeline slider, duration, speed control
+  - Fixed signed URL timing issue (didUpdateWidget)
+- [x] **Message Loading Optimization**: Cache synchrone + preloading
+  - Replaced FutureBuilder with sync cache + async preload
+  - Implemented _preloadSignedUrls() in didUpdateWidget
+  - Added ValueKey for widget reconstruction
+- [x] **Audio Recorder UI/UX**: Animation et amplitude optimisés
+  - Slowed animation (50ms → 100ms)
+  - Reduced amplitude at silence (cubic curve 2-20px)
+  - Unified typography with player (w400, labelSmall)
+  - Reduced spacing to 10px
 
 #### Phase 1: Backend - Logique Contact (6-8h)
 - [ ] Supprimer trigger `trg_on_first_msg_pro_bride`
@@ -1132,7 +1221,85 @@ chat_backup_2025-12-02/
 
 ---
 
+---
+
+## 12. TÂCHES PRIORITAIRES RESTANTES (2025-12-03)
+
+### 12.1 🔴 ContactRequestSheet (CRITIQUE)
+**Problème:** Actuellement, quand un Pro tente de contacter une Bride via wedding/wishlist, un popup placeholder s'affiche.
+
+**À implémenter:**
+- [ ] Créer `ContactRequestSheet` dans `lib/features/chat/presentation/sheets/`
+- [ ] Champ message obligatoire (pas de pré-rempli)
+- [ ] Source auto-détectée et affichée (fromWedding, fromWishlist, etc.)
+- [ ] Bouton "Envoyer la demande" → appelle RPC `create_contact_request`
+- [ ] Toast confirmation + retour page précédente
+- [ ] Appliquer Design System v3
+
+**Fichiers à modifier:**
+- `lib/actions/actions.dart` - Remplacer `_showInfoDialog` par ouverture du sheet
+- Créer `lib/features/chat/presentation/sheets/contact_request_sheet.dart`
+
+### 12.2 🔴 Vérification Conditions de Contact
+**À vérifier:**
+- [ ] RPC `open_or_prepare_contact_context` retourne les bons status selon les règles
+- [ ] Vérifier que `requiresRequest` est retourné pour Pro→Bride sans room existante
+- [ ] Vérifier que `roomReady` est retourné pour Bride→Pro et Pro→Pro
+- [ ] Vérifier les conditions d'abonnement (Premium+ pour Pro→Bride)
+
+### 12.3 🔴 Création/Chargement de Room
+**À vérifier:**
+- [ ] Si room existante → charger correctement avec toutes les infos
+- [ ] Si pas de room (Bride→Pro, Pro→Pro) → créer et naviguer
+- [ ] Si pas de room (Pro→Bride) → afficher ContactRequestSheet
+- [ ] Après acceptation demande → room créée et navigation OK
+
+### 12.4 🟡 Logiques de Modération
+**À vérifier:**
+- [ ] `ReportUserSheet` fonctionne depuis les profils
+- [ ] `MessageActionsSheet` permet de signaler/bloquer
+- [ ] Tickets créés dans `support_tickets`
+- [ ] Messages masqués après signalement (`is_deleted=true`)
+- [ ] Utilisateurs bloqués visibles dans `BlockedUsersSheet`
+
+### 12.5 🔴 Notifications Centre de Notification
+**Problème:** Les notifications de nouveaux messages n'apparaissent pas dans le centre de notification.
+
+**À investiguer:**
+- [ ] Trigger `trg_outbox_chat_msg` fonctionne-t-il?
+- [ ] Edge function `notifications_outbox_drain` traite-t-elle les events?
+- [ ] Tokens FCM correctement stockés?
+- [ ] Page centre de notification lit-elle les bonnes données?
+- [ ] Vérifier table `notifications` ou équivalent
+
+### 12.6 🟡 UI/UX Design System v3
+**Sheets/Modals à refactoriser:**
+- [ ] `ChatDetailsPage` - Header, composer, message bubbles
+- [ ] `MessageActionsSheet` - Actions sur messages
+- [ ] `ConversationActionsSheet` - Actions sur conversations
+- [ ] Tous les dialogs/modals du module chat
+
+**Règles à appliquer:**
+- Utiliser widgets `LynewedSheet`, `LynewedButton`, `LynewedTextField`
+- Spacing: 30px sections, 10px label→content
+- Font weight max w500
+- Border radius: 24px sheets, 4px items
+- Couleurs: `LynewedColors` uniquement
+
+### 12.7 Fichiers Modifiés Récemment (Référence)
+| Fichier | Modification |
+|---------|--------------|
+| `lib/features/chat/presentation/widgets/message_list.dart` | Spacing logic fix |
+| `lib/features/chat/presentation/widgets/message_bubble.dart` | needsLargeSpacing param |
+| `lib/features/map/presentation/services/map_actions_service.dart` | Use action_blocks.contactChatRoom |
+| `lib/actions/actions.dart` | Handle requiresRequest, notAllowed, blocked |
+| `lib/backend/schema/enums/enums.dart` | Add requiresRequest to ChatEntryStatus |
+| `lib/custom_code/actions/open_or_prepare_contact_action.dart` | Parse requiresRequest |
+| `lib/core/design/lynewed_spacing.dart` | Chat spacing constants |
+
+---
+
 **Document rédigé le:** 2025-12-02  
-**Dernière mise à jour:** 2025-12-02 17:30  
-**Statut:** ✅ MessagesPage + BlockedUsersSheet validés, ChatDetailsPage à refactoriser  
-**Prochaine étape:** Refactoriser ChatDetailsPage avec Design System v3
+**Dernière mise à jour:** 2025-12-03 13:40  
+**Statut:** ✅ Navigation + Spacing fixes. ⏳ ContactRequestSheet à créer. ⏳ Notifications à investiguer.  
+**Prochaine étape:** Créer ContactRequestSheet + Vérifier notifications

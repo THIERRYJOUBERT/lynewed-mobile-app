@@ -48,6 +48,16 @@ class ChatRepositoryImpl implements ChatRepository {
     }
   }
 
+  @override
+  Future<ChatResult<void>> unarchiveConversation(String roomId) async {
+    try {
+      await _datasource.unarchiveConversation(roomId);
+      return const ChatResult.success(null);
+    } catch (e) {
+      return ChatResult.failure('Failed to unarchive conversation: $e');
+    }
+  }
+
   // ============================================================
   // MESSAGES
   // ============================================================

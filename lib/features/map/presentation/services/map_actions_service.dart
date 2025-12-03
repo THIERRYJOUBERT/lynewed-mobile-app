@@ -15,6 +15,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/index.dart';
+import '/actions/actions.dart' as action_blocks;
 
 // Import with alias to avoid naming conflicts with FlutterFlow enums
 import '../../domain/entities/entities.dart' as entities;
@@ -24,7 +25,6 @@ import '../../domain/entities/wedding_details.dart' show WeddingDetails;
 
 // Chat module imports for moderation and navigation
 import '/features/chat/presentation/sheets/sheets.dart';
-import '/features/chat/presentation/pages/chat_details_page.dart';
 import '/features/chat/domain/repositories/contact_repository.dart';
 import '/features/chat/data/repositories/contact_repository_impl.dart';
 
@@ -199,59 +199,16 @@ class MapActionsService {
     );
   }
 
-  /// Navigate to chat with professional
-  /// Uses ContactRepository to prepare context and get/create room
+  /// Navigate to chat with a profile
+  /// Uses action_blocks.contactChatRoom which properly loads contact info
   Future<void> navigateToChat(
     BuildContext context,
-    String otherProfileId, {
-    String? existingRoomId,
-  }) async {
-    // Use ContactRepository to prepare contact context
-    final result = await _contactRepository.prepareContactContext(otherProfileId);
-    
-    if (!context.mounted) return;
-    
-    if (result.isFailure) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.error ?? 'Unable to start conversation'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-    
-    final chatContext = result.data!;
-    
-    // If requires contact request (Pro→Bride), show request sheet
-    if (chatContext.requiresContactRequest) {
-      // TODO: Show ContactRequestSheet for Pro→Bride flow
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Contact request required - coming soon'),
-        ),
-      );
-      return;
-    }
-    
-    // Navigate to chat details page
-    if (chatContext.canNavigateToChat && chatContext.roomId != null) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => ChatDetailsPage(
-            roomId: chatContext.roomId!,
-            otherProfileId: chatContext.otherProfileId ?? otherProfileId,
-          ),
-        ),
-      );
-    } else if (chatContext.hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(chatContext.reason ?? 'Unable to start conversation'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+    String otherProfileId,
+  ) async {
+    await action_blocks.contactChatRoom(
+      context,
+      targetProfileID: otherProfileId,
+    );
   }
 
   /// Navigate to contact bride (initiate chat request)

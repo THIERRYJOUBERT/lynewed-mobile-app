@@ -43,13 +43,21 @@ class ConversationsLoaded extends ConversationsState {
   /// Whether we're refreshing in background
   final bool isRefreshing;
 
-  /// Filter conversations by status
+  /// Filter conversations by status - Active only
   List<Conversation> get activeConversations => conversations
       .where((c) => c.conversationStatus == ConversationStatus.active)
       .toList();
 
-  /// Get total unread count
-  int get totalUnreadCount => conversations.fold(0, (sum, c) => sum + c.unreadCount);
+  /// Filter conversations by status - Archived only
+  List<Conversation> get archivedConversations => conversations
+      .where((c) => c.conversationStatus == ConversationStatus.archived)
+      .toList();
+
+  /// Has archived conversations
+  bool get hasArchivedConversations => archivedConversations.isNotEmpty;
+
+  /// Get total unread count (active conversations only)
+  int get totalUnreadCount => activeConversations.fold(0, (sum, c) => sum + c.unreadCount);
 
   /// Has pending requests
   bool get hasPendingRequests => pendingRequests.isNotEmpty;

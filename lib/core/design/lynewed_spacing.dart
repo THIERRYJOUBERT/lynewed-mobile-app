@@ -65,6 +65,16 @@ class LynewedSpacing {
   static const double separatorHeight = 1.0;
 
   // ============================================================
+  // CHAT MESSAGE SPACING
+  // ============================================================
+  
+  /// Spacing between messages from the same user
+  static const double chatMessageSameUser = 8.0;
+  
+  /// Spacing between messages from different users
+  static const double chatMessageDifferentUser = 30.0;
+
+  // ============================================================
   // FORM LIST ITEM PADDING (Profile-style rows)
   // ============================================================
   

@@ -1,8 +1,8 @@
 # 🚀 PROMPT REFACTORISATION CHAT & CONTACT MODULE
 
-**Date:** 2025-12-02  
-**Version:** v1.0  
-**Durée estimée:** 44-60 heures  
+**Date:** 2025-12-03  
+**Version:** v2.0 (Mise à jour avec corrections récentes)  
+**Durée estimée:** 35-50 heures (Phase 0 terminée)  
 **Priorité:** 🔴 Haute
 
 ---
@@ -47,13 +47,15 @@ Refactoriser le module Chat & Contact de FlutterFlow vers Clean Architecture en 
 ## 📖 DOCUMENTS DE RÉFÉRENCE (À LIRE EN PRIORITÉ)
 
 ### 1. Audit Complet (SOURCE DE VÉRITÉ)
-**Fichier:** `docs/audits/CHAT_CONTACT_FEATURE_AUDIT.md` (v1.1)
+**Fichier:** `docs/audits/CHAT_CONTACT_FEATURE_AUDIT.md` (v1.4)
 
 **Sections critiques:**
+- **Section 🔧 CORRECTIONS RÉCENTES** ← Travail déjà fait (2025-12-03)
 - Section 4: Logiques Métier (VALIDÉ) ← **À IMPLÉMENTER**
 - Section 5: Modération (VALIDÉ) ← **À IMPLÉMENTER**
 - Section 9: Gaps et Problèmes Identifiés
 - Section 10: Plan de Refactorisation
+- **Section 12: TÂCHES PRIORITAIRES RESTANTES** ← **FOCUS PRINCIPAL**
 
 ### 2. Décisions Métier Validées
 **Résumé rapide:**
@@ -151,7 +153,50 @@ lib/features/chat/
 
 ---
 
+## ✅ TRAVAIL DÉJÀ COMPLÉTÉ (2025-12-03)
+
+### Phase 0: Audio + Corrections ✅ TERMINÉE
+- ✅ **Audio Player**: Design compact, signed URL fix
+- ✅ **Message Loading**: Cache synchrone + preloading
+- ✅ **Audio Recorder**: Animation + amplitude optimisés
+- ✅ **Message Spacing**: 8px same user, 30px different user
+- ✅ **Navigation Map Sheets**: `MapActionsService` utilise `action_blocks.contactChatRoom()`
+- ✅ **Bug "Waiting"**: `pendingRequestId` passé seulement si `status == requestPending`
+- ✅ **Status `requiresRequest`**: Ajouté à enum + parsing + UX messages
+
+### Fichiers Modifiés
+| Fichier | Modification |
+|---------|--------------|
+| `lib/features/chat/presentation/widgets/message_list.dart` | Spacing logic |
+| `lib/features/chat/presentation/widgets/message_bubble.dart` | needsLargeSpacing |
+| `lib/features/map/presentation/services/map_actions_service.dart` | Use action_blocks |
+| `lib/actions/actions.dart` | Handle requiresRequest, notAllowed, blocked |
+| `lib/backend/schema/enums/enums.dart` | Add requiresRequest |
+| `lib/custom_code/actions/open_or_prepare_contact_action.dart` | Parse requiresRequest |
+
+---
+
 ## 📅 PHASES DE REFACTORISATION (ORDRE CRITIQUE)
+
+### Phase 0.5: ContactRequestSheet (2-4h) 🔴 CRITIQUE - À FAIRE MAINTENANT
+**Problème actuel:** Quand un Pro tente de contacter une Bride via wedding/wishlist, un popup placeholder s'affiche au lieu du sheet de demande.
+
+**Tâches:**
+- [ ] Créer `lib/features/chat/presentation/sheets/contact_request_sheet.dart`
+- [ ] Champ message obligatoire (pas de pré-rempli)
+- [ ] Source auto-détectée et affichée (fromWedding, fromWishlist, etc.)
+- [ ] Bouton "Envoyer la demande" → appelle RPC `create_contact_request`
+- [ ] Toast confirmation + retour page précédente
+- [ ] Modifier `lib/actions/actions.dart` pour ouvrir le sheet au lieu du dialog
+- [ ] Appliquer Design System v3
+
+**Validation:**
+- [ ] Pro→Bride depuis wedding sheet → ContactRequestSheet s'ouvre
+- [ ] Message obligatoire validé
+- [ ] Demande créée en base (connection_requests)
+- [ ] Toast confirmation affiché
+
+---
 
 ### Phase 1: Backend - Logique Contact (6-8h) 🔴 HAUTE PRIORITÉ
 **Objectif:** Modifier les RPCs et triggers pour supporter le nouveau flux
@@ -400,37 +445,98 @@ flutter build apk --debug
 
 ---
 
-## 🎯 CRITÈRES DE SUCCÈS
+## 🎯 CRITÈRES DE SUCCÈS - VALIDATION 100%
 
-### Phase 1 (Backend)
-- ✅ RPC `create_contact_request` retourne demande créée
-- ✅ RPC `accept_connection_request` crée room
-- ✅ Enum renommé, migration appliquée
+### ✅ Phase 0.5 (ContactRequestSheet) - CRITIQUE
+- [ ] Sheet s'ouvre quand Pro tente de contacter Bride
+- [ ] Champ message obligatoire validé
+- [ ] Source affichée (fromWedding, fromWishlist, etc.)
+- [ ] RPC `create_contact_request` appelée avec succès
+- [ ] Toast confirmation affiché
+- [ ] Retour page précédente automatique
 
-### Phase 2 (Foundation)
-- ✅ Structure `lib/features/chat/` complète
-- ✅ Toutes les entités définies
-- ✅ ContactRequestSheet fonctionne
+### ✅ Phase 1 (Backend)
+- [ ] Trigger `trg_on_first_msg_pro_bride` supprimé
+- [ ] RPC `create_contact_request` retourne demande créée
+- [ ] RPC `accept_connection_request` crée room + met status active
+- [ ] Enum `connectionRequestSource` renommé (4 valeurs)
+- [ ] Migration SQL appliquée sans erreur
 
-### Phase 3 (Messages)
-- ✅ MessagesPage affiche 3 sections
-- ✅ Navigation vers ChatDetails fonctionne
-- ✅ Design System appliqué
+### ✅ Phase 2 (Foundation)
+- [ ] Structure `lib/features/chat/` complète
+- [ ] Toutes les entités domain définies
+- [ ] Repository interfaces implémentées
+- [ ] Datasources remote + local créées
+- [ ] Design System v3 appliqué sur tous nouveaux composants
 
-### Phase 4 (Chat Details)
-- ✅ Messages affichent correctement
-- ✅ Realtime updates fonctionnent
-- ✅ Agora vidéo préservé
+### ✅ Phase 3 (Messages Unifiée)
+- [ ] MessagesPage unifiée bride/pro fonctionnelle
+- [ ] 3 sections: Demandes, Conversations, Bloqués
+- [ ] Tap demande → AcceptDeclineSheet
+- [ ] Tap conversation → ChatDetails
+- [ ] Tap bloqué → option débloquer
+- [ ] Pull-to-refresh fonctionnel
+- [ ] Compteurs unread corrects
 
-### Phase 5 (Modération)
-- ✅ Signalement crée ticket
-- ✅ Blocage fonctionne
-- ✅ Section Bloqués affiche liste
+### ✅ Phase 4 (Chat Details)
+- [ ] Messages affichent (text, image, audio)
+- [ ] Realtime updates instantanés
+- [ ] Reconnexion après perte réseau
+- [ ] Mode "contact request" (Accept/Decline)
+- [ ] Médias uploadent correctement
+- [ ] URLs signées pré-chargées
+- [ ] Agora vidéo préservé et fonctionnel
+- [ ] Design gardé IDENTIQUE à l'actuel
 
-### Phase 6 (Tests)
-- ✅ Tous les tests passent
-- ✅ Ancien code supprimé
-- ✅ README complet
+### ✅ Phase 5 (Modération Complète)
+- [ ] ReportMessageSheet (4 raisons) → ticket `support_tickets`
+- [ ] ReportUserSheet → ticket `support_tickets`
+- [ ] Message signalé masqué immédiatement (`is_deleted=true`)
+- [ ] Blocage utilisateur → RLS empêche voir messages
+- [ ] Utilisateurs bloqués listés dans BlockedUsersSheet
+- [ ] Déblocage fonctionne
+- [ ] Archive conversation → `conversation_status = 'archived'`
+- [ ] Conversations archivées masquées liste principale
+
+### ✅ Phase 6 (Notifications)
+- [ ] Trigger `trg_outbox_chat_msg` crée events
+- [ ] Edge function `notifications_outbox_drain` traite
+- [ ] Tokens FCM stockés correctement
+- [ ] Push notifications reçues
+- [ ] Centre de notification affiche messages
+- [ ] Badge compteur unread mis à jour
+
+### ✅ Phase 7 (Tests & Validation)
+- [ ] Tests unitaires repositories (90%+ couverture)
+- [ ] Tests widgets critiques
+- [ ] Tests d'intégration RPCs
+- [ ] Tests manuels ALL flows:
+  - Pro→Bride: demande → acceptation → chat
+  - Pro→Pro: chat direct (tous plans)
+  - Bride→Pro: chat direct
+  - Signalement → masquage + ticket
+  - Blocage → messages cachés
+  - Archive → disparition liste
+- [ ] Tests edge cases:
+  - Demande simultanée Pro↔Bride
+  - Perte connexion envoi média
+  - URL signée expirée
+  - Contact utilisateur bloqué
+- [ ] Ancien code FlutterFlow supprimé
+- [ ] README complet avec architecture
+- [ ] Performance: <100ms chargement messages
+- [ ] Mémoire: <50MB pour 1000 messages
+
+### ✅ Phase 8 (UI/UX Design System v3)
+- [ ] TOUS les sheets utilisent `LynewedSheet`
+- [ ] TOUS les boutons utilisent `LynewedButton`
+- [ ] TOUS les inputs utilisent `LynewedTextField`
+- [ ] Spacing: 30px sections, 10px label→content
+- [ ] Font weight max w500 (sauf exceptions)
+- [ ] Border radius: 24px sheets, 4px items
+- [ ] Couleurs: `LynewedColors` uniquement
+- [ ] Aucun style inline ou couleur hardcodée
+- [ ] Audit visuel: cohérence avec MessagesPage
 
 ---
 
@@ -448,10 +554,67 @@ flutter build apk --debug
 
 ---
 
-## 🚀 DÉMARRAGE
+## � TÂCHES PRIORITAIRES IMMÉDIATES
+
+### 1. ContactRequestSheet (CRITIQUE)
+**Fichier à créer:** `lib/features/chat/presentation/sheets/contact_request_sheet.dart`
+**Modifier:** `lib/actions/actions.dart` - Remplacer `_showInfoDialog` par ouverture du sheet
+
+### 2. Vérifier Conditions de Contact
+- RPC `open_or_prepare_contact_context` retourne les bons status
+- `requiresRequest` pour Pro→Bride sans room
+- `roomReady` pour Bride→Pro et Pro→Pro
+- Conditions d'abonnement (Premium+ pour Pro→Bride)
+
+### 3. Notifications Centre de Notification
+**Problème:** Les notifications de nouveaux messages n'apparaissent pas.
+**À investiguer:**
+- Trigger `trg_outbox_chat_msg`
+- Edge function `notifications_outbox_drain`
+- Tokens FCM
+- Page centre de notification
+
+### 4. UI/UX Design System v3
+**Sheets/Modals à refactoriser:**
+- `ChatDetailsPage` - Header, composer, message bubbles
+- `MessageActionsSheet` - Actions sur messages
+- `ConversationActionsSheet` - Actions sur conversations
+- `AcceptDeclineSheet` - Pour demandes de contact pending
+- `ReportMessageSheet` - 4 raisons de signalement
+- `ReportUserSheet` - Signalement profil
+- `BlockedUsersSheet` - Liste utilisateurs bloqués
+- `ArchiveConversationSheet` - Archivage conversations
+- Tous les dialogs d'erreur/confirmation du module chat
+
+### 5. Tests de Validation End-to-End
+**Flows critiques à tester:**
+- Pro→Bride: demande → acceptation → chat
+- Pro→Pro: chat direct (tous plans)
+- Bride→Pro: chat direct
+- Signalement message → masquage immédiat + ticket
+- Blocage utilisateur → messages masqués + RLS
+- Archive conversation → disparition liste principale
+- Notifications push + centre notification
+- Realtime: message instantané, reconnexion
+- Médias: upload images/audio, URLs signées
+
+### 6. Edge Cases & Gestion Erreurs
+**Scénarios à gérer:**
+- Pro envoie demande pendant que Bride contacte simultanément
+- Perte connexion pendant envoi message avec médias
+- URL signée expirée pendant lecture audio
+- Tentative contact utilisateur bloqué
+- Double soumission demande de contact
+- Room créée mais participant supprimé
+- Échec upload média (stockage plein, réseau)
+- Notification push non reçue (fallback in-app)
+
+---
+
+## �🚀 DÉMARRAGE
 
 1. **Lire en priorité:**
-   - `docs/audits/CHAT_CONTACT_FEATURE_AUDIT.md` (sections 4, 5, 9, 10)
+   - `docs/audits/CHAT_CONTACT_FEATURE_AUDIT.md` (sections 🔧, 4, 5, 12)
    - `docs/PROJECT.md`
    - Ce prompt complet
 
@@ -460,7 +623,12 @@ flutter build apk --debug
    - [ ] Flutter SDK à jour
    - [ ] Dépendances installées (`flutter pub get`)
 
-3. **Commencer Phase 1:**
+3. **Commencer Phase 0.5 (ContactRequestSheet):**
+   - [ ] Créer le sheet avec Design System v3
+   - [ ] Modifier `lib/actions/actions.dart`
+   - [ ] Tester depuis wedding_details_sheet
+
+4. **Ensuite Phase 1 (Backend):**
    - [ ] Créer migration Supabase pour supprimer trigger
    - [ ] Créer RPC `create_contact_request`
    - [ ] Tester via SQL

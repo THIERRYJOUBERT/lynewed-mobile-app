@@ -22,7 +22,7 @@ class MessageBubble extends StatelessWidget {
     this.senderName,
     this.senderAvatarUrl,
     this.showAvatar = true,
-    this.isFirstFromSender = false,
+    this.needsLargeSpacing = false,
     this.onLongPress,
     this.onImageTap,
     this.signedMediaUrl,
@@ -43,9 +43,8 @@ class MessageBubble extends StatelessWidget {
   /// Whether to show the avatar (false for grouped consecutive messages)
   final bool showAvatar;
 
-  /// Whether this is the first message from this sender in a group
-  /// (adds extra spacing before it)
-  final bool isFirstFromSender;
+  /// Whether this message needs 30px spacing (different sender above)
+  final bool needsLargeSpacing;
 
   /// Callback when message is long pressed (for actions)
   final MessageActionCallback? onLongPress;
@@ -58,12 +57,20 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Chat spacing rules (with reverse:true ListView, "top" is visually below):
+    // - 8px between messages from same user
+    // - 30px between messages from different users
+    // The spacing is applied as "top" padding which visually separates from the message above
+    final double topSpacing = needsLargeSpacing 
+        ? LynewedSpacing.chatMessageDifferentUser 
+        : LynewedSpacing.chatMessageSameUser;
+    
     return Padding(
       padding: EdgeInsets.only(
         left: isOwnMessage ? 48.0 : LynewedSpacing.md,
         right: isOwnMessage ? LynewedSpacing.md : 48.0,
-        top: isFirstFromSender ? 30.0 : 0.0, // 30px spacing between different users
-        bottom: showAvatar ? LynewedSpacing.sm : 2.0, // Tighter spacing for grouped messages
+        top: topSpacing,
+        bottom: 0.0,
       ),
       child: GestureDetector(
         onLongPress: onLongPress != null ? () => onLongPress!(message) : null,

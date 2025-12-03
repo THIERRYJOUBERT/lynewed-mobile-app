@@ -142,10 +142,33 @@ class ConversationsNotifier extends ChangeNotifier {
     final result = await _chatRepository.archiveConversation(roomId);
     
     if (result.isSuccess) {
-      // Remove from local list
-      final updatedConversations = currentState.conversations
-          .where((c) => c.roomId != roomId)
-          .toList();
+      // Update conversation status locally instead of removing
+      final updatedConversations = currentState.conversations.map((c) {
+        if (c.roomId == roomId) {
+          return c.copyWith(conversationStatus: ConversationStatus.archived);
+        }
+        return c;
+      }).toList();
+      
+      _emit(currentState.copyWith(conversations: updatedConversations));
+    }
+  }
+
+  /// Unarchive a conversation
+  Future<void> unarchiveConversation(String roomId) async {
+    final currentState = _state;
+    if (currentState is! ConversationsLoaded) return;
+
+    final result = await _chatRepository.unarchiveConversation(roomId);
+    
+    if (result.isSuccess) {
+      // Update conversation status locally
+      final updatedConversations = currentState.conversations.map((c) {
+        if (c.roomId == roomId) {
+          return c.copyWith(conversationStatus: ConversationStatus.active);
+        }
+        return c;
+      }).toList();
       
       _emit(currentState.copyWith(conversations: updatedConversations));
     }

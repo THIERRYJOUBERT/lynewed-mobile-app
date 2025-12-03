@@ -11,6 +11,7 @@ import '/backend/supabase/supabase.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/internationalization.dart';
 import 'services/agora_engine_manager.dart';
+import 'core/services/unread_counter_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -91,6 +92,12 @@ class _MyAppState extends State<MyApp> {
     userStream = lynewedAlphaSupabaseUserStream()
       ..listen((user) {
         _appStateNotifier.update(user);
+        // Initialize/dispose unread counter service based on auth state
+        if (user.loggedIn) {
+          UnreadCounterService.instance.initialize();
+        } else {
+          UnreadCounterService.instance.dispose();
+        }
       });
     jwtTokenStream.listen((_) {});
     Future.delayed(
