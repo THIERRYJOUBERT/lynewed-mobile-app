@@ -13,6 +13,7 @@ import '../bloc/chat_room_notifier.dart';
 import '../bloc/chat_room_state.dart';
 import '../widgets/message_list.dart';
 import '../widgets/message_composer.dart';
+import '../widgets/fullscreen_image_viewer.dart';
 import '../sheets/message_actions_sheet.dart';
 
 /// Chat details page widget
@@ -123,11 +124,27 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
 
   Widget _buildHeader() {
     final isPublic = widget.isPublicRoom;
+    final state = _notifier.state;
+    
+    // Get display name from state if available, fallback to widget params
+    String displayName;
+    String? displayAvatarUrl;
+    String displayRole;
+    
+    if (state is ChatRoomLoaded) {
+      displayName = state.otherFullName ?? widget.otherFullName ?? 'Conversation';
+      displayAvatarUrl = state.otherAvatarUrl ?? widget.otherAvatarUrl;
+      displayRole = state.otherRole?.name ?? widget.otherRole?.name ?? 'Professional';
+    } else {
+      displayName = widget.otherFullName ?? 'Conversation';
+      displayAvatarUrl = widget.otherAvatarUrl;
+      displayRole = widget.otherRole?.name ?? 'Professional';
+    }
 
     return Container(
       padding: EdgeInsets.only(
         top: MediaQuery.of(context).padding.top + LynewedSpacing.sm,
-        left: LynewedSpacing.md,
+        left: 8,
         right: LynewedSpacing.md,
         bottom: LynewedSpacing.md,
       ),
@@ -136,26 +153,22 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
         border: isPublic
             ? null
             : const Border(
-                bottom: BorderSide(color: LynewedColors.border),
+                bottom: BorderSide(color: LynewedColors.gray200),
               ),
       ),
       child: Row(
         children: [
-          // Back button
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: Icon(
-              Icons.arrow_back_ios_new,
-              size: 24,
-              color: isPublic
-                  ? LynewedColors.textOnPrimary
-                  : LynewedColors.primary,
-            ),
+          // Back button - Standard 24x24 icon with 44px tap target
+          LynewedComponentStyles.backButton(
+            context,
+            iconColor: isPublic
+                ? LynewedColors.textOnPrimary
+                : LynewedColors.textPrimary,
           ),
-          const SizedBox(width: LynewedSpacing.md),
+          const SizedBox(width: 4),
 
           // Avatar
-          _buildHeaderAvatar(isPublic),
+          _buildHeaderAvatar(isPublic, displayAvatarUrl),
           const SizedBox(width: LynewedSpacing.sm),
 
           // Name and role/status
@@ -166,8 +179,8 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
               children: [
                 Text(
                   isPublic
-                      ? (widget.publicRoomTitle ?? 'Salon public')
-                      : (widget.otherFullName ?? 'Conversation'),
+                      ? (widget.publicRoomTitle ?? 'Public room')
+                      : displayName,
                   style: LynewedTextStyles.bodyMedium.copyWith(
                     color: isPublic
                         ? LynewedColors.textOnPrimary
@@ -179,9 +192,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  isPublic
-                      ? 'Public'
-                      : (widget.otherRole?.name ?? 'Professionnel'),
+                  isPublic ? 'Public' : displayRole,
                   style: LynewedTextStyles.labelSmall.copyWith(
                     color: isPublic
                         ? LynewedColors.textOnPrimary.withValues(alpha: 0.7)
@@ -199,42 +210,52 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
     );
   }
 
-  Widget _buildHeaderAvatar(bool isPublic) {
-    final imageUrl = isPublic ? null : widget.otherAvatarUrl;
+  Widget _buildHeaderAvatar(bool isPublic, String? avatarUrl) {
+    final imageUrl = isPublic ? null : avatarUrl;
+    const double avatarSize = 44.0;
+    const double imageSize = 40.0; // Slightly smaller to prevent crop
 
     return Container(
-      width: 40,
-      height: 40,
+      width: avatarSize,
+      height: avatarSize,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: LynewedColors.surface,
         border: Border.all(
           color: isPublic ? LynewedColors.textOnPrimary : LynewedColors.border,
+          width: 1,
         ),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: imageUrl != null && imageUrl.isNotEmpty
-          ? CachedNetworkImage(
-              imageUrl: imageUrl,
-              fit: BoxFit.cover,
-              placeholder: (_, __) => const Icon(
-                Icons.person,
+      child: Center(
+        child: imageUrl != null && imageUrl.isNotEmpty
+            ? ClipOval(
+                child: SizedBox(
+                  width: imageSize,
+                  height: imageSize,
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => const Icon(
+                      Icons.person,
+                      size: 20,
+                      color: LynewedColors.textSecondary,
+                    ),
+                    errorWidget: (_, __, ___) => const Icon(
+                      Icons.person,
+                      size: 20,
+                      color: LynewedColors.textSecondary,
+                    ),
+                  ),
+                ),
+              )
+            : Icon(
+                isPublic ? Icons.groups : Icons.person,
                 size: 20,
-                color: LynewedColors.textSecondary,
+                color: isPublic
+                    ? LynewedColors.textOnPrimary
+                    : LynewedColors.textSecondary,
               ),
-              errorWidget: (_, __, ___) => const Icon(
-                Icons.person,
-                size: 20,
-                color: LynewedColors.textSecondary,
-              ),
-            )
-          : Icon(
-              isPublic ? Icons.groups : Icons.person,
-              size: 20,
-              color: isPublic
-                  ? LynewedColors.textOnPrimary
-                  : LynewedColors.textSecondary,
-            ),
+      ),
     );
   }
 
@@ -268,7 +289,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
     
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Appel vidéo - Intégration Agora à préserver'),
+        content: Text('Video call - Agora integration pending'),
         duration: Duration(seconds: 2),
       ),
     );
@@ -481,9 +502,18 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
     );
   }
 
-  void _handleImageTap(ChatMessage message) {
-    // TODO: Implement fullscreen image viewer
-    debugPrint('Image tapped: ${message.attachmentUrl}');
+  void _handleImageTap(ChatMessage message) async {
+    if (message.attachmentUrl == null) return;
+
+    // Get signed URL for the image
+    final signedUrl = await _notifier.getSignedUrl(message.attachmentUrl!);
+    if (signedUrl == null || !mounted) return;
+
+    FullscreenImageViewer.show(
+      context,
+      imageUrl: signedUrl,
+      heroTag: 'image_${message.id}',
+    );
   }
 
   Future<bool?> _showBlockConfirmation() {
@@ -562,6 +592,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
           _notifier.sendImageMessage(filePath: filePath, fileName: fileName),
       onSendAudio: ({required filePath, required fileName}) =>
           _notifier.sendAudioMessage(filePath: filePath, fileName: fileName),
+      onSendingComplete: () => _notifier.markSendingComplete(),
     );
   }
 }

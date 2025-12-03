@@ -212,14 +212,20 @@ class ChatRoomNotifier extends ChangeNotifier {
   }
 
   /// Send an image message
+  /// Note: For multiple images, call this method sequentially.
+  /// The isSending state is managed to avoid flickering.
   Future<bool> sendImageMessage({
     required String filePath,
     required String fileName,
   }) async {
-    final currentState = _state;
+    var currentState = _state;
     if (currentState is! ChatRoomLoaded) return false;
 
-    _emit(currentState.copyWith(isSending: true));
+    // Only set isSending if not already sending
+    if (!currentState.isSending) {
+      _emit(currentState.copyWith(isSending: true));
+      currentState = _state as ChatRoomLoaded;
+    }
 
     try {
       // Upload image first
@@ -230,7 +236,11 @@ class ChatRoomNotifier extends ChangeNotifier {
       );
 
       if (uploadResult.isFailure) {
-        _emit(currentState.copyWith(isSending: false));
+        // Get fresh state before emitting
+        final freshState = _state;
+        if (freshState is ChatRoomLoaded) {
+          _emit(freshState.copyWith(isSending: false));
+        }
         return false;
       }
 
@@ -240,11 +250,24 @@ class ChatRoomNotifier extends ChangeNotifier {
         attachmentUrl: uploadResult.data!,
       );
 
-      _emit(currentState.copyWith(isSending: false));
+      // Don't set isSending to false here - let the caller manage it
+      // This prevents flickering when sending multiple images
       return result.isSuccess;
     } catch (e) {
-      _emit(currentState.copyWith(isSending: false));
+      // Get fresh state before emitting
+      final freshState = _state;
+      if (freshState is ChatRoomLoaded) {
+        _emit(freshState.copyWith(isSending: false));
+      }
       return false;
+    }
+  }
+
+  /// Mark sending as complete (call after all images are sent)
+  void markSendingComplete() {
+    final currentState = _state;
+    if (currentState is ChatRoomLoaded && currentState.isSending) {
+      _emit(currentState.copyWith(isSending: false));
     }
   }
 

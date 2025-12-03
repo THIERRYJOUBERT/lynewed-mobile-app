@@ -54,11 +54,19 @@ class MessageList extends StatefulWidget {
 class _MessageListState extends State<MessageList> {
   final ScrollController _scrollController = ScrollController();
   final Map<String, String> _signedUrlCache = {};
+  final Set<String> _loadingUrls = {}; // Track URLs being loaded
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void didUpdateWidget(covariant MessageList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Pre-load signed URLs for new messages with attachments
+    _preloadSignedUrls();
   }
 
   @override
@@ -78,20 +86,48 @@ class _MessageListState extends State<MessageList> {
     }
   }
 
-  Future<String?> _getSignedUrl(String path) async {
-    if (_signedUrlCache.containsKey(path)) {
-      return _signedUrlCache[path];
+  /// Pre-load signed URLs for all messages with attachments
+  void _preloadSignedUrls() {
+    for (final message in widget.state.messages) {
+      if (message.attachmentUrl != null && 
+          !_signedUrlCache.containsKey(message.attachmentUrl!) &&
+          !_loadingUrls.contains(message.attachmentUrl!)) {
+        _loadSignedUrl(message.attachmentUrl!);
+      }
     }
+  }
+
+  /// Load a signed URL asynchronously and trigger rebuild when done
+  Future<void> _loadSignedUrl(String path) async {
+    if (_loadingUrls.contains(path)) return;
+    _loadingUrls.add(path);
 
     if (widget.getSignedUrl != null) {
-      final url = await widget.getSignedUrl!(path);
-      if (url != null) {
-        _signedUrlCache[path] = url;
+      try {
+        final url = await widget.getSignedUrl!(path);
+        if (url != null && mounted) {
+          setState(() {
+            _signedUrlCache[path] = url;
+          });
+        }
+      } catch (e) {
+        debugPrint('MessageList._loadSignedUrl: ERROR $e');
       }
-      return url;
     }
+    
+    _loadingUrls.remove(path);
+  }
 
-    return null;
+  /// Get cached signed URL (synchronous)
+  String? _getCachedSignedUrl(String? path) {
+    if (path == null) return null;
+    
+    // If not cached yet, trigger async load
+    if (!_signedUrlCache.containsKey(path) && !_loadingUrls.contains(path)) {
+      _loadSignedUrl(path);
+    }
+    
+    return _signedUrlCache[path];
   }
 
   @override
@@ -132,11 +168,17 @@ class _MessageListState extends State<MessageList> {
               // Check if we need to show date separator
               final showDateSeparator = _shouldShowDateSeparator(index);
 
+              // Check if we should show avatar (only for first message in a group)
+              final showAvatar = _shouldShowAvatar(index);
+
+              // Check if this is first message from this sender (for 30px spacing)
+              final isFirstFromSender = _isFirstFromSender(index);
+
               return Column(
                 children: [
                   if (showDateSeparator)
                     _buildDateSeparator(message.createdAt),
-                  _buildMessageBubble(message, isOwnMessage),
+                  _buildMessageBubble(message, isOwnMessage, showAvatar, isFirstFromSender),
                 ],
               );
             },
@@ -160,14 +202,14 @@ class _MessageListState extends State<MessageList> {
             ),
             const SizedBox(height: LynewedSpacing.md),
             Text(
-              'Aucun message',
+              'No messages',
               style: LynewedTextStyles.titleMedium.copyWith(
                 color: LynewedColors.textSecondary,
               ),
             ),
             const SizedBox(height: LynewedSpacing.sm),
             Text(
-              'Commencez la conversation !',
+              'Start the conversation!',
               style: LynewedTextStyles.bodyMedium.copyWith(
                 color: LynewedColors.textSecondary,
               ),
@@ -200,6 +242,40 @@ class _MessageListState extends State<MessageList> {
     return currentDate != previousDate;
   }
 
+  bool _shouldShowAvatar(int index) {
+    final messages = widget.state.messages;
+    
+    // Always show for the last message (oldest, which is at bottom of reversed list)
+    if (index == messages.length - 1) return true;
+
+    final currentMessage = messages[index];
+    final nextMessage = messages[index + 1]; // Next in list = older in time
+
+    // Show avatar if the next older message is from a different sender
+    // or if there's a significant time gap (> 2 minutes)
+    if (currentMessage.profileId != nextMessage.profileId) {
+      return true;
+    }
+
+    final timeDiff = currentMessage.createdAt.difference(nextMessage.createdAt).inMinutes;
+    return timeDiff.abs() > 2;
+  }
+
+  /// Check if this message is the first from this sender in a group
+  /// (previous message in time was from a different sender)
+  bool _isFirstFromSender(int index) {
+    final messages = widget.state.messages;
+    
+    // First message in list (newest) - check if previous (older) is from different sender
+    if (index == 0) return false; // No extra spacing for newest message
+    
+    final currentMessage = messages[index];
+    final previousMessage = messages[index - 1]; // Previous in list = newer in time
+
+    // This is first from sender if the newer message was from someone else
+    return currentMessage.profileId != previousMessage.profileId;
+  }
+
   Widget _buildDateSeparator(DateTime date) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: LynewedSpacing.md),
@@ -221,24 +297,23 @@ class _MessageListState extends State<MessageList> {
     );
   }
 
-  Widget _buildMessageBubble(ChatMessage message, bool isOwnMessage) {
-    return FutureBuilder<String?>(
-      future: message.attachmentUrl != null
-          ? _getSignedUrl(message.attachmentUrl!)
-          : Future.value(null),
-      builder: (context, snapshot) {
-        return MessageBubble(
-          message: message,
-          isOwnMessage: isOwnMessage,
-          senderName: isOwnMessage ? null : widget.otherProfileName,
-          senderAvatarUrl: isOwnMessage ? null : widget.otherProfileAvatarUrl,
-          signedMediaUrl: snapshot.data,
-          onLongPress: widget.onMessageLongPress,
-          onImageTap: widget.onImageTap != null
-              ? () => widget.onImageTap!(message)
-              : null,
-        );
-      },
+  Widget _buildMessageBubble(ChatMessage message, bool isOwnMessage, bool showAvatar, bool isFirstFromSender) {
+    // Use cached signed URL (synchronous) - triggers async load if not cached
+    final signedUrl = _getCachedSignedUrl(message.attachmentUrl);
+    
+    return MessageBubble(
+      key: ValueKey('message_${message.id}_${signedUrl != null}'),
+      message: message,
+      isOwnMessage: isOwnMessage,
+      senderName: isOwnMessage ? null : widget.otherProfileName,
+      senderAvatarUrl: isOwnMessage ? null : widget.otherProfileAvatarUrl,
+      showAvatar: showAvatar,
+      isFirstFromSender: isFirstFromSender,
+      signedMediaUrl: signedUrl,
+      onLongPress: widget.onMessageLongPress,
+      onImageTap: widget.onImageTap != null
+          ? () => widget.onImageTap!(message)
+          : null,
     );
   }
 
@@ -249,15 +324,15 @@ class _MessageListState extends State<MessageList> {
     final messageDate = DateTime(date.year, date.month, date.day);
 
     if (messageDate == today) {
-      return "Aujourd'hui";
+      return 'Today';
     } else if (messageDate == yesterday) {
-      return 'Hier';
+      return 'Yesterday';
     } else {
       final months = [
-        'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-        'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
       ];
-      return '${date.day} ${months[date.month - 1]} ${date.year}';
+      return '${months[date.month - 1]} ${date.day}, ${date.year}';
     }
   }
 }

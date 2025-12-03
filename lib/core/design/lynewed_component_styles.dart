@@ -437,6 +437,40 @@ class LynewedComponentStyles {
   static const double labelFieldGap = 10.0;
 
   // ============================================================
+  // BACK BUTTON STYLES - Standard navigation back button
+  // ============================================================
+  
+  /// Standard back button icon size (28x28 for better visibility)
+  static const double backButtonIconSize = 28.0;
+  
+  /// Standard back button tap target size (44x44 for accessibility)
+  static const double backButtonTapTargetSize = 44.0;
+  
+  /// Standard back button widget
+  /// Usage: LynewedComponentStyles.backButton(context)
+  static Widget backButton(
+    BuildContext context, {
+    VoidCallback? onTap,
+    Color? iconColor,
+  }) {
+    return GestureDetector(
+      onTap: onTap ?? () => Navigator.of(context).pop(),
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: backButtonTapTargetSize,
+        height: backButtonTapTargetSize,
+        child: Center(
+          child: Icon(
+            Icons.chevron_left,
+            size: backButtonIconSize,
+            color: iconColor ?? LynewedColors.textPrimary,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
   // ERROR BANNER STYLES
   // ============================================================
   

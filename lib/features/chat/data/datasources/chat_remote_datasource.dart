@@ -488,12 +488,29 @@ class ChatRemoteDatasource {
   }
 
   /// Get signed URL for media
-  /// Default bucket: chat-images
-  Future<String> getSignedUrl(String path, {String bucket = 'chat-images'}) async {
+  /// Automatically detects bucket based on file extension
+  Future<String> getSignedUrl(String path) async {
+    // Determine bucket based on file extension
+    final lowerPath = path.toLowerCase();
+    String bucket;
+    
+    if (lowerPath.endsWith('.m4a') || 
+        lowerPath.endsWith('.mp3') || 
+        lowerPath.endsWith('.wav') ||
+        lowerPath.endsWith('.aac') ||
+        lowerPath.endsWith('.ogg')) {
+      bucket = 'chat-audio';
+    } else {
+      bucket = 'chat-images';
+    }
+    
+    debugPrint('getSignedUrl: path=$path, bucket=$bucket');
+    
     final response = await _client.storage
         .from(bucket)
         .createSignedUrl(path, 3600); // 1 hour
     
+    debugPrint('getSignedUrl: signedUrl=$response');
     return response;
   }
 }

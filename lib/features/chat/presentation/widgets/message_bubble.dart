@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '/core/design/design.dart';
 import '../../domain/entities/entities.dart';
+import 'audio_player_widget.dart';
 
 /// Callback for message actions
 typedef MessageActionCallback = void Function(ChatMessage message);
@@ -20,6 +21,8 @@ class MessageBubble extends StatelessWidget {
     required this.isOwnMessage,
     this.senderName,
     this.senderAvatarUrl,
+    this.showAvatar = true,
+    this.isFirstFromSender = false,
     this.onLongPress,
     this.onImageTap,
     this.signedMediaUrl,
@@ -37,6 +40,13 @@ class MessageBubble extends StatelessWidget {
   /// Sender's avatar URL (for other's messages)
   final String? senderAvatarUrl;
 
+  /// Whether to show the avatar (false for grouped consecutive messages)
+  final bool showAvatar;
+
+  /// Whether this is the first message from this sender in a group
+  /// (adds extra spacing before it)
+  final bool isFirstFromSender;
+
   /// Callback when message is long pressed (for actions)
   final MessageActionCallback? onLongPress;
 
@@ -52,7 +62,8 @@ class MessageBubble extends StatelessWidget {
       padding: EdgeInsets.only(
         left: isOwnMessage ? 48.0 : LynewedSpacing.md,
         right: isOwnMessage ? LynewedSpacing.md : 48.0,
-        bottom: LynewedSpacing.sm,
+        top: isFirstFromSender ? 30.0 : 0.0, // 30px spacing between different users
+        bottom: showAvatar ? LynewedSpacing.sm : 2.0, // Tighter spacing for grouped messages
       ),
       child: GestureDetector(
         onLongPress: onLongPress != null ? () => onLongPress!(message) : null,
@@ -62,7 +73,7 @@ class MessageBubble extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             if (!isOwnMessage) ...[
-              _buildAvatar(),
+              showAvatar ? _buildAvatar() : const SizedBox(width: 36), // Placeholder for alignment
               const SizedBox(width: LynewedSpacing.sm),
             ],
             Flexible(
@@ -75,35 +86,45 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _buildAvatar() {
+    const double avatarSize = 36.0;
+    const double imageSize = 32.0; // Slightly smaller to prevent crop
+
     return Container(
-      width: 32,
-      height: 32,
+      width: avatarSize,
+      height: avatarSize,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: LynewedColors.surface,
-        border: Border.all(color: LynewedColors.border),
+        border: Border.all(color: LynewedColors.border, width: 1),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: senderAvatarUrl != null && senderAvatarUrl!.isNotEmpty
-          ? CachedNetworkImage(
-              imageUrl: senderAvatarUrl!,
-              fit: BoxFit.cover,
-              placeholder: (_, __) => const Icon(
+      child: Center(
+        child: senderAvatarUrl != null && senderAvatarUrl!.isNotEmpty
+            ? ClipOval(
+                child: SizedBox(
+                  width: imageSize,
+                  height: imageSize,
+                  child: CachedNetworkImage(
+                    imageUrl: senderAvatarUrl!,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => const Icon(
+                      Icons.person,
+                      size: 16,
+                      color: LynewedColors.textSecondary,
+                    ),
+                    errorWidget: (_, __, ___) => const Icon(
+                      Icons.person,
+                      size: 16,
+                      color: LynewedColors.textSecondary,
+                    ),
+                  ),
+                ),
+              )
+            : const Icon(
                 Icons.person,
                 size: 16,
                 color: LynewedColors.textSecondary,
               ),
-              errorWidget: (_, __, ___) => const Icon(
-                Icons.person,
-                size: 16,
-                color: LynewedColors.textSecondary,
-              ),
-            )
-          : const Icon(
-              Icons.person,
-              size: 16,
-              color: LynewedColors.textSecondary,
-            ),
+      ),
     );
   }
 
@@ -246,45 +267,49 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _buildAudioContent() {
-    // Simple audio indicator - actual player would need more implementation
-    return Container(
-      margin: const EdgeInsets.all(8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: isOwnMessage
-            ? LynewedColors.textOnPrimary.withValues(alpha: 0.1)
-            : LynewedColors.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.play_circle_filled,
-            color: isOwnMessage
-                ? LynewedColors.textOnPrimary
-                : LynewedColors.primary,
-            size: 32,
-          ),
-          const SizedBox(width: 8),
-          // Waveform placeholder
-          Row(
-            children: List.generate(
-              12,
-              (index) => Container(
-                width: 3,
-                height: 8 + (index % 3) * 6.0,
-                margin: const EdgeInsets.symmetric(horizontal: 1),
-                decoration: BoxDecoration(
-                  color: isOwnMessage
-                      ? LynewedColors.textOnPrimary.withValues(alpha: 0.6)
-                      : LynewedColors.primary.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(2),
-                ),
+    // IMPORTANT: Only use signed URL for audio playback
+    // The raw attachmentUrl is just a path, not a valid URL
+    final mediaUrl = signedMediaUrl;
+    
+    // Show loading state while waiting for signed URL
+    if (mediaUrl == null || mediaUrl.isEmpty) {
+      return Container(
+        constraints: const BoxConstraints(maxWidth: 280),
+        margin: const EdgeInsets.all(4),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: isOwnMessage 
+                    ? LynewedColors.textOnPrimary 
+                    : LynewedColors.primary,
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 8),
+            Text(
+              'Loading audio...',
+              style: LynewedTextStyles.labelSmall.copyWith(
+                color: isOwnMessage 
+                    ? LynewedColors.textOnPrimary.withValues(alpha: 0.7)
+                    : LynewedColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      constraints: const BoxConstraints(minWidth: 220, maxWidth: 280),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      child: AudioPlayerWidget(
+        audioUrl: mediaUrl,
+        isOwnMessage: isOwnMessage,
       ),
     );
   }
@@ -301,7 +326,7 @@ class MessageBubble extends StatelessWidget {
     if (messageDate == today) {
       return time;
     } else if (messageDate == today.subtract(const Duration(days: 1))) {
-      return 'Hier $time';
+      return 'Yesterday $time';
     } else {
       return '${dateTime.day}/${dateTime.month} $time';
     }

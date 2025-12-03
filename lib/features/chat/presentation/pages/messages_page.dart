@@ -172,20 +172,13 @@ class _MessagesPageState extends State<MessagesPage> {
   /// Matches LynewedSheet header style for consistency
   Widget _buildHeader(int blockedCount) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+      padding: const EdgeInsets.fromLTRB(8, 20, 20, 12),
       child: Row(
         children: [
-          // Back button
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: const Icon(
-              Icons.chevron_left,
-              size: 28,
-              color: LynewedColors.textPrimary,
-            ),
-          ),
+          // Back button - Standard 24x24 icon with 44px tap target
+          LynewedComponentStyles.backButton(context),
           
-          const SizedBox(width: 12),
+          const SizedBox(width: 4),
           
           // Title - same style as LynewedSheet
           Expanded(
