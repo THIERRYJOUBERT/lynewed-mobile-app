@@ -68,18 +68,17 @@
   - `contact_request_avatar.dart`: Labels "Waiting"/"New"
   - `chat_remote_datasource.dart`: Parsing `{items: [...]}` corrigé
 
-### UX Block/Report - RÉORGANISATION EN COURS (2025-12-03 16:00) ⏳
-- **Problème identifié**: Block action mal placée dans MessageActionsSheet
-- **Objectif UX cible**:
-  - MessageActionsSheet: Report Message uniquement
-  - ConversationActionsSheet: Report User + Block User + Archive
-  - MessagesPage: Afficher statut "Blocked"/"Reported" 
-  - ChatDetailsPage: Bouton "Unblock" pour conversations bloquées
-- **Progression**:
-  - ✅ MessageActionsSheet: Block retiré (en cours)
-  - ⏳ ConversationActionsSheet: À ajouter Block/Report/Archive
-  - ⏳ MessagesPage: À afficher statut blocked/reported
-  - ⏳ ChatDetailsPage: À ajouter bouton Unblock
+### UX Block/Report - RÉORGANISATION TERMINÉE (2025-12-03 17:45) ✅
+- **Problème résolu**: Block action déplacée de MessageActionsSheet vers ConversationActionsSheet
+- **Implémentation finale**:
+  - ✅ `MessageActionsSheet`: Report Message uniquement (ouvre `ReportMessageSheet`)
+  - ✅ `ConversationActionsSheet`: Report User + Block User + Archive
+  - ✅ `ArchivedSheet` (ex-BlockedUsersSheet): Affiche conversations archivées + users bloqués
+  - ✅ Actions Unblock/Restore fonctionnelles avec mise à jour UI temps réel
+  - ✅ `ReportMessageSheet` créé avec même design que `ReportUserSheet`
+- **Backend corrigé**:
+  - ✅ RPC `get_pending_contact_requests`: Logique corrigée (Bride voit demandes de Pros uniquement)
+  - ✅ 9 demandes invalides supprimées (initiées par brides - impossible selon règles métier)
 
 ---
 
@@ -1296,12 +1295,15 @@ chat_backup_2025-12-02/
 - [x] Messages masqués après signalement (`is_deleted=true`)
 - [x] Utilisateurs bloqués visibles dans `BlockedUsersSheet`
 
-### 12.5 🟡 Notifications Centre de Notification (INVESTIGATION)
-**Statut:** Edge function `notifications_outbox_drain` configurée et fonctionnelle.
-**À vérifier en production:**
-- Triggers qui créent les events dans `notifications_outbox`
-- Tokens FCM correctement stockés
-- Page centre de notification lit les bonnes données
+### 12.5 � Notifications In-App (À INVESTIGUER - PRIORITÉ)
+**Problème identifié:** Les notifications in-app ne s'affichent pas dans la page Notifications quand un message est reçu.
+**Statut:** Edge function `notifications_outbox_drain` configurée mais comportement à vérifier.
+**À investiguer:**
+- [ ] Triggers qui créent les events dans `notifications_outbox` (chat_messages INSERT)
+- [ ] Table `notifications` ou équivalent pour stockage in-app
+- [ ] Page centre de notification: quelle table lit-elle?
+- [ ] Tokens FCM (push) - normal de ne pas fonctionner sur simulateur
+- [ ] Distinction push vs in-app dans l'architecture
 
 ### 12.6 ✅ UI/UX Design System v3 (TERMINÉ)
 **Sheets validés:**
@@ -1316,12 +1318,20 @@ chat_backup_2025-12-02/
 | Fichier | Modification |
 |---------|--------------|
 | `lib/actions/actions.dart` | Intégration ContactRequestSheet |
-| `lib/features/chat/presentation/sheets/message_actions_sheet.dart` | Border radius 4px, couleurs DS v3 |
+| `lib/features/chat/presentation/sheets/message_actions_sheet.dart` | Simplifié en StatelessWidget, ouvre ReportMessageSheet |
+| `lib/features/chat/presentation/sheets/report_message_sheet.dart` | **NOUVEAU** - Même design que ReportUserSheet |
+| `lib/features/chat/presentation/sheets/conversation_actions_sheet.dart` | Ajout Block User + Report User, utilise ReportUserSheet |
+| `lib/features/chat/presentation/sheets/blocked_users_sheet.dart` | Renommé ArchivedSheet, affiche conversations archivées + users bloqués |
+| `lib/features/chat/presentation/widgets/archived_conversation_tile.dart` | **NOUVEAU** - Tile pour conversations archivées |
+| `lib/features/chat/presentation/pages/messages_page.dart` | Utilise ArchivedSheet, compte archivés |
+| `lib/features/chat/presentation/bloc/conversations_state.dart` | activeConversations inclut reportedPending |
+| `lib/features/chat/presentation/bloc/conversations_cubit.dart` | reportUser ne change plus le statut conversation |
 | `lib/core/design/lynewed_borders.dart` | Ajout `xs = 4.0` |
+| **Supabase RPC** | `get_pending_contact_requests` corrigée (logique Bride/Pro) |
 
 ---
 
 **Document rédigé le:** 2025-12-02  
-**Dernière mise à jour:** 2025-12-03 15:30  
-**Statut:** ✅ MODULE CHAT COMPLET. Toutes les tâches terminées sauf investigation notifications (optionnel).  
-**Prochaine étape:** Module Auth refactoring
+**Dernière mise à jour:** 2025-12-03 17:50  
+**Statut:** ✅ MODULE CHAT COMPLET. UX Block/Report terminée. 🔴 PROCHAINE PRIORITÉ: Investigation notifications in-app.  
+**Prochaine étape:** Audit système de notifications (triggers, tables, page)

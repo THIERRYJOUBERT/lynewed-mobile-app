@@ -1,6 +1,6 @@
 // supabase/functions/notifications_outbox_drain/index.ts
-// Version FCM HTTP v1 + payloads room_id pour connectionRequest*
-// Minimal-diff avec votre logique actuelle (préparation puis exécution)
+// Version FCM HTTP v1 - Notifications instantanées v22 (fix claimSingleEvent)
+// Déployé: 2025-12-03
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { create } from "https://deno.land/x/djwt@v2.8/mod.ts";
@@ -142,10 +142,11 @@ const EVENT_TO_NOTIFICATION_TYPE = {
   chatMessageCreated: "chatMessage",
   connectionRequestCreated: "connectionRequest",
   connectionRequestAccepted: "connectionRequestAccepted",
-  connectionRequestDeclined: "connectionRequestDeclined",
+  // connectionRequestDeclined: SUPPRIMÉ - On ne notifie que le succès
   wishlistAdded: "wishlistAdd",
-  professionalAlertReminder24h: "professionalAlertReminder24h",
-  videoIncoming: "videoIncoming"
+  // professionalAlertReminder24h: SUPPRIMÉ - Code mort
+  videoIncoming: "videoIncoming",
+  wedPublished: "wedPublished"
 };
 const I18N_TEMPLATES = {
   chatMessage: {
@@ -196,12 +197,37 @@ const I18N_TEMPLATES = {
       fr: "Appel Vidéo Entrant"
     },
     body: (ctx, locale)=>locale === "fr" ? `${ctx.sender_full_name || "Quelqu'un"} vous appelle en vidéo...` : `${ctx.sender_full_name || "Someone"} is calling you...`
+  },
+  wedPublished: {
+    title: {
+      en: "Wedding of the Week",
+      fr: "Mariage de la Semaine"
+    },
+    body: (ctx, locale)=>locale === "fr" ? `Découvrez le nouveau mariage de la semaine !` : `Check out the new wedding of the week!`
   }
 };
 // --- HELPERS DB ---
+// Claim un seul event par son ID (pour le trigger realtime)
+async function claimSingleEvent(eventId, workerId) {
+  const { data, error } = await supabase
+    .from("notifications_outbox")
+    .update({ claimed_at: new Date().toISOString(), claimed_by: workerId })
+    .eq("id", eventId)
+    .is("processed_at", null)
+    .select()
+    .single();
+  
+  if (error) {
+    console.log(`Event ${eventId} already processed or not found`);
+    return null;
+  }
+  return data;
+}
+
+// Claim un petit batch pour le catch-up (fallback)
 async function claimBatch(workerId) {
   const { data, error } = await supabase.rpc("claim_outbox_events", {
-    p_batch_size: 100,
+    p_batch_size: 5, // Réduit de 100 à 5 pour éviter les timeouts
     p_claim_ttl_minutes: 5,
     p_worker_id: workerId
   });
@@ -233,12 +259,17 @@ async function getNotificationSetting(profileId, type) {
 }
 // --- EXECUTION HELPERS ---
 async function executeInAppInserts(actions) {
-  if (!actions.length) return [];
-  const { data, error } = await supabase.from("notifications").insert(actions).select("id, profile_id");
-  if (error) {
-    console.error("executeInAppInserts error", error);
+  if (!actions.length) {
+    console.log("[executeInAppInserts] No actions to insert");
     return [];
   }
+  console.log(`[executeInAppInserts] Inserting ${actions.length} notifications:`, JSON.stringify(actions));
+  const { data, error } = await supabase.from("notifications").insert(actions).select("id, profile_id");
+  if (error) {
+    console.error("[executeInAppInserts] INSERT ERROR:", error);
+    throw new Error(`Failed to insert notifications: ${error.message}`);
+  }
+  console.log(`[executeInAppInserts] Successfully inserted ${data?.length || 0} notifications`);
   return data || [];
 }
 async function executePushSends(actions) {
@@ -250,17 +281,41 @@ async function executePushSends(actions) {
 }
 // --- PROCESSORS ---
 async function processChatMessageCreated(ev) {
+  console.log(`[processChatMessageCreated] Processing event:`, JSON.stringify(ev.payload));
   const actions = {
     inApp: [],
     push: []
   };
   const type = EVENT_TO_NOTIFICATION_TYPE[ev.event_type];
-  if (!type) return actions;
+  if (!type) {
+    console.log(`[processChatMessageCreated] Unknown type for event_type: ${ev.event_type}`);
+    return actions;
+  }
   const messageId = ev.payload?.message_id;
   if (!messageId) throw new Error("chatMessageCreated missing message_id");
-  const { data: msg, error: eMsg } = await supabase.from("chat_messages").select("id, room_id, profile_id, chat_rooms:room_id(type)").eq("id", messageId).single();
-  if (eMsg || !msg) throw new Error(`Message not found or DB error: ${eMsg?.message}`);
-  if (msg.chat_rooms?.type !== "private") return actions;
+  
+  // Récupérer le message
+  console.log(`[processChatMessageCreated] Fetching message ${messageId}`);
+  const { data: msg, error: eMsg } = await supabase
+    .from("chat_messages")
+    .select("id, room_id, profile_id")
+    .eq("id", messageId)
+    .single();
+  if (eMsg || !msg) throw new Error(`Message not found: ${eMsg?.message}`);
+  console.log(`[processChatMessageCreated] Message found: room_id=${msg.room_id}, sender=${msg.profile_id}`);
+  
+  // Vérifier le type de room séparément
+  const { data: room, error: eRoom } = await supabase
+    .from("chat_rooms")
+    .select("type")
+    .eq("id", msg.room_id)
+    .single();
+  if (eRoom || !room) throw new Error(`Room not found: ${eRoom?.message}`);
+  console.log(`[processChatMessageCreated] Room type: ${room.type}`);
+  if (room.type !== "private") {
+    console.log(`[processChatMessageCreated] Skipping non-private room`);
+    return actions;
+  }
   const { data: parts, error: eParts } = await supabase.from("chat_room_participants").select("profile_id").eq("room_id", msg.room_id);
   if (eParts) throw new Error(`participants error: ${eParts.message}`);
   const recipients = (parts || []).map((p)=>p.profile_id).filter((pid)=>pid && pid !== msg.profile_id);
@@ -412,49 +467,72 @@ async function processWishlistAdded(ev) {
   }
   return actions;
 }
-async function processAlertReminder(ev) {
+// processAlertReminder SUPPRIMÉ - Code mort, jamais déclenché
+
+// Nouveau processeur pour Wedding of the Week
+async function processWedPublished(ev) {
   const actions = {
     inApp: [],
     push: []
   };
   const type = EVENT_TO_NOTIFICATION_TYPE[ev.event_type];
   if (!type) return actions;
-  const alertId = ev.payload?.alert_id;
-  if (!alertId) throw new Error("alert reminder missing alert_id");
-  const { data: alert, error } = await supabase.from("professional_alerts").select("author_profile_id, status, is_deleted").eq("id", alertId).single();
-  if (error || !alert || alert.is_deleted || alert.status !== "active") return actions;
-  const recipientId = alert.author_profile_id;
-  const setting = await getNotificationSetting(recipientId, type);
-  if (!setting.in_app && !setting.push) return actions;
-  const locale = await getUserLocale(recipientId);
+  
+  const articleId = ev.payload?.article_id;
+  const targetRegion = ev.payload?.target_region || 'all';
+  if (!articleId) throw new Error("wedPublished missing article_id");
+  
+  // Récupérer tous les users qui doivent recevoir cette notification
+  // Pour l'instant, on notifie tous les users actifs (on pourrait filtrer par région)
+  const { data: allProfiles, error: profilesError } = await supabase
+    .from("profiles")
+    .select("id")
+    .limit(500); // Limite pour éviter les abus
+  
+  if (profilesError) throw new Error(`profiles error: ${profilesError.message}`);
+  
   const tmpl = I18N_TEMPLATES[type];
-  const title = tmpl.title[locale] || tmpl.title.en;
-  const body = tmpl.body({}, locale);
-  const basePayload = {
-    alert_id: alertId
-  };
-  if (setting.in_app) {
-    actions.inApp.push({
-      profile_id: recipientId,
-      type,
-      payload: basePayload
-    });
-  }
-  if (setting.push) {
-    const tokens = await getDeviceTokens(recipientId);
-    tokens.forEach((t)=>actions.push.push({
+  const ctx = {};
+  
+  for (const profile of (allProfiles || [])) {
+    const recipientId = profile.id;
+    const setting = await getNotificationSetting(recipientId, type);
+    if (!setting.in_app && !setting.push) continue;
+    
+    const locale = await getUserLocale(recipientId);
+    const title = tmpl.title[locale] || tmpl.title.en;
+    const body = tmpl.body(ctx, locale);
+    
+    const basePayload = {
+      article_id: articleId,
+      target_region: targetRegion
+    };
+    
+    if (setting.in_app) {
+      actions.inApp.push({
+        profile_id: recipientId,
+        type,
+        payload: basePayload
+      });
+    }
+    
+    if (setting.push) {
+      const tokens = await getDeviceTokens(recipientId);
+      tokens.forEach((t) => actions.push.push({
         token: t.token,
         platform: t.platform,
         title,
         body,
         isHighPriority: false,
-        ttlSeconds: 300,
+        ttlSeconds: 3600, // 1h TTL pour les articles
         data: {
           type,
-          alert_id: String(alertId)
+          article_id: String(articleId)
         }
       }));
+    }
   }
+  
   return actions;
 }
 async function processVideoIncoming(ev) {
@@ -519,79 +597,172 @@ async function markProcessed(id) {
   if (error) throw new Error(`markProcessed error: ${error.message}`);
 }
 async function markFailed(id, prevAttempts, lastError) {
+  console.log(`[markFailed] Marking event ${id} as failed. Attempts: ${prevAttempts + 1}, Error: ${lastError}`);
   const { error } = await supabase.from("notifications_outbox").update({
     attempts: prevAttempts + 1,
-    last_error: lastError.slice(0, 8000)
+    last_error: lastError.slice(0, 8000),
+    claimed_at: null,  // Reset claim pour permettre retry
+    claimed_by: null
   }).eq("id", id);
-  if (error) console.error("markFailed error", error);
+  if (error) {
+    console.error("[markFailed] UPDATE ERROR:", error);
+  } else {
+    console.log(`[markFailed] Successfully marked event ${id} as failed`);
+  }
 }
+// --- PROCESS SINGLE EVENT ---
+async function processEvent(ev) {
+  let actions = {
+    inApp: [],
+    push: []
+  };
+  
+  switch(ev.event_type) {
+    case "chatMessageCreated":
+      actions = await processChatMessageCreated(ev);
+      break;
+    case "connectionRequestCreated":
+    case "connectionRequestAccepted":
+      actions = await processConnectionRequest(ev);
+      break;
+    // connectionRequestDeclined: SUPPRIMÉ
+    case "wishlistAdded":
+      actions = await processWishlistAdded(ev);
+      break;
+    // professionalAlertReminder24h: SUPPRIMÉ
+    case "videoIncoming":
+      actions = await processVideoIncoming(ev);
+      break;
+    case "wedPublished":
+      actions = await processWedPublished(ev);
+      break;
+    default:
+      console.warn(`Unknown event_type: ${ev.event_type}`);
+      return { inApp: 0, push: 0 };
+  }
+  
+  const createdNotifications = await executeInAppInserts(actions.inApp);
+  
+  // Ajouter notification_id aux payloads push
+  const notificationIdMap = new Map(createdNotifications.map(n => [n.profile_id, n.id]));
+  actions.push.forEach(pushAction => {
+    const recipientId = actions.inApp.find(ia => 
+      ia.payload.room_id === pushAction.data.room_id || 
+      ia.payload.request_id === pushAction.data.request_id ||
+      ia.payload.video_session_id === pushAction.data.video_session_id ||
+      ia.payload.bride_profile_id === pushAction.data.bride_profile_id ||
+      ia.payload.article_id === pushAction.data.article_id
+    )?.profile_id;
+    
+    if (recipientId && notificationIdMap.has(recipientId)) {
+      pushAction.data.notification_id = String(notificationIdMap.get(recipientId));
+    }
+  });
+  
+  await executePushSends(actions.push);
+  
+  return { inApp: createdNotifications.length, push: actions.push.length };
+}
+
 // --- SERVER ---
-serve(async (_req)=>{
+serve(async (req) => {
   const workerId = crypto.randomUUID();
+  const startTime = Date.now();
+  
   try {
-    const events = await claimBatch(workerId);
-    if (!events || events.length === 0) return new Response("No events to process", {
-      status: 200
-    });
-    for (const ev of events){
+    // Essayer de parser le body pour récupérer event_id (du trigger realtime)
+    let eventId = null;
+    try {
+      const body = await req.json();
+      eventId = body?.event_id;
+    } catch {
+      // Pas de body JSON, mode batch
+    }
+    
+    // MODE 1: Traitement d'un event spécifique (trigger realtime)
+    if (eventId) {
+      console.log(`[REALTIME] Processing single event: ${eventId}`);
+      const ev = await claimSingleEvent(eventId, workerId);
+      
+      if (!ev) {
+        return new Response(JSON.stringify({ 
+          mode: "realtime", 
+          status: "skipped", 
+          reason: "already_processed_or_not_found" 
+        }), { status: 200, headers: { "Content-Type": "application/json" } });
+      }
+      
       try {
-        let actions = {
-          inApp: [],
-          push: []
-        };
-        switch(ev.event_type){
-          case "chatMessageCreated":
-            actions = await processChatMessageCreated(ev);
-            break;
-          case "connectionRequestCreated":
-          case "connectionRequestAccepted":
-          case "connectionRequestDeclined":
-            actions = await processConnectionRequest(ev);
-            break;
-          case "wishlistAdded":
-            actions = await processWishlistAdded(ev);
-            break;
-          case "professionalAlertReminder24h":
-            actions = await processAlertReminder(ev);
-            break;
-          case "videoIncoming":
-            actions = await processVideoIncoming(ev);
-            break;
-          default:
-            console.warn(`Unknown event_type: ${ev.event_type}`);
-        }
-        const createdNotifications = await executeInAppInserts(actions.inApp);
-        
-        // Ajouter notification_id aux payloads push
-        const notificationIdMap = new Map(createdNotifications.map(n => [n.profile_id, n.id]));
-        actions.push.forEach(pushAction => {
-          const recipientId = actions.inApp.find(ia => 
-            ia.payload.room_id === pushAction.data.room_id || 
-            ia.payload.request_id === pushAction.data.request_id ||
-            ia.payload.video_session_id === pushAction.data.video_session_id ||
-            ia.payload.bride_profile_id === pushAction.data.bride_profile_id ||
-            ia.payload.alert_id === pushAction.data.alert_id
-          )?.profile_id;
-          
-          if (recipientId && notificationIdMap.has(recipientId)) {
-            pushAction.data.notification_id = String(notificationIdMap.get(recipientId));
-          }
-        });
-        
-        await executePushSends(actions.push);
+        const result = await processEvent(ev);
         await markProcessed(ev.id);
+        const duration = Date.now() - startTime;
+        
+        console.log(`[REALTIME] Event ${ev.id} processed in ${duration}ms`);
+        return new Response(JSON.stringify({ 
+          mode: "realtime", 
+          status: "success", 
+          event_id: ev.id,
+          event_type: ev.event_type,
+          notifications_created: result.inApp,
+          push_sent: result.push,
+          duration_ms: duration
+        }), { status: 200, headers: { "Content-Type": "application/json" } });
+        
       } catch (e) {
-        console.error(`Failed to process event ${ev.id} of type ${ev.event_type}:`, e);
+        console.error(`[REALTIME] Failed to process event ${ev.id}:`, e);
         await markFailed(ev.id, ev.attempts ?? 0, String(e));
+        return new Response(JSON.stringify({ 
+          mode: "realtime", 
+          status: "error", 
+          event_id: ev.id,
+          error: String(e)
+        }), { status: 200, headers: { "Content-Type": "application/json" } });
       }
     }
-    return new Response(`Processed ${events.length} events.`, {
-      status: 200
-    });
+    
+    // MODE 2: Batch processing (catch-up, appelé manuellement ou par cron désactivé)
+    console.log(`[BATCH] Processing batch...`);
+    const events = await claimBatch(workerId);
+    
+    if (!events || events.length === 0) {
+      return new Response(JSON.stringify({ 
+        mode: "batch", 
+        status: "no_events" 
+      }), { status: 200, headers: { "Content-Type": "application/json" } });
+    }
+    
+    let processed = 0;
+    let failed = 0;
+    
+    for (const ev of events) {
+      try {
+        await processEvent(ev);
+        await markProcessed(ev.id);
+        processed++;
+      } catch (e) {
+        console.error(`[BATCH] Failed to process event ${ev.id}:`, e);
+        await markFailed(ev.id, ev.attempts ?? 0, String(e));
+        failed++;
+      }
+    }
+    
+    const duration = Date.now() - startTime;
+    console.log(`[BATCH] Processed ${processed}/${events.length} events in ${duration}ms`);
+    
+    return new Response(JSON.stringify({ 
+      mode: "batch", 
+      status: "complete",
+      total: events.length,
+      processed,
+      failed,
+      duration_ms: duration
+    }), { status: 200, headers: { "Content-Type": "application/json" } });
+    
   } catch (e) {
     console.error("Outbox drain fatal error:", e);
-    return new Response(`Error: ${e.message}`, {
-      status: 500
-    });
+    return new Response(JSON.stringify({ 
+      status: "fatal_error", 
+      error: e.message 
+    }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 });

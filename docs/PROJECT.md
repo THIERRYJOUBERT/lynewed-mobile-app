@@ -2,7 +2,7 @@
 
 **Version:** v1.1.1+59  
 **Branch:** develop  
-**Last Updated:** 2025-12-03 15:30  
+**Last Updated:** 2025-12-03 17:50  
 **Environment:** Development (hekyovgnovhfhmkpfrna)  
 
 ---
@@ -33,6 +33,13 @@
   - ✅ Flux Pro→Bride: `ContactRequestSheet` intégré
   - ✅ Tous les sheets audités Design System v3
   - ✅ Modération fonctionnelle (report, block, unblock)
+  - ✅ UX Block/Report réorganisée (ConversationActionsSheet)
+  - ✅ ArchivedSheet: conversations archivées + users bloqués
+  - ✅ ReportMessageSheet: même design que ReportUserSheet
+  - ✅ Backend: RPC `get_pending_contact_requests` corrigée
+- 🔴 **PROCHAINE PRIORITÉ: Notifications In-App**
+  - Problème: notifications ne s'affichent pas dans la page Notifications
+  - À investiguer: triggers, tables, page centre de notification
 
 ### Key Metrics
 | Métrique | Valeur |
@@ -154,13 +161,13 @@ Le module Map a été entièrement refactorisé de FlutterFlow vers Clean Archit
 
 | Priorité | Module | Description |
 |----------|--------|-------------|
-| 1 | **Auth** | Refactorisation Clean Architecture |
-| 2 | **Profile** | Refactorisation pages profil |
-| 3 | **Performance** | Cache, images, lazy loading |
-| 4 | **Analytics** | Tracking utilisateur |
-| 5 | **Notifications** | Centre de notification refactorisé |
+| 🔴 1 | **Notifications** | Investigation: pourquoi les notifs in-app ne s'affichent pas |
+| 2 | **Auth** | Refactorisation Clean Architecture |
+| 3 | **Profile** | Refactorisation pages profil |
+| 4 | **Performance** | Cache, images, lazy loading |
+| 5 | **Analytics** | Tracking utilisateur |
 
 ---
 
-**Last Updated**: 2025-12-03 15:30  
-**Status**: ✅ Modules Map et Chat terminés. Prochaine priorité: Auth refactoring.
+**Last Updated**: 2025-12-03 17:50  
+**Status**: ✅ Modules Map et Chat terminés. 🔴 Prochaine priorité: Investigation notifications in-app.
