@@ -18,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '/core/design/design.dart';
 import '/core/design/widgets/widgets.dart';
 import '../../domain/entities/professional_details.dart';
+import 'upcoming_travels_sheet.dart';
 
 /// Professional details bottom sheet
 /// 
@@ -252,6 +253,17 @@ class ProfessionalDetailsSheet extends StatelessWidget {
                   label: 'Website',
                   onTap: () => _launchUrl(details.websiteUrl!),
                 ),
+              // Upcoming Travels button - always visible
+              Builder(
+                builder: (context) => _SocialLinkButton(
+                  icon: Icons.flight_takeoff,
+                  label: 'Upcoming Travels',
+                  onTap: () => UpcomingTravelsSheet.show(
+                    context: context,
+                    professionalName: details.displayName,
+                  ),
+                ),
+              ),
             ],
           ),
         ],

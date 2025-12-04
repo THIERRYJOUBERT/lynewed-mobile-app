@@ -12,10 +12,12 @@ import '/actions/actions.dart' as action_blocks;
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/flutter_flow/custom_functions.dart' as functions;
+import '/core/utils/video_url_helpers.dart';
 import '/index.dart';
 // Chat module imports for reporting
 import '/features/chat/presentation/sheets/sheets.dart';
 import '/features/chat/data/repositories/contact_repository_impl.dart';
+import '/features/map/presentation/sheets/upcoming_travels_sheet.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart'
     as smooth_page_indicator;
 import 'package:flutter/material.dart';
@@ -110,6 +112,71 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
     super.dispose();
   }
 
+  /// Check if video should be shown instead of slideshow
+  /// Based on hasCoverVideo flag AND valid video URL
+  bool _shouldShowVideo() {
+    final proDetails = widget.proDetails;
+    if (proDetails == null) return false;
+    
+    // Must have hasCoverVideo flag set to true
+    if (!proDetails.hasCoverVideo) return false;
+    
+    // Must have a valid video URL
+    final videoUrl = proDetails.profileVideoUrl;
+    if (videoUrl.isEmpty) return false;
+    
+    // Check if it's a valid video URL (YouTube, Vimeo, or direct file)
+    return VideoUrlHelpers.isValidVideoUrl(videoUrl);
+  }
+
+  /// Build the appropriate video player based on URL type
+  Widget _buildVideoPlayer() {
+    final videoUrl = widget.proDetails!.profileVideoUrl;
+    
+    // YouTube URLs use YoutubePlayerWidget
+    if (VideoUrlHelpers.isYouTubeUrl(videoUrl)) {
+      return SizedBox(
+        width: double.infinity,
+        height: 250.0,
+        child: custom_widgets.YoutubePlayerWidget(
+          width: double.infinity,
+          height: 250.0,
+          youtubeUrl: videoUrl,
+        ),
+      );
+    }
+    
+    // Vimeo URLs - for now, show placeholder (Phase 2)
+    // TODO: Implement Vimeo player when needed
+    if (VideoUrlHelpers.isVimeoUrl(videoUrl)) {
+      return SizedBox(
+        width: double.infinity,
+        height: 250.0,
+        child: Container(
+          color: Colors.black,
+          child: const Center(
+            child: Text(
+              'Vimeo video\n(Coming soon)',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
+      );
+    }
+    
+    // Direct video files use VideoplayerFilmmaker
+    return SizedBox(
+      width: double.infinity,
+      height: 250.0,
+      child: custom_widgets.VideoplayerFilmmaker(
+        width: double.infinity,
+        height: 250.0,
+        videoUrl: videoUrl,
+      ),
+    );
+  }
+
   /// Show report user sheet
   Future<void> _showReportSheet() async {
     final proDetails = widget.proDetails;
@@ -183,8 +250,8 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                       child: Stack(
                         alignment: const AlignmentDirectional(-1.0, 0.0),
                         children: [
-                          if (widget.proDetails?.profession !=
-                              Profession.FILMMAKER)
+                          // Show slideshow if hasCoverVideo is false OR no valid video URL
+                          if (!_shouldShowVideo())
                             Builder(
                               builder: (context) {
                                 final portfolio = widget
@@ -292,8 +359,8 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                 );
                               },
                             ),
-                          if (widget.proDetails?.profession !=
-                              Profession.FILMMAKER)
+                          // Slideshow navigation arrows (only when showing slideshow)
+                          if (!_shouldShowVideo())
                             Align(
                               alignment: const AlignmentDirectional(-1.0, 0.0),
                               child: Padding(
@@ -319,8 +386,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                 ),
                               ),
                             ),
-                          if (widget.proDetails?.profession !=
-                              Profession.FILMMAKER)
+                          if (!_shouldShowVideo())
                             Align(
                               alignment: const AlignmentDirectional(1.0, 0.0),
                               child: Padding(
@@ -345,17 +411,9 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                 ),
                               ),
                             ),
-                          if (widget.proDetails?.profession ==
-                              Profession.FILMMAKER)
-                            SizedBox(
-                              width: double.infinity,
-                              height: 250.0,
-                              child: custom_widgets.VideoplayerFilmmaker(
-                                width: double.infinity,
-                                height: 250.0,
-                                videoUrl: widget.proDetails!.profileVideoUrl,
-                              ),
-                            ),
+                          // Show video player when hasCoverVideo is true and valid URL
+                          if (_shouldShowVideo())
+                            _buildVideoPlayer(),
                         ],
                       ),
                     ),
@@ -636,6 +694,25 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                           ));
                                         },
                                       ),
+                                    // Upcoming Travels button - always visible
+                                    FlutterFlowIconButton(
+                                      borderRadius: 100.0,
+                                      buttonSize: 40.0,
+                                      fillColor: FlutterFlowTheme.of(context)
+                                          .primary,
+                                      icon: Icon(
+                                        Icons.flight_takeoff,
+                                        color:
+                                            FlutterFlowTheme.of(context).info,
+                                        size: 22.0,
+                                      ),
+                                      onPressed: () async {
+                                        await UpcomingTravelsSheet.show(
+                                          context: context,
+                                          professionalName: widget.proDetails?.fullName ?? 'Professional',
+                                        );
+                                      },
+                                    ),
                                   ].divide(const SizedBox(width: 10.0)),
                                 ),
                               ].divide(const SizedBox(width: 10.0)),

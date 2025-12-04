@@ -98,16 +98,16 @@ void main() {
     test('fromString should parse correctly', () {
       expect(Profession.fromString('photographer'), Profession.photographer);
       expect(Profession.fromString('PHOTOGRAPHER'), Profession.photographer);
-      expect(Profession.fromString('videographer'), Profession.videographer);
-      expect(Profession.fromString('weddingPlanner'), Profession.weddingPlanner);
+      expect(Profession.fromString('filmmaker'), Profession.filmmaker);
+      expect(Profession.fromString('planner'), Profession.planner);
       expect(Profession.fromString('unknown'), Profession.other);
       expect(Profession.fromString(null), Profession.other);
     });
 
     test('displayName should return correct labels', () {
       expect(Profession.photographer.displayName, 'Photographer');
-      expect(Profession.videographer.displayName, 'Videographer');
-      expect(Profession.weddingPlanner.displayName, 'Wedding Planner');
+      expect(Profession.filmmaker.displayName, 'Filmmaker');
+      expect(Profession.planner.displayName, 'Wedding Planner');
       expect(Profession.makeupArtist.displayName, 'Makeup Artist');
     });
   });

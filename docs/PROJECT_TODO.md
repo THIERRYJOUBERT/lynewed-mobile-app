@@ -158,25 +158,46 @@ Le module Map est 100% complet. Voir rapport final: `docs/archive/MAP_REFACTORIN
 
 ---
 
-## 1.3 ProDetails - Refonte Complète
+## 1.3 ProDetails - Refonte Complète 🔴 AUDIT CRM 04/12/2025
 
-### Contenu Multimédia
-- [ ] **Vidéo pour pro Filmmaker**
-  - [ ] Upload et stockage vidéo
-  - [ ] Affichage dans fiche pro
-- [ ] **Photo + Vidéo pour pro Photo&Vidéo**
-  - [ ] Gestion combinée
-  - [ ] Mise en page spécifique
-- [ ] **Intégration vidéo externe (YouTube/Vimeo)**
-  - [ ] Pro peut ajouter un lien YouTube ou Vimeo (sans upload Supabase)
-  - [ ] Player vidéo intégré dans ProDetails
+**Audit complet:** `docs/audits/CRM_CHANGES_AUDIT_PROMPT.md`  
+**Source CRM:** `docs/GUIDE_EQUIPE_APP_MOBILE_FICHE_PRO.md`
 
-### Disponibilités (Upcoming Travel)
-**Note:** Les pros peuvent ajouter leurs prochains voyages via le CRM. Afficher cette info dans l'app.
-- [ ] Icône avion dans `professional_details_sheet.dart` (à côté de website/instagram)
-- [ ] Icône avion dans `ProDetails` (même emplacement)
+### Phase 1: Corrections Critiques (4-6h) 🔴
+
+#### 1.3.1 Vidéo YouTube/Vimeo
+- [ ] Créer widget `YouTubeVimeoPlayer` (remplace `VideoplayerFilmmaker` pour liens externes)
+- [ ] Ajouter helpers: `isYouTubeUrl()`, `isVimeoUrl()`, `extractYouTubeId()`, `extractVimeoId()`
+- [ ] Modifier `pro_details_widget.dart`: utiliser `hasCoverVideo` au lieu de `profession == FILMMAKER`
+- [ ] Ajouter `hasCoverVideo` à `ProDetailsStruct`
+- [ ] Package suggéré: `youtube_player_flutter` ou `webview_flutter`
+
+#### 1.3.2 FixedLocations avec id/label
+- [ ] Créer struct `FixedLocationStruct` avec `id`, `label`, `lat`, `lng`
+- [ ] Modifier `ProDetailsStruct.fixedLocations` de `List<LatLng>` vers `List<FixedLocationStruct>`
+- [ ] Modifier `get_pro_item_details_action.dart` pour parser `id` et `label`
+- [ ] Backend RPC déjà modifiée ✅ (retourne `{id, label, type, coordinates}`)
+
+### Phase 2: Améliorations UX (2-3h) 🟡
+
+#### 1.3.3 Passage clickedLocationId
+- [ ] Modifier `ProDetailsWidget` pour accepter `clickedLocationId` optionnel
+- [ ] Modifier `MapActionsService` pour passer l'ID du marker cliqué
+- [ ] Afficher le bon label de location dans ProDetails (pas toujours la première)
+
+### Phase 3: Futur (Attendre CRM) ⏳
+
+#### 1.3.4 Format images crops
+**⚠️ NE PAS IMPLÉMENTER** - Le CRM n'a pas encore déployé le nouveau format
+- [ ] Créer modèle `PhotoWithCrops` et `PhotoCrops` (QUAND CRM prêt)
+- [ ] Créer fonction `parseImages()` avec rétrocompatibilité
+- [ ] Utiliser `crops.square` pour thumbnails, `crops.vertical` pour slideshow
+
+#### 1.3.5 Upcoming Travels
+**⚠️ Table `professional_upcoming_travels` n'existe pas encore**
+- [ ] Icône avion dans `professional_details_sheet.dart`
+- [ ] Icône avion dans `ProDetails`
 - [ ] Modal affichant les déplacements passés et à venir
-- [ ] Données gérées depuis CRM
 
 ---
 

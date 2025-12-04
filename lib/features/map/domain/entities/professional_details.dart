@@ -212,6 +212,7 @@ class ProfessionalDetails {
     this.profileVideoUrl,
     this.canBeContactedByBride = false,
     this.canContactBride = false,
+    this.hasCoverVideo = false,
   });
 
   final String id;
@@ -237,6 +238,7 @@ class ProfessionalDetails {
   final String? profileVideoUrl;
   final bool canBeContactedByBride;
   final bool canContactBride;
+  final bool hasCoverVideo;
 
   /// Display name (business name or full name)
   String get displayName => businessName?.isNotEmpty == true ? businessName! : fullName;
@@ -291,6 +293,7 @@ class ProfessionalDetails {
       profileVideoUrl: json['profileVideoUrl']?.toString(),
       canBeContactedByBride: json['canBeContactedByBride'] == true,
       canContactBride: json['canContactBride'] == true,
+      hasCoverVideo: json['hasCoverVideo'] == true,
     );
   }
 

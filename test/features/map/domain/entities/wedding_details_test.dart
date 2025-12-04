@@ -4,40 +4,40 @@ import 'package:lynewed_beta/features/map/domain/entities/entities.dart';
 void main() {
   group('WeddingDetails', () {
     test('should create from JSON correctly', () {
+      // Phase 5: Updated JSON structure to match new WeddingDetails entity
       final json = {
-        'weddingPinId': 'test-wedding-id',
+        'id': 'test-wedding-id',
         'brideProfileId': 'bride-id',
-        'locationLabel': 'Paris, France',
-        'center': {
-          'type': 'Point',
-          'coordinates': [2.3522, 48.8566],
-        },
-        'radiusKm': 50,
-        'professionsNeeded': ['photographer', 'videographer'],
-        'eventStartDate': '2024-12-15',
+        'weddingName': 'Marie & Jean Wedding',
+        'venueLabel': 'Paris, France',
+        'searchRadiusKm': 50,
+        'professionsNeeded': ['photographer', 'filmmaker'],
+        'eventDate': '2024-12-15',
         'budgetMin': 5000,
         'budgetMax': 15000,
         'currency': 'EUR',
-        'isContactable': true,
+        'visibility': 'visible_to_pros',
+        'status': 'planning',
         'brideAvatarUrl': 'https://example.com/avatar.jpg',
-        'brideName': 'Marie',
-        'guestCount': 150,
+        'brideInfo': {
+          'fullName': 'Marie Dupont',
+          'avatarUrl': 'https://example.com/avatar.jpg',
+        },
       };
 
       final details = WeddingDetails.fromJson(json);
 
       expect(details.id, 'test-wedding-id');
       expect(details.brideId, 'bride-id');
-      expect(details.locationLabel, 'Paris, France');
-      expect(details.center?.latitude, 48.8566);
-      expect(details.center?.longitude, 2.3522);
-      expect(details.radiusKm, 50);
+      expect(details.weddingName, 'Marie & Jean Wedding');
+      expect(details.venueLabel, 'Paris, France');
+      expect(details.searchRadiusKm, 50);
       expect(details.professionsNeeded.length, 2);
       expect(details.professionsNeeded, contains(Profession.photographer));
       expect(details.budgetMin, 5000);
       expect(details.budgetMax, 15000);
-      expect(details.isContactable, true);
-      expect(details.guestCount, 150);
+      expect(details.visibility, WeddingVisibility.visibleToPros);
+      expect(details.brideFullName, 'Marie Dupont');
     });
 
     test('budgetRange should format correctly', () {
@@ -104,10 +104,10 @@ void main() {
       final details = WeddingDetails(
         id: 'test',
         brideId: 'bride',
-        professionsNeeded: [Profession.photographer, Profession.videographer],
+        professionsNeeded: [Profession.photographer, Profession.filmmaker],
       );
 
-      expect(details.professionsNeededFormatted, 'Photographer, Videographer');
+      expect(details.professionsNeededFormatted, 'Photographer, Filmmaker');
     });
 
     test('professionsNeededFormatted should handle empty list', () {
@@ -123,7 +123,7 @@ void main() {
       final details = WeddingDetails(
         id: 'test',
         brideId: 'bride',
-        radiusKm: 50,
+        searchRadiusKm: 50,
       );
 
       expect(details.radiusFormatted, '50 km');

@@ -63,7 +63,7 @@ void main() {
   group('MapFilter with Repository', () {
     test('should create filter for repository query', () {
       final filter = MapFilter(
-        professions: [Profession.photographer, Profession.videographer],
+        professions: [Profession.photographer, Profession.filmmaker],
         budgetMin: 1000,
         budgetMax: 5000,
         toggles: const LayerToggles(

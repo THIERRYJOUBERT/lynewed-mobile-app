@@ -48,16 +48,8 @@ void main() {
       expect(marker.type, MapMarkerType.wedding);
     });
 
-    test('poiPrivate type should be deprecated', () {
-      const marker = MapMarker(
-        id: 'test-poi-id',
-        type: MapMarkerType.poiPrivate,
-        position: gmaps.LatLng(48.8566, 2.3522),
-      );
-
-      // POI is deprecated
-      expect(marker.type, MapMarkerType.poiPrivate);
-    });
+    // Note: poiPrivate was removed in Phase 5 refactoring
+    // MapMarkerType now only has 3 values: proFixedLocation, professionalAlert, wedding
   });
 
   group('UseCase validation logic', () {
@@ -111,13 +103,6 @@ void main() {
       expect(shouldFetchWedding, true);
     });
 
-    test('should return null for poiPrivate (deprecated)', () {
-      const type = MapMarkerType.poiPrivate;
-      
-      // POI is deprecated, should not fetch anything
-      final shouldFetchAnything = type != MapMarkerType.poiPrivate;
-      
-      expect(shouldFetchAnything, false);
-    });
+    // Note: poiPrivate test removed - enum value no longer exists
   });
 }

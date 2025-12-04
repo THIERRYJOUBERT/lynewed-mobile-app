@@ -9,6 +9,7 @@ export 'contact_request_item_struct.dart';
 export 'contact_requests_result_struct.dart';
 export 'conversation_list_item_struct.dart';
 export 'feed_image_item_struct.dart';
+export 'fixed_location_struct.dart';
 export 'feed_page_result_struct.dart';
 export 'feed_result_struct.dart';
 export 'inbox_result_struct.dart';

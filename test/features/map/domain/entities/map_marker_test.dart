@@ -79,11 +79,11 @@ void main() {
 
   group('MapMarkerType', () {
     test('should have correct values', () {
-      expect(MapMarkerType.values.length, 4);
+      // Phase 5: MapMarkerType reduced to 3 values (poiPrivate removed)
+      expect(MapMarkerType.values.length, 3);
       expect(MapMarkerType.values, contains(MapMarkerType.proFixedLocation));
       expect(MapMarkerType.values, contains(MapMarkerType.professionalAlert));
       expect(MapMarkerType.values, contains(MapMarkerType.wedding));
-      expect(MapMarkerType.values, contains(MapMarkerType.poiPrivate));
     });
   });
 

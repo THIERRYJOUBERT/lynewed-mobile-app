@@ -79,6 +79,8 @@ Future<ProDetailsStruct?> getProItemDetailsAction(String proProfileId) async {
         ? (data['slideshowImages'] as List).map((e) => e.toString()).toList()
         : <String>[];
 
+    // Parse fixedLocations - extract LatLng for backward compatibility
+    // New format includes id/label, but we still need List<LatLng> for existing code
     final fixedLocs = <LatLng>[];
     if (data['fixedLocations'] is List) {
       for (final g in (data['fixedLocations'] as List)) {
@@ -86,6 +88,9 @@ Future<ProDetailsStruct?> getProItemDetailsAction(String proProfileId) async {
         if (p != null) fixedLocs.add(p);
       }
     }
+
+    // Parse hasCoverVideo flag from backend
+    final hasCoverVideo = data['hasCoverVideo'] == true;
 
     return ProDetailsStruct(
       proProfileId: data['proProfileId']?.toString() ?? '',
@@ -117,6 +122,7 @@ Future<ProDetailsStruct?> getProItemDetailsAction(String proProfileId) async {
       profileVideoUrl: data['profileVideoUrl']?.toString(),
       canBeContactedByBride: data['canBeContactedByBride'] == true,
       canContactBride: data['canContactBride'] == true,
+      hasCoverVideo: hasCoverVideo,
     );
   } catch (e) {
     debugPrint('getProItemDetailsAction error: $e');

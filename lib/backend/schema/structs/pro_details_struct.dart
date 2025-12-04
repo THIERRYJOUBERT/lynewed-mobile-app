@@ -31,6 +31,7 @@ class ProDetailsStruct extends BaseStruct {
     bool? canContactBride,
     List<String>? slideshowImages,
     String? profileVideoUrl,
+    bool? hasCoverVideo,
   })  : _proProfileId = proProfileId,
         _fullName = fullName,
         _avatarUrl = avatarUrl,
@@ -53,7 +54,8 @@ class ProDetailsStruct extends BaseStruct {
         _canBeContactedByBride = canBeContactedByBride,
         _canContactBride = canContactBride,
         _slideshowImages = slideshowImages,
-        _profileVideoUrl = profileVideoUrl;
+        _profileVideoUrl = profileVideoUrl,
+        _hasCoverVideo = hasCoverVideo;
 
   // "proProfileId" field.
   String? _proProfileId;
@@ -234,6 +236,13 @@ class ProDetailsStruct extends BaseStruct {
 
   bool hasProfileVideoUrl() => _profileVideoUrl != null;
 
+  // "hasCoverVideo" field - determines if video should be shown instead of slideshow
+  bool? _hasCoverVideo;
+  bool get hasCoverVideo => _hasCoverVideo ?? false;
+  set hasCoverVideo(bool? val) => _hasCoverVideo = val;
+
+  bool hasHasCoverVideo() => _hasCoverVideo != null;
+
   static ProDetailsStruct fromMap(Map<String, dynamic> data) =>
       ProDetailsStruct(
         proProfileId: data['proProfileId'] as String?,
@@ -263,6 +272,7 @@ class ProDetailsStruct extends BaseStruct {
         canContactBride: data['canContactBride'] as bool?,
         slideshowImages: getDataList(data['slideshowImages']),
         profileVideoUrl: data['profileVideoUrl'] as String?,
+        hasCoverVideo: data['hasCoverVideo'] as bool?,
       );
 
   static ProDetailsStruct? maybeFromMap(dynamic data) => data is Map
@@ -293,6 +303,7 @@ class ProDetailsStruct extends BaseStruct {
         'canContactBride': _canContactBride,
         'slideshowImages': _slideshowImages,
         'profileVideoUrl': _profileVideoUrl,
+        'hasCoverVideo': _hasCoverVideo,
       }.withoutNulls;
 
   @override
@@ -391,6 +402,10 @@ class ProDetailsStruct extends BaseStruct {
         'profileVideoUrl': serializeParam(
           _profileVideoUrl,
           ParamType.String,
+        ),
+        'hasCoverVideo': serializeParam(
+          _hasCoverVideo,
+          ParamType.bool,
         ),
       }.withoutNulls;
 
@@ -511,6 +526,11 @@ class ProDetailsStruct extends BaseStruct {
           ParamType.String,
           false,
         ),
+        hasCoverVideo: deserializeParam(
+          data['hasCoverVideo'],
+          ParamType.bool,
+          false,
+        ),
       );
 
   @override
@@ -542,7 +562,8 @@ class ProDetailsStruct extends BaseStruct {
         canBeContactedByBride == other.canBeContactedByBride &&
         canContactBride == other.canContactBride &&
         listEquality.equals(slideshowImages, other.slideshowImages) &&
-        profileVideoUrl == other.profileVideoUrl;
+        profileVideoUrl == other.profileVideoUrl &&
+        hasCoverVideo == other.hasCoverVideo;
   }
 
   @override
@@ -569,7 +590,8 @@ class ProDetailsStruct extends BaseStruct {
         canBeContactedByBride,
         canContactBride,
         slideshowImages,
-        profileVideoUrl
+        profileVideoUrl,
+        hasCoverVideo,
       ]);
 }
 
@@ -594,6 +616,7 @@ ProDetailsStruct createProDetailsStruct({
   bool? canBeContactedByBride,
   bool? canContactBride,
   String? profileVideoUrl,
+  bool? hasCoverVideo,
 }) =>
     ProDetailsStruct(
       proProfileId: proProfileId,
@@ -616,4 +639,5 @@ ProDetailsStruct createProDetailsStruct({
       canBeContactedByBride: canBeContactedByBride,
       canContactBride: canContactBride,
       profileVideoUrl: profileVideoUrl,
+      hasCoverVideo: hasCoverVideo,
     );
