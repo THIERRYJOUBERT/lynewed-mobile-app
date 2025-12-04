@@ -64,3 +64,5 @@ export '/pages/pro/public_pro_profile_view/public_pro_profile_view_widget.dart'
     show PublicProProfileViewWidget;
 export '/pages/shared/wow_viewer_carrousel/wow_viewer_carrousel_widget.dart'
     show WowViewerCarrouselWidget;
+export '/pages/pro/wishlist_pro/wishlist_pro_widget.dart'
+    show WishlistProWidget;

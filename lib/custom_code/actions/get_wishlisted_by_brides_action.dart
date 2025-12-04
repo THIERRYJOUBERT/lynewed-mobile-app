@@ -32,6 +32,7 @@ Future<List<WishlistedByBrideItemStruct>> getWishlistedByBridesAction() async {
               avatarUrl: itemData['avatarUrl']?.toString() ?? '',
               addedAt:
                   addedAtStr != null ? DateTime.tryParse(addedAtStr) : null,
+              contactStatus: itemData['contactStatus']?.toString() ?? 'none',
             );
           }
           // Retourne une valeur par défaut vide si le format est incorrect

@@ -304,6 +304,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => const FavProListWidget(),
         ),
         FFRoute(
+          name: WishlistProWidget.routeName,
+          path: WishlistProWidget.routePath,
+          builder: (context, params) => const WishlistProWidget(),
+        ),
+        FFRoute(
           name: NotificationsPageWidget.routeName,
           path: NotificationsPageWidget.routePath,
           builder: (context, params) => const NotificationsPage(),

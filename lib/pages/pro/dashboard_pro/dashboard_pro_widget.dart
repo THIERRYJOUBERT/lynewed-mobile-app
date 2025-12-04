@@ -1,25 +1,22 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:provider/provider.dart';
+
+import '/actions/actions.dart' as action_blocks;
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/supabase/supabase.dart';
-import '/components/item_all_alert_widget.dart';
 import '/components/nav/nav_bar_pro/nav_bar_pro_widget.dart';
-import '/components/ui_system/empty_state/empty_state_widget.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/actions/actions.dart' as action_blocks;
+import '/core/design/design.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
-import '/flutter_flow/custom_functions.dart' as functions;
-import '/index.dart';
 import '/features/chat/presentation/pages/messages_page.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart'
-    as smooth_page_indicator;
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:flutter/scheduler.dart';
+import '/flutter_flow/custom_functions.dart' as functions;
+import '/flutter_flow/flutter_flow_util.dart';
+import '/index.dart';
 import 'dashboard_pro_model.dart';
+
 export 'dashboard_pro_model.dart';
 
 class DashboardProWidget extends StatefulWidget {
@@ -34,7 +31,6 @@ class DashboardProWidget extends StatefulWidget {
 
 class _DashboardProWidgetState extends State<DashboardProWidget> with WidgetsBindingObserver {
   late DashboardProModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
   LatLng? currentUserLocationValue;
   bool _isFirstBuild = true;
@@ -50,17 +46,7 @@ class _DashboardProWidgetState extends State<DashboardProWidget> with WidgetsBin
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
-      await Future.wait([
-        Future(() async {
-          _model.bridesList = await actions.getWishlistedByBridesAction();
-        }),
-        Future(() async {
-          await actions.refreshUnreadCounts();
-        }),
-      ]);
-      if (!mounted) return;
-      _model.wishlistedByBrides =
-          _model.bridesList!.toList().cast<WishlistedByBrideItemStruct>();
+      await actions.refreshUnreadCounts();
       if (mounted) {
         safeSetState(() {});
       }
@@ -104,20 +90,22 @@ class _DashboardProWidgetState extends State<DashboardProWidget> with WidgetsBin
     safeSetState(() {});
   }
 
+  /// Check if current user has Ultimate subscription (for wishlist icon)
+  bool get _isUltimate => 
+      FFAppState().selfProSubscription.subscriptionTier == SubscriptionTierType.ultimateAccess;
+
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
     if (currentUserLocationValue == null) {
       return Container(
-        color: FlutterFlowTheme.of(context).primaryBackground,
-        child: Center(
+        color: LynewedColors.background,
+        child: const Center(
           child: SizedBox(
             width: 50.0,
             height: 50.0,
             child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                FlutterFlowTheme.of(context).primary,
-              ),
+              valueColor: AlwaysStoppedAnimation<Color>(LynewedColors.primary),
             ),
           ),
         ),
@@ -131,726 +119,581 @@ class _DashboardProWidgetState extends State<DashboardProWidget> with WidgetsBin
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: LynewedColors.background,
         body: SizedBox(
           width: double.infinity,
           height: double.infinity,
           child: Stack(
             children: [
+              // Main content
               Padding(
-                padding:
-                    const EdgeInsetsDirectional.fromSTEB(20.0, 110.0, 20.0, 84.0),
+                padding: const EdgeInsets.fromLTRB(20.0, 110.0, 20.0, 84.0),
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      Padding(
-                        padding:
-                            const EdgeInsetsDirectional.fromSTEB(0.0, 20.0, 0.0, 0.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Text(
-                                  'INTERACTIVE MAP',
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        fontFamily: 'Haas Grot Text Trial',
-                                        fontSize: 16.0,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Text(
-                                  'Open the map for detailed searches',
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        fontFamily: 'Haas Grot Text Trial',
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                        letterSpacing: 0.0,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ].divide(const SizedBox(height: 4.0)),
-                        ),
-                      ),
-                      Container(
-                        width: MediaQuery.sizeOf(context).width * 1.0,
-                        height: 300.0,
-                        decoration: const BoxDecoration(),
-                        child: SizedBox(
-                          width: MediaQuery.sizeOf(context).width * 1.0,
-                          height: MediaQuery.sizeOf(context).height * 1.0,
-                          child: custom_widgets.LynewedMiniMap(
-                            width: MediaQuery.sizeOf(context).width * 1.0,
-                            height: MediaQuery.sizeOf(context).height * 1.0,
-                            initialZoom: 14.0,
-                            borderRadius: 0.0,
-                            center: currentUserLocationValue!,
-                            markerStyle: MarkerStyleInfoStruct(
-                              avatarUrl:
-                                  FFAppState().selfPublicProfile.avatarUrl,
-                              borderColorHex: functions.professionToStyle(
-                                  FFAppState().selfProSubscription.profession),
-                              isOwn: false,
-                            ),
-                            useLiteMode: false,
-                            mapStyle: MapStyleType.normal,
-                            onTap: () async {
-                              context.pushNamed(MapProLargeWidget.routeName);
-                            },
-                          ),
-                        ),
-                      ),
-                      Align(
-                        alignment: const AlignmentDirectional(0.0, 1.0),
-                        child: FFButtonWidget(
-                          onPressed: () async {
-                            context.pushNamed(
-                              MapProLargeWidget.routeName,
-                              extra: <String, dynamic>{
-                                kTransitionInfoKey: const TransitionInfo(
-                                  hasTransition: true,
-                                  transitionType: PageTransitionType.fade,
-                                  duration: Duration(milliseconds: 0),
-                                ),
-                              },
-                            );
-                          },
-                          text: 'Find events or create alerts',
-                          options: FFButtonOptions(
-                            width: double.infinity,
-                            height: 48.0,
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                16.0, 0.0, 16.0, 0.0),
-                            iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                                0.0, 0.0, 0.0, 0.0),
-                            color: FlutterFlowTheme.of(context).primary,
-                            textStyle: FlutterFlowTheme.of(context)
-                                .titleSmall
-                                .override(
-                                  fontFamily: 'Haas Grot Text Trial',
-                                  color: Colors.white,
-                                  fontSize: 14.0,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                            elevation: 0.0,
-                            borderRadius: BorderRadius.circular(0.0),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        width: MediaQuery.sizeOf(context).width * 1.0,
-                        decoration: const BoxDecoration(),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            FutureBuilder<List<ProfessionalAlertsRow>>(
-                              future: _model.alertsFuture,
-                              builder: (context, snapshot) {
-                                // Customize what your widget looks like when it's loading.
-                                if (!snapshot.hasData) {
-                                  return Center(
-                                    child: SizedBox(
-                                      width: 50.0,
-                                      height: 50.0,
-                                      child: CircularProgressIndicator(
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                          FlutterFlowTheme.of(context).primary,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }
-                                List<ProfessionalAlertsRow>
-                                    pageViewProfessionalAlertsRowList =
-                                    snapshot.data!;
-
-                                if (pageViewProfessionalAlertsRowList.isEmpty) {
-                                  return const Center(
-                                    child: SizedBox(
-                                      height: 50.0,
-                                      child: EmptyStateWidget(
-                                        message: 'No alerts around you.',
-                                      ),
-                                    ),
-                                  );
-                                }
-
-                                return SizedBox(
-                                  width: double.infinity,
-                                  height: 122.0,
-                                  child: Stack(
-                                    children: [
-                                      PageView.builder(
-                                        controller: _model
-                                                .pageViewController ??=
-                                            PageController(
-                                                initialPage: max(
-                                                    0,
-                                                    min(
-                                                        0,
-                                                        pageViewProfessionalAlertsRowList
-                                                                .length -
-                                                            1))),
-                                        scrollDirection: Axis.horizontal,
-                                        itemCount:
-                                            pageViewProfessionalAlertsRowList
-                                                .length,
-                                        itemBuilder: (context, pageViewIndex) {
-                                          final pageViewProfessionalAlertsRow =
-                                              pageViewProfessionalAlertsRowList[
-                                                  pageViewIndex];
-                                          return wrapWithModel(
-                                            model: _model.itemAllAlertModels
-                                                .getModel(
-                                              pageViewProfessionalAlertsRow.id,
-                                              pageViewIndex,
-                                            ),
-                                            updateCallback: () =>
-                                                safeSetState(() {}),
-                                            child: ItemAllAlertWidget(
-                                              key: Key(
-                                                'Key9y6_${pageViewProfessionalAlertsRow.id}',
-                                              ),
-                                              alertInfos: AlertItemDataStruct(
-                                                alertId:
-                                                    pageViewProfessionalAlertsRow
-                                                        .id,
-                                                motifCode:
-                                                    pageViewProfessionalAlertsRow
-                                                        .motifCode,
-                                                motifLabel:
-                                                    pageViewProfessionalAlertsRow
-                                                        .title,
-                                                message:
-                                                    pageViewProfessionalAlertsRow
-                                                        .message,
-                                                locationLabel:
-                                                    pageViewProfessionalAlertsRow
-                                                        .locationLabel,
-                                                startAt:
-                                                    pageViewProfessionalAlertsRow
-                                                        .createdAt,
-                                                endAt:
-                                                    pageViewProfessionalAlertsRow
-                                                        .expiresAt,
-                                                authorProfileId:
-                                                    pageViewProfessionalAlertsRow
-                                                        .authorProfileId,
-                                                isOwn:
-                                                    pageViewProfessionalAlertsRow
-                                                            .authorProfileId ==
-                                                        currentUserUid,
-                                              ),
-                                              onAlertDeleted: _refreshAlerts,
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      Align(
-                                        alignment:
-                                            const AlignmentDirectional(0.0, 1.0),
-                                        child: Padding(
-                                          padding:
-                                              const EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 0.0, 0.0, 16.0),
-                                          child: smooth_page_indicator
-                                              .SmoothPageIndicator(
-                                            controller: _model
-                                                    .pageViewController ??=
-                                                PageController(
-                                                    initialPage: max(
-                                                        0,
-                                                        min(
-                                                            0,
-                                                            pageViewProfessionalAlertsRowList
-                                                                    .length -
-                                                                1))),
-                                            count:
-                                                pageViewProfessionalAlertsRowList
-                                                    .length,
-                                            axisDirection: Axis.horizontal,
-                                            onDotClicked: (i) async {
-                                              await _model.pageViewController!
-                                                  .animateToPage(
-                                                i,
-                                                duration:
-                                                    const Duration(milliseconds: 500),
-                                                curve: Curves.ease,
-                                              );
-                                              safeSetState(() {});
-                                            },
-                                            effect: smooth_page_indicator
-                                                .SlideEffect(
-                                              spacing: 8.0,
-                                              radius: 8.0,
-                                              dotWidth: 8.0,
-                                              dotHeight: 8.0,
-                                              dotColor:
-                                                  FlutterFlowTheme.of(context)
-                                                      .accent1,
-                                              activeDotColor:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primary,
-                                              paintStyle: PaintingStyle.fill,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      Divider(
-                        height: 1.0,
-                        thickness: 1.0,
-                        color: FlutterFlowTheme.of(context).secondary,
-                      ),
-                      Padding(
-                        padding:
-                            const EdgeInsetsDirectional.fromSTEB(0.0, 14.0, 0.0, 0.0),
-                        child: Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color:
-                                FlutterFlowTheme.of(context).primaryBackground,
-                            borderRadius: BorderRadius.circular(0.0),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'WISH LIST',
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'Haas Grot Text Trial',
-                                          fontSize: 16.0,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                  ),
-                                  Text(
-                                    'See who favorited you',
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'Haas Grot Text Trial',
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText,
-                                          letterSpacing: 0.0,
-                                        ),
-                                  ),
-                                ].divide(const SizedBox(height: 4.0)),
-                              ),
-                              Builder(
-                                builder: (context) {
-                                  final brideList =
-                                      _model.wishlistedByBrides.toList();
-                                  if (brideList.isEmpty) {
-                                    return const Center(
-                                      child: SizedBox(
-                                        height: 50.0,
-                                        child: EmptyStateWidget(
-                                          message:
-                                              'No brides have added you to their favorites yet...',
-                                        ),
-                                      ),
-                                    );
-                                  }
-
-                                  return ListView.separated(
-                                    padding: EdgeInsets.zero,
-                                    primary: false,
-                                    shrinkWrap: true,
-                                    scrollDirection: Axis.vertical,
-                                    itemCount: brideList.length,
-                                    separatorBuilder: (_, __) =>
-                                        const SizedBox(height: 10.0),
-                                    itemBuilder: (context, brideListIndex) {
-                                      final brideListItem =
-                                          brideList[brideListIndex];
-                                      return InkWell(
-                                        splashColor: Colors.transparent,
-                                        focusColor: Colors.transparent,
-                                        hoverColor: Colors.transparent,
-                                        highlightColor: Colors.transparent,
-                                        onTap: () async {
-                                          await action_blocks.contactChatRoom(
-                                            context,
-                                            targetProfileID:
-                                                brideListItem.brideProfileId,
-                                          );
-                                        },
-                                        child: Container(
-                                          width: double.infinity,
-                                          decoration: BoxDecoration(
-                                            color: FlutterFlowTheme.of(context)
-                                                .primary,
-                                            borderRadius:
-                                                BorderRadius.circular(0.0),
-                                          ),
-                                          child: Padding(
-                                            padding:
-                                                const EdgeInsetsDirectional.fromSTEB(
-                                                    12.0, 12.0, 14.0, 12.0),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          99.0),
-                                                  child: Image.network(
-                                                    valueOrDefault<String>(
-                                                      brideListItem.avatarUrl,
-                                                      'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/lynewed-alpha-du4al1/assets/egport4rt4rg/person_15429777_1.png',
-                                                    ),
-                                                    width: 42.0,
-                                                    height: 42.0,
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                                ),
-                                                Expanded(
-                                                  child: Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        valueOrDefault<String>(
-                                                          brideListItem
-                                                              .fullName,
-                                                          'Name...',
-                                                        ),
-                                                        style: FlutterFlowTheme
-                                                                .of(context)
-                                                            .bodyMedium
-                                                            .override(
-                                                              fontFamily:
-                                                                  'Haas Grot Text Trial',
-                                                              color:
-                                                                  Colors.white,
-                                                              letterSpacing:
-                                                                  0.0,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                            ),
-                                                      ),
-                                                      Text(
-                                                        dateTimeFormat(
-                                                          "relative",
-                                                          brideListItem
-                                                              .addedAt!,
-                                                          locale:
-                                                              FFLocalizations.of(
-                                                                      context)
-                                                                  .languageCode,
-                                                        ),
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'Haas Grot Text Trial',
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .secondaryText,
-                                                                  fontSize:
-                                                                      14.0,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                ),
-                                                      ),
-                                                    ].divide(
-                                                        const SizedBox(height: 4.0)),
-                                                  ),
-                                                ),
-                                                const Align(
-                                                  alignment:
-                                                      AlignmentDirectional(
-                                                          1.0, 0.0),
-                                                  child: Icon(
-                                                    Icons.arrow_forward_ios,
-                                                    color: Color(0xCDFFFFFF),
-                                                    size: 22.0,
-                                                  ),
-                                                ),
-                                              ].divide(const SizedBox(width: 10.0)),
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                            ]
-                                .divide(const SizedBox(height: 12.0))
-                                .addToEnd(const SizedBox(height: 20.0)),
-                          ),
-                        ),
-                      ),
-                    ].divide(const SizedBox(height: 16.0)),
-                  ),
-                ),
-              ),
-              Align(
-                alignment: const AlignmentDirectional(0.0, 1.0),
-                child: wrapWithModel(
-                  model: _model.navBarProModel,
-                  updateCallback: () => safeSetState(() {}),
-                  child: const NavBarProWidget(
-                    number: 1,
-                  ),
-                ),
-              ),
-              Align(
-                alignment: const AlignmentDirectional(0.0, -1.0),
-                child: Container(
-                  width: double.infinity,
-                  height: 110.0,
-                  decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).primaryBackground,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsetsDirectional.fromSTEB(
-                            20.0, 0.0, 20.0, 0.0),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  'HOME',
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        fontFamily: 'Haas Grot Text Trial',
-                                        fontSize: 18.0,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 2.0),
-                                  child: Text(
-                                    'Pro',
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'Haas Grot Text Trial',
-                                          letterSpacing: 0.0,
-                                        ),
-                                  ),
-                                ),
-                              ].divide(const SizedBox(width: 8.0)),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                InkWell(
-                                  splashColor: Colors.transparent,
-                                  focusColor: Colors.transparent,
-                                  hoverColor: Colors.transparent,
-                                  highlightColor: Colors.transparent,
-                                  onTap: () async {
-                                    context.pushNamed(
-                                        NotificationsPageWidget.routeName);
-                                  },
-                                  child: SizedBox(
-                                    width: 32.0,
-                                    height: 32.0,
-                                    child: Stack(
-                                      alignment:
-                                          const AlignmentDirectional(-1.0, 1.0),
-                                      children: [
-                                        Icon(
-                                          Icons.notifications_outlined,
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryText,
-                                          size: 24.0,
-                                        ),
-                                        Align(
-                                          alignment:
-                                              const AlignmentDirectional(1.0, -1.0),
-                                          child: Container(
-                                            width: 18.0,
-                                            height: 18.0,
-                                            decoration: BoxDecoration(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primary,
-                                              borderRadius:
-                                                  BorderRadius.circular(100.0),
-                                            ),
-                                            child: Align(
-                                              alignment: const AlignmentDirectional(
-                                                  0.0, 0.0),
-                                              child: Text(
-                                                FFAppState()
-                                                    .unreadNotificationsCount
-                                                    .toString(),
-                                                style:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          fontFamily:
-                                                              'Haas Grot Text Trial',
-                                                          color: Colors.white,
-                                                          fontSize: 11.0,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                InkWell(
-                                  splashColor: Colors.transparent,
-                                  focusColor: Colors.transparent,
-                                  hoverColor: Colors.transparent,
-                                  highlightColor: Colors.transparent,
-                                  onTap: () async {
-                                    // Navigate to new MessagesPage (Clean Architecture)
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => const MessagesPage(),
-                                      ),
-                                    );
-                                  },
-                                  child: SizedBox(
-                                    width: 32.0,
-                                    height: 32.0,
-                                    child: Stack(
-                                      alignment:
-                                          const AlignmentDirectional(-1.0, 1.0),
-                                      children: [
-                                        Align(
-                                          alignment:
-                                              const AlignmentDirectional(-1.0, 1.0),
-                                          child: Icon(
-                                            Icons.chat_bubble_outline_sharp,
-                                            color: FlutterFlowTheme.of(context)
-                                                .primaryText,
-                                            size: 24.0,
-                                          ),
-                                        ),
-                                        Align(
-                                          alignment:
-                                              const AlignmentDirectional(1.0, -1.0),
-                                          child: Container(
-                                            width: 18.0,
-                                            height: 18.0,
-                                            decoration: BoxDecoration(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primary,
-                                              borderRadius:
-                                                  BorderRadius.circular(100.0),
-                                            ),
-                                            child: Align(
-                                              alignment: const AlignmentDirectional(
-                                                  0.0, 0.0),
-                                              child: Text(
-                                                valueOrDefault<String>(
-                                                  FFAppState()
-                                                      .unreadMessagesCount
-                                                      .toString(),
-                                                  '0',
-                                                ),
-                                                style:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          fontFamily:
-                                                              'Haas Grot Text Trial',
-                                                          color: Colors.white,
-                                                          fontSize: 11.0,
-                                                          letterSpacing: 0.0,
-                                                        ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ].divide(const SizedBox(width: 14.0)),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Align(
-                        alignment: const AlignmentDirectional(0.0, 1.0),
-                        child: Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(
-                              0.0, 14.0, 0.0, 0.0),
-                          child: Container(
-                            width: double.infinity,
-                            height: 1.0,
-                            decoration: BoxDecoration(
-                              color: FlutterFlowTheme.of(context).secondary,
-                            ),
-                            alignment: const AlignmentDirectional(0.0, 1.0),
-                          ),
-                        ),
-                      ),
+                      // Map Section
+                      _buildMapSection(),
+                      // Alerts Section
+                      _buildAlertsSection(),
                     ],
                   ),
                 ),
               ),
+              // Bottom Navigation
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: wrapWithModel(
+                  model: _model.navBarProModel,
+                  updateCallback: () => safeSetState(() {}),
+                  child: const NavBarProWidget(number: 1),
+                ),
+              ),
+              // Header
+              _buildHeader(),
             ],
           ),
         ),
       ),
     );
+  }
+
+  /// Header with title and action icons
+  Widget _buildHeader() {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Container(
+        width: double.infinity,
+        height: 110.0,
+        decoration: const BoxDecoration(color: LynewedColors.background),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // Title with "Pro" badge
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'HOME',
+                        style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 18.0),
+                      ),
+                      const SizedBox(width: 8.0),
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 2.0),
+                        child: Text(
+                          'Pro',
+                          style: LynewedTextStyles.bodyMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Action icons
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Favorites (only for Ultimate)
+                      if (_isUltimate) ...[
+                        _buildHeaderIcon(
+                          icon: Icons.favorite_border,
+                          onTap: () => context.pushNamed(WishlistProWidget.routeName),
+                        ),
+                        const SizedBox(width: 14.0),
+                      ],
+                      // Notifications
+                      _buildBadgeIcon(
+                        icon: Icons.notifications_outlined,
+                        count: FFAppState().unreadNotificationsCount,
+                        onTap: () => context.pushNamed(NotificationsPageWidget.routeName),
+                      ),
+                      const SizedBox(width: 14.0),
+                      // Messages
+                      _buildBadgeIcon(
+                        icon: Icons.chat_bubble_outline_sharp,
+                        count: FFAppState().unreadMessagesCount,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const MessagesPage()),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14.0),
+            const Divider(height: 1.0, thickness: 1.0, color: LynewedColors.gray200),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Header icon without badge - taille fixe 32x32 pour alignement uniforme
+  Widget _buildHeaderIcon({required IconData icon, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 32.0,
+        height: 32.0,
+        child: Center(
+          child: Icon(icon, color: LynewedColors.textPrimary, size: 24.0),
+        ),
+      ),
+    );
+  }
+
+  /// Header icon with badge count - taille fixe 32x32 pour alignement uniforme
+  Widget _buildBadgeIcon({
+    required IconData icon,
+    required int count,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 32.0,
+        height: 32.0,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Icône centrée
+            Icon(icon, color: LynewedColors.textPrimary, size: 24.0),
+            // Badge en haut à droite (si count > 0)
+            if (count > 0)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  width: 16.0,
+                  height: 16.0,
+                  decoration: BoxDecoration(
+                    color: LynewedColors.primary,
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: Center(
+                    child: Text(
+                      count > 99 ? '99+' : count.toString(),
+                      style: LynewedTextStyles.labelSmall.copyWith(
+                        color: Colors.white,
+                        fontSize: 9.0,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Map section with mini map and CTA button
+  Widget _buildMapSection() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section header
+          const Text(
+            'INTERACTIVE MAP',
+            style: LynewedTextStyles.sectionTitle,
+          ),
+          const SizedBox(height: 4.0),
+          Text(
+            'Open the map for detailed searches',
+            style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
+          ),
+          const SizedBox(height: 16.0),
+          // Mini Map
+          SizedBox(
+            width: double.infinity,
+            height: 300.0,
+            child: custom_widgets.LynewedMiniMap(
+              width: MediaQuery.sizeOf(context).width,
+              height: 300.0,
+              initialZoom: 14.0,
+              borderRadius: 0.0,
+              center: currentUserLocationValue!,
+              markerStyle: MarkerStyleInfoStruct(
+                avatarUrl: FFAppState().selfPublicProfile.avatarUrl,
+                borderColorHex: functions.professionToStyle(
+                    FFAppState().selfProSubscription.profession),
+                isOwn: false,
+              ),
+              useLiteMode: false,
+              mapStyle: MapStyleType.normal,
+              onTap: () async {
+                _navigateToMap();
+              },
+            ),
+          ),
+          const SizedBox(height: 16.0),
+          // CTA Button - Design System v3
+          LynewedButton(
+            text: 'Find events or create alerts',
+            onPressed: _navigateToMap,
+            width: double.infinity,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToMap() {
+    context.pushNamed(
+      MapProLargeWidget.routeName,
+      extra: <String, dynamic>{
+        kTransitionInfoKey: const TransitionInfo(
+          hasTransition: true,
+          transitionType: PageTransitionType.fade,
+          duration: Duration(milliseconds: 0),
+        ),
+      },
+    );
+  }
+
+  /// Alerts section - Design System v3
+  Widget _buildAlertsSection() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 30.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Simple header: icon + title
+          const Row(
+            children: [
+              Icon(
+                Icons.notifications_active,
+                color: LynewedColors.error,
+                size: 20.0,
+              ),
+              SizedBox(width: 8.0),
+              Text(
+                'ALERTS',
+                style: LynewedTextStyles.sectionTitle,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16.0),
+          // Paged alerts carousel
+          _buildAlertsCarousel(),
+        ],
+      ),
+    );
+  }
+
+  /// Paged alerts carousel with snap and navigation chevrons
+  Widget _buildAlertsCarousel() {
+    return FutureBuilder<List<ProfessionalAlertsRow>>(
+      future: _model.alertsFuture,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20.0),
+              child: SizedBox(
+                width: 24.0,
+                height: 24.0,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.0,
+                  valueColor: AlwaysStoppedAnimation<Color>(LynewedColors.primary),
+                ),
+              ),
+            ),
+          );
+        }
+
+        final alerts = snapshot.data!;
+        if (alerts.isEmpty) {
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
+            decoration: BoxDecoration(
+              color: LynewedColors.surface,
+              borderRadius: BorderRadius.circular(4.0),
+            ),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.notifications_none,
+                  color: LynewedColors.gray300,
+                  size: 32.0,
+                ),
+                const SizedBox(height: 8.0),
+                Text(
+                  'No alerts nearby',
+                  style: LynewedTextStyles.bodyMedium.copyWith(
+                    color: LynewedColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 4.0),
+                Text(
+                  'When professionals need help, their alerts will appear here',
+                  textAlign: TextAlign.center,
+                  style: LynewedTextStyles.bodySmall.copyWith(
+                    color: LynewedColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // Initialize page controller if needed
+        _model.pageViewController ??= PageController();
+
+        return SizedBox(
+          height: 120.0,
+          child: PageView.builder(
+            controller: _model.pageViewController,
+            itemCount: alerts.length,
+            itemBuilder: (context, index) {
+              final alert = alerts[index];
+              final isOwn = alert.authorProfileId == currentUserUid;
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: _ProAlertTile(
+                  key: Key('alert_${alert.id}'),
+                  alertType: alert.alertType ?? '',
+                  title: alert.title,
+                  message: alert.message,
+                  locationLabel: alert.locationLabel,
+                  expiresAt: alert.expiresAt,
+                  isOwn: isOwn,
+                  onTap: isOwn 
+                      ? () => _deleteAlert(alert.id)
+                      : () => _contactAlertAuthor(alert),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  /// Contact the alert author to offer help
+  Future<void> _contactAlertAuthor(ProfessionalAlertsRow alert) async {
+    await action_blocks.contactChatRoom(
+      context,
+      targetProfileID: alert.authorProfileId,
+    );
+  }
+
+  /// Delete an alert
+  Future<void> _deleteAlert(String alertId) async {
+    try {
+      await ProfessionalAlertsTable().delete(
+        matchingRows: (row) => row.eq('id', alertId),
+      );
+      _refreshAlerts();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Alert deleted',
+              style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
+            ),
+            backgroundColor: LynewedColors.success,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to delete alert',
+              style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
+            ),
+            backgroundColor: LynewedColors.error,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+}
+
+/// Alert Tile for Dashboard - Design System v3
+/// 
+/// Displays alert info in a compact card format:
+/// - Alert type icon (adaptive) + title + location + time
+/// - Message preview
+/// - Tap to contact (or delete if own alert)
+class _ProAlertTile extends StatelessWidget {
+  final String alertType;
+  final String title;
+  final String? message;
+  final String? locationLabel;
+  final DateTime? expiresAt;
+  final bool isOwn;
+  final VoidCallback? onTap;
+
+  const _ProAlertTile({
+    super.key,
+    required this.alertType,
+    required this.title,
+    this.message,
+    this.locationLabel,
+    this.expiresAt,
+    this.isOwn = false,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        padding: const EdgeInsets.fromLTRB(12.0, 14.0, 10.0, 8.0),
+        decoration: BoxDecoration(
+          color: LynewedColors.surface,
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Row 1: Icon + Title + Action (delete/contact)
+            Row(
+              children: [
+                // Alert type icon
+                Icon(
+                  _getAlertIcon(),
+                  color: LynewedColors.textSecondary,
+                  size: 24.0,
+                ),
+                const SizedBox(width: 10.0),
+                // Title
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: LynewedTextStyles.bodyLarge.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8.0),
+                // Action icon: delete (own) or contact (other's)
+                if (isOwn)
+                  const Icon(
+                    Icons.close,
+                    color: LynewedColors.error,
+                    size: 20.0,
+                  )
+                else
+                  const Icon(
+                    Icons.chat_bubble_outline,
+                    color: LynewedColors.primary,
+                    size: 20.0,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4.0),
+            // Row 2: Location + Duration (always on same line)
+            Row(
+              children: [
+                if (locationLabel != null && locationLabel!.isNotEmpty) ...[
+                  const Icon(
+                    Icons.location_on_outlined,
+                    size: 12.0,
+                    color: LynewedColors.textSecondary,
+                  ),
+                  const SizedBox(width: 2.0),
+                  Flexible(
+                    child: Text(
+                      locationLabel!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: LynewedTextStyles.bodySmall.copyWith(
+                        color: LynewedColors.textSecondary,
+                        fontSize: 12.0,
+                      ),
+                    ),
+                  ),
+                ],
+                if (expiresAt != null) ...[
+                  if (locationLabel != null && locationLabel!.isNotEmpty)
+                    const SizedBox(width: 6.0),
+                  Text(
+                    '· ${_formatTimeRemaining()}',
+                    style: LynewedTextStyles.bodySmall.copyWith(
+                      color: _isExpiringSoon() 
+                          ? LynewedColors.error 
+                          : LynewedColors.textSecondary,
+                      fontSize: 12.0,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            // Row 3: Message (2 lines max)
+            if (message != null && message!.isNotEmpty) ...[
+              const SizedBox(height: 8.0),
+              Text(
+                message!,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: LynewedTextStyles.bodyMedium.copyWith(
+                  color: LynewedColors.textPrimary,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _getAlertIcon() {
+    switch (alertType.toLowerCase()) {
+      case 'backup_needed':
+        return Icons.person_search_outlined;
+      case 'gear_emergency':
+        return Icons.camera_alt_outlined;
+      case 'team_member':
+        return Icons.groups_outlined;
+      case 'emergency_help':
+        return Icons.warning_amber_rounded;
+      default:
+        return Icons.notifications_none_outlined;
+    }
+  }
+
+
+  String _formatTimeRemaining() {
+    if (expiresAt == null) return '';
+    final now = DateTime.now();
+    final diff = expiresAt!.difference(now);
+    
+    if (diff.isNegative) return 'Expired';
+    if (diff.inDays > 0) return '${diff.inDays}d left';
+    if (diff.inHours > 0) return '${diff.inHours}h left';
+    if (diff.inMinutes > 0) return '${diff.inMinutes}m left';
+    return 'Expiring soon';
+  }
+
+  bool _isExpiringSoon() {
+    if (expiresAt == null) return false;
+    final diff = expiresAt!.difference(DateTime.now());
+    return diff.inHours < 2;
   }
 }

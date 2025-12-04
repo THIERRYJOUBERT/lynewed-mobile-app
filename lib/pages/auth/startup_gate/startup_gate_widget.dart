@@ -69,11 +69,11 @@ class _StartupGateWidgetState extends State<StartupGateWidget> {
               _model.sessionData!.preferences;
           FFAppState().currentUserRole = _model.sessionData?.profile.role;
           FFAppState().userPrefsLastSyncedAt = getCurrentTimestamp;
-          FFAppState().updateSelfProSubscriptionStruct(
-            (e) => e
-              ..subscriptionTier =
-                  FFAppState().selfProSubscription.subscriptionTier,
-          );
+          // Load pro subscription from session data
+          if (_model.sessionData!.hasProSubscription()) {
+            FFAppState().selfProSubscription = _model.sessionData!.proSubscription;
+            debugPrint('🔍 StartupGate: Loaded proSubscription tier=${_model.sessionData!.proSubscription.subscriptionTier}');
+          }
           safeSetState(() {});
           await actions.initPushNotifications(
             context,

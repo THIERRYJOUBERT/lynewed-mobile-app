@@ -11,10 +11,12 @@ class WishlistedByBrideItemStruct extends BaseStruct {
     String? fullName,
     String? avatarUrl,
     DateTime? addedAt,
+    String? contactStatus,
   })  : _brideProfileId = brideProfileId,
         _fullName = fullName,
         _avatarUrl = avatarUrl,
-        _addedAt = addedAt;
+        _addedAt = addedAt,
+        _contactStatus = contactStatus;
 
   // "brideProfileId" field.
   String? _brideProfileId;
@@ -44,12 +46,20 @@ class WishlistedByBrideItemStruct extends BaseStruct {
 
   bool hasAddedAt() => _addedAt != null;
 
+  // "contactStatus" field - none, pending, accepted, declined
+  String? _contactStatus;
+  String get contactStatus => _contactStatus ?? 'none';
+  set contactStatus(String? val) => _contactStatus = val;
+
+  bool hasContactStatus() => _contactStatus != null;
+
   static WishlistedByBrideItemStruct fromMap(Map<String, dynamic> data) =>
       WishlistedByBrideItemStruct(
         brideProfileId: data['brideProfileId'] as String?,
         fullName: data['fullName'] as String?,
         avatarUrl: data['avatarUrl'] as String?,
         addedAt: data['addedAt'] as DateTime?,
+        contactStatus: data['contactStatus'] as String?,
       );
 
   static WishlistedByBrideItemStruct? maybeFromMap(dynamic data) => data is Map
@@ -61,6 +71,7 @@ class WishlistedByBrideItemStruct extends BaseStruct {
         'fullName': _fullName,
         'avatarUrl': _avatarUrl,
         'addedAt': _addedAt,
+        'contactStatus': _contactStatus,
       }.withoutNulls;
 
   @override
@@ -80,6 +91,10 @@ class WishlistedByBrideItemStruct extends BaseStruct {
         'addedAt': serializeParam(
           _addedAt,
           ParamType.DateTime,
+        ),
+        'contactStatus': serializeParam(
+          _contactStatus,
+          ParamType.String,
         ),
       }.withoutNulls;
 
@@ -106,6 +121,11 @@ class WishlistedByBrideItemStruct extends BaseStruct {
           ParamType.DateTime,
           false,
         ),
+        contactStatus: deserializeParam(
+          data['contactStatus'],
+          ParamType.String,
+          false,
+        ),
       );
 
   @override
@@ -117,12 +137,13 @@ class WishlistedByBrideItemStruct extends BaseStruct {
         brideProfileId == other.brideProfileId &&
         fullName == other.fullName &&
         avatarUrl == other.avatarUrl &&
-        addedAt == other.addedAt;
+        addedAt == other.addedAt &&
+        contactStatus == other.contactStatus;
   }
 
   @override
   int get hashCode =>
-      const ListEquality().hash([brideProfileId, fullName, avatarUrl, addedAt]);
+      const ListEquality().hash([brideProfileId, fullName, avatarUrl, addedAt, contactStatus]);
 }
 
 WishlistedByBrideItemStruct createWishlistedByBrideItemStruct({
@@ -130,10 +151,12 @@ WishlistedByBrideItemStruct createWishlistedByBrideItemStruct({
   String? fullName,
   String? avatarUrl,
   DateTime? addedAt,
+  String? contactStatus,
 }) =>
     WishlistedByBrideItemStruct(
       brideProfileId: brideProfileId,
       fullName: fullName,
       avatarUrl: avatarUrl,
       addedAt: addedAt,
+      contactStatus: contactStatus,
     );

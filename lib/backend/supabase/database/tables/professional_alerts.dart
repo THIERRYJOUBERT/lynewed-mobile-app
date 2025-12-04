@@ -58,4 +58,7 @@ class ProfessionalAlertsRow extends SupabaseDataRow {
 
   String? get motifCode => getField<String>('motif_code');
   set motifCode(String? value) => setField<String>('motif_code', value);
+
+  String? get alertType => getField<String>('alert_type');
+  set alertType(String? value) => setField<String>('alert_type', value);
 }
