@@ -22,6 +22,7 @@ import '../../domain/entities/entities.dart' as entities;
 import '../../domain/entities/professional_details.dart' show SubscriptionTier;
 import '../../domain/entities/alert_details.dart' show AlertDetails;
 import '../../domain/entities/wedding_details.dart' show WeddingDetails;
+import '../../domain/usecases/get_marker_details.dart' show MarkerDetailsServiceProvider;
 
 // Chat module imports for moderation and navigation
 import '/features/chat/presentation/sheets/sheets.dart';
@@ -41,6 +42,17 @@ class MapActionsService {
   // Simple cache for profile data to improve performance
   final Map<String, Map<String, dynamic>> _profileCache = {};
   static const Duration _cacheTimeout = Duration(minutes: 5);
+
+  /// Invalidate cache for a specific profile
+  /// Call this when favorite status changes to ensure fresh data
+  void invalidateProfileCache(String proProfileId) {
+    _profileCache.remove(proProfileId);
+  }
+  
+  /// Clear all profile cache
+  void clearProfileCache() {
+    _profileCache.clear();
+  }
 
   // ============================================================
   // NAVIGATION ACTIONS
@@ -143,8 +155,8 @@ class MapActionsService {
               id, full_name, avatar_url,
               professional_details (
                 business_name, profession, description, portfolio_images,
-                instagram_url, website_url, profile_video_url,
-                location_label
+                slideshow_images, instagram_url, website_url, profile_video_url,
+                has_cover_video, location_label
               )
             ''')
             .eq('id', proProfileId)
@@ -160,9 +172,11 @@ class MapActionsService {
             'profession': details?['profession'],
             'description': details?['description'],
             'portfolioImages': details?['portfolio_images'],
+            'slideshowImages': details?['slideshow_images'],
             'instagramUrl': details?['instagram_url'],
             'websiteUrl': details?['website_url'],
             'profileVideoUrl': details?['profile_video_url'],
+            'hasCoverVideo': details?['has_cover_video'] == true,
             'locationLabel': details?['location_label'],
             'isFavorited': false,
             'isLive': true,
@@ -247,6 +261,7 @@ class MapActionsService {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) return currentValue;
       
+      bool newValue;
       if (currentValue) {
         // Remove from wishlist
         await _supabase
@@ -254,15 +269,21 @@ class MapActionsService {
             .delete()
             .eq('bride_profile_id', userId)
             .eq('professional_profile_id', proProfileId);
-        return false;
+        newValue = false;
       } else {
         // Add to wishlist
         await _supabase.from('wishlist_items').insert({
           'bride_profile_id': userId,
           'professional_profile_id': proProfileId,
         });
-        return true;
+        newValue = true;
       }
+      
+      // Invalidate all caches to ensure fresh data everywhere
+      invalidateProfileCache(proProfileId);
+      MarkerDetailsServiceProvider.instance.invalidateCache(proProfileId);
+      
+      return newValue;
     } catch (e) {
       debugPrint('Error toggling favorite: $e');
       return currentValue; // Return unchanged on error
@@ -357,6 +378,7 @@ class MapActionsService {
       instagramUrl: details.instagramUrl,
       websiteUrl: details.websiteUrl,
       profileVideoUrl: details.profileVideoUrl,
+      hasCoverVideo: details.hasCoverVideo,
       canBeContactedByBride: details.canBeContactedByBride,
       canContactBride: details.canContactBride,
       // Note: fixedLocations requires conversion gmaps.LatLng → FlutterFlow LatLng
@@ -431,8 +453,8 @@ class MapActionsService {
               id, full_name, avatar_url,
               professional_details (
                 business_name, profession, description, portfolio_images,
-                instagram_url, website_url, profile_video_url,
-                location_label
+                slideshow_images, instagram_url, website_url, profile_video_url,
+                has_cover_video, location_label
               )
             ''')
             .eq('id', proProfileId)
@@ -449,9 +471,11 @@ class MapActionsService {
             'profession': details?['profession'],
             'description': details?['description'],
             'portfolioImages': details?['portfolio_images'],
+            'slideshowImages': details?['slideshow_images'],
             'instagramUrl': details?['instagram_url'],
             'websiteUrl': details?['website_url'],
             'profileVideoUrl': details?['profile_video_url'],
+            'hasCoverVideo': details?['has_cover_video'] == true,
             'locationLabel': details?['location_label'],
             'isFavorited': false,
             'isLive': true,

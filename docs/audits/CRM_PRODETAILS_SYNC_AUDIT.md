@@ -470,3 +470,255 @@ LynewedSheet(
 1. **Test vidéo:** Configurer `has_cover_video=true` sur un compte test
 2. **Format images crops:** Notifier quand déployé
 3. **Upcoming Travels:** Créer table `professional_upcoming_travels`
+
+---
+
+## 🔄 SYNCHRONISATION FAVORIS - FIXES APPLIQUÉS (2025-12-04)
+
+### Problèmes Identifiés & Corrigés
+
+#### 1. Erreur Type LatLng MiniMap
+**Problème:** `"type 'LatLng' is not a subtype of type 'LatLng?'"` au tap sur minimap
+**Cause:** Conflit FlutterFlow `LatLng` vs Google Maps `LatLng` dans les paramètres de navigation
+**Solution:**
+- Modification de `MapBridesLargeWidget` et `MapProLargeWidget` pour accepter `dynamic`
+- Ajout de `_convertToGmapsLatLng()` pour conversion automatique
+- Fichiers modifiés:
+  - `/lib/features/map/presentation/pages/map_brides_large_wrapper.dart`
+  - `/lib/features/map/presentation/pages/map_pro_large_wrapper.dart`
+
+#### 2. Interface Header ProDetails
+**Problème:** Design incohérent entre ProDetails, ProfessionalDetailsSheet et MessagesPage
+**Corrections:**
+- **Effet Blur:** Opacité réduite de 85% à 40% au scroll
+- **Icône Favori:** Couleur changée de rouge (`LynewedColors.error`) à noir (`LynewedColors.textPrimary`)
+- **Bouton Contact:** Remplacement de `FFButtonWidget` par `LynewedButton` pour unification
+- **Export Design System:** Ajout des exports widgets dans `/lib/core/design/design.dart`
+
+#### 3. Synchronisation Statut Favori
+**Problème:** Le statut favori ne se synchronisait pas entre pro_details_widget et professional_details_sheet
+**Cause:** Caches multiples non invalidés lors du changement de statut
+**Solutions Appliquées:**
+
+##### A. Invalidation Cache Map Page
+```dart
+// Dans _MarkerDetailsLoaderState._loadDetails()
+if (widget.marker.type == MapMarkerType.proFixedLocation) {
+  final profileId = widget.marker.style.profileId ?? widget.marker.id;
+  _detailsService.invalidateCache(profileId);
+}
+```
+- Force données fraîches depuis la BDD à l'ouverture du ProfessionalDetailsSheet
+- Garantit `isFavorited` toujours à jour
+
+##### B. Gestion Cache MapActionsService
+```dart
+// Nouvelles méthodes ajoutées
+void invalidateProfileCache(String proProfileId) {
+  _profileCache.remove(proProfileId);
+}
+
+void clearProfileCache() {
+  _profileCache.clear();
+}
+```
+
+##### C. Invalidation Cache Toggle Favori
+```dart
+// Dans MapActionsService.toggleFavorite()
+// Invalider tous les caches pour données fraîches partout
+invalidateProfileCache(proProfileId);
+MarkerDetailsServiceProvider.instance.invalidateCache(proProfileId);
+```
+
+##### D. Sync Existant ProDetailsWidget
+- `_checkFavoriteStatusFromDb()` valide déjà le statut depuis la BDD
+- Appelé à l'initialisation via `SchedulerBinding.instance.addPostFrameCallback`
+
+### Architecture des Caches
+
+#### Couches de Cache
+1. **MarkerDetailsService Cache** (`/lib/features/map/domain/usecases/get_marker_details.dart`)
+   - Cache TTL 5 minutes pour détails markers
+   - Utilisé par ProfessionalDetailsSheet
+
+2. **MapActionsService Profile Cache** (`/lib/features/map/presentation/services/map_actions_service.dart`)
+   - Cache 5 minutes pour données de navigation profil
+   - Utilisé par navigation vers ProDetailsWidget
+
+#### Flux de Données
+```
+User toggle favori → 
+toggleFavorite() → 
+Update BDD → 
+Invalidation caches (deux services) → 
+Prochaine interaction UI → 
+Données fraîches depuis BDD → 
+État UI cohérent
+```
+
+### Fichiers Modifiés (Synchronisation)
+
+#### Fichiers Core
+- `/lib/features/map/presentation/pages/map_page.dart` - Invalidation cache avant chargement
+- `/lib/features/map/presentation/services/map_actions_service.dart` - Méthodes gestion cache
+- `/lib/core/design/widgets/lynewed_header_actions.dart` - Correction couleur favori
+- `/lib/core/design/design.dart` - Exports widgets
+
+#### Wrappers Navigation
+- `/lib/features/map/presentation/pages/map_brides_large_wrapper.dart` - Conversion LatLng
+- `/lib/features/map/presentation/pages/map_pro_large_wrapper.dart` - Conversion LatLng
+
+#### Composants UI
+- `/lib/pages/shared/pro_details/pro_details_widget.dart` - Unification bouton, effet blur
+
+### Scénarios de Test
+
+#### ✅ Vérifiés
+1. Navigation minimap sans erreur de type
+2. Effet blur header à 40% d'opacité
+3. Couleur icône favori (noir quand actif)
+4. Style bouton Contact cohérent
+
+#### ✅ Flux Test Synchronisation
+1. Ouvrir pro_details → Tap favori → Fermer
+2. Retour map → Tap marker → Ouvrir professional_details_sheet
+3. Statut favori correctement synchronisé ✅
+
+---
+
+## 🎯 PROCHAINES ÉTAPES PRODETAILS
+
+### À Considérer pour ProDetails
+
+#### 1. Refactoring Complet Clean Architecture
+**État Actuel:** ProDetailsWidget utilise encore les patterns FlutterFlow
+**Recommandation:** Migration complète vers Clean Architecture comme autres modules
+**Impact:** Meilleure maintenabilité, testabilité, cohérence
+
+#### 2. Gestion d'État
+**État Actuel:** Pattern model FlutterFlow avec `safeSetState()`
+**Recommandation:** Considérer Provider/Bloc pour état complexe
+**Impact:** Meilleure séparation des concerns, tests plus faciles
+
+#### 3. Gestion Erreurs
+**État Actuel:** Try/catch basique avec debug prints
+**Recommandation:** Implémenter états erreur et feedback utilisateur
+**Impact:** Meilleure expérience utilisateur, débogage
+
+#### 4. Optimisation Performance
+**État Actuel:** Appels BDD multiples pour statut favori
+**Recommandation:** Updates optimistes avec sync en arrière-plan
+**Impact:** Réponse UI plus rapide, capacités offline
+
+#### 5. Cohérence UI/UX
+**État Actuel:** Mix composants FlutterFlow et Design System
+**Recommandation:** Migration complète vers Design System v3
+**Impact:** Cohérence visuelle, maintenance facilitée
+
+### Priorités Recommandées
+
+#### Haute Priorité
+1. **Migration Design System Complète** - Remplacer composants FlutterFlow restants
+2. **Amélioration Gestion Erreurs** - États erreur et feedback utilisateur
+3. **Optimisation Performance** - Réduire appels BDD, implémenter cache
+
+#### Moyenne Priorité
+1. **Refactoring Clean Architecture** - Migration complète domain/data/presentation
+2. **Upgrade Gestion État** - Solutions modernes de gestion d'état
+3. **Couverture Tests** - Tests unitaires et widget
+
+---
+
+**Mise à jour synchronisation:** 2025-12-04 16:02  
+**Statut synchronisation:** ✅ Problèmes résolus, monitoring production requis
+
+---
+
+## 🎨 REFACTORING DESIGN SYSTEM V3 - SESSION 2025-12-04
+
+### Pages Refactorisées
+
+#### 1. ProDetailsWidget (`lib/pages/shared/pro_details/pro_details_widget.dart`)
+**Corrections appliquées:**
+- Divider color: `FlutterFlowTheme.secondary` → `LynewedColors.gray200`
+- Section title "Live Position": UPPERCASE → `LynewedTextStyles.sectionTitle`
+- Page indicator dots: `FlutterFlowTheme.accent1` → `LynewedColors.gray200`
+- Background color: `FlutterFlowTheme.primaryBackground` → `LynewedColors.background`
+- Textes nom/profession: FlutterFlow styles → `LynewedTextStyles.bodyMedium`
+- Flèches slideshow: FlutterFlow color → `LynewedColors.textPrimary`
+- Menu Report text: FlutterFlow style → `LynewedTextStyles.bodyMedium`
+- Divider bottom bar: FlutterFlow secondary → `LynewedColors.gray200`
+
+**Éléments conservés (intentionnel):**
+- `FlutterFlowIconButton` pour les 3 icônes rondes noires (style contextuel validé)
+
+#### 2. PortfolioImageViewerWidget (`lib/pages/shared/portfolio_image_viewer/`)
+**Refactoring complet:**
+- Background: `Colors.black` (immersif)
+- Back button: Container 44px avec `chevron_left`
+- Images: `CachedNetworkImage` + `InteractiveViewer` (zoom pinch 1x→3x)
+- Page indicator: Dots blancs centrés verticalement
+- Bottom bar: SafeArea-aware, `LynewedTextStyles`
+- Avatar: `CachedNetworkImage` 48px avec placeholders
+- Compteur images: Badge `1/5` avec `LynewedColors.surface`
+- Gradient top: Noir→transparent pour lisibilité
+
+#### 3. FeedDetailViewerWidget (`lib/pages/bride/feed_detail_viewer/`)
+**Refactoring complet:**
+- Background: `Colors.black` (immersif)
+- Back button: Container 44px avec `chevron_left`
+- Image: `CachedNetworkImage` + `InteractiveViewer` (zoom)
+- Bottom bar: SafeArea-aware, Design System v3
+- Avatar: `CachedNetworkImage` 48px avec placeholders
+- Icône Favori: **Noir** (`textPrimary`) quand actif
+- Bouton View Profile: `LynewedButton`
+- Gradient top: Noir→transparent
+- Error handling: SnackBar au lieu d'AlertDialog
+
+#### 4. FavProListWidget → WishlistPage (`lib/pages/bride/fav_pro_list/`)
+**Refactoring complet:**
+- Titre: "FAVORIS PROFESSIONAL" → "MY WISHLIST"
+- Header: `HeaderBarWidget` (FlutterFlow) → Header Design System v3
+- Subheader: Compteur dynamique (0/1/N professionnels)
+- Liste items: `_FavoriteTile` Design System v3
+- Avatar: `CachedNetworkImage` 48px
+- Icône Favori: **Noir** (`textPrimary`)
+- Location: Icône + texte
+- Empty state: Icône + message + suggestion
+- Error state: Icône + message + retry
+- Loading state: CircularProgressIndicator
+- Optimistic removal: Pro disparaît immédiatement au tap
+
+### Tokens Design System v3 Appliqués
+
+| Token | Usage |
+|-------|-------|
+| `LynewedColors.background` | Fond de page |
+| `LynewedColors.surface` | Fond des tiles/cards |
+| `LynewedColors.gray200` | Dividers, dots inactifs |
+| `LynewedColors.textPrimary` | Texte principal, icône favori actif |
+| `LynewedColors.textSecondary` | Texte secondaire, icône favori inactif |
+| `LynewedTextStyles.sheetTitle` | Titres de page (fontSize: 20) |
+| `LynewedTextStyles.bodyMedium` | Texte principal (w500 pour noms) |
+| `LynewedTextStyles.bodySmall` | Texte secondaire |
+| `LynewedTextStyles.labelLarge` | Labels, compteurs |
+
+### Règles Unifiées
+
+| Règle | Valeur |
+|-------|--------|
+| Border radius tiles | 4px |
+| Border radius sheets | 24px |
+| Avatar size | 48px |
+| Back button size | 44px (cible tactile) |
+| Icône favori actif | **Noir** (textPrimary) |
+| Icône favori inactif | Gris (textSecondary) |
+| Padding header | `EdgeInsets.fromLTRB(20, 20, 20, 12)` |
+| Padding liste | `EdgeInsets.symmetric(horizontal: 20, vertical: 12)` |
+| Spacing items | 10px |
+
+---
+
+**Mise à jour Design System:** 2025-12-04 16:30  
+**Pages refactorisées:** 4 (ProDetails, PortfolioViewer, FeedViewer, Wishlist)

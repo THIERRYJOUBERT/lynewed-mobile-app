@@ -45,7 +45,7 @@ class LynewedHeaderActions extends StatelessWidget {
             onTap: onFavoriteToggle,
             child: Icon(
               isFavorited ? Icons.favorite : Icons.favorite_border,
-              color: isFavorited ? LynewedColors.error : LynewedColors.textSecondary,
+              color: isFavorited ? LynewedColors.textPrimary : LynewedColors.textSecondary,
               size: 22,
             ),
           ),

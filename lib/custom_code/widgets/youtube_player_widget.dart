@@ -38,16 +38,20 @@ class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget> {
     final videoId = YoutubePlayer.convertUrlToId(widget.youtubeUrl);
 
     // Initialise le contrôleur avec cet ID
+    // Mode "background video": boucle, muet, sans contrôles
     _controller = YoutubePlayerController(
       initialVideoId:
           videoId ?? '', // Utilise l'ID, ou une chaîne vide si invalide
       flags: const YoutubePlayerFlags(
         autoPlay: true, // Lance la vidéo automatiquement
-        mute: false, // Le son est activé par défaut
+        mute: true, // Muet pour éviter les problèmes d'autoplay
         forceHD: true, // Force la haute définition si disponible
-        showLiveFullscreenButton:
-            false, // Cache le bouton live pour les replays
-        loop: false, // La vidéo ne se répète pas
+        showLiveFullscreenButton: false, // Cache le bouton live
+        loop: true, // La vidéo se répète en boucle
+        hideControls: true, // Cache tous les contrôles
+        controlsVisibleAtStart: false, // Pas de contrôles au démarrage
+        disableDragSeek: true, // Désactive le seek par drag
+        enableCaption: false, // Pas de sous-titres
       ),
     );
   }
@@ -61,19 +65,16 @@ class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Le widget YoutubePlayer est au cœur de l'affichage
-    return YoutubePlayer(
-      controller: _controller,
-      showVideoProgressIndicator: true, // Affiche une barre de chargement
-      progressIndicatorColor: FlutterFlowTheme.of(context).primary,
-      progressColors: ProgressBarColors(
-        playedColor: FlutterFlowTheme.of(context).primary,
-        handleColor: FlutterFlowTheme.of(context).primary,
+    // Le widget YoutubePlayer en mode background (sans contrôles, en boucle)
+    return IgnorePointer(
+      // Ignore tous les taps pour empêcher toute interaction
+      child: YoutubePlayer(
+        controller: _controller,
+        showVideoProgressIndicator: false, // Pas de barre de progression
+        onReady: () {
+          debugPrint('YouTube Player is ready (background mode).');
+        },
       ),
-      onReady: () {
-        // Optionnel : actions à effectuer quand le lecteur est prêt
-        debugPrint('Player is ready.');
-      },
     );
   }
 }

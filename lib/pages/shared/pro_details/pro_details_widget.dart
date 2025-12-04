@@ -13,6 +13,7 @@ import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/core/utils/video_url_helpers.dart';
+import '/core/design/design.dart';
 import '/index.dart';
 // Chat module imports for reporting
 import '/features/chat/presentation/sheets/sheets.dart';
@@ -46,11 +47,18 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
   late ProDetailsModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  
+  // Scroll controller for blur effect
+  final ScrollController _scrollController = ScrollController();
+  bool _showBlur = false;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => ProDetailsModel());
+    
+    // Listen to scroll for blur effect
+    _scrollController.addListener(_onScroll);
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
@@ -105,8 +113,20 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
     }
   }
 
+  void _onScroll() {
+    // Show blur when scrolled past 20px
+    final shouldShowBlur = _scrollController.offset > 20;
+    if (shouldShowBlur != _showBlur) {
+      setState(() {
+        _showBlur = shouldShowBlur;
+      });
+    }
+  }
+
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     _model.dispose();
 
     super.dispose();
@@ -116,17 +136,28 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
   /// Based on hasCoverVideo flag AND valid video URL
   bool _shouldShowVideo() {
     final proDetails = widget.proDetails;
-    if (proDetails == null) return false;
+    if (proDetails == null) {
+      debugPrint('ProDetails: _shouldShowVideo - proDetails is null');
+      return false;
+    }
     
     // Must have hasCoverVideo flag set to true
-    if (!proDetails.hasCoverVideo) return false;
+    if (!proDetails.hasCoverVideo) {
+      debugPrint('ProDetails: _shouldShowVideo - hasCoverVideo is false');
+      return false;
+    }
     
     // Must have a valid video URL
     final videoUrl = proDetails.profileVideoUrl;
-    if (videoUrl.isEmpty) return false;
+    if (videoUrl.isEmpty) {
+      debugPrint('ProDetails: _shouldShowVideo - profileVideoUrl is empty');
+      return false;
+    }
     
     // Check if it's a valid video URL (YouTube, Vimeo, or direct file)
-    return VideoUrlHelpers.isValidVideoUrl(videoUrl);
+    final isValid = VideoUrlHelpers.isValidVideoUrl(videoUrl);
+    debugPrint('ProDetails: _shouldShowVideo - videoUrl=$videoUrl, isValid=$isValid, hasCoverVideo=${proDetails.hasCoverVideo}');
+    return isValid;
   }
 
   /// Build the appropriate video player based on URL type
@@ -216,6 +247,45 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
     );
   }
 
+  /// Show more menu with Report option (same as professional_details_sheet)
+  void _showMoreMenu(BuildContext context) {
+    showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        MediaQuery.of(context).size.width - 150,
+        MediaQuery.of(context).padding.top + 50,
+        20,
+        0,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      items: [
+        PopupMenuItem<String>(
+          value: 'report',
+          child: Row(
+            children: [
+              const Icon(
+                Icons.flag_outlined,
+                color: Color(0xFF757575),
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Report',
+                style: LynewedTextStyles.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+      ],
+    ).then((value) {
+      if (value == 'report') {
+        _showReportSheet();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
@@ -227,23 +297,21 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: LynewedColors.background,
         body: SizedBox(
           width: double.infinity,
           height: MediaQuery.sizeOf(context).height * 1.0,
           child: Stack(
             children: [
               SingleChildScrollView(
+                controller: _scrollController,
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: double.infinity,
-                      height: 110.0,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                      ),
+                    // Spacer for header (SafeArea top + header height ~68px)
+                    SizedBox(
+                      height: MediaQuery.of(context).padding.top + 68,
                     ),
                     SizedBox(
                       width: MediaQuery.sizeOf(context).width * 1.0,
@@ -339,15 +407,13 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                               );
                                               safeSetState(() {});
                                             },
-                                            effect: smooth_page_indicator
+                                            effect: const smooth_page_indicator
                                                 .SlideEffect(
                                               spacing: 8.0,
                                               radius: 8.0,
                                               dotWidth: 8.0,
                                               dotHeight: 8.0,
-                                              dotColor:
-                                                  FlutterFlowTheme.of(context)
-                                                      .accent1,
+                                              dotColor: LynewedColors.gray200,
                                               activeDotColor: Colors.white,
                                               paintStyle: PaintingStyle.fill,
                                             ),
@@ -370,10 +436,9 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                   borderRadius: 99.0,
                                   buttonSize: 40.0,
                                   fillColor: const Color(0xE6F5F5F5),
-                                  icon: Icon(
+                                  icon: const Icon(
                                     Icons.arrow_back_ios_outlined,
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryText,
+                                    color: LynewedColors.textPrimary,
                                     size: 20.0,
                                   ),
                                   onPressed: () async {
@@ -396,10 +461,9 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                   borderRadius: 99.0,
                                   buttonSize: 40.0,
                                   fillColor: const Color(0xE6F5F5F5),
-                                  icon: Icon(
+                                  icon: const Icon(
                                     Icons.arrow_forward_ios_sharp,
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryText,
+                                    color: LynewedColors.textPrimary,
                                     size: 20.0,
                                   ),
                                   onPressed: () async {
@@ -448,11 +512,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                       widget.proDetails?.fullName,
                                       'Name...',
                                     ),
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'Haas Grot Text Trial',
-                                          letterSpacing: 0.0,
+                                    style: LynewedTextStyles.bodyMedium.copyWith(
                                           fontWeight: FontWeight.w500,
                                         ),
                                   ),
@@ -461,13 +521,8 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                       widget.proDetails?.profession?.name,
                                       'Profession...',
                                     ),
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'Haas Grot Text Trial',
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText,
-                                          letterSpacing: 0.0,
+                                    style: LynewedTextStyles.bodyMedium.copyWith(
+                                          color: LynewedColors.textSecondary,
                                         ),
                                   ),
                                 ],
@@ -483,13 +538,8 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                     widget.proDetails?.description,
                                     'Description...',
                                   ),
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        fontFamily: 'Haas Grot Text Trial',
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                        letterSpacing: 0.0,
+                                  style: LynewedTextStyles.bodyMedium.copyWith(
+                                        color: LynewedColors.textSecondary,
                                       ),
                                 ),
                               ),
@@ -497,7 +547,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                           ),
                           Divider(
                             thickness: 1.0,
-                            color: FlutterFlowTheme.of(context).secondary,
+                            color: LynewedColors.gray200,
                           ),
                           if (widget.proDetails!.portfolioImages.isNotEmpty)
                             SizedBox(
@@ -517,14 +567,8 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'LIVE POSITION',
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        fontFamily: 'Haas Grot Text Trial',
-                                        letterSpacing: 0.0,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                  'Live Position',
+                                  style: LynewedTextStyles.sectionTitle,
                                 ),
                                 Container(
                                   width: MediaQuery.sizeOf(context).width * 1.0,
@@ -619,12 +663,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                           widget.proDetails?.fullName,
                                           'Name...',
                                         ),
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily:
-                                                  'Haas Grot Text Trial',
-                                              letterSpacing: 0.0,
+                                        style: LynewedTextStyles.bodyMedium.copyWith(
                                               fontWeight: FontWeight.w500,
                                             ),
                                       ),
@@ -633,15 +672,8 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                           widget.proDetails?.profession?.name,
                                           'Profession...',
                                         ),
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily:
-                                                  'Haas Grot Text Trial',
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .secondaryText,
-                                              letterSpacing: 0.0,
+                                        style: LynewedTextStyles.bodyMedium.copyWith(
+                                              color: LynewedColors.textSecondary,
                                             ),
                                       ),
                                     ],
@@ -724,161 +756,101 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                   ].divide(const SizedBox(height: 0.0)),
                 ),
               ),
-              Align(
-                alignment: const AlignmentDirectional(0.0, -1.0),
-                child: Container(
-                  width: double.infinity,
-                  height: 110.0,
-                  decoration: const BoxDecoration(
-                    color: Color(0x65FFFFFF),
-                  ),
-                  child: Align(
-                    alignment: const AlignmentDirectional(0.0, 0.0),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(0.0),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(
-                          sigmaX: 2.0,
-                          sigmaY: 4.0,
-                        ),
-                        child: Container(
-                          width: double.infinity,
-                          height: 110.0,
-                          decoration: const BoxDecoration(
-                            color: Color(0x67FFFFFF),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                0.0, 0.0, 0.0, 14.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                      20.0, 0.0, 20.0, 0.0),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          Container(
-                                            width: 40.0,
-                                            height: 40.0,
-                                            decoration: const BoxDecoration(),
-                                            child: InkWell(
-                                              splashColor: Colors.transparent,
-                                              focusColor: Colors.transparent,
-                                              hoverColor: Colors.transparent,
-                                              highlightColor:
-                                                  Colors.transparent,
-                                              onTap: () async {
-                                                context.safePop();
-                                              },
-                                              child: Icon(
-                                                Icons.arrow_back_ios_new,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                                size: 24.0,
-                                              ),
-                                            ),
-                                          ),
-                                        ].divide(const SizedBox(width: 14.0)),
-                                      ),
-                                      Text(
-                                        'LYNEWED',
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily:
-                                                  'Haas Grot Text Trial',
-                                              fontSize: 20.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                      ),
-                                      Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          // Report button - always visible (except for own profile)
-                                          if (widget.proDetails?.proProfileId != currentUserUid)
-                                            Container(
-                                              width: 40.0,
-                                              height: 40.0,
-                                              decoration: const BoxDecoration(),
-                                              child: InkWell(
-                                                splashColor: Colors.transparent,
-                                                focusColor: Colors.transparent,
-                                                hoverColor: Colors.transparent,
-                                                highlightColor: Colors.transparent,
-                                                onTap: () async {
-                                                  await _showReportSheet();
-                                                },
-                                                child: Icon(
-                                                  Icons.flag_outlined,
-                                                  color: FlutterFlowTheme.of(context).secondaryText,
-                                                  size: 24.0,
-                                                ),
-                                              ),
-                                            ),
-                                          // Only show favorite button for brides (adds to wishlist)
-                                          if (FFAppState().currentUserRole == UserRole.bride)
-                                            Align(
-                                              alignment:
-                                                  const AlignmentDirectional(0.0, 0.0),
-                                              child: Container(
-                                                width: 40.0,
-                                                height: 40.0,
-                                                decoration: const BoxDecoration(),
-                                                child: ToggleIcon(
-                                                  onPressed: () async {
-                                                    // Toggle optimiste pour UI réactive
-                                                    safeSetState(() =>
-                                                        _model.fav = !_model.fav);
-                                                    
-                                                    _model.toggleResult =
-                                                        await actions
-                                                            .toggleWishlistAction(
-                                                      widget.proDetails!
-                                                          .proProfileId,
-                                                    );
-                                                    
-                                                    // Mettre à jour avec le résultat réel du serveur
-                                                    if (_model.toggleResult != null) {
-                                                      _model.fav =
-                                                          _model.toggleResult!;
-                                                      safeSetState(() {});
-                                                    }
-                                                  },
-                                                  value: _model.fav,
-                                                  onIcon: Icon(
-                                                    Icons.favorite_sharp,
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .primary,
-                                                    size: 24.0,
-                                                  ),
-                                                  offIcon: Icon(
-                                                    Icons.favorite_border,
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .secondaryText,
-                                                    size: 24.0,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                        ].divide(const SizedBox(width: 14.0)),
-                                      ),
-                                    ],
+              // Header with dynamic blur on scroll
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: ClipRect(
+                  child: BackdropFilter(
+                    filter: _showBlur 
+                        ? ImageFilter.blur(sigmaX: 10, sigmaY: 10)
+                        : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+                    child: Container(
+                      color: _showBlur 
+                          ? Colors.white.withOpacity(0.4)
+                          : Colors.white,
+                      child: SafeArea(
+                        bottom: false,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 12, 20, 12),
+                          child: Row(
+                            children: [
+                              // Back button - same as MessagesPage (44px tap target)
+                              GestureDetector(
+                                onTap: () => context.safePop(),
+                                child: Container(
+                                  width: 44,
+                                  height: 44,
+                                  alignment: Alignment.center,
+                                  child: const Icon(
+                                    Icons.chevron_left,
+                                    size: 28,
+                                    color: Colors.black,
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                              
+                              const SizedBox(width: 4),
+                              
+                              // Title - same style as MessagesPage
+                              Expanded(
+                                child: Text(
+                                  'Profile',
+                                  style: const TextStyle(
+                                    fontFamily: 'Haas Grot Text Trial',
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                              
+                              // Right actions - EXACT same as professional_details_sheet
+                              // Favorite first, then more_vert, 10px spacing
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Favorite button - only for brides (same style as sheet)
+                                  if (FFAppState().currentUserRole == UserRole.bride)
+                                    GestureDetector(
+                                      onTap: () async {
+                                        safeSetState(() => _model.fav = !_model.fav);
+                                        _model.toggleResult = await actions.toggleWishlistAction(
+                                          widget.proDetails!.proProfileId,
+                                        );
+                                        if (_model.toggleResult != null) {
+                                          _model.fav = _model.toggleResult!;
+                                          safeSetState(() {});
+                                        }
+                                      },
+                                      child: Icon(
+                                        _model.fav ? Icons.favorite : Icons.favorite_border,
+                                        color: _model.fav 
+                                            ? Colors.black // Black when favorited
+                                            : const Color(0xFF757575), // textSecondary
+                                        size: 22,
+                                      ),
+                                    ),
+                                  
+                                  // 10px spacing between icons (same as sheet)
+                                  if (FFAppState().currentUserRole == UserRole.bride &&
+                                      widget.proDetails?.proProfileId != currentUserUid)
+                                    const SizedBox(width: 10),
+                                  
+                                  // More menu - same style as sheet (no background)
+                                  if (widget.proDetails?.proProfileId != currentUserUid)
+                                    GestureDetector(
+                                      onTap: () => _showMoreMenu(context),
+                                      child: const Icon(
+                                        Icons.more_vert,
+                                        color: Color(0xFF757575), // textSecondary
+                                        size: 22,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -903,41 +875,22 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            if ((widget.proDetails?.canBeContactedByBride ==
-                                    true) ||
-                                (widget.proDetails?.proProfileId ==
-                                    currentUserUid))
+                            // Contact button - same style as professional_details_sheet
+                            if ((widget.proDetails?.canBeContactedByBride == true) ||
+                                (widget.proDetails?.proProfileId == currentUserUid))
                               Padding(
-                                padding: const EdgeInsetsDirectional.fromSTEB(
-                                    20.0, 0.0, 20.0, 0.0),
-                                child: FFButtonWidget(
-                                  onPressed: () async {
-                                    await action_blocks.contactChatRoom(
-                                      context,
-                                      targetProfileID:
-                                          widget.proDetails?.proProfileId,
-                                    );
-                                  },
-                                  text: 'Contact',
-                                  options: FFButtonOptions(
-                                    width: double.infinity,
-                                    height: 48.0,
-                                    padding: const EdgeInsetsDirectional.fromSTEB(
-                                        16.0, 0.0, 16.0, 0.0),
-                                    iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 0.0),
-                                    color: FlutterFlowTheme.of(context).primary,
-                                    textStyle: FlutterFlowTheme.of(context)
-                                        .titleSmall
-                                        .override(
-                                          fontFamily: 'Haas Grot Text Trial',
-                                          color: Colors.white,
-                                          fontSize: 14.0,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.normal,
-                                        ),
-                                    elevation: 0.0,
-                                    borderRadius: BorderRadius.circular(0.0),
+                                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: LynewedButton(
+                                    text: 'Contact',
+                                    onPressed: () async {
+                                      await action_blocks.contactChatRoom(
+                                        context,
+                                        targetProfileID: widget.proDetails?.proProfileId,
+                                      );
+                                    },
+                                    type: LynewedButtonType.primary,
                                   ),
                                 ),
                               ),
@@ -949,8 +902,8 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                         child: Container(
                           width: double.infinity,
                           height: 1.0,
-                          decoration: BoxDecoration(
-                            color: FlutterFlowTheme.of(context).secondary,
+                          decoration: const BoxDecoration(
+                            color: LynewedColors.gray200,
                           ),
                         ),
                       ),

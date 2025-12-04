@@ -848,6 +848,13 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
 
   Future<void> _loadDetails() async {
     try {
+      // For professionals, invalidate cache to ensure fresh favorite status
+      // This ensures the favorite icon is always in sync with the database
+      if (widget.marker.type == MapMarkerType.proFixedLocation) {
+        final profileId = widget.marker.style.profileId ?? widget.marker.id;
+        _detailsService.invalidateCache(profileId);
+      }
+      
       final details = await _detailsService.getDetailsForMarker(widget.marker);
       if (mounted) {
         setState(() {

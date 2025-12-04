@@ -1,13 +1,22 @@
-import '/backend/schema/structs/index.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
+import 'dart:math';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart'
     as smooth_page_indicator;
-import 'package:flutter/material.dart';
+
+import '/backend/schema/structs/index.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/core/design/design.dart';
 import 'portfolio_image_viewer_model.dart';
 export 'portfolio_image_viewer_model.dart';
 
+/// Portfolio Image Viewer - Full screen image gallery
+/// 
+/// Design System v3 compliant:
+/// - Clean header with back button
+/// - Vertical scroll for images
+/// - Bottom info bar with pro details
+/// - Smooth page indicators
 class PortfolioImageViewerWidget extends StatefulWidget {
   const PortfolioImageViewerWidget({
     super.key,
@@ -31,235 +40,273 @@ class PortfolioImageViewerWidget extends StatefulWidget {
 class _PortfolioImageViewerWidgetState
     extends State<PortfolioImageViewerWidget> {
   late PortfolioImageViewerModel _model;
-
-  final scaffoldKey = GlobalKey<ScaffoldState>();
+  late PageController _pageController;
+  int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => PortfolioImageViewerModel());
+    _currentIndex = widget.initialIndex ?? 0;
+    _pageController = PageController(initialPage: _currentIndex);
   }
 
   @override
   void dispose() {
+    _pageController.dispose();
     _model.dispose();
-
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        body: Stack(
-          children: [
-            Align(
-              alignment: const AlignmentDirectional(0.0, 0.0),
-              child: Builder(
-                builder: (context) {
-                  final pageViewImage = widget.portfolioImages!.toList();
+    final images = widget.portfolioImages ?? [];
+    final mediaQuery = MediaQuery.of(context);
+    
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // Full screen image viewer with vertical scroll
+          _buildImageViewer(images),
+          
+          // Top gradient overlay for better visibility
+          _buildTopGradient(),
+          
+          // Back button
+          _buildBackButton(context, mediaQuery),
+          
+          // Page indicator (right side, vertical)
+          if (images.length > 1)
+            _buildPageIndicator(images),
+          
+          // Bottom info bar
+          _buildBottomInfoBar(images),
+        ],
+      ),
+    );
+  }
 
-                  return SizedBox(
-                    width: double.infinity,
-                    height: double.infinity,
-                    child: Stack(
-                      children: [
-                        PageView.builder(
-                          controller: _model.pageViewController ??=
-                              PageController(
-                                  initialPage: max(
-                                      0,
-                                      min(
-                                          valueOrDefault<int>(
-                                            widget.initialIndex,
-                                            0,
-                                          ),
-                                          pageViewImage.length - 1))),
-                          scrollDirection: Axis.vertical,
-                          itemCount: pageViewImage.length,
-                          itemBuilder: (context, pageViewImageIndex) {
-                            final pageViewImageItem =
-                                pageViewImage[pageViewImageIndex];
-                            return ClipRRect(
-                              borderRadius: BorderRadius.circular(0.0),
-                              child: Image.network(
-                                pageViewImageItem,
-                                width: double.infinity,
-                                height: double.infinity,
-                                fit: BoxFit.cover,
-                              ),
-                            );
-                          },
-                        ),
-                        Align(
-                          alignment: const AlignmentDirectional(1.0, 0.0),
-                          child: Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                0.0, 0.0, 20.0, 16.0),
-                            child: smooth_page_indicator.SmoothPageIndicator(
-                              controller: _model.pageViewController ??=
-                                  PageController(
-                                      initialPage: max(
-                                          0,
-                                          min(
-                                              valueOrDefault<int>(
-                                                widget.initialIndex,
-                                                0,
-                                              ),
-                                              pageViewImage.length - 1))),
-                              count: pageViewImage.length,
-                              axisDirection: Axis.vertical,
-                              onDotClicked: (i) async {
-                                await _model.pageViewController!.animateToPage(
-                                  i,
-                                  duration: const Duration(milliseconds: 500),
-                                  curve: Curves.ease,
-                                );
-                                safeSetState(() {});
-                              },
-                              effect: smooth_page_indicator.SlideEffect(
-                                spacing: 8.0,
-                                radius: 8.0,
-                                dotWidth: 8.0,
-                                dotHeight: 8.0,
-                                dotColor: const Color(0xB3D9D9D9),
-                                activeDotColor: FlutterFlowTheme.of(context)
-                                    .primaryBackground,
-                                paintStyle: PaintingStyle.fill,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+  Widget _buildImageViewer(List<String> images) {
+    if (images.isEmpty) {
+      return const Center(
+        child: Text(
+          'No images',
+          style: TextStyle(color: Colors.white),
+        ),
+      );
+    }
+
+    return PageView.builder(
+      controller: _pageController,
+      scrollDirection: Axis.vertical,
+      itemCount: images.length,
+      onPageChanged: (index) {
+        setState(() => _currentIndex = index);
+      },
+      itemBuilder: (context, index) {
+        return InteractiveViewer(
+          minScale: 1.0,
+          maxScale: 3.0,
+          child: CachedNetworkImage(
+            imageUrl: images[index],
+            width: double.infinity,
+            height: double.infinity,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(
+              color: Colors.black,
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              ),
+            ),
+            errorWidget: (context, url, error) => Container(
+              color: Colors.black,
+              child: const Center(
+                child: Icon(
+                  Icons.broken_image_outlined,
+                  color: Colors.white54,
+                  size: 48,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTopGradient() {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 120,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.black.withOpacity(0.6),
+              Colors.transparent,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackButton(BuildContext context, MediaQueryData mediaQuery) {
+    return Positioned(
+      top: mediaQuery.padding.top + 12,
+      left: 20,
+      child: GestureDetector(
+        onTap: () => Navigator.of(context).pop(),
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.5),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.chevron_left,
+            color: Colors.white,
+            size: 28,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPageIndicator(List<String> images) {
+    return Positioned(
+      right: 20,
+      top: 0,
+      bottom: 0,
+      child: Center(
+        child: smooth_page_indicator.SmoothPageIndicator(
+          controller: _pageController,
+          count: images.length,
+          axisDirection: Axis.vertical,
+          effect: const smooth_page_indicator.SlideEffect(
+            spacing: 8.0,
+            radius: 4.0,
+            dotWidth: 8.0,
+            dotHeight: 8.0,
+            dotColor: Colors.white38,
+            activeDotColor: Colors.white,
+            paintStyle: PaintingStyle.fill,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomInfoBar(List<String> images) {
+    final pro = widget.proInfo;
+    if (pro == null) return const SizedBox.shrink();
+
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: LynewedColors.background,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: Row(
+              children: [
+                // Avatar
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: CachedNetworkImage(
+                    imageUrl: pro.avatarUrl,
+                    width: 48,
+                    height: 48,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      width: 48,
+                      height: 48,
+                      color: LynewedColors.surface,
+                      child: const Icon(
+                        Icons.person_outline,
+                        color: LynewedColors.textSecondary,
+                      ),
                     ),
-                  );
-                },
-              ),
-            ),
-            Align(
-              alignment: const AlignmentDirectional(-1.0, -1.0),
-              child: Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(20.0, 70.0, 0.0, 0.0),
-                child: FlutterFlowIconButton(
-                  borderRadius: 100.0,
-                  borderWidth: 0.0,
-                  buttonSize: 40.0,
-                  fillColor: Colors.black,
-                  icon: Icon(
-                    Icons.arrow_back_ios_rounded,
-                    color: FlutterFlowTheme.of(context).primaryBackground,
-                    size: 17.0,
-                  ),
-                  onPressed: () async {
-                    context.safePop();
-                  },
-                ),
-              ),
-            ),
-            Align(
-              alignment: const AlignmentDirectional(0.0, 1.0),
-              child: Container(
-                width: double.infinity,
-                height: 100.0,
-                decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).secondaryBackground,
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(0.0),
-                    bottomRight: Radius.circular(0.0),
-                    topLeft: Radius.circular(24.0),
-                    topRight: Radius.circular(24.0),
+                    errorWidget: (context, url, error) => Container(
+                      width: 48,
+                      height: 48,
+                      color: LynewedColors.surface,
+                      child: const Icon(
+                        Icons.person_outline,
+                        color: LynewedColors.textSecondary,
+                      ),
+                    ),
                   ),
                 ),
-                child: Padding(
-                  padding:
-                      const EdgeInsetsDirectional.fromSTEB(20.0, 16.0, 20.0, 0.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.start,
+                const SizedBox(width: 12),
+                
+                // Pro info
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(100.0),
-                        child: Image.network(
-                          widget.proInfo!.avatarUrl,
-                          width: 50.0,
-                          height: 50.0,
-                          fit: BoxFit.cover,
+                      Text(
+                        pro.fullName,
+                        style: LynewedTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w500,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      Flexible(
-                        child: Container(
-                          height: 50.0,
-                          decoration: const BoxDecoration(),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                valueOrDefault<String>(
-                                  widget.proInfo?.fullName,
-                                  'Pro name',
-                                ),
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Haas Grot Text Trial',
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    valueOrDefault<String>(
-                                      widget.proInfo?.profession?.name,
-                                      'Profession',
-                                    ),
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'Haas Grot Text Trial',
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText,
-                                          letterSpacing: 0.0,
-                                        ),
-                                  ),
-                                  Text(
-                                    valueOrDefault<String>(
-                                      widget.proInfo?.locationLabel,
-                                      'USA',
-                                    ),
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'Haas Grot Text Trial',
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText,
-                                          letterSpacing: 0.0,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ].divide(const SizedBox(height: 1.0)),
-                          ),
+                      const SizedBox(height: 2),
+                      Text(
+                        pro.profession?.name ?? '',
+                        style: LynewedTextStyles.bodySmall.copyWith(
+                          color: LynewedColors.textSecondary,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ].divide(const SizedBox(width: 14.0)),
+                    ],
                   ),
                 ),
-              ),
+                
+                // Image counter
+                if (images.length > 1)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: LynewedColors.surface,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '${_currentIndex + 1}/${images.length}',
+                      style: LynewedTextStyles.labelLarge.copyWith(
+                        color: LynewedColors.textPrimary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
