@@ -45,11 +45,11 @@ class ChatRoomNotifier extends ChangeNotifier {
   final ChatRepository _chatRepository;
   final ContactRepository _contactRepository;
 
-  // Initial context (passed from navigation)
-  final String? _otherProfileId;
-  final String? _otherFullName;
-  final String? _otherAvatarUrl;
-  final UserRole? _otherRole;
+  // Initial context (passed from navigation) - mutable to allow loading from DB
+  String? _otherProfileId;
+  String? _otherFullName;
+  String? _otherAvatarUrl;
+  UserRole? _otherRole;
   final bool _isPublicRoom;
   final String? _publicRoomTitle;
   String? _pendingRequestId;
@@ -93,6 +93,11 @@ class ChatRoomNotifier extends ChangeNotifier {
           firstMessageTextOnly: _firstMessageTextOnly,
         ));
         return;
+      }
+
+      // Load other participant info if not provided (fallback for edge cases)
+      if (!_isPublicRoom && _roomId.isNotEmpty && _otherFullName == null) {
+        await _loadOtherParticipantInfo();
       }
 
       final result = await _chatRepository.getMessages(roomId: _roomId);
@@ -161,6 +166,23 @@ class ChatRoomNotifier extends ChangeNotifier {
         _setupRealtimeMessages();
       }
     });
+  }
+
+  /// Load other participant info from the room (fallback for edge cases)
+  Future<void> _loadOtherParticipantInfo() async {
+    try {
+      final result = await _chatRepository.getOtherParticipantInfo(_roomId);
+      if (result.isSuccess && result.data != null) {
+        final info = result.data!;
+        _otherProfileId = info['id'] as String?;
+        _otherFullName = info['full_name'] as String?;
+        _otherAvatarUrl = info['avatar_url'] as String?;
+        final roleStr = info['role'] as String?;
+        _otherRole = roleStr != null ? UserRole.fromString(roleStr) : null;
+      }
+    } catch (e) {
+      // Silently fail - UI will show fallback "Conversation"
+    }
   }
 
   // ============================================================

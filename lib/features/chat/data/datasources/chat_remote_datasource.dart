@@ -263,6 +263,39 @@ class ChatRemoteDatasource {
   }
 
   // ============================================================
+  // ROOM INFO
+  // ============================================================
+
+  /// Get other participant info for a private room
+  /// Returns null if room not found or is public
+  Future<Map<String, dynamic>?> getOtherParticipantInfo(String roomId) async {
+    if (_currentUserId.isEmpty) return null;
+    
+    // Get all participants except current user with profile info
+    final response = await _client
+        .from('chat_room_participants')
+        .select('profile_id, profiles(id, full_name, avatar_url, role)')
+        .eq('room_id', roomId)
+        .neq('profile_id', _currentUserId);
+    
+    final participants = response as List<dynamic>;
+    if (participants.isEmpty) return null;
+
+    // Get first other participant (for private rooms there's only one)
+    final participant = participants.first as Map<String, dynamic>;
+    final profile = participant['profiles'] as Map<String, dynamic>?;
+    
+    if (profile == null) return null;
+
+    return {
+      'id': profile['id'] as String?,
+      'full_name': profile['full_name'] as String?,
+      'avatar_url': profile['avatar_url'] as String?,
+      'role': profile['role'] as String?,
+    };
+  }
+
+  // ============================================================
   // CONTACT CONTEXT
   // ============================================================
 

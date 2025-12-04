@@ -218,15 +218,46 @@ Future<void> handleNotificationRedirection(
       {
         // chatMessage: Ouvrir la conversation directement
         final roomId = (data['room_id'] as String?) ?? '';
+        final senderProfileId = (data['sender_profile_id'] as String?) ?? '';
+        
         if (roomId.isNotEmpty) {
-          SecureLogger.info('💬 chatMessage: Opening ChatDetailsPage with room_id=$roomId');
+          SecureLogger.info('💬 chatMessage: Opening ChatDetailsPage with room_id=$roomId, sender=$senderProfileId');
+          
+          // Récupérer les infos du sender pour afficher dans le header
+          String? senderFullName;
+          String? senderAvatarUrl;
+          String? senderRole;
+          
+          if (senderProfileId.isNotEmpty) {
+            try {
+              final senderProfile = await Supabase.instance.client
+                  .from('profiles')
+                  .select('full_name, avatar_url, role')
+                  .eq('id', senderProfileId)
+                  .maybeSingle();
+              
+              if (senderProfile != null) {
+                senderFullName = senderProfile['full_name'] as String?;
+                senderAvatarUrl = senderProfile['avatar_url'] as String?;
+                senderRole = senderProfile['role'] as String?;
+                SecureLogger.info('💬 chatMessage: Sender info loaded: $senderFullName');
+              }
+            } catch (e) {
+              SecureLogger.warning('chatMessage: Failed to load sender info: $e');
+            }
+          }
           
           // Marquer toutes les notifications non lues pour cette room comme lues
           await _markRoomNotificationsAsRead(roomId);
           
           router.pushNamed(
             'ChatDetailsPage',
-            queryParameters: {'roomId': roomId},
+            queryParameters: {
+              'roomId': roomId,
+              'otherProfileId': senderProfileId,
+              if (senderFullName != null) 'otherFullName': senderFullName,
+              if (senderAvatarUrl != null) 'otherAvatarUrl': senderAvatarUrl,
+            },
             extra: <String, dynamic>{
               kTransitionInfoKey: const TransitionInfo(
                 hasTransition: true,
@@ -335,15 +366,43 @@ Future<void> handleNotificationRedirection(
       {
         // connectionRequestAccepted: Pour les Pros - ouvrir la conversation si room_id disponible
         final roomId = (data['room_id'] as String?) ?? '';
-        SecureLogger.info('✅ connectionRequestAccepted: room_id=$roomId');
+        final brideProfileId = (data['bride_profile_id'] as String?) ?? '';
+        SecureLogger.info('✅ connectionRequestAccepted: room_id=$roomId, bride=$brideProfileId');
         
         if (roomId.isNotEmpty) {
+          // Récupérer les infos de la bride qui a accepté
+          String? brideFullName;
+          String? brideAvatarUrl;
+          
+          if (brideProfileId.isNotEmpty) {
+            try {
+              final brideProfile = await Supabase.instance.client
+                  .from('profiles')
+                  .select('full_name, avatar_url')
+                  .eq('id', brideProfileId)
+                  .maybeSingle();
+              
+              if (brideProfile != null) {
+                brideFullName = brideProfile['full_name'] as String?;
+                brideAvatarUrl = brideProfile['avatar_url'] as String?;
+                SecureLogger.info('✅ connectionRequestAccepted: Bride info loaded: $brideFullName');
+              }
+            } catch (e) {
+              SecureLogger.warning('connectionRequestAccepted: Failed to load bride info: $e');
+            }
+          }
+          
           // Marquer toutes les notifications non lues pour cette room comme lues
           await _markRoomNotificationsAsRead(roomId);
           
           router.pushNamed(
             'ChatDetailsPage',
-            queryParameters: {'roomId': roomId},
+            queryParameters: {
+              'roomId': roomId,
+              'otherProfileId': brideProfileId,
+              if (brideFullName != null) 'otherFullName': brideFullName,
+              if (brideAvatarUrl != null) 'otherAvatarUrl': brideAvatarUrl,
+            },
             extra: <String, dynamic>{
               kTransitionInfoKey: const TransitionInfo(
                 hasTransition: true,

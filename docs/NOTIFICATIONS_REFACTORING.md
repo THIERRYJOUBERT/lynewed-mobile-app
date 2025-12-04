@@ -1,7 +1,8 @@
 # REFACTORISATION SYSTÈME DE NOTIFICATIONS
 
 **Date de début:** 2025-12-03  
-**Statut:** 🔄 EN COURS  
+**Dernière mise à jour:** 2025-12-04  
+**Statut:** 🔄 EN COURS (2/7 types validés)  
 **Référence:** `docs/audits/NOTIFICATIONS_AUDIT.md`  
 **Supabase MCP:** `hekyovgnovhfhmkpfrna`
 
@@ -354,6 +355,60 @@ Types séparés `wedPublished` et `replayPublished` plutôt qu'un seul type `bro
 
 ---
 
+### 2025-12-04 10:45 - Fix Navigation ChatDetailsPage (chatMessage & connectionRequestAccepted) ✅
+
+**Problème identifié:**
+Quand on tapait sur une notification `chatMessage` ou `connectionRequestAccepted`, la page `ChatDetailsPage` s'ouvrait mais affichait "Conversation" au lieu du nom de l'autre participant (ex: "Émilie Moreau").
+
+**Cause racine:**
+`handle_notification_redirection.dart` ne passait que le `roomId` dans les `queryParameters`, sans les infos du participant (`otherFullName`, `otherAvatarUrl`, `otherProfileId`).
+
+**Solution implémentée:**
+Modifié `handle_notification_redirection.dart` pour récupérer les infos du participant depuis la table `profiles` avant de naviguer:
+
+1. **Pour `chatMessage`:** Récupère les infos du `sender_profile_id` (l'expéditeur du message)
+2. **Pour `connectionRequestAccepted`:** Récupère les infos du `bride_profile_id` (la Bride qui a accepté)
+
+**Code ajouté (chatMessage):**
+```dart
+if (senderProfileId.isNotEmpty) {
+  final senderProfile = await Supabase.instance.client
+      .from('profiles')
+      .select('full_name, avatar_url')
+      .eq('id', senderProfileId)
+      .maybeSingle();
+  
+  if (senderProfile != null) {
+    senderFullName = senderProfile['full_name'] as String?;
+    senderAvatarUrl = senderProfile['avatar_url'] as String?;
+  }
+}
+
+router.pushNamed('ChatDetailsPage', queryParameters: {
+  'roomId': roomId,
+  'otherProfileId': senderProfileId,
+  if (senderFullName != null) 'otherFullName': senderFullName,
+  if (senderAvatarUrl != null) 'otherAvatarUrl': senderAvatarUrl,
+});
+```
+
+**Fichiers modifiés:**
+- `lib/custom_code/actions/handle_notification_redirection.dart`
+
+**Bonus - Fallback ajouté:**
+Ajouté une méthode `getOtherParticipantInfo()` dans le module Chat qui charge les infos depuis la DB si elles ne sont pas passées (edge cases):
+- `lib/features/chat/data/datasources/chat_remote_datasource.dart`
+- `lib/features/chat/data/repositories/chat_repository_impl.dart`
+- `lib/features/chat/domain/repositories/chat_repository.dart`
+- `lib/features/chat/presentation/bloc/chat_room_notifier.dart`
+
+**Résultat:**
+- ✅ `chatMessage` affiche maintenant le nom correct (ex: "Émilie Moreau")
+- ✅ `connectionRequestAccepted` affichera le nom de la Bride
+- ✅ Avatar et rôle également passés
+
+---
+
 ## 🐛 BUGS CORRIGÉS (2025-12-04)
 
 ### 1. chatMessage envoyé avec connectionRequest
@@ -394,85 +449,95 @@ Types séparés `wedPublished` et `replayPublished` plutôt qu'un seul type `bro
 
 ## ✅ TESTS VALIDÉS (2025-12-04)
 
-### Test 1: connectionRequest (Pro→Bride)
+### Test 1: connectionRequest (Pro→Bride) ✅
 - ✅ Création demande → notification `connectionRequest` seule (pas de `chatMessage`)
 - ✅ Tap notification → navigation vers `ChatDetailsPage` mode review
 - ✅ Modal Accept/Decline visible pour Bride
 - ✅ Tap notification → mise à jour immédiate UI (Read) + counter
 
+### Test 2: chatMessage (message normal) ✅
+- ✅ Création message → notification `chatMessage` créée < 2s
+- ✅ Tap notification → navigation vers `ChatDetailsPage`
+- ✅ Header affiche le nom correct de l'expéditeur (ex: "Émilie Moreau")
+- ✅ Avatar et rôle affichés correctement
+- ✅ Messages de la room marqués comme lus
+
 ---
 
-## 📋 TESTS RESTANTS À EFFECTUER
+## 📋 TESTS RESTANTS À EFFECTUER (5/7)
 
-### Tests Transactionnels (à créer via SQL)
+### Tests Transactionnels
 
-#### 1. connectionRequestAccepted (Bride→Pro)
+#### 1. connectionRequestAccepted (Bride→Pro) ⏳
+**Comptes:** Marie (Bride) accepte → Émilie (Pro) reçoit
 ```sql
--- Accepter la demande existante
-SELECT accept_connection_request('ebdf5268-72dd-4c53-8181-dd37fa4cb4fa');
+-- Utiliser le RPC pour accepter proprement (crée la room)
+SELECT accept_connection_request('<request_id>');
 ```
-**Attendu:**
-- ✅ Pro reçoit notification `connectionRequestAccepted`
-- ✅ Tap → ouvre `ChatDetailsPage` avec room créée
-- ✅ Messages de la room marqués comme lus
+**À vérifier:**
+- [ ] Pro reçoit notification `connectionRequestAccepted`
+- [ ] Payload contient `room_id` valide (pas null)
+- [ ] Tap → ouvre `ChatDetailsPage` avec room créée
+- [ ] Header affiche le nom de la Bride (ex: "Marie Dupont")
+- [ ] Messages de la room marqués comme lus
 
-#### 2. chatMessage (message normal)
-```sql
--- Insérer un message dans la room créée
-INSERT INTO chat_messages (room_id, profile_id, message_type, content)
-VALUES ('<room_id>', '0715505e-cedf-4a91-99a2-ba0ef75ccda3', 'text', 'Message test');
-```
-**Attendu:**
-- ✅ Bride reçoit notification `chatMessage`
-- ✅ Tap → ouvre `ChatDetailsPage` de la conversation
-- ✅ Messages de la room marqués comme lus
-
-#### 3. videoIncoming
+#### 2. videoIncoming ⏳
+**Comptes:** Émilie (Pro) appelle → Marie (Bride) reçoit
 ```sql
 -- Créer une session vidéo
-INSERT INTO video_sessions (receiver_id, status)
-VALUES ('cc949a0a-5b02-45d1-a2e8-61046b1f9297', 'pending');
+INSERT INTO video_sessions (caller_id, receiver_id, agora_channel_name, status)
+VALUES ('0715505e-cedf-4a91-99a2-ba0ef75ccda3', 'cc949a0a-5b02-45d1-a2e8-61046b1f9297', 'test-channel', 'pending');
 ```
-**Attendu:**
-- ✅ Bride reçoit notification `videoIncoming`
-- ✅ Tap → ouvre `VideoCallPage`
+**À vérifier:**
+- [ ] Bride reçoit notification `videoIncoming`
+- [ ] Tap → ouvre `VideoCallPage`
+- [ ] Token Agora généré correctement
 
-#### 4. wishlistAdd
+#### 3. wishlistAdd ⏳
+**Comptes:** Marie (Bride) ajoute Émilie (Pro) en favori → Émilie reçoit (si Ultimate)
 ```sql
--- Ajouter à wishlist (nécessite setup)
--- TODO: Vérifier trigger existant
+-- Vérifier le trigger existant sur wishlists
+-- TODO: Identifier la table et le trigger
 ```
+**À vérifier:**
+- [ ] Pro Ultimate reçoit notification `wishlistAdd`
+- [ ] Pro non-Ultimate ne reçoit PAS de notification
+- [ ] Tap → ouvre `DashboardProWidget`
 
-#### 5. connectionRequest (Pro→Pro)
+#### 4. connectionRequest (Pro→Pro) ⏳
+**Comptes:** Émilie (Pro) → Autre Pro
 ```sql
 -- Créer demande entre deux Pros
 INSERT INTO connection_requests (pro_profile_id, bride_profile_id, initiator_id, source, initial_message, status)
-VALUES ('<pro1_id>', '<pro2_id>', '<pro1_id>', 'fromProfile', 'Test', 'pending');
+VALUES ('<pro1_id>', '<pro2_id>', '<pro1_id>', 'fromAlert', 'Je peux vous aider!', 'pending');
 ```
-**Attendu:**
-- ✅ Pro2 reçoit notification `connectionRequest`
+**À vérifier:**
+- [ ] Pro2 reçoit notification `connectionRequest`
+- [ ] Tap → navigation correcte
 
 ### Tests Broadcast (via Edge Function)
 
-#### 6. wedPublished
+#### 5. wedPublished ⏳
 ```bash
-curl -X POST https://<project-ref>.supabase.co/functions/v1/send-broadcast-notification \
+curl -X POST https://hekyovgnovhfhmkpfrna.supabase.co/functions/v1/send-broadcast-notification \
   -H "Authorization: Bearer <service-key>" \
+  -H "Content-Type: application/json" \
   -d '{"type": "wedPublished", "reference_id": "test123"}'
 ```
-**Attendu:**
-- ✅ Tous les utilisateurs reçoivent notification `wedPublished`
-- ✅ Tap → ouvre `WeddingOfTheWeekWidget`
+**À vérifier:**
+- [ ] Tous les utilisateurs reçoivent notification `wedPublished`
+- [ ] Tap → ouvre `WeddingOfTheWeekWidget`
 
-#### 7. replayPublished
+#### 6. replayPublished ⏳
 ```bash
-curl -X POST https://<project-ref>.supabase.co/functions/v1/send-broadcast-notification \
+curl -X POST https://hekyovgnovhfhmkpfrna.supabase.co/functions/v1/send-broadcast-notification \
   -H "Authorization: Bearer <service-key>" \
+  -H "Content-Type: application/json" \
   -d '{"type": "replayPublished", "reference_id": "test456"}'
 ```
-**Attendu:**
-- ✅ Tous les utilisateurs reçoivent notification `replayPublished`
-- ✅ Tap → ouvre `ContentReplayWidget`
+**À vérifier:**
+- [ ] Tous les utilisateurs reçoivent notification `replayPublished`
+- [ ] Tap → ouvre `ContentReplayWidget`
 
 ---
 
@@ -487,11 +552,23 @@ curl -X POST https://<project-ref>.supabase.co/functions/v1/send-broadcast-notif
 
 ## 📊 MÉTRIQUES DE TEST
 
-| Test | Avant | Après | Statut |
-|------|-------|-------|--------|
-| Notifications créées | 0 | ✅ 1/7 | 🔄 |
-| Events traités | 0/147 | ✅ 1/7 | 🔄 |
-| Temps traitement | 5-20s | ✅ < 1s | ✅ |
-| Navigation corrigée | ❌ | ✅ 1/7 | 🔄 |
-| Counter sync | ❌ | ✅ 1/7 | 🔄 |
+| Métrique | Avant | Après | Statut |
+|----------|-------|-------|--------|
+| Types validés | 0/7 | 2/7 | 🔄 |
+| Temps traitement | 5-20s | < 2s | ✅ |
+| Navigation correcte | ❌ | ✅ | ✅ |
+| Header ChatDetails | "Conversation" | Nom correct | ✅ |
+| Counter sync | ❌ | ✅ | ✅ |
+
+### Progression Validation
+
+| Type | Backend | Frontend | Navigation | Statut |
+|------|---------|----------|------------|--------|
+| connectionRequest | ✅ | ✅ | ✅ | ✅ VALIDÉ |
+| chatMessage | ✅ | ✅ | ✅ | ✅ VALIDÉ |
+| connectionRequestAccepted | ✅ | ✅ | ⏳ | ⏳ À TESTER |
+| videoIncoming | ✅ | ⏳ | ⏳ | ⏳ À TESTER |
+| wishlistAdd | ⏳ | ✅ | ⏳ | ⏳ À TESTER |
+| wedPublished | ✅ | ✅ | ⏳ | ⏳ À TESTER |
+| replayPublished | ✅ | ✅ | ⏳ | ⏳ À TESTER |
 

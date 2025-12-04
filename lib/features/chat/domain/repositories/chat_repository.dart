@@ -35,6 +35,10 @@ abstract class ChatRepository {
   /// Unarchive a conversation
   Future<ChatResult<void>> unarchiveConversation(String roomId);
 
+  /// Get other participant info for a private room
+  /// Returns map with: id, full_name, avatar_url, role
+  Future<ChatResult<Map<String, dynamic>?>> getOtherParticipantInfo(String roomId);
+
   // ============================================================
   // MESSAGES
   // ============================================================
