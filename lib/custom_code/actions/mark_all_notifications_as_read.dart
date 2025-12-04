@@ -1,6 +1,7 @@
 // Automatic FlutterFlow imports
 import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_util.dart';
 // Imports other custom actions
 // Imports custom functions
 // Begin custom action code
@@ -11,6 +12,12 @@ import '/backend/supabase/supabase.dart';
 Future<void> markAllNotificationsAsRead() async {
   try {
     await SupaFlow.client.rpc('mark_all_notifications_as_read');
+    
+    // Mettre à jour le counter immédiatement
+    FFAppState().update(() {
+      FFAppState().unreadNotificationsCount = 0;
+      FFAppState().hasUnreadNotifications = false;
+    });
   } catch (e) {
     debugPrint('Error marking all notifications as read: $e');
   }

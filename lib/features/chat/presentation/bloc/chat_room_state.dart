@@ -105,6 +105,7 @@ class ChatRoomLoaded extends ChatRoomState {
     bool? isLoadingMore,
     bool? isSending,
     String? pendingRequestId,
+    bool clearPendingRequestId = false, // Flag to explicitly clear pendingRequestId
     bool? viewerIsReviewer,
     bool? firstMessageTextOnly,
   }) {
@@ -120,7 +121,7 @@ class ChatRoomLoaded extends ChatRoomState {
       hasMoreMessages: hasMoreMessages ?? this.hasMoreMessages,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       isSending: isSending ?? this.isSending,
-      pendingRequestId: pendingRequestId ?? this.pendingRequestId,
+      pendingRequestId: clearPendingRequestId ? null : (pendingRequestId ?? this.pendingRequestId),
       viewerIsReviewer: viewerIsReviewer ?? this.viewerIsReviewer,
       firstMessageTextOnly: firstMessageTextOnly ?? this.firstMessageTextOnly,
     );
@@ -129,7 +130,7 @@ class ChatRoomLoaded extends ChatRoomState {
   /// Create a copy with cleared pending request (after accept/decline)
   ChatRoomLoaded clearPendingRequest() {
     return copyWith(
-      pendingRequestId: null,
+      clearPendingRequestId: true,
       viewerIsReviewer: false,
     );
   }

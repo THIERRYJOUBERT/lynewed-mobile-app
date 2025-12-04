@@ -354,6 +354,128 @@ Types séparés `wedPublished` et `replayPublished` plutôt qu'un seul type `bro
 
 ---
 
+## 🐛 BUGS CORRIGÉS (2025-12-04)
+
+### 1. chatMessage envoyé avec connectionRequest
+**Problème:** Quand une demande de contact était acceptée, un message initial était inséré, déclenchant une notification `chatMessage` en plus de `connectionRequestAccepted`.
+
+**Solution:** Modifié le trigger `outbox_on_chat_message()` pour ignorer les messages avec `created_at` > 5s dans le passé (messages initiaux de demandes).
+
+### 2. Navigation vers anciennes pages FlutterFlow
+**Problème:** Les notifications redirigeaient vers `ChatDetailsWidget` (FlutterFlow) au lieu de `ChatDetailsPage` (Clean Architecture).
+
+**Solution:** Ajouté la route `ChatDetailsPage` dans `nav.dart` et mis à jour `handle_notification_redirection.dart`.
+
+### 3. connectionRequest vers MessagesPage au lieu de ChatDetailsPage
+**Problème:** Le tap sur notification `connectionRequest` naviguait vers MessagesPage au lieu d'ouvrir la demande en mode review.
+
+**Solution:** Modifié `handle_notification_redirection.dart` pour récupérer les détails de la demande et naviguer vers `ChatDetailsPage` avec:
+- `pendingRequestId` = ID de la demande
+- `viewerIsReviewer = true` (mode review pour Bride)
+- `otherProfileId`, `otherFullName`, `otherAvatarUrl` = infos du Pro
+- `initialMessage` = message initial
+
+### 4. Tap notification ne met pas à jour l'UI
+**Problème:** Après tap, la notification restait "non lue" dans la liste.
+
+**Solution:** Ajouté mise à jour optimiste dans `NotificationsPage._handleNotificationTap()` pour marquer comme lu immédiatement dans l'UI.
+
+### 5. Mark All Read ne met pas à jour le counter
+**Problème:** `markAllNotificationsAsRead()` ne rafraîchissait pas le counter.
+
+**Solution:** Ajouté mise à jour immédiate de `FFAppState().unreadNotificationsCount = 0`.
+
+### 6. Warnings Flutter analyze
+**Problème:** Warnings `use_build_context_synchronously` et `prefer_const_constructors`.
+
+**Solution:** Ajouté `context.mounted` checks et `const` où nécessaire.
+
+---
+
+## ✅ TESTS VALIDÉS (2025-12-04)
+
+### Test 1: connectionRequest (Pro→Bride)
+- ✅ Création demande → notification `connectionRequest` seule (pas de `chatMessage`)
+- ✅ Tap notification → navigation vers `ChatDetailsPage` mode review
+- ✅ Modal Accept/Decline visible pour Bride
+- ✅ Tap notification → mise à jour immédiate UI (Read) + counter
+
+---
+
+## 📋 TESTS RESTANTS À EFFECTUER
+
+### Tests Transactionnels (à créer via SQL)
+
+#### 1. connectionRequestAccepted (Bride→Pro)
+```sql
+-- Accepter la demande existante
+SELECT accept_connection_request('ebdf5268-72dd-4c53-8181-dd37fa4cb4fa');
+```
+**Attendu:**
+- ✅ Pro reçoit notification `connectionRequestAccepted`
+- ✅ Tap → ouvre `ChatDetailsPage` avec room créée
+- ✅ Messages de la room marqués comme lus
+
+#### 2. chatMessage (message normal)
+```sql
+-- Insérer un message dans la room créée
+INSERT INTO chat_messages (room_id, profile_id, message_type, content)
+VALUES ('<room_id>', '0715505e-cedf-4a91-99a2-ba0ef75ccda3', 'text', 'Message test');
+```
+**Attendu:**
+- ✅ Bride reçoit notification `chatMessage`
+- ✅ Tap → ouvre `ChatDetailsPage` de la conversation
+- ✅ Messages de la room marqués comme lus
+
+#### 3. videoIncoming
+```sql
+-- Créer une session vidéo
+INSERT INTO video_sessions (receiver_id, status)
+VALUES ('cc949a0a-5b02-45d1-a2e8-61046b1f9297', 'pending');
+```
+**Attendu:**
+- ✅ Bride reçoit notification `videoIncoming`
+- ✅ Tap → ouvre `VideoCallPage`
+
+#### 4. wishlistAdd
+```sql
+-- Ajouter à wishlist (nécessite setup)
+-- TODO: Vérifier trigger existant
+```
+
+#### 5. connectionRequest (Pro→Pro)
+```sql
+-- Créer demande entre deux Pros
+INSERT INTO connection_requests (pro_profile_id, bride_profile_id, initiator_id, source, initial_message, status)
+VALUES ('<pro1_id>', '<pro2_id>', '<pro1_id>', 'fromProfile', 'Test', 'pending');
+```
+**Attendu:**
+- ✅ Pro2 reçoit notification `connectionRequest`
+
+### Tests Broadcast (via Edge Function)
+
+#### 6. wedPublished
+```bash
+curl -X POST https://<project-ref>.supabase.co/functions/v1/send-broadcast-notification \
+  -H "Authorization: Bearer <service-key>" \
+  -d '{"type": "wedPublished", "reference_id": "test123"}'
+```
+**Attendu:**
+- ✅ Tous les utilisateurs reçoivent notification `wedPublished`
+- ✅ Tap → ouvre `WeddingOfTheWeekWidget`
+
+#### 7. replayPublished
+```bash
+curl -X POST https://<project-ref>.supabase.co/functions/v1/send-broadcast-notification \
+  -H "Authorization: Bearer <service-key>" \
+  -d '{"type": "replayPublished", "reference_id": "test456"}'
+```
+**Attendu:**
+- ✅ Tous les utilisateurs reçoivent notification `replayPublished`
+- ✅ Tap → ouvre `ContentReplayWidget`
+
+---
+
 ## 🔍 EN CAS DE DOUTE
 
 1. **Consulter:** `docs/audits/NOTIFICATIONS_AUDIT.md`
@@ -367,8 +489,9 @@ Types séparés `wedPublished` et `replayPublished` plutôt qu'un seul type `bro
 
 | Test | Avant | Après | Statut |
 |------|-------|-------|--------|
-| Notifications créées | 0 | - | ⏳ |
-| Events traités | 0/147 | - | ⏳ |
-| Temps traitement | 5-20s | < 2s | ⏳ |
-| Push FCM reçus | ❌ | - | ⏳ |
+| Notifications créées | 0 | ✅ 1/7 | 🔄 |
+| Events traités | 0/147 | ✅ 1/7 | 🔄 |
+| Temps traitement | 5-20s | ✅ < 1s | ✅ |
+| Navigation corrigée | ❌ | ✅ 1/7 | 🔄 |
+| Counter sync | ❌ | ✅ 1/7 | 🔄 |
 

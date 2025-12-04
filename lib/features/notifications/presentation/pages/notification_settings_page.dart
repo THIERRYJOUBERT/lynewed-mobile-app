@@ -113,7 +113,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                   ? const Center(child: CircularProgressIndicator())
                   : _error != null
                       ? _buildError()
-                      : _buildSettingsList(visibleTypes, userRole),
+                      : _buildSettingsList(visibleTypes, userRole ?? UserRole.bride),
             ),
           ],
         ),
@@ -174,7 +174,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     );
   }
 
-  Widget _buildSettingsList(List<NotificationTypeConfig> types, UserRole userRole) {
+  Widget _buildSettingsList(List<NotificationTypeConfig> types, UserRole? userRole) {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: 16),
       itemCount: types.length,
@@ -191,7 +191,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     );
   }
 
-  Widget _buildSettingTile(NotificationTypeConfig config, UserRole userRole) {
+  Widget _buildSettingTile(NotificationTypeConfig config, UserRole? userRole) {
     final isEnabled = _settings[config.type] ?? true;
     
     return Padding(
@@ -211,7 +211,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  config.getDescription(userRole),
+                  config.getDescription(userRole ?? UserRole.bride),
                   style: LynewedTextStyles.bodySmall.copyWith(
                     color: LynewedColors.textSecondary,
                   ),

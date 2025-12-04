@@ -28,6 +28,7 @@ class ChatDetailsPage extends StatefulWidget {
     required this.roomId,
     this.isPublicRoom = false,
     this.pendingRequestId,
+    this.initialMessage,
     this.otherProfileId,
     this.otherFullName,
     this.otherAvatarUrl,
@@ -37,6 +38,8 @@ class ChatDetailsPage extends StatefulWidget {
     this.firstMessageTextOnly = false,
     this.conversationStatus,
     this.onUnblock,
+    this.onRequestAccepted,
+    this.onRequestDeclined,
   });
 
   /// Room ID
@@ -47,6 +50,9 @@ class ChatDetailsPage extends StatefulWidget {
 
   /// Pending contact request ID (for Pro→Bride flow)
   final String? pendingRequestId;
+
+  /// Initial message from the contact request (displayed as first message)
+  final String? initialMessage;
 
   /// Other participant's profile ID
   final String? otherProfileId;
@@ -74,6 +80,12 @@ class ChatDetailsPage extends StatefulWidget {
 
   /// Callback when user unblocks the conversation
   final Future<bool> Function()? onUnblock;
+
+  /// Callback when contact request is accepted (to refresh parent)
+  final VoidCallback? onRequestAccepted;
+
+  /// Callback when contact request is declined (to refresh parent)
+  final VoidCallback? onRequestDeclined;
 
   static const String routeName = 'ChatDetails';
   static const String routePath = '/chatDetails';
@@ -436,98 +448,77 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
     }
 
     if (state is ChatRoomLoaded) {
-      return Column(
-        children: [
-          // Contact request banner (if pending and viewer is reviewer)
-          if (state.isPendingRequest && state.viewerIsReviewer)
-            _buildContactRequestBanner(state),
-
-          // Messages list
-          Expanded(
-            child: MessageList(
-              state: state,
-              currentUserId: _currentUserId,
-              otherProfileName: widget.otherFullName,
-              otherProfileAvatarUrl: widget.otherAvatarUrl,
-              onLoadMore: () => _notifier.loadMoreMessages(),
-              onMessageLongPress: _handleMessageLongPress,
-              onImageTap: _handleImageTap,
-              getSignedUrl: (path) => _notifier.getSignedUrl(path),
-            ),
-          ),
-        ],
+      return MessageList(
+        state: state,
+        currentUserId: _currentUserId,
+        otherProfileName: widget.otherFullName,
+        otherProfileAvatarUrl: widget.otherAvatarUrl,
+        initialMessage: widget.initialMessage,
+        showInitialMessage: state.isPendingRequest && state.viewerIsReviewer,
+        onLoadMore: () => _notifier.loadMoreMessages(),
+        onMessageLongPress: _handleMessageLongPress,
+        onImageTap: _handleImageTap,
+        getSignedUrl: (path) => _notifier.getSignedUrl(path),
       );
     }
 
     return const SizedBox.shrink();
   }
 
-  Widget _buildContactRequestBanner(ChatRoomLoaded state) {
-    return Container(
-      padding: const EdgeInsets.all(LynewedSpacing.md),
-      decoration: const BoxDecoration(
-        color: LynewedColors.surface,
-        border: Border(
-          bottom: BorderSide(color: LynewedColors.border),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Contact Request',
-            style: LynewedTextStyles.titleSmall.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: LynewedSpacing.sm),
-          Text(
-            'This professional wants to contact you. Accept to start the conversation.',
-            style: LynewedTextStyles.bodySmall.copyWith(
-              color: LynewedColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: LynewedSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: _handleDeclineRequest,
-                  style: LynewedComponentStyles.secondaryButton(),
-                  child: const Text('Decline'),
-                ),
-              ),
-              const SizedBox(width: LynewedSpacing.md),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _handleAcceptRequest,
-                  style: LynewedComponentStyles.primaryButton(),
-                  child: const Text('Accept'),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+  bool _isAccepting = false;
+  bool _isDeclining = false;
 
   Future<void> _handleAcceptRequest() async {
+    if (_isAccepting) return;
+    
+    setState(() => _isAccepting = true);
+    
     final roomId = await _notifier.acceptContactRequest();
-    if (roomId != null && mounted) {
+    
+    if (!mounted) return;
+    
+    setState(() => _isAccepting = false);
+    
+    if (roomId != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Request accepted'),
+          content: Text('Request accepted - You can now chat!'),
           backgroundColor: LynewedColors.success,
+        ),
+      );
+      // Notify parent to refresh
+      widget.onRequestAccepted?.call();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error accepting request'),
+          backgroundColor: LynewedColors.error,
         ),
       );
     }
   }
 
   Future<void> _handleDeclineRequest() async {
+    if (_isDeclining) return;
+    
+    setState(() => _isDeclining = true);
+    
     final success = await _notifier.declineContactRequest();
-    if (success && mounted) {
+    
+    if (!mounted) return;
+    
+    if (success) {
+      // Notify parent to refresh before popping
+      widget.onRequestDeclined?.call();
       Navigator.of(context).pop();
+    } else {
+      setState(() => _isDeclining = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error declining request'),
+          backgroundColor: LynewedColors.error,
+        ),
+      );
     }
   }
 
@@ -597,6 +588,11 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
         loadedState.isPendingRequest &&
         !loadedState.viewerIsReviewer;
 
+    // Check if pending request and viewer IS the reviewer (Bride reviewing Pro request)
+    final isPendingReview = loadedState != null &&
+        loadedState.isPendingRequest &&
+        loadedState.viewerIsReviewer;
+
     // Check if conversation is blocked
     final isBlocked = widget.conversationStatus == ConversationStatus.blocked;
 
@@ -604,6 +600,12 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
       return _buildUnblockBar();
     }
 
+    // Bride reviewing a contact request - show Accept/Decline buttons
+    if (isPendingReview) {
+      return _buildContactRequestBar();
+    }
+
+    // Pro waiting for Bride response
     if (isPendingWait) {
       return Container(
         padding: const EdgeInsets.all(LynewedSpacing.md),
@@ -636,6 +638,71 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
       onSendAudio: ({required filePath, required fileName}) =>
           _notifier.sendAudioMessage(filePath: filePath, fileName: fileName),
       onSendingComplete: () => _notifier.markSendingComplete(),
+    );
+  }
+
+  /// Build the Accept/Decline bar for Bride reviewing a contact request
+  Widget _buildContactRequestBar() {
+    return Container(
+      padding: const EdgeInsets.all(LynewedSpacing.md),
+      decoration: const BoxDecoration(
+        color: LynewedColors.surface,
+        border: Border(
+          top: BorderSide(color: LynewedColors.border),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: OutlinedButton(
+                  onPressed: _isDeclining ? null : _handleDeclineRequest,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: LynewedColors.textPrimary,
+                    side: const BorderSide(color: LynewedColors.border),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                  ),
+                  child: _isDeclining
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: LynewedColors.textSecondary,
+                          ),
+                        )
+                      : const Text('Decline'),
+                ),
+              ),
+            ),
+            const SizedBox(width: LynewedSpacing.md),
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: _isAccepting ? null : _handleAcceptRequest,
+                  style: LynewedComponentStyles.primaryButton(),
+                  child: _isAccepting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: LynewedColors.textOnPrimary,
+                          ),
+                        )
+                      : const Text('Accept'),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

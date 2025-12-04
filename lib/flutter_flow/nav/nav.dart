@@ -10,6 +10,9 @@ import '/auth/base_auth_user_provider.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
 import '/index.dart';
+import '/features/notifications/presentation/pages/notifications_page.dart';
+import '/features/notifications/presentation/pages/notification_settings_page.dart';
+import '/features/chat/presentation/pages/chat_details_page.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -162,7 +165,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: NotificationSettingsWidget.routeName,
           path: NotificationSettingsWidget.routePath,
-          builder: (context, params) => const NotificationSettingsWidget(),
+          builder: (context, params) => const NotificationSettingsPage(),
         ),
         FFRoute(
           name: PreferenceWidget.routeName,
@@ -336,7 +339,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: NotificationsPageWidget.routeName,
           path: NotificationsPageWidget.routePath,
-          builder: (context, params) => const NotificationsPageWidget(),
+          builder: (context, params) => const NotificationsPage(),
         ),
         FFRoute(
           name: PublicProProfileViewWidget.routeName,
@@ -370,6 +373,28 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               structBuilder: ProDetailsStruct.fromSerializableMap,
             ),
           ),
+        ),
+        // ChatDetailsPage - Clean Architecture (nouvelle page)
+        FFRoute(
+          name: 'ChatDetailsPage',
+          path: '/chatDetailsPage',
+          builder: (context, params) {
+            // Récupérer initialMessage depuis extra si présent
+            final extra = params.state.extra as Map<String, dynamic>?;
+            final initialMessage = extra?['initialMessage'] as String?;
+            
+            return ChatDetailsPage(
+              roomId: params.getParam('roomId', ParamType.String) ?? '',
+              isPublicRoom: params.getParam('isPublicRoom', ParamType.bool) ?? false,
+              pendingRequestId: params.getParam('pendingRequestId', ParamType.String),
+              initialMessage: initialMessage,
+              otherProfileId: params.getParam('otherProfileId', ParamType.String),
+              otherFullName: params.getParam('otherFullName', ParamType.String),
+              otherAvatarUrl: params.getParam('otherAvatarUrl', ParamType.String),
+              viewerIsReviewer: params.getParam('viewerIsReviewer', ParamType.bool) ?? false,
+              firstMessageTextOnly: params.getParam('firstMessageTextOnly', ParamType.bool) ?? false,
+            );
+          },
         )
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );

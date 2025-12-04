@@ -21,6 +21,8 @@ class MessageList extends StatefulWidget {
     this.getSignedUrl,
     this.otherProfileName,
     this.otherProfileAvatarUrl,
+    this.initialMessage,
+    this.showInitialMessage = false,
   });
 
   /// Current state from ChatRoomNotifier
@@ -46,6 +48,12 @@ class MessageList extends StatefulWidget {
 
   /// Other participant's avatar URL (for private rooms)
   final String? otherProfileAvatarUrl;
+
+  /// Initial message from contact request (displayed as first message)
+  final String? initialMessage;
+
+  /// Whether to show the initial message (only for pending requests)
+  final bool showInitialMessage;
 
   @override
   State<MessageList> createState() => _MessageListState();
@@ -133,8 +141,12 @@ class _MessageListState extends State<MessageList> {
   @override
   Widget build(BuildContext context) {
     final messages = widget.state.messages;
+    final hasInitialMessage = widget.showInitialMessage && 
+        widget.initialMessage != null && 
+        widget.initialMessage!.isNotEmpty;
 
-    if (messages.isEmpty) {
+    // Show empty state only if no messages AND no initial message to show
+    if (messages.isEmpty && !hasInitialMessage) {
       return _buildEmptyState();
     }
 
@@ -160,19 +172,25 @@ class _MessageListState extends State<MessageList> {
             controller: _scrollController,
             reverse: true, // Newest messages at bottom
             padding: const EdgeInsets.symmetric(vertical: LynewedSpacing.md),
-            itemCount: messages.length,
+            // Add 1 to count if we have an initial message to show
+            itemCount: messages.length + (hasInitialMessage ? 1 : 0),
             itemBuilder: (context, index) {
+              // If we have an initial message, it's the "oldest" message (last in reversed list)
+              if (hasInitialMessage && index == messages.length) {
+                return _buildInitialMessageBubble();
+              }
+
               final message = messages[index];
               final isOwnMessage = message.profileId == widget.currentUserId;
 
               // Check if we need to show date separator
-              final showDateSeparator = _shouldShowDateSeparator(index);
+              final showDateSeparator = _shouldShowDateSeparator(index, hasInitialMessage);
 
               // Check if we should show avatar (only for last message in a sender group)
-              final showAvatar = _shouldShowAvatar(index);
+              final showAvatar = _shouldShowAvatar(index, hasInitialMessage);
 
               // Check if this message needs 30px spacing (different sender above)
-              final needsLargeSpacing = _needsLargeSpacing(index);
+              final needsLargeSpacing = _needsLargeSpacing(index, hasInitialMessage);
 
               return Column(
                 children: [
@@ -185,6 +203,68 @@ class _MessageListState extends State<MessageList> {
           ),
         ),
       ],
+    );
+  }
+
+  /// Build the initial message bubble from contact request
+  Widget _buildInitialMessageBubble() {
+    return Padding(
+      padding: const EdgeInsets.only(
+        left: LynewedSpacing.md,
+        right: LynewedSpacing.xl * 2, // More space on right for received messages
+        bottom: LynewedSpacing.sm,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          // Avatar
+          Container(
+            width: 32,
+            height: 32,
+            margin: const EdgeInsets.only(right: LynewedSpacing.sm),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: LynewedColors.surface,
+              border: Border.all(color: LynewedColors.border),
+            ),
+            child: widget.otherProfileAvatarUrl != null
+                ? ClipOval(
+                    child: Image.network(
+                      widget.otherProfileAvatarUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.person,
+                        size: 16,
+                        color: LynewedColors.textSecondary,
+                      ),
+                    ),
+                  )
+                : const Icon(
+                    Icons.person,
+                    size: 16,
+                    color: LynewedColors.textSecondary,
+                  ),
+          ),
+          // Message bubble
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: LynewedSpacing.md,
+                vertical: LynewedSpacing.sm,
+              ),
+              decoration: BoxDecoration(
+                color: LynewedColors.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: LynewedColors.border),
+              ),
+              child: Text(
+                widget.initialMessage!,
+                style: LynewedTextStyles.bodyMedium,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -221,8 +301,14 @@ class _MessageListState extends State<MessageList> {
     );
   }
 
-  bool _shouldShowDateSeparator(int index) {
+  bool _shouldShowDateSeparator(int index, bool hasInitialMessage) {
     final messages = widget.state.messages;
+    
+    // If this is the last real message and there's an initial message after it
+    if (index == messages.length - 1 && hasInitialMessage) {
+      return true; // Show separator before initial message
+    }
+    
     if (index == messages.length - 1) return true; // Always show for oldest
 
     final currentMessage = messages[index];
@@ -242,13 +328,22 @@ class _MessageListState extends State<MessageList> {
     return currentDate != previousDate;
   }
 
-  bool _shouldShowAvatar(int index) {
+  bool _shouldShowAvatar(int index, bool hasInitialMessage) {
     final messages = widget.state.messages;
     
     // Always show for the last message (oldest, which is at bottom of reversed list)
-    if (index == messages.length - 1) return true;
+    // But if there's an initial message, the last real message is not the oldest
+    if (index == messages.length - 1 && !hasInitialMessage) return true;
 
     final currentMessage = messages[index];
+    
+    // If this is the last real message and there's an initial message after it
+    // The initial message is from the "other" person, so check if current is from same sender
+    if (index == messages.length - 1 && hasInitialMessage) {
+      // Initial message is from other person (not current user)
+      return currentMessage.profileId == widget.currentUserId;
+    }
+    
     final nextMessage = messages[index + 1]; // Next in list = older in time
 
     // Show avatar if the next older message is from a different sender
@@ -273,11 +368,18 @@ class _MessageListState extends State<MessageList> {
   /// 
   /// So we need 30px spacing when the message ABOVE us (older = index + 1) 
   /// is from a different sender.
-  bool _needsLargeSpacing(int index) {
+  bool _needsLargeSpacing(int index, bool hasInitialMessage) {
     final messages = widget.state.messages;
     
     // Last message in list (oldest, at top of screen) - no spacing above it
-    if (index == messages.length - 1) return false;
+    // Unless there's an initial message, then we need to check
+    if (index == messages.length - 1 && !hasInitialMessage) return false;
+    
+    // If this is the last real message and there's an initial message
+    if (index == messages.length - 1 && hasInitialMessage) {
+      // Initial message is from other person, so if current is from current user, need spacing
+      return messages[index].profileId == widget.currentUserId;
+    }
     
     final currentMessage = messages[index];
     final olderMessage = messages[index + 1]; // Older message = visually above

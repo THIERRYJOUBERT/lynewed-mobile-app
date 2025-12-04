@@ -159,9 +159,10 @@ class NotificationTypesConfig {
 
   /// Retourne les types de notifications visibles pour l'utilisateur.
   static List<NotificationTypeConfig> getVisibleTypes({
-    required UserRole role,
+    required UserRole? role,
     SubscriptionTierType? subscriptionTier,
   }) {
+    if (role == null) return [];
     return all.where((config) => config.isVisibleFor(
       role: role,
       subscriptionTier: subscriptionTier,

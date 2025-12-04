@@ -13,6 +13,8 @@ import '/backend/supabase/supabase.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/custom_code/actions/index.dart' as actions;
 
+// ignore_for_file: use_build_context_synchronously
+
 Future<void> handleNotificationRedirection(
   BuildContext context,
   dynamic data,
@@ -43,6 +45,7 @@ Future<void> handleNotificationRedirection(
     }
   }
 
+  if (!context.mounted) return;
   final router = GoRouter.of(context);
   final userRole = FFAppState().currentUserRole;
   SecureLogger.debugSanitized(
@@ -120,6 +123,7 @@ Future<void> handleNotificationRedirection(
 
             if (fallback == null) {
               SecureLogger.warning('No active video session found (fallback)');
+              if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Call expired or already ended'),
@@ -143,6 +147,7 @@ Future<void> handleNotificationRedirection(
           // Vérifier que la session n'est pas déjà "completed" (initiateur a raccroché)
           if (currentStatus == 'completed') {
             SecureLogger.warning('Session already completed by initiator');
+            if (!context.mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Call already ended by the other person'),
@@ -161,6 +166,7 @@ Future<void> handleNotificationRedirection(
               await actions.getAgoraTokenAction(channelName, currentUserUid);
 
           if (token == null || token.isEmpty) {
+            if (!context.mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
@@ -197,6 +203,7 @@ Future<void> handleNotificationRedirection(
           );
         } catch (e) {
           SecureLogger.error('Error joining video call', error: e);
+          if (!context.mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Error joining call: ${e.toString()}'),
@@ -212,9 +219,13 @@ Future<void> handleNotificationRedirection(
         // chatMessage: Ouvrir la conversation directement
         final roomId = (data['room_id'] as String?) ?? '';
         if (roomId.isNotEmpty) {
-          SecureLogger.info('💬 chatMessage: Opening ChatDetails with room_id=$roomId');
+          SecureLogger.info('💬 chatMessage: Opening ChatDetailsPage with room_id=$roomId');
+          
+          // Marquer toutes les notifications non lues pour cette room comme lues
+          await _markRoomNotificationsAsRead(roomId);
+          
           router.pushNamed(
-            'ChatDetails',
+            'ChatDetailsPage',
             queryParameters: {'roomId': roomId},
             extra: <String, dynamic>{
               kTransitionInfoKey: const TransitionInfo(
@@ -227,9 +238,9 @@ Future<void> handleNotificationRedirection(
         } else {
           SecureLogger.warning('chatMessage: No room_id, falling back to Messages page');
           if (userRole == UserRole.professional) {
-            router.pushNamed('MessagesPro');
+            router.pushNamed('MessagesProWidget');
           } else {
-            router.pushNamed('MessagesBrides');
+            router.pushNamed('MessagesBridesWidget');
           }
         }
         break;
@@ -237,16 +248,85 @@ Future<void> handleNotificationRedirection(
 
     case 'connectionRequest':
       {
-        // connectionRequest: Pour les Brides - aller vers la page Messages (section demandes)
-        // Le request_id est dans le payload pour référence future
+        // connectionRequest: Pour les Brides - ouvrir ChatDetailsPage en mode demande de contact
         final requestId = (data['request_id'] as String?) ?? '';
-        SecureLogger.info('📩 connectionRequest: request_id=$requestId');
+        final senderProfileId = (data['sender_profile_id'] as String?) ?? '';
+        SecureLogger.info('📩 connectionRequest: request_id=$requestId, sender=$senderProfileId');
         
-        // Naviguer vers la page Messages - les demandes sont visibles dans la section dédiée
-        if (userRole == UserRole.professional) {
-          router.pushNamed('MessagesPro');
-        } else {
-          router.pushNamed('MessagesBrides');
+        if (requestId.isEmpty) {
+          SecureLogger.warning('connectionRequest: No request_id, falling back to Messages page');
+          if (userRole == UserRole.professional) {
+            router.pushNamed('MessagesProWidget');
+          } else {
+            router.pushNamed('MessagesBridesWidget');
+          }
+          break;
+        }
+        
+        try {
+          // Récupérer les détails de la demande et du Pro
+          final requestData = await SupaFlow.client
+              .from('connection_requests')
+              .select('id, initial_message, pro_profile_id, status')
+              .eq('id', requestId)
+              .maybeSingle();
+          
+          if (requestData == null || requestData['status'] != 'pending') {
+            SecureLogger.warning('connectionRequest: Request not found or not pending');
+            if (userRole == UserRole.professional) {
+              router.pushNamed('MessagesProWidget');
+            } else {
+              router.pushNamed('MessagesBridesWidget');
+            }
+            break;
+          }
+          
+          final proProfileId = requestData['pro_profile_id'] as String?;
+          final initialMessage = requestData['initial_message'] as String?;
+          
+          // Récupérer les infos du Pro
+          String? proFullName;
+          String? proAvatarUrl;
+          if (proProfileId != null) {
+            final proData = await SupaFlow.client
+                .from('profiles')
+                .select('full_name, avatar_url')
+                .eq('id', proProfileId)
+                .maybeSingle();
+            proFullName = proData?['full_name'] as String?;
+            proAvatarUrl = proData?['avatar_url'] as String?;
+          }
+          
+          if (!context.mounted) return;
+          
+          // Naviguer vers ChatDetailsPage en mode demande de contact
+          // roomId vide car pas encore de room, pendingRequestId pour le mode review
+          router.pushNamed(
+            'ChatDetailsPage',
+            queryParameters: {
+              'roomId': '', // Pas de room encore
+              'pendingRequestId': requestId,
+              'viewerIsReviewer': 'true',
+              'otherProfileId': proProfileId ?? '',
+              'otherFullName': proFullName ?? '',
+              'otherAvatarUrl': proAvatarUrl ?? '',
+            },
+            extra: <String, dynamic>{
+              'initialMessage': initialMessage,
+              kTransitionInfoKey: const TransitionInfo(
+                hasTransition: true,
+                transitionType: PageTransitionType.fade,
+                duration: Duration(milliseconds: 0),
+              ),
+            },
+          );
+        } catch (e) {
+          SecureLogger.error('connectionRequest: Error fetching request details', error: e);
+          if (userRole == UserRole.professional) {
+            router.pushNamed('MessagesProWidget');
+          } else {
+            router.pushNamed('MessagesBridesWidget');
+          }
         }
         break;
       }
@@ -258,8 +338,11 @@ Future<void> handleNotificationRedirection(
         SecureLogger.info('✅ connectionRequestAccepted: room_id=$roomId');
         
         if (roomId.isNotEmpty) {
+          // Marquer toutes les notifications non lues pour cette room comme lues
+          await _markRoomNotificationsAsRead(roomId);
+          
           router.pushNamed(
-            'ChatDetails',
+            'ChatDetailsPage',
             queryParameters: {'roomId': roomId},
             extra: <String, dynamic>{
               kTransitionInfoKey: const TransitionInfo(
@@ -272,9 +355,9 @@ Future<void> handleNotificationRedirection(
         } else {
           // Fallback vers la page Messages
           if (userRole == UserRole.professional) {
-            router.pushNamed('MessagesPro');
+            router.pushNamed('MessagesProWidget');
           } else {
-            router.pushNamed('MessagesBrides');
+            router.pushNamed('MessagesBridesWidget');
           }
         }
         break;
@@ -288,7 +371,7 @@ Future<void> handleNotificationRedirection(
         SecureLogger.info('💖 wishlistAdd: bride_profile_id=$brideProfileId');
         
         // Naviguer vers le Dashboard Pro où la wishlist est visible
-        router.pushNamed('DashboardPro');
+        router.pushNamed('DashboardProWidget');
         break;
       }
 
@@ -301,7 +384,7 @@ Future<void> handleNotificationRedirection(
         SecureLogger.info('💒 wedPublished: reference_id=$referenceId, link=$link');
         
         // Naviguer vers la page Wedding of the Week
-        router.pushNamed('WeddingOfTheWeek');
+        router.pushNamed('WeddingOfTheWeekWidget');
         break;
       }
 
@@ -313,7 +396,7 @@ Future<void> handleNotificationRedirection(
         SecureLogger.info('🎬 replayPublished: reference_id=$referenceId, link=$link');
         
         // Naviguer vers la page des Replays
-        router.pushNamed('ContentReplay');
+        router.pushNamed('ContentReplayWidget');
         break;
       }
 
@@ -330,13 +413,14 @@ Future<void> handleNotificationRedirection(
         SecureLogger.info('📢 broadcast: link=$link');
         
         if (link.isNotEmpty) {
+          if (!context.mounted) return;
           _handleDeepLink(context, router, link, userRole);
         } else {
           // Fallback vers home si pas de deep link
           if (userRole == UserRole.professional) {
-            router.pushNamed('DashboardPro');
+            router.pushNamed('DashboardProWidget');
           } else {
-            router.pushNamed('HomeBrides');
+            router.pushNamed('HomeBridesWidget');
           }
         }
         break;
@@ -347,9 +431,9 @@ Future<void> handleNotificationRedirection(
         SecureLogger.warning('Unknown notification type: $type');
         // Fallback vers la page d'accueil appropriée
         if (userRole == UserRole.professional) {
-          router.pushNamed('DashboardPro');
+          router.pushNamed('DashboardProWidget');
         } else {
-          router.pushNamed('HomeBrides');
+          router.pushNamed('HomeBridesWidget');
         }
         break;
       }
@@ -358,11 +442,42 @@ Future<void> handleNotificationRedirection(
 
 /// Gère les deep links au format lynewed://[page]
 /// Utilisé par les notifications broadcast de l'Admin Panel
+/// Marque toutes les notifications non lues pour une room comme lues
+Future<void> _markRoomNotificationsAsRead(String roomId) async {
+  try {
+    final client = SupaFlow.client;
+    final currentUserId = client.auth.currentUser?.id;
+    if (currentUserId == null) return;
+    
+    // Récupérer les notifications non lues pour cette room
+    final notifications = await client
+        .from('notifications')
+        .select('id')
+        .eq('profile_id', currentUserId)
+        .eq('is_read', false)
+        .or('payload->>room_id.eq.$roomId,payload->>message_room_id.eq.$roomId');
+    
+    if ((notifications as List).isEmpty) return;
+    
+    // Marquer chaque notification comme lue
+    for (final notif in notifications) {
+      final notifId = notif['id'] as String?;
+      if (notifId != null) {
+        await actions.markNotificationAsRead(notifId);
+      }
+    }
+    
+    SecureLogger.debug('Marked ${notifications.length} room notifications as read for room: $roomId');
+  } catch (e) {
+    SecureLogger.error('Failed to mark room notifications as read', error: e);
+  }
+}
+
 void _handleDeepLink(
   BuildContext context,
   GoRouter router,
   String link,
-  UserRole userRole,
+  UserRole? userRole,
 ) {
   final uri = Uri.tryParse(link);
   if (uri == null || uri.scheme != 'lynewed') {
@@ -378,42 +493,42 @@ void _handleDeepLink(
   switch (page) {
     case 'home':
       if (userRole == UserRole.professional) {
-        router.pushNamed('DashboardPro');
+        router.pushNamed('DashboardProWidget');
       } else {
-        router.pushNamed('HomeBrides');
+        router.pushNamed('HomeBridesWidget');
       }
       break;
     case 'wedding':
-      router.pushNamed('WeddingOfTheWeek');
+      router.pushNamed('WeddingOfTheWeekWidget');
       break;
     case 'replays':
-      router.pushNamed('ContentReplay');
+      router.pushNamed('ContentReplayWidget');
       break;
     case 'feed':
-      router.pushNamed('Feed');
+      router.pushNamed('FeedBridesWidget');
       break;
     case 'profile':
-      router.pushNamed('ProfileBridesAndPro');
+      router.pushNamed('ProfileBridesAndProWidget');
       break;
     case 'settings':
-      router.pushNamed('Settings');
+      router.pushNamed('PreferenceWidget');
       break;
     case 'chat':
       if (userRole == UserRole.professional) {
-        router.pushNamed('MessagesPro');
+        router.pushNamed('MessagesProWidget');
       } else {
-        router.pushNamed('MessagesBrides');
+        router.pushNamed('MessagesBridesWidget');
       }
       break;
     case 'notifications':
-      router.pushNamed('NotificationsPage');
+      router.pushNamed('NotificationsPageWidget');
       break;
     default:
       SecureLogger.warning('Unknown deep link page: $page');
       if (userRole == UserRole.professional) {
-        router.pushNamed('DashboardPro');
+        router.pushNamed('DashboardProWidget');
       } else {
-        router.pushNamed('HomeBrides');
+        router.pushNamed('HomeBridesWidget');
       }
   }
 }

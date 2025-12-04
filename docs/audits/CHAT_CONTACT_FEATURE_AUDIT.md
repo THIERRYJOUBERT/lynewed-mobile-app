@@ -1331,7 +1331,88 @@ chat_backup_2025-12-02/
 
 ---
 
+## 🐛 BUGS CORRIGÉS
+
+### 1. Chat Contact Request Flow - ✅ RÉSOLU (2025-12-04)
+
+#### Symptômes observés
+- Message initial non affiché dans ChatDetailsPage
+- Snackbar d'erreur sur Accept mais conversation créée partiellement
+- Demande persistante en "pending" après Accept
+
+#### Causes racines identifiées
+
+##### 1. **ChatRoomNotifier** - Gestion incorrecte des pending requests
+- **Problème**: `loadMessages()` essayait de charger des messages avec un `requestId` au lieu d'un `roomId`
+- **Impact**: Erreur "No messages" pour les demandes en attente
+
+##### 2. **ChatRoomState.copyWith()** - Impossible de mettre `pendingRequestId` à null
+- **Problème**: `pendingRequestId ?? this.pendingRequestId` ne permettait pas de passer explicitement à null
+- **Impact**: L'état pending ne se nettoyait pas après Accept/Decline
+
+##### 3. **_roomId immutable** - Pas de mise à jour après Accept
+- **Problème**: `_roomId` était `final`, impossible de mettre à jour avec le nouveau roomId après accept
+- **Impact**: Le notifier restait avec l'ancien requestId
+
+##### 4. **Backend RPC** - Type mismatch dans `accept_connection_request`
+- **Problème**: `v_message_id uuid` mais `chat_messages.id` est `bigint`
+- **Impact**: Erreur 400 lors de l'insertion du message initial
+
+#### Solutions appliquées
+
+##### Frontend
+```dart
+// ChatRoomNotifier.loadMessages()
+if (_pendingRequestId != null && _viewerIsReviewer) {
+  // Cas spécial: ne pas charger les messages, émettre état vide
+  _emit(ChatRoomLoaded(messages: const [], ...));
+  return;
+}
+
+// ChatRoomState.copyWith()
+bool clearPendingRequestId = false;
+pendingRequestId: clearPendingRequestId ? null : (pendingRequestId ?? this.pendingRequestId);
+
+// _roomId mutable
+String _roomId; // était final
+
+// acceptContactRequest() complet
+final newRoomId = result.data!;
+_roomId = newRoomId;
+await _loadMessagesAfterAccept(newRoomId);
+```
+
+##### Backend
+```sql
+-- Migration: fix_accept_connection_request_message_id_type
+CREATE OR REPLACE FUNCTION public.accept_connection_request(p_request_id uuid)
+...
+DECLARE
+  v_message_id bigint;  -- Corrigé: était uuid, maintenant bigint
+...
+```
+
+#### Fichiers modifiés
+- `lib/features/chat/presentation/bloc/chat_room_notifier.dart`
+  - Gestion spéciale pending requests dans `loadMessages()`
+  - `_roomId` mutable, méthode `_loadMessagesAfterAccept()`
+  - Flow complet dans `acceptContactRequest()`
+- `lib/features/chat/presentation/bloc/chat_room_state.dart`
+  - Flag `clearPendingRequestId` dans `copyWith()`
+- `lib/features/chat/data/datasources/chat_remote_datasource.dart`
+  - Logging debug pour `acceptContactRequest()`
+- Supabase Migration `fix_accept_connection_request_message_id_type`
+
+#### Validation
+- ✅ Message initial affiché correctement
+- ✅ Accept fonctionne sans erreur, crée la conversation
+- ✅ Decline fonctionne, retour à MessagesPage
+- ✅ Demande supprimée de "pending" après traitement
+- ✅ Chatbar active après Accept
+
+---
+
 **Document rédigé le:** 2025-12-02  
-**Dernière mise à jour:** 2025-12-03 17:50  
-**Statut:** ✅ MODULE CHAT COMPLET. UX Block/Report terminée. 🔴 PROCHAINE PRIORITÉ: Investigation notifications in-app.  
+**Dernière mise à jour:** 2025-12-04 10:23  
+**Statut:** ✅ MODULE CHAT COMPLET. Contact Request Flow corrigé et validé. 🔴 PROCHAINE PRIORITÉ: Investigation notifications in-app.  
 **Prochaine étape:** Audit système de notifications (triggers, tables, page)

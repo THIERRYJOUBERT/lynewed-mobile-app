@@ -41,7 +41,7 @@ class ChatRoomNotifier extends ChangeNotifier {
         _viewerIsReviewer = viewerIsReviewer,
         _firstMessageTextOnly = firstMessageTextOnly;
 
-  final String _roomId;
+  String _roomId; // Mutable to allow updating after accept
   final ChatRepository _chatRepository;
   final ContactRepository _contactRepository;
 
@@ -75,6 +75,26 @@ class ChatRoomNotifier extends ChangeNotifier {
     _emit(const ChatRoomLoading());
 
     try {
+      // Special case: Pending contact request being reviewed by Bride
+      // The room doesn't exist yet, so don't try to load messages or setup realtime
+      if (_pendingRequestId != null && _viewerIsReviewer) {
+        _emit(ChatRoomLoaded(
+          messages: const [],
+          roomId: _roomId, // This is actually the request ID, will be updated after accept
+          otherProfileId: _otherProfileId,
+          otherFullName: _otherFullName,
+          otherAvatarUrl: _otherAvatarUrl,
+          otherRole: _otherRole,
+          isPublicRoom: _isPublicRoom,
+          publicRoomTitle: _publicRoomTitle,
+          hasMoreMessages: false,
+          pendingRequestId: _pendingRequestId,
+          viewerIsReviewer: _viewerIsReviewer,
+          firstMessageTextOnly: _firstMessageTextOnly,
+        ));
+        return;
+      }
+
       final result = await _chatRepository.getMessages(roomId: _roomId);
 
       if (result.isFailure) {
@@ -371,6 +391,7 @@ class ChatRoomNotifier extends ChangeNotifier {
   // ============================================================
 
   /// Accept a pending contact request (Bride action)
+  /// Returns the new room ID on success, null on failure
   Future<String?> acceptContactRequest() async {
     final currentState = _state;
     if (currentState is! ChatRoomLoaded) return null;
@@ -381,16 +402,58 @@ class ChatRoomNotifier extends ChangeNotifier {
         currentState.pendingRequestId!,
       );
 
-      if (result.isSuccess) {
-        // Clear pending request state
+      if (result.isSuccess && result.data != null) {
+        final newRoomId = result.data!;
+        
+        // Update internal state
         _pendingRequestId = null;
-        _emit(currentState.clearPendingRequest());
-        return result.data;
+        _roomId = newRoomId;
+        
+        // Emit updated state with new roomId and cleared pending request
+        _emit(currentState.copyWith(
+          roomId: newRoomId,
+          clearPendingRequestId: true,
+          viewerIsReviewer: false,
+        ));
+        
+        // Load messages from the new room (which includes the initial message)
+        await _loadMessagesAfterAccept(newRoomId);
+        
+        return newRoomId;
       }
 
       return null;
     } catch (e) {
+      debugPrint('ChatRoomNotifier.acceptContactRequest error: $e');
       return null;
+    }
+  }
+
+  /// Load messages after accepting a contact request
+  Future<void> _loadMessagesAfterAccept(String roomId) async {
+    try {
+      final result = await _chatRepository.getMessages(roomId: roomId);
+      
+      if (result.isSuccess) {
+        final messages = result.data ?? [];
+        final currentState = _state;
+        
+        if (currentState is ChatRoomLoaded) {
+          _emit(currentState.copyWith(
+            messages: messages,
+            roomId: roomId,
+            hasMoreMessages: messages.length >= 50,
+          ));
+        }
+        
+        // Mark room as read
+        await _chatRepository.markRoomAsRead(roomId);
+        
+        // Setup realtime subscription for new messages
+        _setupRealtimeMessages();
+      }
+    } catch (e) {
+      debugPrint('ChatRoomNotifier._loadMessagesAfterAccept error: $e');
     }
   }
 

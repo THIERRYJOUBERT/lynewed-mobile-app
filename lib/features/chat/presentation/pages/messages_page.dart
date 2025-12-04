@@ -20,7 +20,6 @@ import '../widgets/contact_request_avatar.dart';
 import '../widgets/conversation_tile.dart';
 import '../widgets/empty_state_widget.dart';
 import '../sheets/conversation_actions_sheet.dart';
-import '../sheets/contact_request_review_sheet.dart';
 import '../sheets/blocked_users_sheet.dart'; // ArchivedSheet
 import 'chat_details_page.dart';
 
@@ -154,31 +153,36 @@ class _MessagesPageState extends State<MessagesPage> {
       return;
     }
 
-    // Show review sheet for Bride
-    final result = await ContactRequestReviewSheet.show(
-      context: context,
-      request: request,
-      onAccept: () => _notifier.acceptRequest(request.id),
-      onDecline: () => _notifier.declineRequest(request.id),
+    // Navigate to ChatDetailsPage for Bride to review the request
+    // The page will show the initial message and Accept/Decline buttons in the chatbar
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChatDetailsPage(
+          roomId: request.id, // Use request ID as temporary room ID
+          isPublicRoom: false,
+          pendingRequestId: request.id,
+          initialMessage: request.initialMessage,
+          otherProfileId: request.proProfileId,
+          otherFullName: request.otherFullName,
+          otherAvatarUrl: request.otherAvatarUrl,
+          otherRole: request.otherRole,
+          viewerIsReviewer: true,
+          onRequestAccepted: () {
+            // Refresh conversations when returning
+            _notifier.refresh();
+          },
+          onRequestDeclined: () {
+            // Refresh conversations when returning
+            _notifier.refresh();
+          },
+        ),
+      ),
     );
-
-    if (!mounted) return;
-
-    if (result == ContactRequestReviewResult.accepted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Request accepted from ${request.otherFullName}'),
-          backgroundColor: LynewedColors.primary,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } else if (result == ContactRequestReviewResult.declined) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Request declined'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    
+    // Refresh when returning from chat details
+    if (mounted) {
+      _notifier.refresh();
     }
   }
 

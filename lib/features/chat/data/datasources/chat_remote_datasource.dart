@@ -332,17 +332,25 @@ class ChatRemoteDatasource {
 
   /// Accept a contact request
   Future<String> acceptContactRequest(String requestId) async {
+    debugPrint('ChatRemoteDatasource.acceptContactRequest: requestId=$requestId');
+    
     final response = await _client.rpc(
       'accept_connection_request',
       params: {'p_request_id': requestId},
     );
 
+    debugPrint('ChatRemoteDatasource.acceptContactRequest: response=$response');
+    
     final result = response as Map<String, dynamic>;
     if (result['status'] != 'ok') {
-      throw Exception(result['reason'] ?? 'Unknown error');
+      final reason = result['reason'] ?? 'Unknown error';
+      debugPrint('ChatRemoteDatasource.acceptContactRequest: ERROR reason=$reason');
+      throw Exception(reason);
     }
 
-    return result['roomId'] as String;
+    final roomId = result['roomId'] as String;
+    debugPrint('ChatRemoteDatasource.acceptContactRequest: SUCCESS roomId=$roomId');
+    return roomId;
   }
 
   /// Decline a contact request

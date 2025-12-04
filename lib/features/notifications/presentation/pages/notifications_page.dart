@@ -44,7 +44,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       final notifications = await actions.getNotificationsAction();
       
       setState(() {
-        _notifications = notifications?.reversed.toList() ?? [];
+        _notifications = notifications.reversed.toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -61,8 +61,26 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   Future<void> _handleNotificationTap(AppNotificationStruct notification) async {
-    // Marquer comme lu
+    // Marquer comme lu immédiatement dans l'UI
     if (notification.notificationId.isNotEmpty) {
+      // Mise à jour optimiste de l'UI
+      setState(() {
+        final index = _notifications.indexWhere(
+          (n) => n.notificationId == notification.notificationId,
+        );
+        if (index != -1) {
+          _notifications[index] = AppNotificationStruct(
+            notificationId: notification.notificationId,
+            notificationType: notification.notificationType,
+            title: notification.title,
+            message: notification.message,
+            isRead: true, // Marquer comme lu
+            createdAt: notification.createdAt,
+          );
+        }
+      });
+      
+      // Marquer comme lu en backend
       await actions.markNotificationAsRead(notification.notificationId);
     }
 
@@ -181,7 +199,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               color: LynewedColors.error,
             ),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               'Failed to load notifications',
               style: LynewedTextStyles.bodyLarge,
             ),
@@ -203,7 +221,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            const Icon(
               Icons.notifications_none,
               size: 64,
               color: LynewedColors.gray200,
@@ -223,7 +241,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   Widget _buildNotificationsList() {
     return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       itemCount: _notifications.length,
       separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
