@@ -124,6 +124,11 @@ class ChatRoomNotifier extends ChangeNotifier {
         firstMessageTextOnly: _firstMessageTextOnly,
       ));
 
+      // Load author profiles for public rooms
+      if (_isPublicRoom && messages.isNotEmpty) {
+        await _loadAuthorsForMessages(messages);
+      }
+
       // Mark room as read
       await _chatRepository.markRoomAsRead(_roomId);
 
@@ -154,6 +159,11 @@ class ChatRoomNotifier extends ChangeNotifier {
     final updatedMessages = [message, ...currentState.messages];
     _emit(currentState.copyWith(messages: updatedMessages));
 
+    // Load author profile for public rooms if not cached
+    if (_isPublicRoom && !currentState.authors.containsKey(message.profileId)) {
+      _loadAuthorsForMessages([message]);
+    }
+
     // Mark as read since user is viewing
     _chatRepository.markRoomAsRead(_roomId);
   }
@@ -182,6 +192,48 @@ class ChatRoomNotifier extends ChangeNotifier {
       }
     } catch (e) {
       // Silently fail - UI will show fallback "Conversation"
+    }
+  }
+
+  /// Load author profiles for public room messages
+  Future<void> _loadAuthorsForMessages(List<ChatMessage> messages) async {
+    final currentState = _state;
+    if (currentState is! ChatRoomLoaded) return;
+
+    // Get unique profile IDs that we don't have yet
+    final existingAuthors = currentState.authors;
+    final profileIds = <String>{};
+    for (final msg in messages) {
+      if (!existingAuthors.containsKey(msg.profileId)) {
+        profileIds.add(msg.profileId);
+      }
+    }
+
+    if (profileIds.isEmpty) return;
+
+    try {
+      final result = await _chatRepository.getProfilesInfo(profileIds.toList());
+      if (result.isFailure || result.data == null) return;
+
+      final newAuthors = Map<String, AuthorInfo>.from(existingAuthors);
+      for (final profile in result.data!) {
+        final id = profile['id'] as String?;
+        if (id != null) {
+          newAuthors[id] = AuthorInfo(
+            profileId: id,
+            fullName: profile['full_name'] as String? ?? 'User',
+            avatarUrl: profile['avatar_url'] as String?,
+          );
+        }
+      }
+
+      // Update state with new authors
+      final updatedState = _state;
+      if (updatedState is ChatRoomLoaded) {
+        _emit(updatedState.copyWith(authors: newAuthors));
+      }
+    } catch (e) {
+      debugPrint('Error loading authors: $e');
     }
   }
 

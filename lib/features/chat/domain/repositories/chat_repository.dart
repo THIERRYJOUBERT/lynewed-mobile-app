@@ -39,6 +39,10 @@ abstract class ChatRepository {
   /// Returns map with: id, full_name, avatar_url, role
   Future<ChatResult<Map<String, dynamic>?>> getOtherParticipantInfo(String roomId);
 
+  /// Get profiles info for multiple profile IDs (for public rooms)
+  /// Returns list of maps with: id, full_name, avatar_url
+  Future<ChatResult<List<Map<String, dynamic>>>> getProfilesInfo(List<String> profileIds);
+
   // ============================================================
   // MESSAGES
   // ============================================================

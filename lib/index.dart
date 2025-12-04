@@ -35,8 +35,7 @@ export '/features/map/presentation/pages/map_pro_large_wrapper.dart'
 export '/pages/onboarding/onboarding_brides_wizard/onboarding_brides_wizard_widget.dart'
     show OnboardingBridesWizardWidget;
 export '/pages/shared/support/support_widget.dart' show SupportWidget;
-export '/pages/shared/chat_details/chat_details_widget.dart'
-    show ChatDetailsWidget;
+// ChatDetailsWidget removed - use ChatDetailsPage from features/chat instead
 export '/pages/shared/content_replay/content_replay_widget.dart'
     show ContentReplayWidget;
 export '/pages/shared/replay_player_page/replay_player_page_widget.dart'

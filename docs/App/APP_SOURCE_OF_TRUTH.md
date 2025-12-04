@@ -2,7 +2,7 @@
 
 **Document créé:** 2025-11-26  
 **Objectif:** Documentation complète de l'application - architecture, flux, bugs critiques et apprentissages  
-**Version:** v1.4
+**Version:** v1.5
 
 ## 📋 **Version History**
 - **v1.4 (2025-12-01):** 🎉 Module Map 100% complet - Clean Architecture, Design System, 63 tests passants

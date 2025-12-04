@@ -9,6 +9,7 @@ import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/index.dart';
 import '/features/chat/presentation/pages/messages_page.dart';
+import '/features/chat/presentation/pages/chat_details_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/scheduler.dart';
@@ -327,33 +328,28 @@ class _HomeBridesWidgetState extends State<HomeBridesWidget> {
                                             itemPublicSalonItem.roomId,
                                           );
                                           if (_model.joinSuccess == true) {
-                                            context.pushNamed(
-                                              ChatDetailsWidget.routeName,
-                                              queryParameters: {
-                                                'roomId': serializeParam(
-                                                  itemPublicSalonItem.roomId,
-                                                  ParamType.String,
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                builder: (context) => ChatDetailsPage(
+                                                  roomId: itemPublicSalonItem.roomId,
+                                                  isPublicRoom: true,
+                                                  publicRoomTitle: itemPublicSalonItem.title,
+                                                  publicRoomCoverUrl: itemPublicSalonItem.coverImageUrl,
                                                 ),
-                                                'isPublic': serializeParam(
-                                                  true,
-                                                  ParamType.bool,
-                                                ),
-                                                'isRoomEmpty': serializeParam(
-                                                  false,
-                                                  ParamType.bool,
-                                                ),
-                                                'firstMessageTextOnly':
-                                                    serializeParam(
-                                                  false,
-                                                  ParamType.bool,
-                                                ),
-                                                'viewerIsReviewer':
-                                                    serializeParam(
-                                                  false,
-                                                  ParamType.bool,
-                                                ),
-                                              }.withoutNulls,
-                                            );
+                                              ),
+                                            ).then((_) async {
+                                              // Refresh public rooms when returning from chat
+                                              // This updates the participant count in real-time
+                                              if (mounted) {
+                                                final refreshed = await actions.getPublicChatRoomsForBridesAction();
+                                                if (refreshed != null && mounted) {
+                                                  _model.psPublicRooms = refreshed.items
+                                                      .toList()
+                                                      .cast<PublicChatRoomItemStruct>();
+                                                  safeSetState(() {});
+                                                }
+                                              }
+                                            });
                                           } else {
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(

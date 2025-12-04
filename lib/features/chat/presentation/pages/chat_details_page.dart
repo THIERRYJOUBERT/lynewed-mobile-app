@@ -10,6 +10,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '/core/design/design.dart';
 import '/core/services/unread_counter_service.dart';
 import '/backend/schema/enums/enums.dart' show PermissionType;
+import '/backend/schema/enums/enums.dart' as app_enums show UserRole;
+import '/app_state.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart' show VideoCallPageWidget;
@@ -34,6 +36,7 @@ class ChatDetailsPage extends StatefulWidget {
     this.otherAvatarUrl,
     this.otherRole,
     this.publicRoomTitle,
+    this.publicRoomCoverUrl,
     this.viewerIsReviewer = false,
     this.firstMessageTextOnly = false,
     this.conversationStatus,
@@ -68,6 +71,9 @@ class ChatDetailsPage extends StatefulWidget {
 
   /// Public room title (if public)
   final String? publicRoomTitle;
+
+  /// Public room cover image URL (if public)
+  final String? publicRoomCoverUrl;
 
   /// Whether current user is the reviewer (Bride reviewing Pro request)
   final bool viewerIsReviewer;
@@ -194,8 +200,8 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
           ),
           const SizedBox(width: 4),
 
-          // Avatar
-          _buildHeaderAvatar(isPublic, displayAvatarUrl),
+          // Avatar - use cover image for public rooms
+          _buildHeaderAvatar(isPublic, isPublic ? widget.publicRoomCoverUrl : displayAvatarUrl),
           const SizedBox(width: LynewedSpacing.sm),
 
           // Name and role/status
@@ -238,16 +244,24 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
   }
 
   Widget _buildHeaderAvatar(bool isPublic, String? avatarUrl) {
-    final imageUrl = isPublic ? null : avatarUrl;
+    // Use the avatarUrl directly (can be cover image for public rooms)
+    final imageUrl = avatarUrl;
     const double avatarSize = 44.0;
     const double imageSize = 40.0; // Slightly smaller to prevent crop
+
+    // Fallback icon based on room type
+    final fallbackIcon = Icon(
+      isPublic ? Icons.groups : Icons.person,
+      size: 20,
+      color: isPublic ? LynewedColors.textOnPrimary : LynewedColors.textSecondary,
+    );
 
     return Container(
       width: avatarSize,
       height: avatarSize,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: LynewedColors.surface,
+        color: isPublic ? LynewedColors.surface.withOpacity(0.2) : LynewedColors.surface,
         border: Border.all(
           color: isPublic ? LynewedColors.textOnPrimary : LynewedColors.border,
           width: 1,
@@ -262,26 +276,12 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
                   child: CachedNetworkImage(
                     imageUrl: imageUrl,
                     fit: BoxFit.cover,
-                    placeholder: (_, __) => const Icon(
-                      Icons.person,
-                      size: 20,
-                      color: LynewedColors.textSecondary,
-                    ),
-                    errorWidget: (_, __, ___) => const Icon(
-                      Icons.person,
-                      size: 20,
-                      color: LynewedColors.textSecondary,
-                    ),
+                    placeholder: (_, __) => fallbackIcon,
+                    errorWidget: (_, __, ___) => fallbackIcon,
                   ),
                 ),
               )
-            : Icon(
-                isPublic ? Icons.groups : Icons.person,
-                size: 20,
-                color: isPublic
-                    ? LynewedColors.textOnPrimary
-                    : LynewedColors.textSecondary,
-              ),
+            : fallbackIcon,
       ),
     );
   }
@@ -578,9 +578,17 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
     final state = _notifier.state;
     final isLoaded = state is ChatRoomLoaded;
 
-    // Disable composer for public rooms if user is not a bride
-    // This logic would need to check user role
-    final isEnabled = isLoaded && !widget.isPublicRoom;
+    // For public rooms, only brides can write
+    // For private rooms, always enabled when loaded
+    bool isEnabled;
+    if (widget.isPublicRoom) {
+      // Public rooms: enabled only for brides
+      final currentUserRole = FFAppState().currentUserRole;
+      isEnabled = isLoaded && currentUserRole == app_enums.UserRole.bride;
+    } else {
+      // Private rooms: always enabled when loaded
+      isEnabled = isLoaded;
+    }
 
     // Check if pending request and viewer is not reviewer (Pro waiting for response)
     final loadedState = isLoaded ? state : null;

@@ -1,8 +1,8 @@
 # Chat & Contact Feature Audit
 
 **Document créé:** 2025-12-02  
-**Version:** v1.5 (Module Complet)  
-**Dernière mise à jour:** 2025-12-03 15:30  
+**Version:** v1.6 (Public Rooms Fixes)  
+**Dernière mise à jour:** 2025-12-04 17:15  
 **Objectif:** Audit complet du module Chat & Contact pour préparer la refactorisation Clean Architecture
 
 ---
@@ -67,6 +67,133 @@
   - `chat_enums.dart`: `displayLabel` traduits EN
   - `contact_request_avatar.dart`: Labels "Waiting"/"New"
   - `chat_remote_datasource.dart`: Parsing `{items: [...]}` corrigé
+
+## 🏛️ PUBLIC CHAT ROOMS - CORRECTIONS COMPLÈTES (2025-12-04 17:15) ✅
+
+### 1. Text Input Field Fix ✅
+**Problème:** Le composer était désactivé pour tous les salons publics
+**Solution:** Vérification du rôle utilisateur dans `ChatDetailsPage._buildComposer()`:
+```dart
+if (widget.isPublicRoom) {
+  // Public rooms: enabled only for brides
+  final currentUserRole = FFAppState().currentUserRole;
+  isEnabled = isLoaded && currentUserRole == app_enums.UserRole.bride;
+}
+```
+**Fichiers modifiés:**
+- `lib/features/chat/presentation/pages/chat_details_page.dart`
+
+### 2. Cover Images in Header ✅
+**Problème:** Les salons publics n'affichaient pas d'image dans le header
+**Solution:** 
+- Ajout paramètre `publicRoomCoverUrl` à `ChatDetailsPage`
+- Correction de `_buildHeaderAvatar()` pour utiliser l'image de couverture
+- Images ajoutées en base de données pour les 3 salons publics
+
+**Fichiers modifiés:**
+- `lib/features/chat/presentation/pages/chat_details_page.dart`
+- `lib/pages/bride/home_brides/home_brides_widget.dart`
+- Base de données: `public_chat_rooms.cover_image_url`
+
+### 3. Author Avatars System - Architecture Complete ✅
+**Problème:** Les messages des autres brides n'avaient pas d'avatar/nom dans les salons publics
+
+**Architecture ajoutée:**
+
+#### a) AuthorInfo Entity - Why This Pattern?
+**Raison:** Les salons publics ont plusieurs participants (contrairement aux salons privés avec un seul `otherParticipant`). Ce pattern permet de:
+- Cacher les profils des auteurs pour éviter les requêtes N+1
+- Charger les informations en batch après récupération des messages
+- Maintenir une séparation claire entre auteurs (public) et autre participant (privé)
+
+```dart
+class AuthorInfo {
+  final String profileId;
+  final String fullName;
+  final String? avatarUrl;
+}
+```
+
+**Migration:** Pour ajouter des champs supplémentaires:
+1. Mettre à jour `AuthorInfo` class
+2. Mettre à jour query `getProfilesInfo` dans le datasource
+
+#### b) Cache dans ChatRoomLoaded
+```dart
+final Map<String, AuthorInfo> authors;
+AuthorInfo? getAuthor(String profileId) => authors[profileId];
+```
+
+#### c) Loading System
+- `_loadAuthorsForMessages()` - Charge les profils en batch
+- Appelé après chargement initial ET pour nouveaux messages en temps réel
+- Utilise nouvelle méthode `getProfilesInfo()` dans repository
+
+#### d) Repository Pattern
+- Interface: `ChatRepository.getProfilesInfo(List<String> profileIds)`
+- Implémentation: `ChatRepositoryImpl.getProfilesInfo()`
+- Datasource: `ChatRemoteDatasource.getProfilesInfo()` - Query Supabase
+
+#### e) UI Integration
+`MessageList._buildMessageBubble()` utilise le cache:
+```dart
+if (widget.state.isPublicRoom) {
+  final author = widget.state.getAuthor(message.profileId);
+  senderName = author?.fullName;
+  senderAvatarUrl = author?.avatarUrl;
+}
+```
+
+**Fichiers modifiés:**
+- `lib/features/chat/presentation/bloc/chat_room_state.dart`
+- `lib/features/chat/presentation/bloc/chat_room_notifier.dart`
+- `lib/features/chat/domain/repositories/chat_repository.dart`
+- `lib/features/chat/data/repositories/chat_repository_impl.dart`
+- `lib/features/chat/data/datasources/chat_remote_datasource.dart`
+- `lib/features/chat/presentation/widgets/message_list.dart`
+
+### 4. MessagesPage Filtering ✅
+**Problème:** Les salons publics apparaissaient dans MessagesPage (réservé aux discussions 1-1 privées)
+**Décision de design:** MessagesPage = conversations privées uniquement, HomeBridesWidget = salons publics uniquement
+
+**Solution:** Filtrage dans `ChatRemoteDatasource.getConversations()`:
+```dart
+return items
+    .map((item) => Conversation.fromMap(item as Map<String, dynamic>))
+    .where((conv) => !conv.isPublic)
+    .toList();
+```
+
+**Performance:** Le filtrage côté client évite de modifier la RPC backend qui est utilisée par d'autres parties du système
+
+**Fichiers modifiés:**
+- `lib/features/chat/data/datasources/chat_remote_datasource.dart`
+
+### 5. Real-time Participant Counter ✅
+**Fonctionnalité:** Le compteur de participants se met à jour quand une bride envoie un message
+**Implémentation:**
+- Navigation dans `HomeBridesWidget` avec callback `.then()`
+- Recharge automatique des salons publics au retour du chat
+- La RPC `get_public_chat_rooms_for_brides` compte déjà les participants uniques
+
+**Fichiers modifiés:**
+- `lib/pages/bride/home_brides/home_brides_widget.dart`
+
+### Architecture Impact Summary
+- **State Management:** Ajout cache auteurs pour salons publics
+- **Repository Pattern:** Extension avec méthode batch profiles
+- **Real-time:** Loading auteurs pour nouveaux messages
+- **UI:** Header unifié, avatars fonctionnels, filtrage MessagesPage
+- **Database:** Images de couverture ajoutées aux salons publics
+
+### UX Final State
+- ✅ Brides peuvent écrire dans les salons publics
+- ✅ Header affiche image de couverture du salon
+- ✅ Messages des autres brides montrent avatar et nom
+- ✅ MessagesPage n'affiche que les conversations privées 1-1
+- ✅ Compteur participants mis à jour en temps réel
+
+---
 
 ### UX Block/Report - RÉORGANISATION TERMINÉE (2025-12-03 17:45) ✅
 - **Problème résolu**: Block action déplacée de MessageActionsSheet vers ConversationActionsSheet

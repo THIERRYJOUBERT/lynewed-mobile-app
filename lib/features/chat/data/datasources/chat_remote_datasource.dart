@@ -23,7 +23,7 @@ class ChatRemoteDatasource {
   // CONVERSATIONS
   // ============================================================
 
-  /// Get all conversations for current user
+  /// Get all private conversations for current user (excludes public rooms)
   /// RPC returns: { items: [...] }
   Future<List<Conversation>> getConversations() async {
     final response = await _client.rpc('get_rooms_with_unread_counts');
@@ -34,8 +34,10 @@ class ChatRemoteDatasource {
     final Map<String, dynamic> data = response as Map<String, dynamic>;
     final List<dynamic> items = data['items'] as List<dynamic>? ?? [];
     
+    // Filter out public rooms - MessagesPage only shows private 1-1 conversations
     return items
         .map((item) => Conversation.fromMap(item as Map<String, dynamic>))
+        .where((conv) => !conv.isPublic)
         .toList();
   }
 
@@ -293,6 +295,20 @@ class ChatRemoteDatasource {
       'avatar_url': profile['avatar_url'] as String?,
       'role': profile['role'] as String?,
     };
+  }
+
+  /// Get profiles info for multiple profile IDs (for public rooms)
+  Future<List<Map<String, dynamic>>> getProfilesInfo(List<String> profileIds) async {
+    if (profileIds.isEmpty) return [];
+
+    final response = await _client
+        .from('profiles')
+        .select('id, full_name, avatar_url')
+        .inFilter('id', profileIds);
+
+    return (response as List<dynamic>)
+        .map((item) => item as Map<String, dynamic>)
+        .toList();
   }
 
   // ============================================================

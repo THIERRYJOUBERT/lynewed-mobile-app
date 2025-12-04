@@ -413,12 +413,28 @@ class _MessageListState extends State<MessageList> {
     // Use cached signed URL (synchronous) - triggers async load if not cached
     final signedUrl = _getCachedSignedUrl(message.attachmentUrl);
     
+    // For public rooms, get author info from state cache
+    String? senderName;
+    String? senderAvatarUrl;
+    if (!isOwnMessage) {
+      if (widget.state.isPublicRoom) {
+        // Public room: get author from cache
+        final author = widget.state.getAuthor(message.profileId);
+        senderName = author?.fullName;
+        senderAvatarUrl = author?.avatarUrl;
+      } else {
+        // Private room: use other participant info
+        senderName = widget.otherProfileName;
+        senderAvatarUrl = widget.otherProfileAvatarUrl;
+      }
+    }
+    
     return MessageBubble(
       key: ValueKey('message_${message.id}_${signedUrl != null}'),
       message: message,
       isOwnMessage: isOwnMessage,
-      senderName: isOwnMessage ? null : widget.otherProfileName,
-      senderAvatarUrl: isOwnMessage ? null : widget.otherProfileAvatarUrl,
+      senderName: senderName,
+      senderAvatarUrl: senderAvatarUrl,
       showAvatar: showAvatar,
       needsLargeSpacing: needsLargeSpacing,
       signedMediaUrl: signedUrl,

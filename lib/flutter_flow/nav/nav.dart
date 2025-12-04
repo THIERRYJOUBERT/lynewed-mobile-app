@@ -202,40 +202,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: SupportWidget.routePath,
           builder: (context, params) => const SupportWidget(),
         ),
-        FFRoute(
-          name: ChatDetailsWidget.routeName,
-          path: ChatDetailsWidget.routePath,
-          builder: (context, params) => ChatDetailsWidget(
-            roomId: params.getParam(
-              'roomId',
-              ParamType.String,
-            ),
-            isPublic: params.getParam(
-              'isPublic',
-              ParamType.bool,
-            ),
-            requestId: params.getParam(
-              'requestId',
-              ParamType.String,
-            ),
-            otherProfileId: params.getParam(
-              'otherProfileId',
-              ParamType.String,
-            ),
-            isRoomEmpty: params.getParam(
-              'isRoomEmpty',
-              ParamType.bool,
-            ),
-            firstMessageTextOnly: params.getParam(
-              'firstMessageTextOnly',
-              ParamType.bool,
-            ),
-            viewerIsReviewer: params.getParam(
-              'viewerIsReviewer',
-              ParamType.bool,
-            ),
-          ),
-        ),
+        // ChatDetailsWidget route removed - use ChatDetailsPage from features/chat instead
         FFRoute(
           name: ContentReplayWidget.routeName,
           path: ContentReplayWidget.routePath,

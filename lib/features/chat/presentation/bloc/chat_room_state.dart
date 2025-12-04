@@ -22,6 +22,19 @@ class ChatRoomLoading extends ChatRoomState {
   const ChatRoomLoading();
 }
 
+/// Author info for public room messages
+class AuthorInfo {
+  const AuthorInfo({
+    required this.profileId,
+    required this.fullName,
+    this.avatarUrl,
+  });
+
+  final String profileId;
+  final String fullName;
+  final String? avatarUrl;
+}
+
 /// Loaded state with messages and room info
 class ChatRoomLoaded extends ChatRoomState {
   const ChatRoomLoaded({
@@ -39,6 +52,7 @@ class ChatRoomLoaded extends ChatRoomState {
     this.pendingRequestId,
     this.viewerIsReviewer = false,
     this.firstMessageTextOnly = false,
+    this.authors = const {},
   });
 
   /// List of messages (newest first)
@@ -83,6 +97,12 @@ class ChatRoomLoaded extends ChatRoomState {
   /// Whether first message must be text only
   final bool firstMessageTextOnly;
 
+  /// Authors cache for public rooms (profileId -> AuthorInfo)
+  final Map<String, AuthorInfo> authors;
+
+  /// Get author info for a profile ID (public rooms)
+  AuthorInfo? getAuthor(String profileId) => authors[profileId];
+
   /// Get oldest message ID for pagination
   int? get oldestMessageId => messages.isNotEmpty ? messages.last.id : null;
 
@@ -108,6 +128,7 @@ class ChatRoomLoaded extends ChatRoomState {
     bool clearPendingRequestId = false, // Flag to explicitly clear pendingRequestId
     bool? viewerIsReviewer,
     bool? firstMessageTextOnly,
+    Map<String, AuthorInfo>? authors,
   }) {
     return ChatRoomLoaded(
       messages: messages ?? this.messages,
@@ -124,6 +145,7 @@ class ChatRoomLoaded extends ChatRoomState {
       pendingRequestId: clearPendingRequestId ? null : (pendingRequestId ?? this.pendingRequestId),
       viewerIsReviewer: viewerIsReviewer ?? this.viewerIsReviewer,
       firstMessageTextOnly: firstMessageTextOnly ?? this.firstMessageTextOnly,
+      authors: authors ?? this.authors,
     );
   }
 

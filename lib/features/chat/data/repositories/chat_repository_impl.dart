@@ -68,6 +68,16 @@ class ChatRepositoryImpl implements ChatRepository {
     }
   }
 
+  @override
+  Future<ChatResult<List<Map<String, dynamic>>>> getProfilesInfo(List<String> profileIds) async {
+    try {
+      final profiles = await _datasource.getProfilesInfo(profileIds);
+      return ChatResult.success(profiles);
+    } catch (e) {
+      return ChatResult.failure('Failed to get profiles info: $e');
+    }
+  }
+
   // ============================================================
   // MESSAGES
   // ============================================================
