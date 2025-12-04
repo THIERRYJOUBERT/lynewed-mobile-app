@@ -2,7 +2,7 @@
 
 **Version:** v1.1.1+59  
 **Branch:** develop  
-**Last Updated:** 2025-12-03 17:50  
+**Last Updated:** 2025-12-04 11:35  
 **Environment:** Development (hekyovgnovhfhmkpfrna)  
 
 ---
@@ -37,16 +37,23 @@
   - ✅ ArchivedSheet: conversations archivées + users bloqués
   - ✅ ReportMessageSheet: même design que ReportUserSheet
   - ✅ Backend: RPC `get_pending_contact_requests` corrigée
-- 🔴 **PROCHAINE PRIORITÉ: Notifications In-App**
-  - Problème: notifications ne s'affichent pas dans la page Notifications
-  - À investiguer: triggers, tables, page centre de notification
+
+- ✅ **🎉 SYSTÈME NOTIFICATIONS 100% COMPLET** (2025-12-04)
+  - ✅ 7/7 types de notifications validés
+  - ✅ Navigation correcte pour tous les types
+  - ✅ ChatDetailsPage affiche nom/avatar correct
+  - ✅ Notification Settings fonctionnels (désactiver/réactiver)
+  - ✅ Ordre des notifications (plus récentes en haut)
+  - ✅ Tap sur badge "New" pour marquer sans naviguer
+  - ✅ Cohérence Bride/Pro par type
+  - ✅ Edge Function respecte les settings utilisateur
 
 ### Key Metrics
 | Métrique | Valeur |
 |----------|--------|
 | Codebase | ~15,000+ lignes Dart |
 | Architecture | Clean Architecture |
-| Modules terminés | Design System, **Map**, **Chat** |
+| Modules terminés | Design System, **Map**, **Chat**, **Notifications** |
 | Migrations | 56 appliquées |
 | Tests Map | 63/63 passants |
 | APIs externes | 4 certifiées |

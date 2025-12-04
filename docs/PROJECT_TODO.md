@@ -1,8 +1,8 @@
 # PROJECT TODO - Tâches de Développement LYNEWED
 
 **Document créé:** 2025-11-26  
-**Last Updated:** 2025-12-03 13:35  
-**Version:** v4.2
+**Last Updated:** 2025-12-04 11:35  
+**Version:** v4.3
 
 ---
 
@@ -116,7 +116,30 @@ Le module Map est 100% complet. Voir rapport final: `docs/archive/MAP_REFACTORIN
 
 ---
 
-## 1.2 Feed & Système Ambassadeurs (Interconnectés)
+## ✅ 1.2 SYSTÈME NOTIFICATIONS - TERMINÉ (2025-12-04)
+
+**Rapport complet:** `docs/archive/NOTIFICATIONS_REFACTORING_COMPLETE_2025-12-04.md`
+
+### Travail Complété
+- ✅ 7/7 types de notifications validés (chatMessage, connectionRequest, connectionRequestAccepted, wishlistAdd, videoIncoming, wedPublished, replayPublished)
+- ✅ Navigation correcte pour tous les types
+- ✅ ChatDetailsPage affiche nom/avatar du sender
+- ✅ Notification Settings fonctionnels (désactiver/réactiver par type)
+- ✅ Ordre des notifications (plus récentes en haut)
+- ✅ Tap sur badge "New" pour marquer sans naviguer
+- ✅ Cohérence Bride/Pro par type
+- ✅ Edge Function respecte les settings utilisateur
+- ✅ Amélioration UX: tap sur badge "New" = marquer lu sans navigation
+
+### Architecture Validée
+- **Frontend**: `lib/features/notifications/` avec Design System v3
+- **Backend**: Edge Function `notifications_outbox_drain` + `send-broadcast-notification`
+- **Settings**: `notification_settings` table avec logique par rôle et tier
+- **Types**: Transactionnels (5) + Broadcast (2)
+
+---
+
+## 1.3 Feed & Système Ambassadeurs (Interconnectés)
 
 **Règle:** Seuls les ambassadeurs et les pros avec `feed_enabled = true` figurent dans le feed.
 
@@ -217,21 +240,18 @@ PHOTOGRAPHER, FILMMAKER, PLANNER, MAKEUP, HAIRDRESSER, DESIGNER, BRIDALDESIGNER,
 
 ---
 
-# PRIORITÉ 3 — NOTIFICATIONS & VALIDATION
+# PRIORITÉ 3 — VALIDATION & AMÉLIORATIONS
 
 > Focus: Vérification que tout fonctionne correctement.
 
 ---
 
-## 3.1 Système de Notifications
+## 3.1 Tests & Validation Globale
 
-- [ ] Revoir le système de notification et valider son fonctionnement
-  - [ ] Vérifier intégration FCM
-  - [ ] Vérifier logique back-end
-  - [ ] Améliorer page centre notification
-- [ ] Notif directe lors de publication Wed of the Week
-  - [ ] Trigger automatique
-  - [ ] Ciblage audience appropriée
+- [ ] Tests end-to-end complets (Bride + Pro workflows)
+- [ ] Performance testing (load times, API calls)
+- [ ] Sécurité: audit RLS policies
+- [ ] Accessibilité: WCAG 2.1 AA compliance
 
 ---
 

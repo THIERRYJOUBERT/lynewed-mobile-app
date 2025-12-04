@@ -44,7 +44,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
       final notifications = await actions.getNotificationsAction();
       
       setState(() {
-        _notifications = notifications.reversed.toList();
+        // RPC retourne déjà trié par created_at DESC (plus récent en premier)
+        _notifications = notifications;
         _isLoading = false;
       });
     } catch (e) {
@@ -95,10 +96,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
         final payload = response['payload'] as Map<String, dynamic>?;
 
-        if (payload != null && mounted) {
-          final dataForRedirection = Map<String, dynamic>.from(payload);
-          dataForRedirection['type'] = notification.notificationType!.name;
+        // Créer les données pour la redirection (même si payload est null/vide)
+        final dataForRedirection = <String, dynamic>{
+          'type': notification.notificationType!.name,
+          ...?payload, // Spread le payload s'il existe
+        };
 
+        if (mounted) {
           await actions.handleNotificationRedirection(context, dataForRedirection);
         }
       } catch (e) {
@@ -249,20 +253,51 @@ class _NotificationsPageState extends State<NotificationsPage> {
         return _NotificationTile(
           notification: notification,
           onTap: () => _handleNotificationTap(notification),
+          onMarkAsRead: () => _markSingleAsRead(notification),
         );
       },
     );
   }
+
+  /// Marquer une seule notification comme lue (sans navigation)
+  Future<void> _markSingleAsRead(AppNotificationStruct notification) async {
+    if (notification.isRead || notification.notificationId.isEmpty) return;
+    
+    // Mise à jour optimiste de l'UI
+    setState(() {
+      final index = _notifications.indexWhere(
+        (n) => n.notificationId == notification.notificationId,
+      );
+      if (index != -1) {
+        _notifications[index] = AppNotificationStruct(
+          notificationId: notification.notificationId,
+          notificationType: notification.notificationType,
+          title: notification.title,
+          message: notification.message,
+          isRead: true,
+          createdAt: notification.createdAt,
+        );
+      }
+    });
+    
+    // Marquer comme lu en backend
+    await actions.markNotificationAsRead(notification.notificationId);
+  }
 }
 
 /// Tile pour afficher une notification individuelle.
+/// 
+/// - Tap sur la tile → navigation + marquer comme lu
+/// - Tap sur le badge "New" → marquer comme lu uniquement (sans navigation)
 class _NotificationTile extends StatelessWidget {
   final AppNotificationStruct notification;
   final VoidCallback onTap;
+  final VoidCallback onMarkAsRead;
 
   const _NotificationTile({
     required this.notification,
     required this.onTap,
+    required this.onMarkAsRead,
   });
 
   @override
@@ -352,8 +387,8 @@ class _NotificationTile extends StatelessWidget {
   }
 
   Widget _buildReadBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+    final badge = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: notification.isRead 
             ? LynewedColors.gray200 
@@ -369,6 +404,17 @@ class _NotificationTile extends StatelessWidget {
         ),
       ),
     );
+    
+    // Si non lu, rendre le badge cliquable pour marquer comme lu sans naviguer
+    if (!notification.isRead) {
+      return GestureDetector(
+        onTap: onMarkAsRead,
+        behavior: HitTestBehavior.opaque,
+        child: badge,
+      );
+    }
+    
+    return badge;
   }
 
   IconData _getIconForType() {

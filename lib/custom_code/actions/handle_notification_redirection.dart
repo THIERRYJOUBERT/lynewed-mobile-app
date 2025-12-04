@@ -366,29 +366,30 @@ Future<void> handleNotificationRedirection(
       {
         // connectionRequestAccepted: Pour les Pros - ouvrir la conversation si room_id disponible
         final roomId = (data['room_id'] as String?) ?? '';
-        final brideProfileId = (data['bride_profile_id'] as String?) ?? '';
-        SecureLogger.info('✅ connectionRequestAccepted: room_id=$roomId, bride=$brideProfileId');
+        // Le payload contient sender_profile_id (la Bride qui a accepté)
+        final senderProfileId = (data['sender_profile_id'] as String?) ?? '';
+        SecureLogger.info('✅ connectionRequestAccepted: room_id=$roomId, sender=$senderProfileId');
         
         if (roomId.isNotEmpty) {
-          // Récupérer les infos de la bride qui a accepté
-          String? brideFullName;
-          String? brideAvatarUrl;
+          // Récupérer les infos de la personne qui a accepté (Bride)
+          String? senderFullName;
+          String? senderAvatarUrl;
           
-          if (brideProfileId.isNotEmpty) {
+          if (senderProfileId.isNotEmpty) {
             try {
-              final brideProfile = await Supabase.instance.client
+              final senderProfile = await Supabase.instance.client
                   .from('profiles')
                   .select('full_name, avatar_url')
-                  .eq('id', brideProfileId)
+                  .eq('id', senderProfileId)
                   .maybeSingle();
               
-              if (brideProfile != null) {
-                brideFullName = brideProfile['full_name'] as String?;
-                brideAvatarUrl = brideProfile['avatar_url'] as String?;
-                SecureLogger.info('✅ connectionRequestAccepted: Bride info loaded: $brideFullName');
+              if (senderProfile != null) {
+                senderFullName = senderProfile['full_name'] as String?;
+                senderAvatarUrl = senderProfile['avatar_url'] as String?;
+                SecureLogger.info('✅ connectionRequestAccepted: Sender info loaded: $senderFullName');
               }
             } catch (e) {
-              SecureLogger.warning('connectionRequestAccepted: Failed to load bride info: $e');
+              SecureLogger.warning('connectionRequestAccepted: Failed to load sender info: $e');
             }
           }
           
@@ -399,9 +400,9 @@ Future<void> handleNotificationRedirection(
             'ChatDetailsPage',
             queryParameters: {
               'roomId': roomId,
-              'otherProfileId': brideProfileId,
-              if (brideFullName != null) 'otherFullName': brideFullName,
-              if (brideAvatarUrl != null) 'otherAvatarUrl': brideAvatarUrl,
+              'otherProfileId': senderProfileId,
+              if (senderFullName != null) 'otherFullName': senderFullName,
+              if (senderAvatarUrl != null) 'otherAvatarUrl': senderAvatarUrl,
             },
             extra: <String, dynamic>{
               kTransitionInfoKey: const TransitionInfo(
@@ -430,20 +431,19 @@ Future<void> handleNotificationRedirection(
         SecureLogger.info('💖 wishlistAdd: bride_profile_id=$brideProfileId');
         
         // Naviguer vers le Dashboard Pro où la wishlist est visible
-        router.pushNamed('DashboardProWidget');
+        router.pushNamed('DashboardPro');
         break;
       }
 
     case 'wedPublished':
       {
         // wedPublished: Nouveau Wedding of the Week - ouvrir la page dédiée
-        // Peut venir du système broadcast (Admin Panel) ou d'un deep link
         final link = (data['link'] as String?) ?? '';
         final referenceId = (data['reference_id'] as String?) ?? '';
         SecureLogger.info('💒 wedPublished: reference_id=$referenceId, link=$link');
         
         // Naviguer vers la page Wedding of the Week
-        router.pushNamed('WeddingOfTheWeekWidget');
+        router.pushNamed('WeddingOfTheWeek');
         break;
       }
 
@@ -455,7 +455,7 @@ Future<void> handleNotificationRedirection(
         SecureLogger.info('🎬 replayPublished: reference_id=$referenceId, link=$link');
         
         // Naviguer vers la page des Replays
-        router.pushNamed('ContentReplayWidget');
+        router.pushNamed('ContentReplay');
         break;
       }
 
