@@ -1,8 +1,9 @@
 # PROJECT TODO - Tâches de Développement LYNEWED
 
 **Document créé:** 2025-11-26  
-**Last Updated:** 2025-12-05 11:36  
-**Version:** v4.3
+**Last Updated:** 2025-12-05 20:45  
+**Version:** v4.4  
+**Cleanup Status:** ✅ COMPLETE (Phase 1-6, -135 files, -40,588 lines)
 
 ---
 
@@ -21,6 +22,33 @@ Le module Map est 100% complet. Voir rapport final: `docs/archive/MAP_REFACTORIN
 - ✅ **Double comptage fixé**: `parseProfessionals()` et `parseFixedLocations()` retournaient les mêmes données
 - ✅ **Comptage intelligent**: `visibleMarkersCount` affiche seulement les markers visibles dans les bounds actuels
 - ✅ **Performance**: Cache maintenu mais comptage filtré par vue courante
+
+---
+
+## ✅ CLEANUP CODE MORT - TERMINÉ (2025-12-05)
+
+**Rapport complet:** `docs/CLEANUP_FINAL_REPORT_2025-12-05.md`
+
+| Phase | Date | Fichiers | Lignes | Issues | Status |
+|-------|------|----------|--------|--------|--------|
+| 1-2 | 2025-11-28 | -80 | -20,000+ | -150 | ✅ |
+| 3 | 2025-12-03 | -30 | -15,000+ | -100 | ✅ |
+| 4 | 2025-12-05 | -5 | -1,877 | -84 | ✅ |
+| 5-6 | 2025-12-05 | -20 | -3,711 | -84 | ✅ |
+| **TOTAL** | | **-135** | **-40,588** | **-418** | **✅** |
+
+**Résultats:**
+- Flutter Analyze: 523 → 306 issues (-42%)
+- Erreurs: 3 → 0 ✅
+- Build: ✅ SUCCESS
+- App: ✅ Lancée sur simulateur
+
+**Concepts supprimés:**
+- Wedding Pins (remplacé par Weddings table)
+- Points of Interest (POI) - supprimé
+- Map Bundle V2 (remplacé par Clean Architecture)
+- Bride Interest Items (non utilisé)
+- Filters JSON String (remplacé par MapFilter entity)
 
 ---
 

@@ -408,16 +408,4 @@ class MapActionsService {
         return SubscriptionTierType.ultimateAccess;
     }
   }
-  
-  void _navigateWithProDetailsStruct(BuildContext context, Map<String, dynamic> responseData) {
-    if (!context.mounted) return;
-    final proDetails = ProDetailsStruct.fromMap(responseData);
-    context.pushNamed(
-      ProDetailsWidget.routeName,
-      queryParameters: {
-        'proDetails': serializeParam(proDetails, ParamType.DataStruct),
-      }.withoutNulls,
-    );
-  }
 }
-
