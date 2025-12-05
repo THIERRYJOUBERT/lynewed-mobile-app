@@ -1,7 +1,6 @@
 export 'get_place_predictions.dart' show getPlacePredictions;
 export 'get_place_details.dart' show getPlaceDetails;
 export 'call_search_map_bundle_v2.dart' show callSearchMapBundleV2;
-export 'get_poi_item_details.dart' show getPoiItemDetails;
 export 'load_initial_session_data.dart' show loadInitialSessionData;
 export 'save_user_preferences.dart' show saveUserPreferences;
 export 'save_profile_fields.dart' show saveProfileFields;
@@ -20,9 +19,7 @@ export 'upsert_notification_settings_batch.dart'
 export 'upsert_pro_recent_opt_in.dart' show upsertProRecentOptIn;
 export 'call_delete_account_edge_function.dart'
     show callDeleteAccountEdgeFunction;
-export 'upsert_user_poi.dart' show upsertUserPoi;
 export 'upsert_wedding_pin.dart' show upsertWeddingPin;
-export 'delete_user_poi.dart' show deleteUserPoi;
 export 'delete_wedding_pin.dart' show deleteWeddingPin;
 export 'get_place_details_rich.dart' show getPlaceDetailsRich;
 export 'create_professional_alert_action.dart'

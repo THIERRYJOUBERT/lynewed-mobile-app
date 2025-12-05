@@ -14,10 +14,11 @@
 - **Info:** 448
 - **Errors:** 0 ✅
 
-### Flutter Analyze - APRÈS NETTOYAGE
-- **Total issues:** 462 (-61 issues)
+### Flutter Analyze - APRÈS NETTOYAGE FINAL
+- **Total issues:** 389 (-134 issues, soit -26%)
 - **Errors:** 0 ✅
 - **Build:** ✅ SUCCESS
+- **App:** ✅ Lancée avec succès sur simulateur
 
 ---
 
@@ -58,6 +59,94 @@
 
 ### Dossier supprimé
 - `lib/features/map/integration/` (vide après suppression des fichiers)
+
+### Actions `custom_code/actions/` supprimées (3 fichiers)
+
+| Fichier | Raison |
+|---------|--------|
+| `delete_user_poi.dart` | POI supprimés |
+| `upsert_user_poi.dart` | POI supprimés |
+| `get_poi_item_details.dart` | POI supprimés |
+
+### Widgets `custom_code/widgets/` supprimés (3 fichiers)
+
+| Fichier | Raison |
+|---------|--------|
+| `lynewed_interactive_map.dart` | Remplacé par `LynewedMapWidget` |
+| `instant_search_text_field.dart` | Non utilisé |
+| `custom_calendar_widget.dart` | Non utilisé |
+
+### Fichiers `flutter_flow/` supprimés (3 fichiers)
+
+| Fichier | Raison |
+|---------|--------|
+| `random_data_util.dart` | Non utilisé |
+| `instant_timer.dart` | Non utilisé |
+| `flutter_flow_toggle_icon.dart` | Non utilisé |
+
+### Structs `backend/schema/structs/` supprimés (2 fichiers)
+
+| Fichier | Raison |
+|---------|--------|
+| `poi_item_data_struct.dart` | POI supprimés |
+| `map_command_struct.dart` | Non utilisé |
+
+### Fonctions `custom_functions.dart` supprimées (3 fonctions)
+
+| Fonction | Raison |
+|----------|--------|
+| `filterMapMarkers()` | Remplacé par logique dans `MapState` |
+| `imagePathToString()` | Non utilisé |
+| `getCountryNameFromIso2()` | Non utilisé (~260 lignes de code) |
+
+---
+
+## 📊 STRUCTURE FINALE DU PROJET
+
+### Statistiques
+- **Fichiers Dart:** 419
+- **Lignes de code:** ~71,500
+- **Issues Flutter Analyze:** 389 (vs 523 avant = -26%)
+
+### Architecture Clean (lib/features/)
+```
+lib/features/
+├── chat/           # Module Chat refactorisé
+│   ├── data/
+│   ├── domain/
+│   └── presentation/
+├── dashboard/      # Module Dashboard
+│   └── presentation/
+├── map/            # Module Map refactorisé
+│   ├── data/
+│   ├── domain/
+│   └── presentation/
+└── notifications/  # Module Notifications refactorisé
+    ├── domain/
+    └── presentation/
+```
+
+### Code Partagé (lib/core/)
+```
+lib/core/
+├── constants/      # Constantes globales
+├── design/         # Design System v3
+│   └── widgets/
+├── services/       # Services partagés
+├── utils/          # Utilitaires
+└── widgets/        # Widgets partagés
+```
+
+### Legacy Encore Utilisé
+```
+lib/compo_finaux/   # 2 composants restants
+├── address_search/     # Utilisé par Map sheets
+└── replay_guest_card/  # Utilisé par Replay
+
+lib/components/     # 2 dossiers restants
+├── nav/            # Navigation bars
+└── ui_system/      # Empty state widget
+```
 
 ---
 

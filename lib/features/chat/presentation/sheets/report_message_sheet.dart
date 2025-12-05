@@ -123,12 +123,12 @@ class _ReportMessageSheetState extends State<ReportMessageSheet> {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: LynewedColors.gray100,
+            color: LynewedColors.black,
             borderRadius: BorderRadius.circular(8),
           ),
           child: const Icon(
             Icons.flag_outlined,
-            color: LynewedColors.textSecondary,
+            color: LynewedColors.white,
             size: 24,
           ),
         ),
