@@ -6,6 +6,8 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
+import '/core/utils/budget_formatter.dart';
+import '/core/utils/distance_formatter.dart';
 import 'professional_details.dart';
 
 /// Wedding visibility enum
@@ -119,8 +121,17 @@ class WeddingDetails {
     return null;
   }
 
-  /// Budget range formatted
+  /// Budget range formatted (in user's preferred currency)
   String get budgetRange {
+    return BudgetFormatter.format(
+      min: budgetMin,
+      max: budgetMax,
+      sourceCurrency: currency,
+    );
+  }
+
+  /// Budget range in original currency (no conversion)
+  String get budgetRangeOriginal {
     if (budgetMin == null && budgetMax == null) return 'Not specified';
     if (budgetMin == null) return 'Up to $budgetMax $currency';
     if (budgetMax == null) return 'From $budgetMin $currency';
@@ -159,8 +170,14 @@ class WeddingDetails {
     return professionsNeeded.map((p) => p.displayName).join(', ');
   }
 
-  /// Search radius formatted
+  /// Search radius formatted (in user's preferred unit: km or miles)
   String? get radiusFormatted {
+    if (searchRadiusKm == null) return null;
+    return DistanceFormatter.format(searchRadiusKm!.toDouble());
+  }
+
+  /// Search radius formatted in original km (no conversion)
+  String? get radiusFormattedKm {
     if (searchRadiusKm == null) return null;
     return '$searchRadiusKm km';
   }
@@ -193,23 +210,6 @@ class WeddingDetails {
       brideFullName: brideInfo['fullName']?.toString(),  // FIXED: was displayName/firstName
       createdAt: _parseDateTime(json['createdAt']),
     );
-  }
-
-  static gmaps.LatLng? _parseGeoJson(dynamic geo) {
-    if (geo is! Map<String, dynamic>) return null;
-    try {
-      final type = geo['type']?.toString().toUpperCase();
-      if (type == 'POINT' && geo['coordinates'] is List) {
-        final coords = geo['coordinates'] as List;
-        if (coords.length >= 2) {
-          return gmaps.LatLng(
-            (coords[1] as num).toDouble(),
-            (coords[0] as num).toDouble(),
-          );
-        }
-      }
-    } catch (_) {}
-    return null;
   }
 
   static List<Profession> _parseProfessionsList(dynamic value) {

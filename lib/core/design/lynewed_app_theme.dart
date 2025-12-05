@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'lynewed_colors.dart';
 import 'lynewed_text_styles.dart';
-import 'lynewed_spacing.dart';
 import 'lynewed_borders.dart';
 import 'lynewed_component_styles.dart';
-import 'lynewed_design_system.dart';
 
 /// Lynewed App Theme - Complete ThemeData replacement
 /// See /docs/App/DESIGN_SYSTEM.md for complete usage guide

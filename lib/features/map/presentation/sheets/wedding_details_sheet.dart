@@ -164,10 +164,9 @@ class WeddingDetailsSheet extends StatelessWidget {
                 const SizedBox(width: 10),
               ],
               
-              // Budget
-              LynewedInfoRow(
-                icon: Icons.euro_outlined,
-                text: details.budgetRange,
+              // Budget (uses dynamic currency icon)
+              LynewedBudgetRow(
+                budget: details.budgetRange,
               ),
             ],
           ),

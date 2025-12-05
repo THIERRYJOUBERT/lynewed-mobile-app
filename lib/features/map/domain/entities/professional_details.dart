@@ -6,6 +6,8 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
+import '/core/utils/budget_formatter.dart';
+import '/core/utils/distance_formatter.dart';
 
 /// Profession enum - aligned with backend Supabase enum (20 values)
 /// Backend values: PHOTOGRAPHER, FILMMAKER, PLANNER, MAKEUP, HAIRDRESSER, 
@@ -296,16 +298,30 @@ class ProfessionalDetails {
   /// Display name (business name or full name)
   String get displayName => businessName?.isNotEmpty == true ? businessName! : fullName;
 
-  /// Budget range formatted
+  /// Budget range formatted (in user's preferred currency)
   String get budgetRange {
+    return BudgetFormatter.format(
+      min: budgetMin,
+      max: budgetMax,
+      sourceCurrency: currency,
+    );
+  }
+
+  /// Budget range in original currency (no conversion)
+  String get budgetRangeOriginal {
     if (budgetMin == null && budgetMax == null) return 'Not specified';
     if (budgetMin == null) return 'Up to $budgetMax $currency';
     if (budgetMax == null) return 'From $budgetMin $currency';
     return '$budgetMin - $budgetMax $currency';
   }
 
-  /// Distance formatted
+  /// Distance formatted (in user's preferred unit: km or miles)
   String? get distanceFormatted {
+    return DistanceFormatter.formatOrNull(distanceKm);
+  }
+
+  /// Distance formatted in original km (no conversion)
+  String? get distanceFormattedKm {
     if (distanceKm == null) return null;
     if (distanceKm! < 1) return '${(distanceKm! * 1000).round()} m';
     return '${distanceKm!.toStringAsFixed(1)} km';

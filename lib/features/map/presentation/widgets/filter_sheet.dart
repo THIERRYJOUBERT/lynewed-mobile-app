@@ -6,6 +6,9 @@ library;
 import 'package:flutter/material.dart';
 
 import '/core/design/design.dart';
+import '/core/design/widgets/widgets.dart';
+import '/core/utils/budget_formatter.dart';
+import '/core/services/currency_service.dart';
 import '/backend/schema/enums/enums.dart' as backend_enums show Profession, getAvailableProfessions;
 import '/flutter_flow/profession_display_helper.dart';
 import '../../domain/entities/entities.dart';
@@ -272,52 +275,23 @@ class _FilterSheetState extends State<FilterSheet> {
   }
 
   Widget _buildBudgetSlider() {
+    final userCurrency = BudgetFormatter.userCurrency;
     final min = _filter.budgetMin ?? 0;
-    final max = _filter.budgetMax ?? 50000;
+    final max = _filter.budgetMax ?? CurrencyService.instance.getMaxBudgetForCurrency(userCurrency);
 
-    return Column(
-      children: [
-        SliderTheme(
-          data: SliderThemeData(
-            activeTrackColor: LynewedColors.primary,
-            inactiveTrackColor: LynewedColors.surface,
-            thumbColor: LynewedColors.primary,
-            overlayColor: LynewedColors.primary.withValues(alpha: 0.1),
-            rangeThumbShape: const RoundRangeSliderThumbShape(enabledThumbRadius: 10),
-          ),
-          child: RangeSlider(
-            values: RangeValues(min, max),
-            min: 0,
-            max: 50000,
-            divisions: 50,
-            labels: RangeLabels(
-              '${_filter.currency} ${min.toInt()}',
-              '${_filter.currency} ${max.toInt()}',
-            ),
-            onChanged: (values) {
-              setState(() {
-                _filter = _filter.copyWith(
-                  budgetMin: values.start,
-                  budgetMax: values.end,
-                );
-              });
-            },
-          ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '${_filter.currency} ${min.toInt()}',
-              style: LynewedTextStyles.bodySmall,
-            ),
-            Text(
-              '${_filter.currency} ${max.toInt()}',
-              style: LynewedTextStyles.bodySmall,
-            ),
-          ],
-        ),
-      ],
+    return LynewedBudgetSlider(
+      lowerValue: min,
+      upperValue: max,
+      currency: userCurrency,
+      onChanged: (lower, upper) {
+        setState(() {
+          _filter = _filter.copyWith(
+            budgetMin: lower,
+            budgetMax: upper,
+            currency: userCurrency,
+          );
+        });
+      },
     );
   }
 

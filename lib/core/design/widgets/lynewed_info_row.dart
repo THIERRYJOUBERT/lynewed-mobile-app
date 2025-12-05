@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 import '../design.dart';
+import '/core/utils/budget_formatter.dart';
 
 /// Info row with icon, text, and optional trailing widget
 /// 
@@ -138,24 +139,45 @@ class LynewedLocationRow extends StatelessWidget {
 
 /// Budget info row with currency
 /// 
-/// Specialized for budget display:
-/// 💶 1000-2000€
+/// Specialized for budget display with dynamic currency icon:
+/// 💶 1000-2000€ (or $, £, etc. based on user preference)
 class LynewedBudgetRow extends StatelessWidget {
   const LynewedBudgetRow({
     super.key,
     required this.budget,
-    this.currency = '€',
     this.iconSize = 16,
   });
 
   final String budget;
-  final String currency;
   final double iconSize;
+
+  /// Get appropriate icon for user's currency
+  IconData get _currencyIcon {
+    final currency = BudgetFormatter.userCurrency;
+    switch (currency) {
+      case 'USD':
+        return Icons.attach_money;
+      case 'GBP':
+        return Icons.currency_pound;
+      case 'JPY':
+      case 'CNY':
+        return Icons.currency_yen;
+      case 'INR':
+        return Icons.currency_rupee;
+      case 'RUB':
+        return Icons.currency_ruble;
+      case 'BTC':
+        return Icons.currency_bitcoin;
+      case 'EUR':
+      default:
+        return Icons.euro_outlined;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return LynewedInfoRow(
-      icon: Icons.euro_outlined,
+      icon: _currencyIcon,
       text: budget,
       iconSize: iconSize,
     );

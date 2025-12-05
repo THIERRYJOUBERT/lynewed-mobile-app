@@ -10,6 +10,10 @@ import '/flutter_flow/custom_functions.dart' as functions;
 import '/custom_code/actions/get_user_market_region.dart';
 import '/components/nav/nav_bar_pro/nav_bar_pro_widget.dart';
 import '/index.dart';
+import '/core/services/currency_service.dart';
+import '/core/utils/budget_formatter.dart';
+import '/core/design/widgets/lynewed_budget_slider.dart';
+import '/core/design/widgets/lynewed_distance_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/scheduler.dart';
@@ -55,20 +59,24 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
       
       // Initialize with EMPTY professions list = no filter = show ALL pros
       // When user selects a profession, it filters by that profession
+      final userCurrency = BudgetFormatter.userCurrency;
+      final maxBudget = CurrencyService.instance.getMaxBudgetForCurrency(userCurrency);
+      
       _model.psQueryFilters = QueryFiltersStruct(
         radiusKm: 100.0,
         professions: [], // Empty = no filter = show all
         budgetMin: 0.0,
-        budgetMax: 40000.0,
+        budgetMax: maxBudget,
         countryCode: countryCode,
       );
       _model.psFiltersDraft = QueryFiltersStruct(
         radiusKm: 100.0,
         professions: [], // Empty = no filter = show all
         budgetMin: 0.0,
-        budgetMax: 40000.0,
+        budgetMax: maxBudget,
         countryCode: countryCode,
       );
+      _model.budgetMax = maxBudget;
       if (mounted) {
         safeSetState(() {});
       }
@@ -268,18 +276,19 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
                                       // Reset filters to default values based on market
                                       // Empty professions list = no filter = show all
                                       final countryCode = _model.isIndianMarket ? 'IN' : '';
+                                      final maxBudget = CurrencyService.instance.getMaxBudgetForCurrency(BudgetFormatter.userCurrency);
                                       
                                       _model.updatePsFiltersDraftStruct(
                                         (e) => e
                                           ..professions = [] // Empty = no filter = show all
                                           ..budgetMin = 0.0
-                                          ..budgetMax = 40000.0
+                                          ..budgetMax = maxBudget
                                           ..center = null
                                           ..radiusKm = 100.0
                                           ..countryCode = countryCode,
                                       );
                                       _model.budgetMin = 0.0;
-                                      _model.budgetMax = 40000.0;
+                                      _model.budgetMax = maxBudget;
                                       _model.sliderValue = 100.0;
                                       _model.psSearchText = '';
                                       _model.selectedCountry = _model.isIndianMarket 
@@ -393,60 +402,22 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
                                   },
                                 ),
                                 // Distance slider - only visible in address search mode
+                                // Uses user's preferred unit (km or miles)
                                 if (_model.isAddressSearchMode) ...[
                                   const SizedBox(height: 8.0),
-                                  Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Slider(
-                                        activeColor:
-                                            FlutterFlowTheme.of(context).primary,
-                                        inactiveColor:
-                                            FlutterFlowTheme.of(context).alternate,
-                                        min: 5.0,
-                                        max: 500.0,
-                                        value: _model.sliderValue ??=
-                                            valueOrDefault<double>(
-                                          _model.psFiltersDraft?.radiusKm,
-                                          100.0,
-                                        ),
-                                        divisions: 99,
-                                        onChanged: (newValue) {
-                                          newValue = double.parse(
-                                              newValue.toStringAsFixed(2));
-                                          safeSetState(
-                                              () => _model.sliderValue = newValue);
-                                        },
-                                        onChangeEnd: (newValue) async {
-                                          newValue = double.parse(
-                                              newValue.toStringAsFixed(2));
-                                          safeSetState(
-                                              () => _model.sliderValue = newValue);
-                                          _model.updatePsFiltersDraftStruct(
-                                            (e) => e..radiusKm = _model.sliderValue,
-                                          );
-                                          _model.updatePsQueryFiltersStruct(
-                                            (e) => e..radiusKm = _model.sliderValue,
-                                          );
-                                          safeSetState(() {});
-                                        },
-                                      ),
-                                      Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          Text(
-                                            '${_model.sliderValue?.toInt()} km radius',
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  fontFamily:
-                                                      'Haas Grot Text Trial',
-                                                  letterSpacing: 0.0,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                  LynewedDistanceSlider(
+                                    value: _model.sliderValue ?? 100.0,
+                                    maxValueKm: 500.0,
+                                    onChanged: (kmValue) {
+                                      safeSetState(() => _model.sliderValue = kmValue);
+                                      _model.updatePsFiltersDraftStruct(
+                                        (e) => e..radiusKm = kmValue,
+                                      );
+                                      _model.updatePsQueryFiltersStruct(
+                                        (e) => e..radiusKm = kmValue,
+                                      );
+                                      safeSetState(() {});
+                                    },
                                   ),
                                 ],
                               ],
@@ -472,36 +443,26 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
                                     Padding(
                                       padding: const EdgeInsetsDirectional.fromSTEB(
                                           0.0, 8.0, 0.0, 0.0),
-                                      child: SizedBox(
-                                        width: double.infinity,
-                                        height: 100.0,
-                                        child: custom_widgets
-                                            .CustomRangeSliderWidget(
-                                          width: double.infinity,
-                                          height: 100.0,
-                                          minValue: 0.0,
-                                          maxValue: 40000.0,
-                                          lowerValue: valueOrDefault<double>(
-                                            _model.budgetMin,
-                                            0.0,
-                                          ),
-                                          upperValue: valueOrDefault<double>(
-                                            _model.budgetMax,
-                                            40000.0,
-                                          ),
-                                          onChanged:
-                                              (lowerValue, upperValue) async {
-                                            _model.budgetMin = lowerValue;
-                                            _model.budgetMax = upperValue;
-                                            safeSetState(() {});
-                                            _model.updatePsFiltersDraftStruct(
-                                              (e) => e
-                                                ..budgetMin = _model.budgetMin
-                                                ..budgetMax = _model.budgetMax,
-                                            );
-                                            safeSetState(() {});
-                                          },
+                                      child: LynewedBudgetSlider(
+                                        lowerValue: valueOrDefault<double>(
+                                          _model.budgetMin,
+                                          0.0,
                                         ),
+                                        upperValue: valueOrDefault<double>(
+                                          _model.budgetMax,
+                                          CurrencyService.instance.getMaxBudgetForCurrency(BudgetFormatter.userCurrency),
+                                        ),
+                                        onChanged: (lowerValue, upperValue) {
+                                          _model.budgetMin = lowerValue;
+                                          _model.budgetMax = upperValue;
+                                          safeSetState(() {});
+                                          _model.updatePsFiltersDraftStruct(
+                                            (e) => e
+                                              ..budgetMin = _model.budgetMin
+                                              ..budgetMax = _model.budgetMax,
+                                          );
+                                          safeSetState(() {});
+                                        },
                                       ),
                                     ),
                                   ],

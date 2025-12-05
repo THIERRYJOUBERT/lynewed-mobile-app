@@ -1,6 +1,4 @@
 export 'lynewed_interactive_map.dart' show LynewedInteractiveMap;
-export 'custom_range_slider_widget.dart' show CustomRangeSliderWidget;
-export 'simple_distance_slider.dart' show SimpleDistanceSlider;
 export 'instant_search_text_field.dart' show InstantSearchTextField;
 export 'lynewed_mini_map.dart' show LynewedMiniMap;
 export 'youtube_player_widget.dart' show YoutubePlayerWidget;

@@ -10,6 +10,8 @@ export 'lynewed_text_field.dart';
 export 'lynewed_chip.dart';
 export 'lynewed_slider.dart';
 export 'lynewed_range_slider.dart';
+export 'lynewed_budget_slider.dart';
+export 'lynewed_distance_slider.dart';
 export 'lynewed_details_sheet.dart';
 export 'lynewed_info_row.dart';
 export 'lynewed_about_section.dart';

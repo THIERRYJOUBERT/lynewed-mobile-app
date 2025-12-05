@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import '/core/design/design.dart';
 import '/core/design/widgets/widgets.dart';
 import '/core/constants/currencies.dart';
+import '/core/utils/distance_formatter.dart';
 import '/compo_finaux/address_search/address_search_widget.dart';
 import '/backend/schema/structs/index.dart';
 import '../../domain/entities/wedding_details.dart';
@@ -425,12 +426,17 @@ class _WeddingCreateSheetState extends State<WeddingCreateSheet> {
             ),
             const SizedBox(height: 30),
 
-            // Radius Section
+            // Radius Section (uses user's preferred unit: km or miles)
             _buildSectionTitle('Search Radius'),
             LynewedSlider(
               value: _searchRadius,
               steps: _allowedRadii,
-              suffix: 'km',
+              suffix: ' ${DistanceFormatter.unitAbbreviation}',
+              formatValue: (value) {
+                // Convert km to user's unit for display
+                final converted = DistanceFormatter.convertFromKm(value.toDouble());
+                return '${converted.round()} ${DistanceFormatter.unitAbbreviation}';
+              },
               onChanged: (value) => setState(() => _searchRadius = value),
             ),
             const SizedBox(height: 30),
