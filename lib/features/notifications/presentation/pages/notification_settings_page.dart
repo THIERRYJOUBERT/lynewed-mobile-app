@@ -15,8 +15,9 @@ import '../../domain/entities/notification_type_config.dart';
 class NotificationSettingsPage extends StatefulWidget {
   const NotificationSettingsPage({super.key});
 
-  static const String routeName = 'NotificationSettingsNew';
-  static const String routePath = '/notificationSettingsNew';
+  // Constantes de route (compatibilité avec l'ancienne page FlutterFlow)
+  static const String routeName = 'NotificationSettings';
+  static const String routePath = '/notificationSettings';
 
   @override
   State<NotificationSettingsPage> createState() => _NotificationSettingsPageState();

@@ -22,8 +22,9 @@ export '/pages/shared/profile_brides_and_pro/profile_brides_and_pro_widget.dart'
     show ProfileBridesAndProWidget;
 export '/pages/bride/edit_profile_brides/edit_profile_brides_widget.dart'
     show EditProfileBridesWidget;
-export '/pages/shared/notification_settings/notification_settings_widget.dart'
-    show NotificationSettingsWidget;
+// NotificationSettings - Utilise nouveau module Clean Architecture
+export '/features/notifications/presentation/pages/notification_settings_page.dart'
+    show NotificationSettingsPage;
 export '/pages/shared/preference/preference_widget.dart' show PreferenceWidget;
 export '/pages/shared/settings_permissions/settings_permissions_widget.dart'
     show SettingsPermissionsWidget;
@@ -58,8 +59,9 @@ export '/pages/shared/video_call_page/video_call_page_widget.dart'
     show VideoCallPageWidget;
 export '/pages/bride/fav_pro_list/fav_pro_list_widget.dart'
     show FavProListWidget;
-export '/pages/shared/notifications_page/notifications_page_widget.dart'
-    show NotificationsPageWidget;
+// NotificationsPage - Utilise nouveau module Clean Architecture  
+export '/features/notifications/presentation/pages/notifications_page.dart'
+    show NotificationsPage;
 export '/pages/pro/public_pro_profile_view/public_pro_profile_view_widget.dart'
     show PublicProProfileViewWidget;
 export '/pages/shared/wow_viewer_carrousel/wow_viewer_carrousel_widget.dart'

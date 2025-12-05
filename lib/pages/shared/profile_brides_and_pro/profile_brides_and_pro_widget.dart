@@ -410,7 +410,7 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                             highlightColor: Colors.transparent,
                             onTap: () async {
                               context.pushNamed(
-                                  NotificationSettingsWidget.routeName);
+                                  NotificationSettingsPage.routeName);
                             },
                             child: Container(
                               width: double.infinity,

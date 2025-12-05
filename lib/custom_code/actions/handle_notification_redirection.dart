@@ -226,20 +226,18 @@ Future<void> handleNotificationRedirection(
           // Récupérer les infos du sender pour afficher dans le header
           String? senderFullName;
           String? senderAvatarUrl;
-          String? senderRole;
           
           if (senderProfileId.isNotEmpty) {
             try {
               final senderProfile = await Supabase.instance.client
                   .from('profiles')
-                  .select('full_name, avatar_url, role')
+                  .select('full_name, avatar_url')
                   .eq('id', senderProfileId)
                   .maybeSingle();
               
               if (senderProfile != null) {
                 senderFullName = senderProfile['full_name'] as String?;
                 senderAvatarUrl = senderProfile['avatar_url'] as String?;
-                senderRole = senderProfile['role'] as String?;
                 SecureLogger.info('💬 chatMessage: Sender info loaded: $senderFullName');
               }
             } catch (e) {
@@ -580,7 +578,7 @@ void _handleDeepLink(
       }
       break;
     case 'notifications':
-      router.pushNamed('NotificationsPageWidget');
+      router.pushNamed('NotificationsPage');
       break;
     default:
       SecureLogger.warning('Unknown deep link page: $page');

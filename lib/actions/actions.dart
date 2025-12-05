@@ -97,7 +97,7 @@ Future contactChatRoom(
     );
   } else {
     if (!context.mounted) return;
-    _showErrorDialog(context, contactContext.reason ?? 'Unable to start conversation');
+    _showErrorDialog(context, contactContext.reason);
   }
 }
 
@@ -195,10 +195,6 @@ Future contactRoomChatMessagerie(
     UnreadCounterService.instance.forceRefresh();
   } else {
     if (!context.mounted) return;
-    _showErrorDialog(
-      context, 
-      contactContextMessagerie.reason ?? 
-        'An error has occurred. Please try again.',
-    );
+    _showErrorDialog(context, contactContextMessagerie.reason);
   }
 }

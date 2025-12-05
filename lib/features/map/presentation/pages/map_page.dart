@@ -101,7 +101,7 @@ class _MapPageState extends State<MapPage> {
   /// Load user's market region for profession filtering
   Future<void> _loadUserMarket() async {
     final market = await actions.getUserMarketRegion();
-    if (_mounted && market != null) {
+    if (_mounted) {
       _mapState.updateUserMarket(market);
     }
   }

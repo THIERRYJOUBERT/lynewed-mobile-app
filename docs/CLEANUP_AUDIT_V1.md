@@ -14,11 +14,37 @@
 - **Info:** 448
 - **Errors:** 0 ✅
 
-### Flutter Analyze - APRÈS NETTOYAGE FINAL
-- **Total issues:** 389 (-134 issues, soit -26%)
-- **Errors:** 0 ✅
+### Flutter Analyze - APRÈS NETTOYAGE PHASE 4
+- **Total issues:** 390 (-133 issues, soit -25%)
+- **Errors:** 3 (dans report_message_sheet.dart - à corriger)
 - **Build:** ✅ SUCCESS
 - **App:** ✅ Lancée avec succès sur simulateur
+
+---
+
+## ✅ FICHIERS SUPPRIMÉS (Phase 4) - 2025-12-05
+
+### Sheets obsolètes `conversation_sheet/` (2 dossiers)
+
+| Dossier | Lignes | Raison |
+|---------|--------|--------|
+| `my_message_actions_sheet/` | 166 | Non utilisé (aucune référence externe) |
+| `other_message_actions_sheet/` | 197 | Non utilisé (aucune référence externe) |
+
+### Fichiers `flutter_flow/` supprimés (1 fichier)
+
+| Fichier | Lignes | Raison |
+|---------|--------|--------|
+| `flutter_flow_drop_down.dart` | 379 | Non importé (aucune référence externe) |
+
+### Pages FlutterFlow remplacées par Clean Architecture (2 dossiers)
+
+| Dossier | Lignes | Remplacé par |
+|---------|--------|--------------|
+| `pages/shared/notifications_page/` | 533 | `features/notifications/presentation/pages/notifications_page.dart` |
+| `pages/shared/notification_settings/` | 602 | `features/notifications/presentation/pages/notification_settings_page.dart` |
+
+**Total Phase 4:** 5 dossiers/fichiers, **1877 lignes** supprimées
 
 ---
 
@@ -103,10 +129,11 @@
 
 ## 📊 STRUCTURE FINALE DU PROJET
 
-### Statistiques
-- **Fichiers Dart:** 419
-- **Lignes de code:** ~71,500
-- **Issues Flutter Analyze:** 389 (vs 523 avant = -26%)
+### Statistiques (Après Phase 4)
+- **Fichiers Dart:** 410
+- **Lignes de code:** ~69,659
+- **Issues Flutter Analyze:** 390 (vs 523 avant = -25%)
+- **Lignes supprimées total:** 42,484 (Phase 1-4)
 
 ### Architecture Clean (lib/features/)
 ```

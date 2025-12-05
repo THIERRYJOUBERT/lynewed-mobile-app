@@ -41,7 +41,6 @@ class MapActionsService {
   
   // Simple cache for profile data to improve performance
   final Map<String, Map<String, dynamic>> _profileCache = {};
-  static const Duration _cacheTimeout = Duration(minutes: 5);
 
   /// Invalidate cache for a specific profile
   /// Call this when favorite status changes to ensure fresh data
@@ -183,7 +182,7 @@ class MapActionsService {
             'canBeContactedByBride': true,
             'canContactBride': true,
           };
-          _profileCache[proProfileId] = responseData!;
+          _profileCache[proProfileId] = responseData;
         }
       }
       
@@ -411,97 +410,6 @@ class MapActionsService {
         return SubscriptionTierType.premiumVisibility;
       case SubscriptionTier.ultimateAccess:
         return SubscriptionTierType.ultimateAccess;
-    }
-  }
-
-  /// Navigate to pro profile by ID (fetch details first)
-  Future<void> _navigateToProProfileById(
-    BuildContext context,
-    String proProfileId,
-  ) async {
-    // Check cache first
-    if (_profileCache.containsKey(proProfileId)) {
-      _navigateWithProDetailsStruct(context, _profileCache[proProfileId]!);
-      return;
-    }
-    
-    try {
-      Map<String, dynamic>? responseData;
-      
-      try {
-        // Try RPC first
-        final response = await _supabase.rpc(
-          'get_pro_item_details',
-          params: {'p_pro_profile_id': proProfileId},
-        );
-        if (response != null && response is Map<String, dynamic>) {
-          // Flatten socials object for ProDetailsStruct compatibility
-          final socials = response['socials'] as Map<String, dynamic>?;
-          responseData = {
-            ...response,
-            'instagramUrl': socials?['instagramUrl'] ?? response['instagramUrl'],
-            'websiteUrl': socials?['websiteUrl'] ?? response['websiteUrl'],
-          };
-          _profileCache[proProfileId] = responseData;
-        }
-      } catch (rpcError) {
-        debugPrint('RPC failed, using fallback: $rpcError');
-        // Fallback to direct query - use LEFT JOIN to handle non-pro users
-        final data = await _supabase
-            .from('profiles')
-            .select('''
-              id, full_name, avatar_url,
-              professional_details (
-                business_name, profession, description, portfolio_images,
-                slideshow_images, instagram_url, website_url, profile_video_url,
-                has_cover_video, location_label
-              )
-            ''')
-            .eq('id', proProfileId)
-            .maybeSingle();
-            
-        if (data != null) {
-          final details = data['professional_details'] as Map<String, dynamic>?;
-          
-          responseData = {
-            'proProfileId': data['id'],
-            'fullName': data['full_name'],
-            'avatarUrl': data['avatar_url'],
-            'businessName': details?['business_name'],
-            'profession': details?['profession'],
-            'description': details?['description'],
-            'portfolioImages': details?['portfolio_images'],
-            'slideshowImages': details?['slideshow_images'],
-            'instagramUrl': details?['instagram_url'],
-            'websiteUrl': details?['website_url'],
-            'profileVideoUrl': details?['profile_video_url'],
-            'hasCoverVideo': details?['has_cover_video'] == true,
-            'locationLabel': details?['location_label'],
-            'isFavorited': false,
-            'isLive': true,
-            'canBeContactedByBride': true,
-            'canContactBride': true,
-          };
-          _profileCache[proProfileId] = responseData!;
-        }
-      }
-      
-      if (responseData != null) {
-        _navigateWithProDetailsStruct(context, responseData);
-      } else {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Profile not found')),
-          );
-        }
-      }
-    } catch (e) {
-      debugPrint('Error fetching professional details: $e');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error loading profile')),
-        );
-      }
     }
   }
   

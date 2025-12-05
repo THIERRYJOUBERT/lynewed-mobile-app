@@ -209,7 +209,7 @@ class _DashboardProWidgetState extends State<DashboardProWidget> with WidgetsBin
                       _buildBadgeIcon(
                         icon: Icons.notifications_outlined,
                         count: FFAppState().unreadNotificationsCount,
-                        onTap: () => context.pushNamed(NotificationsPageWidget.routeName),
+                        onTap: () => context.pushNamed(NotificationsPage.routeName),
                       ),
                       const SizedBox(width: 14.0),
                       // Messages

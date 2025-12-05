@@ -53,7 +53,7 @@ class _FavProListWidgetState extends State<FavProListWidget> {
       final result = await actions.getFavoritedProfessionalsAction();
       
       setState(() {
-        _favorites = result?.cast<ProDetailsStruct>() ?? [];
+        _favorites = result.cast<ProDetailsStruct>();
         _isLoading = false;
       });
     } catch (e) {

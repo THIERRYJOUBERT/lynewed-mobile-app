@@ -14,17 +14,19 @@
 
 | Métrique | Valeur |
 |----------|--------|
-| **Fichiers modifiés** | 321 |
+| **Fichiers modifiés** | 328 |
 | **Fichiers créés** | 199 |
-| **Fichiers supprimés** | 40 |
-| **Lignes ajoutées** | 58,822 |
-| **Lignes supprimées** | 23,521 |
-| **Lignes nettes** | +35,301 |
-| **Commits** | 69 |
+| **Fichiers supprimés** | 57 (+17 cleanup) |
+| **Lignes ajoutées** | 58,915 |
+| **Lignes supprimées** | 40,607 (+17,086 cleanup) |
+| **Lignes nettes** | +18,308 (-17,043 cleanup) |
+| **Codebase final** | ~71,500 lignes (vs ~112,000 avant cleanup) |
+| **Commits** | 70 |
 | **Migrations SQL** | 20 nouvelles |
 | **Tests unitaires** | 63 (module Map) |
 | **Edge Functions** | 3 nouvelles, 13 modifiées |
-| **Documentation** | 39 fichiers .md créés |
+| **Documentation** | 40 fichiers .md créés |
+| **Flutter Analyze Issues** | 389 (vs 523 avant cleanup = -26%) |
 
 ### Objectifs Atteints
 
@@ -747,14 +749,18 @@ L'application Lynewed a été **entièrement transformée** en 2 semaines, passa
 
 ### Chiffres Clés
 
-- **+35,301 lignes nettes** de code propre
-- **321 fichiers** touchés
-- **69 commits** structurés
+- **+18,308 lignes nettes** de code propre (après cleanup)
+- **~71,500 lignes** de codebase finale (vs ~112,000 avant = -36%)
+- **328 fichiers** touchés
+- **70 commits** structurés
 - **5 modules** entièrement refactorisés (Design System, Map, Chat, Notifications, Feed)
 - **63 tests unitaires** créés
 - **20 migrations SQL** appliquées
 - **16 Edge Functions** (3 nouvelles, 13 modifiées)
-- **39 documents** de documentation créés
+- **40 documents** de documentation créés
+- **57 fichiers supprimés** (17 lors du cleanup final)
+- **40,607 lignes supprimées** (17,086 lors du cleanup)
+- **389 Flutter Analyze issues** (-26% vs 523 avant cleanup)
 - **0% duplication** (vs 90% avant)
 - **100% testabilité** (vs 0% avant)
 
@@ -783,12 +789,13 @@ L'application est désormais **prête pour le déploiement TestFlight** de la v1
 
 ## 📎 ANNEXE: LISTE COMPLÈTE DES COMMITS
 
-### Commits Majeurs (69 total)
+### Commits Majeurs (70 total)
 
 | Date | Commit | Description |
 |------|--------|-------------|
 | 2025-12-05 | `f4a6ab4` | Dashboard refactoring + App Review integration |
 | 2025-12-05 | `e118e2e` | Professional details & upcoming travels integration |
+| 2025-12-05 | `cfe5966` | refactor(cleanup): Phase 3 - Dead code removal & project optimization |
 | 2025-12-05 | `325078a` | ProDetails Images V2 + Bug Fixes |
 | 2025-12-05 | `e398030` | Feed Images V2 Migration with 3:4 Grid Format |
 | 2025-12-05 | `10e9e23` | Dashboard-pro alerts section redesign |
@@ -846,4 +853,5 @@ L'application est désormais **prête pour le déploiement TestFlight** de la v1
 
 **Document généré le 5 décembre 2025**  
 **Refactorisation réalisée du 24 novembre au 5 décembre 2025**  
-**Version du rapport: 1.1 (challengé et complété)**
+**Cleanup final: 5 décembre 2025 (Phase 3 - Dead code removal)**  
+**Version du rapport: 1.2 (mis à jour avec cleanup stats)**

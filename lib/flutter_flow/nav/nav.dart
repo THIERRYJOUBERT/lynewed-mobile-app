@@ -163,8 +163,8 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => const EditProfileBridesWidget(),
         ),
         FFRoute(
-          name: NotificationSettingsWidget.routeName,
-          path: NotificationSettingsWidget.routePath,
+          name: NotificationSettingsPage.routeName,
+          path: NotificationSettingsPage.routePath,
           builder: (context, params) => const NotificationSettingsPage(),
         ),
         FFRoute(
@@ -309,8 +309,8 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => const WishlistProWidget(),
         ),
         FFRoute(
-          name: NotificationsPageWidget.routeName,
-          path: NotificationsPageWidget.routePath,
+          name: NotificationsPage.routeName,
+          path: NotificationsPage.routePath,
           builder: (context, params) => const NotificationsPage(),
         ),
         FFRoute(

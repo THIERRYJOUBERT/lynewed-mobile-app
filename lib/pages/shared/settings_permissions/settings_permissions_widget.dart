@@ -18,7 +18,6 @@ import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/permissions_util.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 

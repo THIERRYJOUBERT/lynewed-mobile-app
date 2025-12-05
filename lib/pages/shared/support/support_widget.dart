@@ -14,7 +14,6 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '/core/design/design.dart';
 import '/core/design/widgets/widgets.dart';
 import '/backend/supabase/supabase.dart';
