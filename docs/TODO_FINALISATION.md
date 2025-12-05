@@ -1,9 +1,9 @@
 # 📋 TODO FINALISATION V1 - PLAN COMPLET
 
-> **Version**: 2.1  
+> **Version**: 3.0  
 > **Date**: 2025-12-05  
 > **Objectif**: Finalisation v1 avant déploiement TestFlight  
-> **Estimation totale**: 25-35 heures (optimisé)
+> **Estimation totale**: 20-30 heures
 
 ---
 
@@ -14,7 +14,9 @@
 - **Map Module** : 100% refactorisé Clean Architecture
 - **Chat Module** : Messages, contact, modération terminés  
 - **Notifications** : 7/7 types validés, settings fonctionnels
-- **Feed MVP** : ✅ Phase 1 terminée (2025-12-05)
+- **Feed MVP** : ✅ Phase 1 + 1.5 terminées (2025-12-05)
+- **Feed Pro** : ✅ Déjà implémenté
+- **ProDetails Refonte** : ✅ Terminée (2025-12-04)
 
 ### 📊 Métriques Projet
 - **Codebase** : ~15,000+ lignes Dart
@@ -97,10 +99,8 @@
 - [x] Corrigé bug localisation Paris (données seed incorrectes dans DB)
 - [x] Mis à jour `location_label` pour correspondre au `location_country_code`
 
-### 1.5.5 Feed pour Pros (1h) - OPTIONNEL
-- [ ] Ajouter onglet Feed dans navbar Pro (remplacer Profil)
-- [ ] Réutiliser page `FeedBridesWidget` pour les pros
-- [ ] Adapter actions (pas de favoris entre pros)
+### 1.5.5 Feed pour Pros - ✅ DÉJÀ FAIT
+- [x] Feed Pro déjà implémenté et fonctionnel
 
 ---
 
@@ -123,14 +123,19 @@
 
 ---
 
-## 🟢 PHASE 3 - SETTINGS & PROFIL (3-5h)
+## 🟢 PHASE 3 - SETTINGS & PROFIL PRO (4-6h)
 
 ### 3.1 Restructuration Navigation Pro
-- [ ] Déplacer page profil vers Settings
-- [ ] Remplacer par onglet Feed dans navbar pro
-- [ ] Adapter layout pour 5 éléments navbar
+- [ ] Supprimer page Profil de la navbar Pro
+- [ ] Ajouter "Mon Profil" dans Settings Pro → ouvre ProDetails (read-only)
+- [ ] Pro peut voir son propre profil via la nouvelle page ProDetails refactorisée
 
-### 3.2 Validation Settings
+### 3.2 Upcoming Travels Connection
+- [ ] Relier frontend existant au backend
+- [ ] Tester création/modification/suppression de voyages
+- [ ] Vérifier affichage sur la map
+
+### 3.3 Validation Settings
 - [ ] Système tickets support fonctionnel
 - [ ] Notes App Store flow opérationnel
 - [ ] Toutes préférences utilisateur testées
@@ -138,7 +143,7 @@
 
 ---
 
-## 🔵 PHASE 4 - TESTS GLOBAUX (5-10h)
+## 🔵 PHASE 4 - TESTS & VALIDATION (5-10h)
 
 ### 4.1 Tests Fonctionnels
 - [ ] Tests end-to-end complets (Bride + Pro workflows)
@@ -153,21 +158,41 @@
 - [ ] Latence API acceptable
 
 ### 4.3 Tests Sécurité
-- [ ] Audit RLS policies
+- [ ] Audit RLS policies Supabase
 - [ ] Vérification permissions par rôle
 - [ ] Tests edge cases (offline, mauvais réseau)
+- [ ] Checker warnings Supabase advisors
 
 ---
 
-## 🚀 PHASE 5 - TESTFLIGHT DÉPLOIEMENT (2-4h)
+## 🧹 PHASE 5 - CLEANUP & PRODUCTION READY (3-5h)
 
-### 5.1 Préparation Technique
+### 5.1 Nettoyage Code Mort
+- [ ] Supprimer fichiers FlutterFlow non utilisés (`lib/compo_finaux/`, etc.)
+- [ ] Supprimer composants legacy non référencés
+- [ ] Nettoyer imports inutilisés
+
+### 5.2 Sécurisation Logs
+- [ ] Supprimer tous les `debugPrint` en production
+- [ ] Remplacer logs sensibles par logging sécurisé
+- [ ] Vérifier qu'aucune donnée utilisateur n'est loggée
+
+### 5.3 Warnings & Advisors
+- [ ] Résoudre warnings Flutter analyze
+- [ ] Checker Supabase security advisors
+- [ ] Checker Supabase performance advisors
+
+---
+
+## 🚀 PHASE 6 - TESTFLIGHT DÉPLOIEMENT (2-4h)
+
+### 6.1 Préparation Technique
 - [ ] Version bump (v2.0.0)
 - [ ] Changelog complet
 - [ ] Screenshots mises à jour
 - [ ] Métadonnées App Store prêtes
 
-### 5.2 Configuration Beta
+### 6.2 Configuration Beta
 - [ ] Liste testeurs interne
 - [ ] Feedback collection setup
 - [ ] Monitoring crash analytics
@@ -177,15 +202,16 @@
 
 ## 📊 TIMELINE ESTIMÉ (OPTIMISÉ)
 
-| Phase | Heures | Jours (8h/jour) | Priorité | Statut |
-|-------|--------|-----------------|----------|--------|
-| Feed MVP (Phase 1) | 6-7h | 1 jour | 🔴 CRITIQUE | ✅ TERMINÉ |
-| Feed Compléments (Phase 1.5) | 8-10h | 1 jour | 🟡 IMPORTANTE | 🔄 EN COURS |
-| Auth Refactoring | 5-8h | 1 jour | 🟡 IMPORTANTE | ⏳ À FAIRE |
-| Settings/Profil | 3-5h | 0.5 jour | 🟢 MODÉRÉE | ⏳ À FAIRE |
-| Tests Globaux | 5-10h | 1 jour | 🔴 CRITIQUE | ⏳ À FAIRE |
-| TestFlight Setup | 2-4h | 0.5 jour | 🟡 IMPORTANTE | ⏳ À FAIRE |
-| **TOTAL RESTANT** | **23-37h** | **3-5 jours** | | |
+| Phase | Heures | Priorité | Statut |
+|-------|--------|----------|--------|
+| Feed MVP (Phase 1) | 6-7h | 🔴 CRITIQUE | ✅ TERMINÉ |
+| Feed Compléments (Phase 1.5) | 8-10h | 🟡 IMPORTANTE | ✅ TERMINÉ |
+| Auth Refactoring (Phase 2) | 5-8h | 🟡 IMPORTANTE | ⏳ À FAIRE |
+| Settings & Profil Pro (Phase 3) | 4-6h | 🟢 MODÉRÉE | ⏳ À FAIRE |
+| Tests & Validation (Phase 4) | 5-10h | 🔴 CRITIQUE | ⏳ À FAIRE |
+| Cleanup & Production (Phase 5) | 3-5h | � IMPORTANTE | ⏳ À FAIRE |
+| TestFlight Setup (Phase 6) | 2-4h | 🟡 IMPORTANTE | ⏳ À FAIRE |
+| **TOTAL RESTANT** | **19-33h** | | |
 
 ---
 
@@ -248,7 +274,7 @@
 
 ---
 
-**Statut**: 🔄 PHASE 1 TERMINÉE - EN COURS PHASE 1.5  
-**Dernière mise à jour**: 2025-12-05 11:46  
-**Prochaine action**: Phase 1.5.1 - Images V2 Migration (format 3:4)  
-**Ordre d'exécution**: ~~Phase 1 MVP~~ ✅ → Phase 1.5 Compléments → Phase 2+
+**Statut**: ✅ PHASE 1 + 1.5 TERMINÉES - PROCHAINE: PHASE 2 AUTH  
+**Dernière mise à jour**: 2025-12-05 12:25  
+**Prochaine action**: Phase 2 - Auth Refactoring  
+**Ordre d'exécution**: ~~Phase 1~~ ✅ → ~~Phase 1.5~~ ✅ → Phase 2 Auth → Phase 3 Settings → Phase 4 Tests → Phase 5 Cleanup → Phase 6 TestFlight
