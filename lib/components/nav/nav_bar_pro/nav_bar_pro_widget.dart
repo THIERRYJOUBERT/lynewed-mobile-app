@@ -1,7 +1,5 @@
-import '/auth/supabase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'nav_bar_pro_model.dart';
@@ -252,7 +250,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.grid_view_outlined,
+                            Icons.search_sharp,
                             color: widget.number == 4
                                 ? FlutterFlowTheme.of(context).primaryText
                                 : FlutterFlowTheme.of(context).alternate,

@@ -12,6 +12,7 @@ class CurrencyDropdown extends StatelessWidget {
     this.label,
     this.showSymbol = true,
     this.compact = false,
+    this.filled = false,
   });
 
   /// Current selected currency code (e.g., 'EUR', 'USD')
@@ -28,6 +29,9 @@ class CurrencyDropdown extends StatelessWidget {
 
   /// Compact mode for inline usage
   final bool compact;
+
+  /// Filled mode: grey background instead of border (for Preferences page)
+  final bool filled;
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +71,14 @@ class CurrencyDropdown extends StatelessWidget {
 
   Widget _buildFullDropdown(BuildContext context) {
     final currency = CurrencyData.getByCode(value);
+    
+    // Display text: shorter for filled mode
+    final displayText = currency != null
+        ? (filled 
+            ? '${currency.symbol} ${currency.code}' 
+            : '${currency.symbol} ${currency.code} - ${currency.name}')
+        : value;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -76,25 +88,29 @@ class CurrencyDropdown extends StatelessWidget {
         ],
         InkWell(
           onTap: () => _showCurrencyPicker(context),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(filled ? 4 : 8),
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              border: Border.all(color: LynewedColors.border),
-              borderRadius: BorderRadius.circular(8),
+              color: filled ? const Color(0xFFF2F2F2) : null,
+              border: filled ? null : Border.all(color: LynewedColors.border),
+              borderRadius: BorderRadius.circular(filled ? 4 : 8),
             ),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
-                    currency != null
-                        ? '${currency.symbol} ${currency.code} - ${currency.name}'
-                        : value,
-                    style: LynewedTextStyles.bodyMedium,
+                    displayText,
+                    style: LynewedTextStyles.bodyMedium.copyWith(
+                      fontWeight: filled ? FontWeight.w300 : FontWeight.w400,
+                    ),
                   ),
                 ),
-                Icon(Icons.arrow_drop_down, color: LynewedColors.textSecondary),
+                Icon(
+                  filled ? Icons.keyboard_arrow_down : Icons.arrow_drop_down, 
+                  color: LynewedColors.textSecondary,
+                ),
               ],
             ),
           ),

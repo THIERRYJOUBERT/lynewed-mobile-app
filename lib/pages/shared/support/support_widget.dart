@@ -1,17 +1,36 @@
-import '/backend/supabase/supabase.dart';
-import '/auth/supabase_auth/auth_util.dart';
-import '/components/nav/header_bar/header_bar_widget.dart';
-import '/flutter_flow/flutter_flow_drop_down.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/form_field_controller.dart';
+/// Support/Contact page - Clean Architecture
+/// 
+/// Unified contact support page for both Brides and Professionals.
+/// Allows users to send support tickets with subject and message.
+/// Tickets are stored in support_tickets table with status 'pending'.
+/// 
+/// DESIGN SYSTEM v3 APPLIED:
+/// - Header: Back button (LynewedComponentStyles.backButton) + Title
+/// - Divider under header (LynewedColors.gray200)
+/// - Typography: LynewedTextStyles.sectionTitle for section headers
+/// - Spacing: 30px inter-section, 10px label→content
+/// - TextField: LynewedTextField with grey background (like wedding_create_sheet)
+/// - Button: LynewedButton primary style
+library;
+
 import 'package:flutter/material.dart';
-import 'support_model.dart';
-export 'support_model.dart';
+import 'package:provider/provider.dart';
+import '/core/design/design.dart';
+import '/core/design/widgets/widgets.dart';
+import '/backend/supabase/supabase.dart';
+import '/backend/schema/enums/enums.dart';
+import '/auth/supabase_auth/auth_util.dart';
+import '/flutter_flow/flutter_flow_util.dart';
 
 class SupportWidget extends StatefulWidget {
-  const SupportWidget({super.key});
+  const SupportWidget({
+    super.key,
+    this.prefilledSubject,
+  });
+
+  /// Optional pre-filled subject for the support ticket
+  /// Used when navigating from specific contexts (e.g., "Delete Account" for Pro)
+  final String? prefilledSubject;
 
   static String routeName = 'Support';
   static String routePath = '/support';
@@ -21,582 +40,267 @@ class SupportWidget extends StatefulWidget {
 }
 
 class _SupportWidgetState extends State<SupportWidget> {
-  late SupportModel _model;
+  late TextEditingController _otherSubjectController;
+  late TextEditingController _messageController;
+  
+  String? _selectedSubject;
+  bool _isLoading = false;
 
-  final scaffoldKey = GlobalKey<ScaffoldState>();
+  // Subject visible only for Pro users requesting account deletion
+  static const String _deleteAccountSubject = 'Request account deletion';
+
+  static const List<String> _subjectOptions = [
+    'Question about my account',
+    'Report a bug',
+    'Feature request',
+    _deleteAccountSubject, // Pro-only, will be filtered in UI
+    'Other...'
+  ];
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => SupportModel());
-
-    _model.textFieldOtherSubjectTextController ??= TextEditingController();
-    _model.textFieldOtherSubjectFocusNode ??= FocusNode();
-
-    _model.textFieldDetailsTextController ??= TextEditingController();
-    _model.textFieldDetailsFocusNode ??= FocusNode();
+    _otherSubjectController = TextEditingController();
+    _messageController = TextEditingController();
+    
+    // Handle pre-filled subject from navigation
+    if (widget.prefilledSubject != null) {
+      _selectedSubject = widget.prefilledSubject;
+    }
   }
 
   @override
   void dispose() {
-    _model.dispose();
-
+    _otherSubjectController.dispose();
+    _messageController.dispose();
     super.dispose();
+  }
+
+  Future<void> _onSendPressed() async {
+    // Validation du sujet
+    String? finalSubject;
+    if (_selectedSubject == null || _selectedSubject!.isEmpty) {
+      _showSnackBar('Please select a subject', LynewedColors.warning);
+      return;
+    }
+
+    if (_selectedSubject == 'Other...') {
+      if (_otherSubjectController.text.trim().isEmpty) {
+        _showSnackBar('Please describe your subject', LynewedColors.warning);
+        return;
+      }
+      finalSubject = _otherSubjectController.text.trim();
+    } else {
+      finalSubject = _selectedSubject!;
+    }
+
+    // Validation du message
+    if (_messageController.text.trim().isEmpty) {
+      _showSnackBar('Please describe your request', LynewedColors.warning);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await SupportTicketsTable().insert({
+        'profile_id': currentUserUid,
+        'subject': finalSubject,
+        'message': _messageController.text.trim(),
+        'status': 'pending',
+      });
+
+      if (mounted) {
+        _showSnackBar(
+          'Your message has been sent. We will respond as soon as possible.',
+          LynewedColors.success,
+        );
+        
+        // Pop after short delay
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            Navigator.of(context).pop();
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar(
+          'An error occurred. Please try again.',
+          LynewedColors.error,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _showSnackBar(String message, Color backgroundColor) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(color: Colors.white)),
+        backgroundColor: backgroundColor,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(milliseconds: 2500),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        body: Stack(
-          children: [
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                  child: Padding(
-                    padding:
-                        const EdgeInsetsDirectional.fromSTEB(20.0, 130.0, 10.0, 84.0),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: MediaQuery.sizeOf(context).width * 1.0,
-                            decoration: const BoxDecoration(),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 4.0),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Select the subject of your enquiry',
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily:
-                                                  'Haas Grot Text Trial',
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                              fontSize: 14.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                FlutterFlowDropDown<String>(
-                                  controller:
-                                      _model.dropDownSubjectValueController ??=
-                                          FormFieldController<String>(null),
-                                  options: const [
-                                    'Question about my account',
-                                    'Report a bug',
-                                    'Other...'
-                                  ],
-                                  onChanged: (val) async {
-                                    safeSetState(() =>
-                                        _model.dropDownSubjectValue = val);
-                                    if (_model.dropDownSubjectValue ==
-                                        'Other...') {
-                                      _model.other = true;
-                                      safeSetState(() {});
-                                    } else {
-                                      _model.other = false;
-                                      safeSetState(() {});
-                                    }
-                                  },
-                                  width: MediaQuery.sizeOf(context).width * 1.0,
-                                  height: 44.0,
-                                  textStyle: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        fontFamily: 'Haas Grot Text Trial',
-                                        letterSpacing: 0.0,
-                                      ),
-                                  hintText: 'Subject of your enquiry',
-                                  icon: Icon(
-                                    Icons.keyboard_arrow_down_rounded,
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryText,
-                                    size: 24.0,
-                                  ),
-                                  fillColor: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
-                                  elevation: 2.0,
-                                  borderColor: Colors.transparent,
-                                  borderWidth: 0.0,
-                                  borderRadius: 4.0,
-                                  margin: const EdgeInsetsDirectional.fromSTEB(
-                                      12.0, 0.0, 12.0, 0.0),
-                                  hidesUnderline: true,
-                                  isOverButton: false,
-                                  isSearchable: false,
-                                  isMultiSelect: false,
-                                ),
-                                if (_model.other == true)
-                                  Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Other subject',
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  fontFamily:
-                                                      'Haas Grot Text Trial',
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primaryText,
-                                                  fontSize: 14.0,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
-                                        child: TextFormField(
-                                          controller: _model
-                                              .textFieldOtherSubjectTextController,
-                                          focusNode: _model
-                                              .textFieldOtherSubjectFocusNode,
-                                          autofocus: false,
-                                          obscureText: false,
-                                          decoration: InputDecoration(
-                                            isDense: false,
-                                            hintText: 'Other...',
-                                            hintStyle:
-                                                FlutterFlowTheme.of(context)
-                                                    .labelMedium
-                                                    .override(
-                                                      fontFamily:
-                                                          'Haas Grot Text Trial',
-                                                      color: const Color(0x9C57636C),
-                                                      fontSize: 14.0,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                    ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderSide: const BorderSide(
-                                                color: Color(0x00000000),
-                                                width: 1.0,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(4.0),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderSide: const BorderSide(
-                                                color: Color(0x00000000),
-                                                width: 1.0,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(4.0),
-                                            ),
-                                            errorBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .error,
-                                                width: 1.0,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(4.0),
-                                            ),
-                                            focusedErrorBorder:
-                                                OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .error,
-                                                width: 1.0,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(4.0),
-                                            ),
-                                            filled: true,
-                                            fillColor: const Color(0xFFF5F5F5),
-                                            contentPadding:
-                                                const EdgeInsetsDirectional.fromSTEB(
-                                                    16.0, 20.0, 16.0, 12.0),
-                                          ),
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily:
-                                                    'Haas Grot Text Trial',
-                                                fontSize: 14.0,
-                                                letterSpacing: 0.0,
-                                              ),
-                                          textAlign: TextAlign.start,
-                                          cursorColor:
-                                              FlutterFlowTheme.of(context)
-                                                  .primaryText,
-                                          validator: _model
-                                              .textFieldOtherSubjectTextControllerValidator
-                                              .asValidator(context),
-                                        ),
-                                      ),
-                                    ].divide(const SizedBox(height: 10.0)),
-                                  ),
-                              ].divide(const SizedBox(height: 10.0)),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                0.0, 16.0, 0.0, 0.0),
-                            child: Container(
-                              decoration: const BoxDecoration(),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Text(
-                                        'Message',
-                                        style: FlutterFlowTheme.of(context)
-                                            .labelMedium
-                                            .override(
-                                              fontFamily:
-                                                  'Haas Grot Text Trial',
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                              fontSize: 20.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 4.0),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Flexible(
-                                          child: RichText(
-                                            text: TextSpan(
-                                              children: [
-                                                TextSpan(
-                                                  text: 'Describe your request in detail',
-                                                  style: FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        fontFamily:
-                                                            'Haas Grot Text Trial',
-                                                        color:
-                                                            FlutterFlowTheme.of(context)
-                                                                .secondaryText,
-                                                        fontSize: 11.0,
-                                                        letterSpacing: 0.0,
-                                                      ),
-                                                ),
-                                                TextSpan(
-                                                  text: ' Or contact us directly at support@lynewed.com',
-                                                  style: FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        fontFamily:
-                                                            'Haas Grot Text Trial',
-                                                        color:
-                                                            FlutterFlowTheme.of(context)
-                                                                .primary,
-                                                        fontSize: 11.0,
-                                                        letterSpacing: 0.0,
-                                                      ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width:
-                                        MediaQuery.sizeOf(context).width * 1.0,
-                                    child: TextFormField(
-                                      controller:
-                                          _model.textFieldDetailsTextController,
-                                      focusNode:
-                                          _model.textFieldDetailsFocusNode,
-                                      autofocus: false,
-                                      obscureText: false,
-                                      decoration: InputDecoration(
-                                        isDense: false,
-                                        hintText: 'I need...',
-                                        hintStyle: FlutterFlowTheme.of(context)
-                                            .labelMedium
-                                            .override(
-                                              fontFamily:
-                                                  'Haas Grot Text Trial',
-                                              color: const Color(0x9C57636C),
-                                              fontSize: 14.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.normal,
-                                            ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                            color: Color(0x00000000),
-                                            width: 1.0,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(4.0),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                            color: Color(0x00000000),
-                                            width: 1.0,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(4.0),
-                                        ),
-                                        errorBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
-                                                .error,
-                                            width: 1.0,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(4.0),
-                                        ),
-                                        focusedErrorBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
-                                                .error,
-                                            width: 1.0,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(4.0),
-                                        ),
-                                        filled: true,
-                                        fillColor: const Color(0xFFF5F5F5),
-                                        contentPadding:
-                                            const EdgeInsetsDirectional.fromSTEB(
-                                                16.0, 20.0, 16.0, 12.0),
-                                      ),
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Haas Grot Text Trial',
-                                            fontSize: 14.0,
-                                            letterSpacing: 0.0,
-                                          ),
-                                      textAlign: TextAlign.start,
-                                      maxLines: 15,
-                                      cursorColor: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      validator: _model
-                                          .textFieldDetailsTextControllerValidator
-                                          .asValidator(context),
-                                    ),
-                                  ),
-                                ].divide(const SizedBox(height: 10.0)),
-                              ),
-                            ),
-                          ),
-                        ].divide(const SizedBox(height: 20.0)),
+        backgroundColor: LynewedColors.background,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Header - Same style as MessagesPage
+              _buildHeader(),
+              
+              // Divider - Same as LynewedSheet
+              const Divider(height: 1, color: LynewedColors.gray200),
+              
+              // Content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Subject Section
+                      Text('Subject', style: LynewedTextStyles.sectionTitle),
+                      const SizedBox(height: 12),
+                      _buildSubjectDropdown(),
+                      
+                      // Other subject field (conditional)
+                      if (_selectedSubject == 'Other...') ...[
+                        const SizedBox(height: 20),
+                        LynewedTextField(
+                          controller: _otherSubjectController,
+                          label: 'Describe your subject',
+                          hint: 'Please describe...',
+                          maxLines: 2,
+                        ),
+                      ],
+                      
+                      // Message Section
+                      const SizedBox(height: 30),
+                      LynewedTextField(
+                        controller: _messageController,
+                        label: 'Message',
+                        hint: 'Describe your request in detail...',
+                        maxLines: 8,
                       ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            wrapWithModel(
-              model: _model.headerBarModel,
-              updateCallback: () => safeSetState(() {}),
-              child: const HeaderBarWidget(
-                title: 'CONTACT SUPPORT',
-              ),
-            ),
-            Align(
-              alignment: const AlignmentDirectional(0.0, 1.0),
-              child: Container(
-                width: double.infinity,
-                height: 90.0,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                ),
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding:
-                          const EdgeInsetsDirectional.fromSTEB(0.0, 14.0, 0.0, 0.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                20.0, 0.0, 20.0, 0.0),
-                            child: FFButtonWidget(
-                              onPressed: () async {
-                                // Validation du sujet
-                                String? finalSubject;
-                                if (_model.dropDownSubjectValue == 'Other...') {
-                                  if (_model.textFieldOtherSubjectTextController.text.isEmpty) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Please add a subject to your request!',
-                                          style: TextStyle(
-                                            color: FlutterFlowTheme.of(context).primaryText,
-                                          ),
-                                        ),
-                                        duration: const Duration(milliseconds: 2000),
-                                        backgroundColor: FlutterFlowTheme.of(context).warning,
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  finalSubject = _model.textFieldOtherSubjectTextController.text;
-                                } else if (_model.dropDownSubjectValue == null || _model.dropDownSubjectValue!.isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Please add a subject to your request!',
-                                        style: TextStyle(
-                                          color: FlutterFlowTheme.of(context).primaryText,
-                                        ),
-                                      ),
-                                      duration: const Duration(milliseconds: 2000),
-                                      backgroundColor: FlutterFlowTheme.of(context).warning,
-                                    ),
-                                  );
-                                  return;
-                                } else {
-                                  finalSubject = _model.dropDownSubjectValue!;
-                                }
-
-                                // Validation du message
-                                if (_model.textFieldDetailsTextController.text.isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Please add a message to your request!',
-                                        style: TextStyle(
-                                          color: FlutterFlowTheme.of(context).primaryText,
-                                        ),
-                                      ),
-                                      duration: const Duration(milliseconds: 2000),
-                                      backgroundColor: FlutterFlowTheme.of(context).warning,
-                                    ),
-                                  );
-                                  return;
-                                }
-
-                                // Enregistrement dans la base de données
-                                try {
-                                  await SupportTicketsTable().insert({
-                                    'profile_id': currentUserUid,
-                                    'subject': finalSubject,
-                                    'message': _model.textFieldDetailsTextController.text,
-                                    'status': 'pending',
-                                  });
-
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Your message has been sent. We will respond as soon as possible.',
-                                        style: TextStyle(
-                                          color: FlutterFlowTheme.of(context).primaryText,
-                                        ),
-                                      ),
-                                      duration: const Duration(milliseconds: 2000),
-                                      backgroundColor: FlutterFlowTheme.of(context).success,
-                                    ),
-                                  );
-
-                                  safeSetState(() {
-                                    _model.textFieldOtherSubjectTextController?.clear();
-                                    _model.textFieldDetailsTextController?.clear();
-                                    _model.dropDownSubjectValueController?.reset();
-                                  });
-                                  
-                                  context.safePop();
-                                } catch (e) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'An error occurred while sending your message. Please try again.',
-                                        style: TextStyle(
-                                          color: FlutterFlowTheme.of(context).primaryText,
-                                        ),
-                                      ),
-                                      duration: const Duration(milliseconds: 2000),
-                                      backgroundColor: FlutterFlowTheme.of(context).error,
-                                    ),
-                                  );
-                                }
-                              },
-                              text: 'Send',
-                              options: FFButtonOptions(
-                                width: double.infinity,
-                                height: 48.0,
-                                padding: const EdgeInsetsDirectional.fromSTEB(
-                                    16.0, 0.0, 16.0, 0.0),
-                                iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 0.0),
-                                color: FlutterFlowTheme.of(context).primary,
-                                textStyle: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .override(
-                                      fontFamily: 'Haas Grot Text Trial',
-                                      color: Colors.white,
-                                      fontSize: 14.0,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.normal,
-                                    ),
-                                elevation: 0.0,
-                                borderRadius: BorderRadius.circular(0.0),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Align(
-                      alignment: const AlignmentDirectional(0.0, -1.0),
-                      child: Container(
-                        width: double.infinity,
-                        height: 1.0,
-                        decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context).secondary,
+                      
+                      const SizedBox(height: 12),
+                      Text(
+                        'Or contact us directly at support@lynewed.com',
+                        style: LynewedTextStyles.labelMedium.copyWith(
+                          color: LynewedColors.textSecondary,
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
+              
+              // Bottom Action - Same pattern as wedding_create_sheet
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                decoration: const BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: LynewedColors.gray200, width: 1),
+                  ),
+                ),
+                child: LynewedButton(
+                  text: 'Send',
+                  onPressed: _isLoading ? null : _onSendPressed,
+                  isLoading: _isLoading,
+                  width: double.infinity,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Header with back button and title - Same style as MessagesPage
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 20, 20, 12),
+      child: Row(
+        children: [
+          // Back button - Standard 44px tap target with 28px icon
+          LynewedComponentStyles.backButton(context),
+          
+          const SizedBox(width: 4),
+          
+          // Title - Same style as LynewedSheet/MessagesPage
+          Expanded(
+            child: Text(
+              'Contact Support',
+              style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 20),
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Subject dropdown with grey background - Same style as LynewedTextField
+  Widget _buildSubjectDropdown() {
+    // Filter options based on user role
+    // "Delete account" option only visible for Pro users
+    final isPro = FFAppState().currentUserRole == UserRole.professional;
+    final filteredOptions = _subjectOptions.where((subject) {
+      if (subject == _deleteAccountSubject) {
+        return isPro; // Only show for Pro
+      }
+      return true;
+    }).toList();
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF2F2F2), // Same as LynewedTextField fillColor
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _selectedSubject,
+          hint: Text(
+            'Select a subject',
+            style: LynewedTextStyles.inputHint,
+          ),
+          isExpanded: true,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          icon: const Icon(
+            Icons.keyboard_arrow_down,
+            color: LynewedColors.gray300,
+          ),
+          style: LynewedTextStyles.bodyMedium.copyWith(
+            fontWeight: FontWeight.w300,
+          ),
+          dropdownColor: LynewedColors.background,
+          items: filteredOptions.map((subject) {
+            return DropdownMenuItem<String>(
+              value: subject,
+              child: Text(subject),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              _selectedSubject = value;
+              if (value != 'Other...') {
+                _otherSubjectController.clear();
+              }
+            });
+          },
         ),
       ),
     );

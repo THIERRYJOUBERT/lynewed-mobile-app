@@ -151,11 +151,11 @@
 
 ### 3.2 Upcoming Travels - ✅ TERMINÉ
 - [x] RPC `get_pro_item_details` mis à jour pour inclure `upcomingTravels`
-- [x] Struct `UpcomingTravelStruct` créé
-- [x] Champ `upcomingTravels` ajouté à `ProDetailsStruct`
-- [x] Sheet `UpcomingTravelsSheet` connecté au backend
+- [x] Sheet `UpcomingTravelsSheet` refactorisé (appel direct Supabase)
+- [x] Getter `upcomingTravels` ajouté à `ProfessionalDetailsRow`
 - [x] Affichage des voyages avec dates formatées
 - [x] Empty state si pas de voyages
+- [x] Icône travel stylisée (cercle noir, icône blanche)
 
 ### 3.3 Pages Settings Existantes - ✅ VALIDÉ
 | Page | Chemin | Statut |
@@ -304,6 +304,6 @@
 ---
 
 **Statut**: ✅ PHASES 1, 1.5, 2, 3 TERMINÉES - PROCHAINE: PHASE 4 TESTS  
-**Dernière mise à jour**: 2025-12-05 13:50  
+**Dernière mise à jour**: 2025-12-05 16:01  
 **Prochaine action**: Phase 4 - Tests & Validation  
 **Ordre d'exécution**: ~~Phase 1~~ ✅ → ~~Phase 1.5~~ ✅ → ~~Phase 2 Auth~~ ✅ → ~~Phase 3 Settings~~ ✅ → Phase 4 Tests → Phase 5 Cleanup → Phase 6 TestFlight

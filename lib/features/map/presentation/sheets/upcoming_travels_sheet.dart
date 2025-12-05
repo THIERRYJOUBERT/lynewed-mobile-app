@@ -211,18 +211,18 @@ class _UpcomingTravelsSheetState extends State<UpcomingTravelsSheet> {
       ),
       child: Row(
         children: [
-          // Icon
+          // Icon - black circle with white icon
           Container(
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: LynewedColors.gray100,
+              color: LynewedColors.textPrimary,
               borderRadius: BorderRadius.circular(22),
             ),
             child: const Icon(
               Icons.flight_takeoff,
               size: 22,
-              color: LynewedColors.textSecondary,
+              color: LynewedColors.surface,
             ),
           ),
           const SizedBox(width: 12),

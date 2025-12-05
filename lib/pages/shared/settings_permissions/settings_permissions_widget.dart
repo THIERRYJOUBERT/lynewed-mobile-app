@@ -1,17 +1,26 @@
-import '/auth/supabase_auth/auth_util.dart';
-import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
-import '/components/nav/header_bar/header_bar_widget.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/custom_code/actions/index.dart' as actions;
-import '/flutter_flow/permissions_util.dart';
-import '/index.dart';
+/// Settings & Permissions page - Clean Architecture
+/// 
+/// Unified settings page for both Brides and Professionals.
+/// Handles device permissions, visibility preferences (Pro only), and account deletion.
+/// 
+/// DESIGN SYSTEM v3 APPLIED:
+/// - Header: Back button (LynewedComponentStyles.backButton) + Title
+/// - Divider under header (LynewedColors.gray200)
+/// - Typography: LynewedTextStyles.sectionTitle for section headers
+/// - Spacing: 30px inter-section
+/// - List items with descriptions
+library;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/scheduler.dart';
-import 'settings_permissions_model.dart';
-export 'settings_permissions_model.dart';
+import '/core/design/design.dart';
+import '/backend/schema/enums/enums.dart';
+import '/backend/supabase/supabase.dart';
+import '/auth/supabase_auth/auth_util.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/permissions_util.dart';
+import '/custom_code/actions/index.dart' as actions;
+import '/index.dart';
 
 class SettingsPermissionsWidget extends StatefulWidget {
   const SettingsPermissionsWidget({super.key});
@@ -25,921 +34,400 @@ class SettingsPermissionsWidget extends StatefulWidget {
 }
 
 class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
-  late SettingsPermissionsModel _model;
-
-  final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isLoading = true;
+  bool _proRecentVisibility = false;
+  bool _isDeleting = false;
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => SettingsPermissionsModel());
-
-    // On page load action.
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      _model.proRecentStatus = await ProRecentLocationsTable().queryRows(
-        queryFn: (q) => q.eqOrNull(
-          'profile_id',
-          currentUserUid,
-        ),
-      );
-      _model.proRecentVisibility = _model.proRecentStatus!.firstOrNull!.isOptIn;
-      safeSetState(() {});
-    });
-
-    _model.switchValue = true;
+    _loadProRecentStatus();
   }
 
-  @override
-  void dispose() {
-    _model.dispose();
+  Future<void> _loadProRecentStatus() async {
+    if (FFAppState().currentUserRole == UserRole.professional) {
+      try {
+        final rows = await ProRecentLocationsTable().queryRows(
+          queryFn: (q) => q.eqOrNull('profile_id', currentUserUid),
+        );
+        if (rows.isNotEmpty) {
+          _proRecentVisibility = rows.first.isOptIn;
+        }
+      } catch (e) {
+        // Silently fail - default to false
+      }
+    }
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+  }
 
-    super.dispose();
+  Future<void> _onPermissionTap(PermissionType type, String successMsg, String errorMsg) async {
+    final result = await actions.checkAndRequestPermission(type);
+    if (!mounted) return;
+    
+    if (result == 'granted') {
+      _showSnackBar(successMsg, LynewedColors.success);
+    } else {
+      _showSnackBar(errorMsg, LynewedColors.primary);
+    }
+  }
+
+  Future<void> _onToggleProRecent(bool value) async {
+    setState(() => _proRecentVisibility = value);
+    await actions.upsertProRecentOptIn(value);
+  }
+
+  Future<void> _onDeleteAccountTap() async {
+    final isPro = FFAppState().currentUserRole == UserRole.professional;
+    
+    if (isPro) {
+      // Pro: Navigate to support page with pre-filled subject
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const SupportWidget(
+            prefilledSubject: 'Request account deletion',
+          ),
+        ),
+      );
+    } else {
+      // Bride: Show confirmation dialog
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Delete my account?'),
+          content: const Text(
+            'Please note that you are about to delete your account. '
+            'This action is permanent. Are you sure you want to proceed?'
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(
+                'Delete my account',
+                style: TextStyle(color: LynewedColors.error),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed == true && mounted) {
+        setState(() => _isDeleting = true);
+        
+        final success = await actions.callDeleteAccountEdgeFunction();
+        
+        if (success && mounted) {
+          GoRouter.of(context).prepareAuthEvent();
+          await authManager.signOut();
+          GoRouter.of(context).clearRedirectLocation();
+          context.goNamedAuth(AuthWelcomePageWidget.routeName, context.mounted);
+        } else if (mounted) {
+          setState(() => _isDeleting = false);
+          await showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('An error has occurred'),
+              content: const Text(
+                'We are unable to delete your account. '
+                'Please try again later or contact support.'
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Ok'),
+                ),
+              ],
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  void _showSnackBar(String message, Color backgroundColor) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(color: Colors.white)),
+        backgroundColor: backgroundColor,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(milliseconds: 2500),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
+    final isPro = FFAppState().currentUserRole == UserRole.professional;
 
     return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        body: Align(
-          alignment: const AlignmentDirectional(0.0, -1.0),
-          child: SizedBox(
-            width: MediaQuery.sizeOf(context).width * 1.0,
-            height: MediaQuery.sizeOf(context).height * 1.0,
-            child: Stack(
-              children: [
-                Padding(
-                  padding:
-                      const EdgeInsetsDirectional.fromSTEB(0.0, 130.0, 0.0, 20.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsetsDirectional.fromSTEB(
-                            20.0, 0.0, 20.0, 0.0),
+        backgroundColor: LynewedColors.background,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              _buildHeader(),
+              
+              // Divider
+              const Divider(height: 1, color: LynewedColors.gray200),
+              
+              // Content
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator(color: LynewedColors.primary))
+                    : SingleChildScrollView(
+                        padding: const EdgeInsets.all(20),
                         child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Text(
-                                  'Device Permissions',
-                                  style: FlutterFlowTheme.of(context)
-                                      .titleMedium
-                                      .override(
-                                        fontFamily: 'Haas Grot Text Trial',
-                                        fontSize: 16.0,
-                                        letterSpacing: 0.0,
-                                      ),
-                                ),
-                              ],
-                            ),
-                            Padding(
-                              padding: const EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 16.0, 0.0, 0.0),
-                              child: InkWell(
-                                splashColor: Colors.transparent,
-                                focusColor: Colors.transparent,
-                                hoverColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                                onTap: () async {
-                                  _model.permissionResult =
-                                      await actions.checkAndRequestPermission(
-                                    PermissionType.LOCATION,
-                                  );
-                                  if (_model.permissionResult == 'granted') {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: const Text(
-                                          'Location access is enabled',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        duration: const Duration(milliseconds: 4000),
-                                        backgroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .success,
-                                      ),
-                                    );
-                                  } else {
-                                    if (_model.permissionResult ==
-                                        'permanently_denied') {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content: const Text(
-                                            'Enable location in settings',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          duration:
-                                              const Duration(milliseconds: 4000),
-                                          backgroundColor:
-                                              FlutterFlowTheme.of(context)
-                                                  .primary,
-                                        ),
-                                      );
-                                    } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content: const Text(
-                                            'Enable location in settings',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          duration:
-                                              const Duration(milliseconds: 4000),
-                                          backgroundColor:
-                                              FlutterFlowTheme.of(context)
-                                                  .primary,
-                                        ),
-                                      );
-                                    }
-                                  }
-
-                                  safeSetState(() {});
-                                },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Flexible(
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Location Access',
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  fontFamily:
-                                                      'Haas Grot Text Trial',
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                          ),
-                                          Text(
-                                            'Enables the map, nearby searches, and distance calculations.',
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  fontFamily:
-                                                      'Haas Grot Text Trial',
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .secondaryText,
-                                                  fontSize: 12.0,
-                                                  letterSpacing: 0.0,
-                                                ),
-                                          ),
-                                        ].divide(const SizedBox(height: 8.0)),
-                                      ),
-                                    ),
-                                    Icon(
-                                      Icons.chevron_right_outlined,
-                                      color: FlutterFlowTheme.of(context)
-                                          .primaryText,
-                                      size: 24.0,
-                                    ),
-                                  ].divide(const SizedBox(width: 14.0)),
-                                ),
+                            // Device Permissions Section
+                            Text('Device Permissions', style: LynewedTextStyles.sectionTitle),
+                            const SizedBox(height: 16),
+                            _buildPermissionItem(
+                              title: 'Location Access',
+                              description: 'Enables the map, nearby searches, and distance calculations.',
+                              onTap: () => _onPermissionTap(
+                                PermissionType.LOCATION,
+                                'Location access is enabled',
+                                'Enable location in settings',
                               ),
                             ),
-                            Divider(
-                              thickness: 1.0,
-                              color: FlutterFlowTheme.of(context).secondary,
-                            ),
-                            InkWell(
-                              splashColor: Colors.transparent,
-                              focusColor: Colors.transparent,
-                              hoverColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              onTap: () async {
-                                _model.permissionResultCopy =
-                                    await actions.checkAndRequestPermission(
-                                  PermissionType.NOTIFICATIONS,
-                                );
-                                if (_model.permissionResult == 'granted') {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: const Text(
-                                        'Notifications are enabled',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      duration: const Duration(milliseconds: 4000),
-                                      backgroundColor:
-                                          FlutterFlowTheme.of(context).success,
-                                    ),
-                                  );
-                                } else {
-                                  if (_model.permissionResult ==
-                                      'permanently_denied') {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: const Text(
-                                          'Enable notifications in settings',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        duration: const Duration(milliseconds: 4000),
-                                        backgroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                      ),
-                                    );
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: const Text(
-                                          'Enable notifications in settings',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        duration: const Duration(milliseconds: 4000),
-                                        backgroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                      ),
-                                    );
-                                  }
-                                }
-
-                                safeSetState(() {});
-                              },
-                              child: Row(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Flexible(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Push Notifications',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily:
-                                                    'Haas Grot Text Trial',
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                        ),
-                                        Text(
-                                          'Receive alerts for messages and important activities.',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily:
-                                                    'Haas Grot Text Trial',
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .secondaryText,
-                                                fontSize: 12.0,
-                                                letterSpacing: 0.0,
-                                              ),
-                                        ),
-                                      ].divide(const SizedBox(height: 8.0)),
-                                    ),
-                                  ),
-                                  Icon(
-                                    Icons.chevron_right_outlined,
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryText,
-                                    size: 24.0,
-                                  ),
-                                ].divide(const SizedBox(width: 14.0)),
+                            _buildPermissionItem(
+                              title: 'Push Notifications',
+                              description: 'Receive alerts for messages and important activities.',
+                              onTap: () => _onPermissionTap(
+                                PermissionType.NOTIFICATIONS,
+                                'Notifications are enabled',
+                                'Enable notifications in settings',
                               ),
                             ),
-                            Divider(
-                              thickness: 1.0,
-                              color: FlutterFlowTheme.of(context).secondary,
-                            ),
-                            InkWell(
-                              splashColor: Colors.transparent,
-                              focusColor: Colors.transparent,
-                              hoverColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              onTap: () async {
-                                _model.permissionResultCopyCopy =
-                                    await actions.checkAndRequestPermission(
-                                  PermissionType.CAMERA,
-                                );
-                                if (_model.permissionResult == 'granted') {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: const Text(
-                                        'Camera access permission is enabled',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      duration: const Duration(milliseconds: 4000),
-                                      backgroundColor:
-                                          FlutterFlowTheme.of(context).success,
-                                    ),
-                                  );
-                                } else {
-                                  if (_model.permissionResult ==
-                                      'permanently_denied') {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: const Text(
-                                          'Allow camera access in settings',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        duration: const Duration(milliseconds: 4000),
-                                        backgroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                      ),
-                                    );
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: const Text(
-                                          'Allow camera access in settings',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        duration: const Duration(milliseconds: 4000),
-                                        backgroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                      ),
-                                    );
-                                  }
-                                }
-
-                                safeSetState(() {});
-                              },
-                              child: Row(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Flexible(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Camera Access',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily:
-                                                    'Haas Grot Text Trial',
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                        ),
-                                        Text(
-                                          'To take photos for your profile, portfolio, or chat.',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily:
-                                                    'Haas Grot Text Trial',
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .secondaryText,
-                                                fontSize: 12.0,
-                                                letterSpacing: 0.0,
-                                              ),
-                                        ),
-                                      ].divide(const SizedBox(height: 8.0)),
-                                    ),
-                                  ),
-                                  Icon(
-                                    Icons.chevron_right_outlined,
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryText,
-                                    size: 24.0,
-                                  ),
-                                ].divide(const SizedBox(width: 14.0)),
+                            _buildPermissionItem(
+                              title: 'Camera Access',
+                              description: 'To take photos for your profile, portfolio, or chat.',
+                              onTap: () => _onPermissionTap(
+                                PermissionType.CAMERA,
+                                'Camera access is enabled',
+                                'Allow camera access in settings',
                               ),
                             ),
-                            Divider(
-                              thickness: 1.0,
-                              color: FlutterFlowTheme.of(context).secondary,
-                            ),
-                            InkWell(
-                              splashColor: Colors.transparent,
-                              focusColor: Colors.transparent,
-                              hoverColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              onTap: () async {
-                                _model.permissionResultCopyCopyCopy =
-                                    await actions.checkAndRequestPermission(
-                                  PermissionType.PHOTOS,
-                                );
-                                if (_model.permissionResult == 'granted') {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: const Text(
-                                        'Photo access permission is enabled',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      duration: const Duration(milliseconds: 4000),
-                                      backgroundColor:
-                                          FlutterFlowTheme.of(context).success,
-                                    ),
-                                  );
-                                } else {
-                                  if (_model.permissionResult ==
-                                      'permanently_denied') {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: const Text(
-                                          'Allow access to the camera in the settings',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        duration: const Duration(milliseconds: 4000),
-                                        backgroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                      ),
-                                    );
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: const Text(
-                                          'Allow access to the camera in the settings',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        duration: const Duration(milliseconds: 4000),
-                                        backgroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                      ),
-                                    );
-                                  }
-                                }
-
-                                safeSetState(() {});
-                              },
-                              child: Row(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Flexible(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Photo Library Access',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily:
-                                                    'Haas Grot Text Trial',
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                        ),
-                                        Text(
-                                          'To select images for your profile, portfolio, or chat.',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily:
-                                                    'Haas Grot Text Trial',
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .secondaryText,
-                                                fontSize: 12.0,
-                                                letterSpacing: 0.0,
-                                              ),
-                                        ),
-                                      ].divide(const SizedBox(height: 8.0)),
-                                    ),
-                                  ),
-                                  Icon(
-                                    Icons.chevron_right_outlined,
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryText,
-                                    size: 24.0,
-                                  ),
-                                ].divide(const SizedBox(width: 14.0)),
+                            _buildPermissionItem(
+                              title: 'Photo Library Access',
+                              description: 'To select images for your profile, portfolio, or chat.',
+                              onTap: () => _onPermissionTap(
+                                PermissionType.PHOTOS,
+                                'Photo access is enabled',
+                                'Allow photo access in settings',
                               ),
                             ),
-                            Divider(
-                              thickness: 1.0,
-                              color: FlutterFlowTheme.of(context).secondary,
-                            ),
-                            InkWell(
-                              splashColor: Colors.transparent,
-                              focusColor: Colors.transparent,
-                              hoverColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              onTap: () async {
-                                _model.permissionResultCopyCopyCopyCopy =
-                                    await actions.checkAndRequestPermission(
-                                  PermissionType.MICROPHONE,
-                                );
-                                if (_model.permissionResult == 'granted') {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: const Text(
-                                        'Microphone access is already enabled.',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      duration: const Duration(milliseconds: 4000),
-                                      backgroundColor:
-                                          FlutterFlowTheme.of(context).success,
-                                    ),
-                                  );
-                                } else {
-                                  if (_model.permissionResult ==
-                                      'permanently_denied') {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: const Text(
-                                          'Allow access to your microphone in the settings',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        duration: const Duration(milliseconds: 4000),
-                                        backgroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                      ),
-                                    );
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: const Text(
-                                          'Allow access to your microphone in the settings',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        duration: const Duration(milliseconds: 4000),
-                                        backgroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                      ),
-                                    );
-                                  }
-                                }
-
-                                safeSetState(() {});
-                              },
-                              child: Row(
-                                mainAxisSize: MainAxisSize.max,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Flexible(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Microphone Access',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily:
-                                                    'Haas Grot Text Trial',
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                        ),
-                                        Text(
-                                          'Needed to record audio messages in the chat.',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily:
-                                                    'Haas Grot Text Trial',
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .secondaryText,
-                                                fontSize: 12.0,
-                                                letterSpacing: 0.0,
-                                              ),
-                                        ),
-                                      ].divide(const SizedBox(height: 8.0)),
-                                    ),
-                                  ),
-                                  Icon(
-                                    Icons.chevron_right_outlined,
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryText,
-                                    size: 24.0,
-                                  ),
-                                ].divide(const SizedBox(width: 14.0)),
+                            _buildPermissionItem(
+                              title: 'Microphone Access',
+                              description: 'Needed to record audio messages in the chat.',
+                              onTap: () => _onPermissionTap(
+                                PermissionType.MICROPHONE,
+                                'Microphone access is enabled',
+                                'Allow microphone access in settings',
                               ),
+                              showDivider: !isPro, // No divider if Pro section follows
                             ),
-                          ].divide(const SizedBox(height: 8.0)),
+                            
+                            // Visibility Preferences Section (Pro only)
+                            if (isPro) ...[
+                              const SizedBox(height: 30),
+                              Text('Visibility Preferences', style: LynewedTextStyles.sectionTitle),
+                              const SizedBox(height: 16),
+                              _buildToggleItem(
+                                title: 'Share my recent location',
+                                description: 'Allows other users to see your approximate location on the map when you are active.',
+                                value: _proRecentVisibility,
+                                onChanged: _onToggleProRecent,
+                              ),
+                            ],
+                            
+                            // Account Section
+                            const SizedBox(height: 30),
+                            Text('Account', style: LynewedTextStyles.sectionTitle),
+                            const SizedBox(height: 16),
+                            _buildDeleteAccountItem(isPro),
+                          ],
                         ),
                       ),
-                      if (FFAppState().currentUserRole == UserRole.professional)
-                        Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(
-                              20.0, 0.0, 20.0, 0.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
-                                  Text(
-                                    'Visibility Preferences',
-                                    style: FlutterFlowTheme.of(context)
-                                        .titleMedium
-                                        .override(
-                                          fontFamily: 'Haas Grot Text Trial',
-                                          fontSize: 16.0,
-                                          letterSpacing: 0.0,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                              Padding(
-                                padding: const EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 16.0, 0.0, 0.0),
-                                child: InkWell(
-                                  splashColor: Colors.transparent,
-                                  focusColor: Colors.transparent,
-                                  hoverColor: Colors.transparent,
-                                  highlightColor: Colors.transparent,
-                                  onTap: () async {
-                                    await requestPermission(
-                                        microphonePermission);
-                                  },
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Flexible(
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Share my recent location',
-                                              style:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        fontFamily:
-                                                            'Haas Grot Text Trial',
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                      ),
-                                            ),
-                                            Text(
-                                              'Allows other users to see your approximate location on the map when you are active.',
-                                              style:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        fontFamily:
-                                                            'Haas Grot Text Trial',
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .secondaryText,
-                                                        fontSize: 12.0,
-                                                        letterSpacing: 0.0,
-                                                      ),
-                                            ),
-                                          ].divide(const SizedBox(height: 8.0)),
-                                        ),
-                                      ),
-                                      Switch.adaptive(
-                                        value: _model.switchValue!,
-                                        onChanged: (newValue) async {
-                                          safeSetState(() =>
-                                              _model.switchValue = newValue);
-                                          if (newValue) {
-                                            _model.upsertProRecentOptInOn =
-                                                await actions
-                                                    .upsertProRecentOptIn(
-                                              true,
-                                            );
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-                                            safeSetState(() {});
-                                          } else {
-                                            _model.upsertProRecentOptInOff =
-                                                await actions
-                                                    .upsertProRecentOptIn(
-                                              false,
-                                            );
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 20, 20, 12),
+      child: Row(
+        children: [
+          LynewedComponentStyles.backButton(context),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Text(
+              'Settings',
+              style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 20),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                                            safeSetState(() {});
-                                          }
-                                        },
-                                        activeColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                        activeTrackColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                        inactiveTrackColor:
-                                            FlutterFlowTheme.of(context)
-                                                .alternate,
-                                        inactiveThumbColor:
-                                            FlutterFlowTheme.of(context)
-                                                .secondaryBackground,
-                                      ),
-                                    ].divide(const SizedBox(width: 14.0)),
-                                  ),
-                                ),
-                              ),
-                            ].divide(const SizedBox(height: 14.0)),
-                          ),
-                        ),
-                      Flexible(
-                        child: Align(
-                          alignment: const AlignmentDirectional(0.0, 1.0),
-                          child: Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                0.0, 0.0, 0.0, 32.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                InkWell(
-                                  splashColor: Colors.transparent,
-                                  focusColor: Colors.transparent,
-                                  hoverColor: Colors.transparent,
-                                  highlightColor: Colors.transparent,
-                                  onTap: () async {
-                                    if (FFAppState().currentUserRole ==
-                                        UserRole.bride) {
-                                      var confirmDialogResponse =
-                                          await showDialog<bool>(
-                                                context: context,
-                                                builder: (alertDialogContext) {
-                                                  return AlertDialog(
-                                                    title: const Text(
-                                                        'Delete my account?'),
-                                                    content: const Text(
-                                                        'Please note that you are about to delete your account. This action is permanent. Are you sure you want to proceed?'),
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.pop(
-                                                                alertDialogContext,
-                                                                false),
-                                                        child: const Text('Cancel'),
-                                                      ),
-                                                      TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.pop(
-                                                                alertDialogContext,
-                                                                true),
-                                                        child: const Text(
-                                                            'Delete my account'),
-                                                      ),
-                                                    ],
-                                                  );
-                                                },
-                                              ) ??
-                                              false;
-                                      if (confirmDialogResponse) {
-                                        _model.deleteSucceeded = await actions
-                                            .callDeleteAccountEdgeFunction();
-                                        if (_model.deleteSucceeded == true) {
-                                          GoRouter.of(context)
-                                              .prepareAuthEvent();
-                                          await authManager.signOut();
-                                          GoRouter.of(context)
-                                              .clearRedirectLocation();
-
-                                          context.goNamedAuth(
-                                              AuthWelcomePageWidget.routeName,
-                                              context.mounted);
-                                        } else {
-                                          await showDialog(
-                                            context: context,
-                                            builder: (alertDialogContext) {
-                                              return AlertDialog(
-                                                title: const Text(
-                                                    'An error has occurred'),
-                                                content: const Text(
-                                                    'We are unable to delete your account. Please try again later or contact support.'),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(
-                                                            alertDialogContext),
-                                                    child: const Text('Ok'),
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          );
-                                        }
-                                      }
-                                    } else {
-                                      await showDialog(
-                                        context: context,
-                                        builder: (alertDialogContext) {
-                                          return AlertDialog(
-                                            title: const Text('Contact support'),
-                                            content: const Text(
-                                                'If you wish to delete your account, please contact professional support.'),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () => Navigator.pop(
-                                                    alertDialogContext),
-                                                child: const Text('Ok'),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-                                    }
-
-                                    safeSetState(() {});
-                                  },
-                                  child: Text(
-                                    'Delete my account',
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'Haas Grot Text Trial',
-                                          letterSpacing: 0.0,
-                                        ),
-                                  ),
-                                ),
-                              ].divide(const SizedBox(height: 32.0)),
-                            ),
-                          ),
+  Widget _buildPermissionItem({
+    required String title,
+    required String description,
+    required VoidCallback onTap,
+    bool showDivider = true,
+  }) {
+    return Column(
+      children: [
+        InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: LynewedTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                    ].divide(const SizedBox(height: 56.0)),
+                      const SizedBox(height: 4),
+                      Text(
+                        description,
+                        style: LynewedTextStyles.bodySmall.copyWith(
+                          color: LynewedColors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                wrapWithModel(
-                  model: _model.headerBarModel,
-                  updateCallback: () => safeSetState(() {}),
-                  child: const HeaderBarWidget(
-                    title: 'SETTINGS',
-                  ),
+                const SizedBox(width: 12),
+                const Icon(
+                  Icons.chevron_right,
+                  color: LynewedColors.textPrimary,
+                  size: 24,
                 ),
               ],
             ),
           ),
+        ),
+        if (showDivider) const Divider(height: 1, color: LynewedColors.gray200),
+      ],
+    );
+  }
+
+  Widget _buildToggleItem({
+    required String title,
+    required String description,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: LynewedTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      style: LynewedTextStyles.bodySmall.copyWith(
+                        color: LynewedColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Switch.adaptive(
+                value: value,
+                onChanged: onChanged,
+                activeColor: LynewedColors.primary,
+                activeTrackColor: LynewedColors.primary,
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1, color: LynewedColors.gray200),
+      ],
+    );
+  }
+
+  Widget _buildDeleteAccountItem(bool isPro) {
+    return InkWell(
+      onTap: _isDeleting ? null : _onDeleteAccountTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isPro ? 'Request account deletion' : 'Delete my account',
+                    style: LynewedTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: LynewedColors.error,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isPro 
+                        ? 'Professional accounts are managed through our support team.'
+                        : 'Permanently delete your account and all associated data.',
+                    style: LynewedTextStyles.bodySmall.copyWith(
+                      color: LynewedColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            if (_isDeleting)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: LynewedColors.error,
+                ),
+              )
+            else
+              Icon(
+                isPro ? Icons.chevron_right : Icons.delete_outline,
+                color: LynewedColors.error,
+                size: 24,
+              ),
+          ],
         ),
       ),
     );

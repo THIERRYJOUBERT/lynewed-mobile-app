@@ -14,7 +14,9 @@ import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart'
     as smooth_page_indicator;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:video_player/video_player.dart';
+import '/core/utils/video_url_helpers.dart';
+import '/custom_code/widgets/youtube_player_widget.dart';
+import '/custom_code/widgets/videoplayer_filmmaker.dart';
 
 class WedArticleRenderer extends StatefulWidget {
   const WedArticleRenderer({
@@ -129,7 +131,7 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(100), // Cercle parfait
                 child: Image.network(
-                  article.professional.avatarUrl ?? '',
+                  article.professional.avatarUrl,
                   width: 40,
                   height: 40,
                   fit: BoxFit.cover,
@@ -143,7 +145,7 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      article.professional.fullName ?? 'Name...',
+                      article.professional.fullName,
                       style:
                           FlutterFlowTheme.of(context).titleMedium.override(
                                 fontFamily: 'Haas Grot Text Trial',
@@ -152,8 +154,9 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
                               ),
                     ),
                     Text(
-                      article.professional.profession?.name ??
-                          'profession...',
+                      article.professional.profession != null
+                          ? article.professional.profession!.name
+                          : 'Profession',
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'Haas Grot Text Trial',
                             color: FlutterFlowTheme.of(context).secondaryText,
@@ -294,11 +297,6 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
     return _buildImageItem(imageUrls.first);
   }
 
-  Widget _buildVideo(BuildContext context, List<String> videoUrls) {
-    if (videoUrls.isEmpty) return const SizedBox.shrink();
-    return _VideoBlock(videoUrl: videoUrls.first);
-  }
-
   Widget _buildCoverCarousel(BuildContext context, List<String> coverImages) {
     if (coverImages.isEmpty) {
       return const SizedBox(height: 110);
@@ -354,7 +352,7 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
             ClipRRect(
               borderRadius: BorderRadius.circular(100),
               child: Image.network(
-                pro.avatarUrl ?? '',
+                pro.avatarUrl,
                 width: 40,
                 height: 40,
                 fit: BoxFit.cover,
@@ -367,11 +365,11 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(pro.fullName ?? 'Name...',
+                  Text(pro.fullName,
                       style: theme.bodyMedium.override(
                           fontFamily: 'Haas Grot Text Trial',
                           fontWeight: FontWeight.w500)),
-                  Text(pro.profession?.name ?? 'profession...',
+                  Text(pro.profession?.name ?? 'Profession',
                       style: theme.bodyMedium.override(
                           fontFamily: 'Haas Grot Text Trial',
                           color: theme.secondaryText)),
@@ -467,76 +465,59 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
   }
 }
 
-class _VideoBlock extends StatefulWidget {
+/// Video block widget that handles YouTube, Vimeo, and direct video URLs
+/// Uses the same video players as ProDetails for consistency
+class _VideoBlock extends StatelessWidget {
   final String? videoUrl;
   const _VideoBlock({this.videoUrl});
 
   @override
-  State<_VideoBlock> createState() => _VideoBlockState();
-}
-
-class _VideoBlockState extends State<_VideoBlock> {
-  VideoPlayerController? _controller;
-  bool _isPlaying = false;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.videoUrl != null && widget.videoUrl!.isNotEmpty) {
-      _controller =
-          VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!))
-            ..initialize().then((_) {
-              if (mounted) setState(() {});
-            })
-            ..setLooping(true);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
-
-  void _togglePlay() {
-    if (_controller == null) return;
-    setState(() {
-      _isPlaying = !_controller!.value.isPlaying;
-      if (_isPlaying) {
-        _controller!.play();
-      } else {
-        _controller!.pause();
-      }
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (_controller == null || !_controller!.value.isInitialized) {
-      return Container(
-        height: 200,
-        color: Colors.black12,
-        child: const Center(child: CircularProgressIndicator()),
+    if (videoUrl == null || videoUrl!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final url = videoUrl!;
+    
+    // YouTube URLs use YoutubePlayerWidget
+    if (VideoUrlHelpers.isYouTubeUrl(url)) {
+      return SizedBox(
+        width: double.infinity,
+        height: 250.0,
+        child: YoutubePlayerWidget(
+          width: double.infinity,
+          height: 250.0,
+          youtubeUrl: url,
+        ),
       );
     }
-    return GestureDetector(
-      onTap: _togglePlay,
-      child: AspectRatio(
-        aspectRatio: _controller!.value.aspectRatio,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            VideoPlayer(_controller!),
-            if (!_isPlaying)
-              Container(
-                decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    shape: BoxShape.circle),
-                child:
-                    const Icon(Icons.play_arrow, color: Colors.white, size: 60),
-              )
-          ],
+    
+    // Vimeo URLs - show placeholder (same as ProDetails)
+    if (VideoUrlHelpers.isVimeoUrl(url)) {
+      return SizedBox(
+        width: double.infinity,
+        height: 250.0,
+        child: Container(
+          color: Colors.black,
+          child: const Center(
+            child: Text(
+              'Vimeo video\n(Coming soon)',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
         ),
+      );
+    }
+    
+    // Direct video files use VideoplayerFilmmaker
+    return SizedBox(
+      width: double.infinity,
+      height: 250.0,
+      child: VideoplayerFilmmaker(
+        width: double.infinity,
+        height: 250.0,
+        videoUrl: url,
       ),
     );
   }

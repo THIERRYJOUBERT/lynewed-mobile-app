@@ -67,6 +67,7 @@ dependencies:
   gotrue: 2.12.0
   hive: 2.2.3
   image_picker: ^1.0.7
+  in_app_review: ^2.0.11
   intl: 0.20.2
   json_path: 0.7.2
   just_audio: ^0.10.4

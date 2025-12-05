@@ -1,5 +1,4 @@
 import '/backend/schema/structs/index.dart';
-import '/components/item_all_alert_widget.dart';
 import '/components/nav/nav_bar_pro/nav_bar_pro_widget.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/flutter_flow_util.dart';
@@ -48,20 +47,16 @@ class DashboardProModel extends FlutterFlowModel<DashboardProWidget> {
           pageViewController!.page != null
       ? pageViewController!.page!.round()
       : 0;
-  // Models for ItemAllAlert dynamic component.
-  late FlutterFlowDynamicModels<ItemAllAlertModel> itemAllAlertModels;
   // Model for NavBarPro component.
   late NavBarProModel navBarProModel;
 
   @override
   void initState(BuildContext context) {
-    itemAllAlertModels = FlutterFlowDynamicModels(() => ItemAllAlertModel());
     navBarProModel = createModel(context, () => NavBarProModel());
   }
 
   @override
   void dispose() {
-    itemAllAlertModels.dispose();
     navBarProModel.dispose();
   }
 }

@@ -1085,10 +1085,10 @@ if (currentUserRole == 'bride') {
 
 ---
 
-**Statut**: ✅ PHASE 1 + 1.5 TERMINÉES  
-**Dernière mise à jour**: 2025-12-05 13:35  
+**Statut**: ✅ PHASE 1 + 1.5 + 2 + 3 TERMINÉES  
+**Dernière mise à jour**: 2025-12-05 16:01  
 **Approche**: Pragmatique - modifications directes, pas de réécriture  
-**Ordre**: ~~Phase 1 MVP~~ ✅ → ~~Phase 1.5 Compléments~~ ✅ → Phase 2 Auth ✅ → Phase 3 Settings
+**Ordre**: ~~Phase 1 MVP~~ ✅ → ~~Phase 1.5 Compléments~~ ✅ → ~~Phase 2 Auth~~ ✅ → ~~Phase 3 Settings~~ ✅ → Phase 4 Tests
 
 ---
 
@@ -1114,3 +1114,11 @@ if (currentUserRole == 'bride') {
 - Widget `DistanceUnitDropdown` créé
 - Logique Currency → Unit cohérente (USD=miles, EUR=km)
 - Fix popup notifications au login
+
+### Phase 3 - Settings & Profil Pro (2025-12-05) ✅
+- Entrée "My Profile" dans Settings Pro
+- ProDetailsWidget ouvert avec profil courant (read-only)
+- Bouton Contact masqué pour son propre profil
+- Upcoming Travels sheet refactorisé (appel direct Supabase)
+- Icône travel stylisée (cercle noir, icône blanche)
+- Pages Settings validées (Preferences, Notifications, Permissions, Support)

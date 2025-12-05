@@ -125,8 +125,8 @@ class _AuthWelcomePageWidgetState extends State<AuthWelcomePageWidget> {
                           height: LynewedSpacing.buttonHeight,
                           child: ElevatedButton(
                             onPressed: () {
-                              // Navigate to Bride auth choice (login or register)
-                              _showBrideAuthChoice();
+                              // Navigate directly to Bride login
+                              context.pushNamed(SignInEmailPageWidget.routeName);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
@@ -179,105 +179,4 @@ class _AuthWelcomePageWidgetState extends State<AuthWelcomePageWidget> {
     );
   }
 
-  /// Show bottom sheet for Bride auth choice (Login or Register)
-  void _showBrideAuthChoice() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(32, 24, 32, 32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Handle bar
-                Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 24),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                // Title
-                Text(
-                  'Welcome to Lynewed',
-                  style: LynewedTextStyles.sheetTitle.copyWith(
-                    fontSize: 22,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Find the perfect wedding professionals for your special day',
-                  textAlign: TextAlign.center,
-                  style: LynewedTextStyles.bodyMedium.copyWith(
-                    color: LynewedColors.gray100,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                // Login button
-                SizedBox(
-                  width: double.infinity,
-                  height: LynewedSpacing.buttonHeight,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      context.pushNamed(SignInEmailPageWidget.routeName);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: LynewedColors.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(0),
-                      ),
-                    ),
-                    child: Text(
-                      'Log in',
-                      style: LynewedTextStyles.bodyMedium.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                // Register button
-                SizedBox(
-                  width: double.infinity,
-                  height: LynewedSpacing.buttonHeight,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      context.pushNamed(SignUpEmailPageWidget.routeName);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      foregroundColor: LynewedColors.primary,
-                      side: const BorderSide(color: LynewedColors.primary),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(0),
-                      ),
-                    ),
-                    child: Text(
-                      'Create an account',
-                      style: LynewedTextStyles.bodyMedium.copyWith(
-                        color: LynewedColors.primary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 }

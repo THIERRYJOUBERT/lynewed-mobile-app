@@ -3,7 +3,6 @@ import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 
 import '/actions/actions.dart' as action_blocks;
-import '/auth/supabase_auth/auth_util.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/supabase/supabase.dart';
@@ -12,6 +11,7 @@ import '/core/design/design.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/features/chat/presentation/pages/messages_page.dart';
+import '/features/dashboard/presentation/widgets/alert_item_widget.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -369,20 +369,15 @@ class _DashboardProWidgetState extends State<DashboardProWidget> with WidgetsBin
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Simple header: icon + title
-          const Row(
-            children: [
-              Icon(
-                Icons.notifications_active,
-                color: LynewedColors.error,
-                size: 20.0,
-              ),
-              SizedBox(width: 8.0),
-              Text(
-                'ALERTS',
-                style: LynewedTextStyles.sectionTitle,
-              ),
-            ],
+          // Section header
+          const Text(
+            'COMMUNITY ALERTS',
+            style: LynewedTextStyles.sectionTitle,
+          ),
+          const SizedBox(height: 4.0),
+          Text(
+            'Professionals nearby need your help',
+            style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
           ),
           const SizedBox(height: 16.0),
           // Paged alerts carousel
@@ -453,26 +448,19 @@ class _DashboardProWidgetState extends State<DashboardProWidget> with WidgetsBin
         _model.pageViewController ??= PageController();
 
         return SizedBox(
-          height: 120.0,
+          height: 165.0,
           child: PageView.builder(
             controller: _model.pageViewController,
             itemCount: alerts.length,
             itemBuilder: (context, index) {
               final alert = alerts[index];
-              final isOwn = alert.isOwn;
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                child: _ProAlertTile(
+                child: AlertItemWidget(
                   key: Key('alert_${alert.alertId}'),
-                  alertType: alert.motifCode,
-                  title: alert.motifLabel,
-                  message: alert.message,
-                  locationLabel: alert.locationLabel,
-                  expiresAt: alert.endAt,
-                  isOwn: isOwn,
-                  onTap: isOwn 
-                      ? () => _deleteAlert(alert.alertId)
-                      : () => _contactAlertAuthor(alert),
+                  alert: alert,
+                  onContact: () => _contactAlertAuthor(alert),
+                  onDelete: alert.isOwn ? () => _deleteAlert(alert.alertId) : null,
                 ),
               );
             },
@@ -525,175 +513,4 @@ class _DashboardProWidgetState extends State<DashboardProWidget> with WidgetsBin
     }
   }
 
-}
-
-/// Alert Tile for Dashboard - Design System v3
-/// 
-/// Displays alert info in a compact card format:
-/// - Alert type icon (adaptive) + title + location + time
-/// - Message preview
-/// - Tap to contact (or delete if own alert)
-class _ProAlertTile extends StatelessWidget {
-  final String alertType;
-  final String title;
-  final String? message;
-  final String? locationLabel;
-  final DateTime? expiresAt;
-  final bool isOwn;
-  final VoidCallback? onTap;
-
-  const _ProAlertTile({
-    super.key,
-    required this.alertType,
-    required this.title,
-    this.message,
-    this.locationLabel,
-    this.expiresAt,
-    this.isOwn = false,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        height: double.infinity,
-        padding: const EdgeInsets.fromLTRB(12.0, 14.0, 10.0, 8.0),
-        decoration: BoxDecoration(
-          color: LynewedColors.surface,
-          borderRadius: BorderRadius.circular(4.0),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Row 1: Icon + Title + Action (delete/contact)
-            Row(
-              children: [
-                // Alert type icon
-                Icon(
-                  _getAlertIcon(),
-                  color: LynewedColors.textSecondary,
-                  size: 24.0,
-                ),
-                const SizedBox(width: 10.0),
-                // Title
-                Expanded(
-                  child: Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: LynewedTextStyles.bodyLarge.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8.0),
-                // Action icon: delete (own) or contact (other's)
-                if (isOwn)
-                  const Icon(
-                    Icons.close,
-                    color: LynewedColors.error,
-                    size: 20.0,
-                  )
-                else
-                  const Icon(
-                    Icons.chat_bubble_outline,
-                    color: LynewedColors.primary,
-                    size: 20.0,
-                  ),
-              ],
-            ),
-            const SizedBox(height: 4.0),
-            // Row 2: Location + Duration (always on same line)
-            Row(
-              children: [
-                if (locationLabel != null && locationLabel!.isNotEmpty) ...[
-                  const Icon(
-                    Icons.location_on_outlined,
-                    size: 12.0,
-                    color: LynewedColors.textSecondary,
-                  ),
-                  const SizedBox(width: 2.0),
-                  Flexible(
-                    child: Text(
-                      locationLabel!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: LynewedTextStyles.bodySmall.copyWith(
-                        color: LynewedColors.textSecondary,
-                        fontSize: 12.0,
-                      ),
-                    ),
-                  ),
-                ],
-                if (expiresAt != null) ...[
-                  if (locationLabel != null && locationLabel!.isNotEmpty)
-                    const SizedBox(width: 6.0),
-                  Text(
-                    '· ${_formatTimeRemaining()}',
-                    style: LynewedTextStyles.bodySmall.copyWith(
-                      color: _isExpiringSoon() 
-                          ? LynewedColors.error 
-                          : LynewedColors.textSecondary,
-                      fontSize: 12.0,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-            // Row 3: Message (2 lines max)
-            if (message != null && message!.isNotEmpty) ...[
-              const SizedBox(height: 8.0),
-              Text(
-                message!,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: LynewedTextStyles.bodyMedium.copyWith(
-                  color: LynewedColors.textPrimary,
-                  height: 1.4,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  IconData _getAlertIcon() {
-    switch (alertType.toLowerCase()) {
-      case 'backup_needed':
-        return Icons.person_search_outlined;
-      case 'gear_emergency':
-        return Icons.camera_alt_outlined;
-      case 'team_member':
-        return Icons.groups_outlined;
-      case 'emergency_help':
-        return Icons.warning_amber_rounded;
-      default:
-        return Icons.notifications_none_outlined;
-    }
-  }
-
-
-  String _formatTimeRemaining() {
-    if (expiresAt == null) return '';
-    final now = DateTime.now();
-    final diff = expiresAt!.difference(now);
-    
-    if (diff.isNegative) return 'Expired';
-    if (diff.inDays > 0) return '${diff.inDays}d left';
-    if (diff.inHours > 0) return '${diff.inHours}h left';
-    if (diff.inMinutes > 0) return '${diff.inMinutes}m left';
-    return 'Expiring soon';
-  }
-
-  bool _isExpiringSoon() {
-    if (expiresAt == null) return false;
-    final diff = expiresAt!.difference(DateTime.now());
-    return diff.inHours < 2;
-  }
 }

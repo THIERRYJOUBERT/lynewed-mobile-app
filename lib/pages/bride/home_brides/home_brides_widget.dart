@@ -450,7 +450,7 @@ class _PublicChatRoomTile extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(12.0),
         decoration: BoxDecoration(
-          color: LynewedColors.surface,
+          color: LynewedColors.textPrimary, // Black background
           borderRadius: BorderRadius.circular(4.0),
         ),
         child: Row(
@@ -488,21 +488,24 @@ class _PublicChatRoomTile extends StatelessWidget {
                     room.title.isNotEmpty ? room.title : 'Chat Room',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: LynewedTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+                    style: LynewedTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white, // White text for title
+                    ),
                   ),
                   const SizedBox(height: 4.0),
                   Row(
                     children: [
                       const Icon(
                         Icons.people_alt_outlined,
-                        color: LynewedColors.textSecondary,
+                        color: LynewedColors.gray300, // Light gray for icon
                         size: 14.0,
                       ),
                       const SizedBox(width: 4.0),
                       Text(
                         '${room.activeUsersCount} participants',
                         style: LynewedTextStyles.labelLarge.copyWith(
-                          color: LynewedColors.textSecondary,
+                          color: LynewedColors.gray300, // Light gray for secondary text
                         ),
                       ),
                     ],
@@ -513,7 +516,7 @@ class _PublicChatRoomTile extends StatelessWidget {
             // Arrow
             const Icon(
               Icons.arrow_forward_ios,
-              color: LynewedColors.textSecondary,
+              color: LynewedColors.gray300, // Light gray for arrow
               size: 16.0,
             ),
           ],

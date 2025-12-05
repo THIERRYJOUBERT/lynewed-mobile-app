@@ -9,7 +9,6 @@ import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'profile_brides_and_pro_model.dart';
 export 'profile_brides_and_pro_model.dart';
 
@@ -540,10 +539,8 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                             hoverColor: Colors.transparent,
                             highlightColor: Colors.transparent,
                             onTap: () async {
-                              final url = Uri.parse('https://apps.apple.com/ca/app/lynewed/id6753673667');
-                              if (await canLaunchUrl(url)) {
-                                await launchUrl(url, mode: LaunchMode.externalApplication);
-                              }
+                              // Request app review - opens native iOS/Android review dialog
+                              await actions.requestAppReview();
                             },
                             child: Container(
                               decoration: const BoxDecoration(),
