@@ -218,7 +218,6 @@ class MarkerIconGenerator {
         return frame.image;
       }
     } catch (e) {
-      debugPrint('Failed to load avatar: $url - $e');
     }
     return null;
   }

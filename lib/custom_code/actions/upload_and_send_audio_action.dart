@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 // Imports other custom actions
@@ -51,7 +50,6 @@ Future<bool> uploadAndSendAudioAction(
 
     return true;
   } catch (e) {
-    debugPrint('uploadAndSendAudioAction exception: $e');
     // Essayer un rollback si l'erreur n'est pas lors de l'insert
     // Note: une gestion d'erreur plus fine serait nécessaire en prod
     return false;

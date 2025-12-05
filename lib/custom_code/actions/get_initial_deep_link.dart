@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 // Imports other custom actions
 // Imports custom functions
 // Begin custom action code
@@ -15,7 +14,6 @@ Future<String?> getInitialDeepLink() async {
     return initialLink;
   } on PlatformException {
     // Gère les erreurs si le plugin ne parvient pas à communiquer avec la plateforme.
-    debugPrint("Failed to get initial link.");
     return null;
   }
 }

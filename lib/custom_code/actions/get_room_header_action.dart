@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
@@ -58,7 +57,6 @@ Future<ChatRoomHeaderStruct?> getRoomHeaderAction(String roomId) async {
       );
     }
   } catch (e) {
-    debugPrint('getRoomHeaderAction error: $e');
     return null;
   }
 }

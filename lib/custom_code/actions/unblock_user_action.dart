@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
@@ -21,12 +20,10 @@ Future<bool> unblockUserAction(String targetProfileId) async {
         .eq('blocked_profile_id', targetProfileId);
 
     if (response.error != null) {
-      debugPrint('unblockUserAction error: ${response.error!.message}');
       return false;
     }
     return true;
   } catch (e) {
-    debugPrint('unblockUserAction exception: $e');
     return false;
   }
 }

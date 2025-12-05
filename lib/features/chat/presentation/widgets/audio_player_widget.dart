@@ -62,9 +62,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
 
   Future<void> _initializePlayer() async {
     try {
-      debugPrint('AudioPlayer: Initializing with URL: ${widget.audioUrl}');
       await _audioPlayer.setUrl(widget.audioUrl);
-      debugPrint('AudioPlayer: Duration: ${_audioPlayer.duration}');
       if (mounted) {
         setState(() {
           _isInitialized = true;
@@ -75,7 +73,6 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
         }
       }
     } catch (e) {
-      debugPrint('AudioPlayer: Error initializing: $e');
       if (mounted) {
         setState(() {
           _hasError = true;
@@ -89,7 +86,6 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     super.didUpdateWidget(oldWidget);
     // If URL changed, reinitialize player
     if (oldWidget.audioUrl != widget.audioUrl) {
-      debugPrint('AudioPlayer: URL changed, reinitializing');
       _hasError = false;
       _isInitialized = false;
       _initializePlayer();

@@ -194,7 +194,6 @@ class _LynewedMapWidgetState extends State<LynewedMapWidget> {
         _markerIcons[cacheKey] = icon;
       }
     } catch (e) {
-      debugPrint('Error generating icon for ${marker.id}: $e');
     }
   }
 

@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
@@ -35,7 +34,6 @@ Future<PublicRoomsResultStruct?> getPublicChatRoomsForBridesAction() async {
 
     return PublicRoomsResultStruct(items: items);
   } catch (e) {
-    debugPrint('getPublicChatRoomsForBridesAction error: $e');
     return PublicRoomsResultStruct(items: []);
   }
 }

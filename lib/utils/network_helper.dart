@@ -1,6 +1,5 @@
 // ✅ ROBUSTNESS: Network retry logic for critical operations
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 
 class NetworkHelper {
   /// Retry a network operation with exponential backoff
@@ -28,11 +27,9 @@ class NetworkHelper {
       attempt++;
       
       try {
-        debugPrint('🔄 [$context] Attempt $attempt/$maxAttempts');
         final result = await operation();
         
         if (attempt > 1) {
-          debugPrint('✅ [$context] Succeeded on attempt $attempt');
         }
         
         return result;
@@ -41,11 +38,9 @@ class NetworkHelper {
         final shouldRetryError = shouldRetry?.call(error) ?? _defaultShouldRetry(error);
         
         if (isLastAttempt || !shouldRetryError) {
-          debugPrint('❌ [$context] Failed after $attempt attempts: $error');
           rethrow;
         }
         
-        debugPrint('⚠️ [$context] Attempt $attempt failed, retrying in ${currentDelay.inSeconds}s: $error');
         
         await Future.delayed(currentDelay);
         currentDelay = Duration(

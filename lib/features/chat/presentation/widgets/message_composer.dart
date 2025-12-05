@@ -188,7 +188,6 @@ class _MessageComposerState extends State<MessageComposer> {
         });
       }
     } catch (e) {
-      debugPrint('Error picking images: $e');
     }
   }
 
@@ -680,7 +679,6 @@ class _MessageComposerState extends State<MessageComposer> {
         _isRecording = true;
       });
     } catch (e) {
-      debugPrint('Audio recording start failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -720,7 +718,6 @@ class _MessageComposerState extends State<MessageComposer> {
         }
       }
     } catch (e) {
-      debugPrint('Audio recording stop failed: $e');
       setState(() {
         _isRecording = false;
       });

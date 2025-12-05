@@ -72,7 +72,6 @@ class _StartupGateWidgetState extends State<StartupGateWidget> {
           // Load pro subscription from session data
           if (_model.sessionData!.hasProSubscription()) {
             FFAppState().selfProSubscription = _model.sessionData!.proSubscription;
-            debugPrint('🔍 StartupGate: Loaded proSubscription tier=${_model.sessionData!.proSubscription.subscriptionTier}');
           }
           safeSetState(() {});
           await actions.initPushNotifications(

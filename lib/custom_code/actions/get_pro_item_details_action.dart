@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
@@ -146,7 +145,6 @@ Future<ProDetailsStruct?> getProItemDetailsAction(String proProfileId) async {
       hasCoverVideo: hasCoverVideo,
     );
   } catch (e) {
-    debugPrint('getProItemDetailsAction error: $e');
     return null;
   }
 }

@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
@@ -25,7 +24,6 @@ Future<bool> upsertNotificationSetting(
     }, onConflict: 'profile_id,notification_type');
     return true;
   } catch (e) {
-    debugPrint('upsertNotificationSetting error: $e');
     return false;
   }
 }

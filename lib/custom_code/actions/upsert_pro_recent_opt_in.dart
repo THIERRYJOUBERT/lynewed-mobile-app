@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
@@ -21,7 +20,6 @@ Future<bool> upsertProRecentOptIn(bool isOptIn) async {
     }, onConflict: 'profile_id');
     return true;
   } catch (e) {
-    debugPrint('upsertProRecentOptIn error: $e');
     return false;
   }
 }

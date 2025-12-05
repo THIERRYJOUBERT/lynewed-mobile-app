@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
@@ -29,7 +28,6 @@ Future<bool> sendTextMessageAction(String roomId, String text) async {
     return true;
   } catch (e) {
     // Si une erreur survient, elle sera catch ici.
-    debugPrint('sendTextMessageAction exception: $e');
     return false;
   }
 }

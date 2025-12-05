@@ -90,7 +90,6 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
         );
       }
     } catch (e) {
-      debugPrint('Error downloading image: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

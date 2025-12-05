@@ -5,7 +5,6 @@ library;
 
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/entities.dart';
 
@@ -247,8 +246,8 @@ class ChatRemoteDatasource {
             try {
               final request = ContactRequest.fromMap(payload.newRecord);
               controller.add(request);
-            } catch (e) {
-              debugPrint('Error parsing contact request: $e');
+            } catch (_) {
+              // Silently ignore parse errors
             }
           },
         )
@@ -339,9 +338,7 @@ class ChatRemoteDatasource {
     required ContactRequestSource source,
     required String message,
   }) async {
-    debugPrint('[ContactRequest] Creating request: target=$targetId, source=${source.name}, message=${message.length} chars');
-    
-    final response = await _client.rpc(
+final response = await _client.rpc(
       'create_contact_request',
       params: {
         'p_target_id': targetId,
@@ -350,18 +347,12 @@ class ChatRemoteDatasource {
       },
     );
 
-    debugPrint('[ContactRequest] Response: $response');
-    
-    final result = response as Map<String, dynamic>;
+final result = response as Map<String, dynamic>;
     if (result['status'] != 'ok') {
-      final reason = result['reason'] ?? 'Unknown error';
-      debugPrint('[ContactRequest] Error: $reason');
-      throw Exception(reason);
+      throw Exception(result['reason'] ?? 'Unknown error');
     }
 
-    final requestId = result['requestId'] as String;
-    debugPrint('[ContactRequest] Success: requestId=$requestId');
-    return requestId;
+    return result['requestId'] as String;
   }
 
   /// Get pending contact requests for current user
@@ -381,25 +372,17 @@ class ChatRemoteDatasource {
 
   /// Accept a contact request
   Future<String> acceptContactRequest(String requestId) async {
-    debugPrint('ChatRemoteDatasource.acceptContactRequest: requestId=$requestId');
-    
     final response = await _client.rpc(
       'accept_connection_request',
       params: {'p_request_id': requestId},
     );
 
-    debugPrint('ChatRemoteDatasource.acceptContactRequest: response=$response');
-    
-    final result = response as Map<String, dynamic>;
+final result = response as Map<String, dynamic>;
     if (result['status'] != 'ok') {
-      final reason = result['reason'] ?? 'Unknown error';
-      debugPrint('ChatRemoteDatasource.acceptContactRequest: ERROR reason=$reason');
-      throw Exception(reason);
+      throw Exception(result['reason'] ?? 'Unknown error');
     }
 
-    final roomId = result['roomId'] as String;
-    debugPrint('ChatRemoteDatasource.acceptContactRequest: SUCCESS roomId=$roomId');
-    return roomId;
+    return result['roomId'] as String;
   }
 
   /// Decline a contact request
@@ -587,13 +570,10 @@ class ChatRemoteDatasource {
       bucket = 'chat-images';
     }
     
-    debugPrint('getSignedUrl: path=$path, bucket=$bucket');
-    
-    final response = await _client.storage
+final response = await _client.storage
         .from(bucket)
         .createSignedUrl(path, 3600); // 1 hour
     
-    debugPrint('getSignedUrl: signedUrl=$response');
     return response;
   }
 }

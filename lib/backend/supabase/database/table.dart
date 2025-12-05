@@ -23,7 +23,7 @@ abstract class SupabaseTable<T extends SupabaseDataRow> {
           .limit(1)
           .select()
           .maybeSingle()
-          .catchError((e) => print('Error querying row: $e'))
+          .catchError((e) => null)
           .then((r) => [if (r != null) createRow(r)]);
 
   Future<T> insert(Map<String, dynamic> data) => SupaFlow.client

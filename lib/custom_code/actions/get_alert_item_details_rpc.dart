@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
@@ -22,7 +21,6 @@ Profession? _professionFromString(String? s) {
 
 Future<AlertItemDataStruct?> getAlertItemDetailsRpc(String alertId) async {
   if (alertId.isEmpty) {
-    debugPrint('getAlertItemDetailsRpc error: alertId is empty.');
     return null;
   }
   try {
@@ -30,7 +28,6 @@ Future<AlertItemDataStruct?> getAlertItemDetailsRpc(String alertId) async {
         .rpc('get_alert_item_details', params: {'p_alert_id': alertId});
 
     if (data is! Map<String, dynamic>) {
-      debugPrint('getAlertItemDetailsRpc error: Invalid payload received.');
       return null;
     }
 
@@ -51,7 +48,6 @@ Future<AlertItemDataStruct?> getAlertItemDetailsRpc(String alertId) async {
       isContactable: data['isContactable'] == true,
     );
   } catch (e) {
-    debugPrint('getAlertItemDetailsRpc error: $e');
     return null;
   }
 }

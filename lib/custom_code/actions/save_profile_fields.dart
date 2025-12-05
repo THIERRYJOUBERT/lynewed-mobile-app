@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
@@ -59,7 +58,6 @@ Future<PublicProfileStruct?> saveProfileFields(
       avatarUrl: finalAvatarUrl,
     );
   } catch (e) {
-    debugPrint('saveProfileFields error: $e');
     return null;
   }
 }

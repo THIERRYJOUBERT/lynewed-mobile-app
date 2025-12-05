@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 // Imports other custom actions
@@ -46,12 +45,10 @@ Future<bool> signUpBride(
       return true;
     } else {
       // Si l'utilisateur est null, il y a eu un problème lors de l'inscription
-      debugPrint('signUpBride error: User creation failed');
       return false;
     }
   } catch (e) {
     // Gérer les erreurs (AuthException ou autres exceptions)
-    debugPrint('signUpBride exception: $e');
     return false;
   }
 }

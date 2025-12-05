@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
@@ -20,7 +19,6 @@ Future<String?> createSignedUrlForChatMediaAction(
     // ex: "chat-audio/room_id/fichier.m4a"
     final firstSlash = fullPath.indexOf('/');
     if (firstSlash <= 0 || firstSlash >= fullPath.length - 1) {
-      debugPrint('Error: fullPath format is invalid. Expected "<bucket>/<path>".');
       return null;
     }
 
@@ -35,7 +33,6 @@ Future<String?> createSignedUrlForChatMediaAction(
 
     return signedUrlResponse;
   } catch (e) {
-    debugPrint('createSignedUrlForChatMediaAction error: $e');
     return null;
   }
 }

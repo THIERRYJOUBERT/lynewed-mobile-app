@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
@@ -51,7 +50,6 @@ Future<ChatRoomHeaderStruct?> getAnyProfileAsRoomHeader(
       otherRole: userRoleFromString(profileData['role']?.toString()),
     );
   } catch (e) {
-    debugPrint('getAnyProfileAsRoomHeader error: $e');
     return null;
   }
 }

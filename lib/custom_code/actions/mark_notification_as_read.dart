@@ -3,7 +3,6 @@ import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
 import '/flutter_flow/flutter_flow_util.dart';
-import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -23,6 +22,5 @@ Future<void> markNotificationAsRead(String notificationId) async {
       FFAppState().hasUnreadNotifications = notifCount > 0;
     });
   } catch (e) {
-    debugPrint('Error marking notification as read: $e');
   }
 }

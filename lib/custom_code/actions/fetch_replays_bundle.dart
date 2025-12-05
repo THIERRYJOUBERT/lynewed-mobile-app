@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
@@ -54,7 +53,6 @@ Future<List<ReplayItemStruct>?> fetchReplaysBundle() async {
 
     return replays;
   } catch (e) {
-    debugPrint('fetchReplaysBundle exception: $e');
     return null;
   }
 }

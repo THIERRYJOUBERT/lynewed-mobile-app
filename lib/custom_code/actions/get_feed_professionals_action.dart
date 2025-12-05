@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
@@ -102,7 +101,6 @@ Future<FeedResultStruct> getFeedProfessionalsAction(
     return FeedResultStruct(
         items: items, nextCursor: data['nextCursor']?.toString());
   } catch (e) {
-    debugPrint('getFeedProfessionalsAction error: $e');
     return FeedResultStruct(items: [], nextCursor: null);
   }
 }

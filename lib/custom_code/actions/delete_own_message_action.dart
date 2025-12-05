@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
@@ -22,12 +21,10 @@ Future<bool> deleteOwnMessageAction(int messageId) async {
         .eq('profile_id', userId);
 
     if (response.error != null) {
-      debugPrint('deleteOwnMessageAction error: ${response.error!.message}');
       return false;
     }
     return true;
   } catch (e) {
-    debugPrint('deleteOwnMessageAction exception: $e');
     return false;
   }
 }

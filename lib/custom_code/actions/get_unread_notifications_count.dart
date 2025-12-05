@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
@@ -15,7 +14,6 @@ Future<int> getUnreadNotificationsCount() async {
     // La réponse de la RPC sera directement l'entier.
     return response as int? ?? 0;
   } catch (e) {
-    debugPrint('Error getting unread notifications count: $e');
     return 0;
   }
 }

@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
@@ -125,8 +124,6 @@ Future<FeedPageResultStruct?> getPortfolioFeedAction(
       newSeed: responseMap['newSeed'] as String?,
     );
   } catch (e, st) {
-    debugPrint('CRITICAL ERROR in getPortfolioFeedAction: $e');
-    debugPrint(st.toString());
     return null;
   }
 }

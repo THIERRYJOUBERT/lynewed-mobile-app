@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -30,7 +29,6 @@ Future<List<AlertMotifStruct>> fetchAlertMotifsAction() async {
             ))
         .toList();
   } catch (e) {
-    debugPrint('fetchAlertMotifsAction error: $e');
     return [];
   }
 }

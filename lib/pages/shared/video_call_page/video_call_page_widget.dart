@@ -46,8 +46,6 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
   }
   
   void _setupRealtimeListener() {
-    debugPrint('🔔 Setting up Realtime listener for session: ${widget.videoSessionId}');
-    
     _sessionChannel = Supabase.instance.client.channel('video_session_${widget.videoSessionId}')
       ..onPostgresChanges(
         event: PostgresChangeEvent.update,
@@ -59,12 +57,9 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
           value: widget.videoSessionId,
         ),
         callback: (payload) {
-          debugPrint('🔔 Realtime update received: ${payload.toString()}');
           final newStatus = payload.newRecord['status'] as String?;
-          debugPrint('🔔 New status: $newStatus');
           
           if (newStatus == 'completed' && mounted) {
-            debugPrint('🔔 Other user hung up - navigating to home');
             // Navigation vers la home page en fonction du rôle
             final userRole = FFAppState().currentUserRole;
             if (userRole == UserRole.professional) {
@@ -80,7 +75,6 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
 
   @override
   void dispose() {
-    debugPrint('🔔 Disposing video call page - unsubscribing from Realtime');
     _sessionChannel?.unsubscribe();
     _model.dispose();
 
@@ -258,8 +252,6 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                           hoverColor: Colors.transparent,
                           highlightColor: Colors.transparent,
                           onTap: () async {
-                            debugPrint('🔴 HANGUP BUTTON TAPPED');
-                            
                             // 1. Naviguer vers home IMMÉDIATEMENT
                             if (mounted) {
                               final userRole = FFAppState().currentUserRole;
@@ -268,23 +260,16 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                               } else {
                                 context.goNamed('HomeBrides');
                               }
-                              debugPrint('🔴 Navigated to home page');
                             }
                             
                             // 2. Nettoyer Agora en arrière-plan (non bloquant)
-                            actions.agoraEndCall().catchError((e) {
-                              debugPrint('⚠️ Error ending Agora call: $e');
-                              return false;
-                            });
+                            actions.agoraEndCall().catchError((_) => false);
                             
                             // 3. Mettre à jour le status en arrière-plan (non bloquant)
                             actions.updateVideoSessionStatusAction(
                               widget.videoSessionId!,
                               VideoSessionStatus.completed,
-                            ).catchError((e) {
-                              debugPrint('⚠️ Error updating session status: $e');
-                              return false;
-                            });
+                            ).catchError((_) => false);
                           },
                           child: Container(
                             width: 72.0,

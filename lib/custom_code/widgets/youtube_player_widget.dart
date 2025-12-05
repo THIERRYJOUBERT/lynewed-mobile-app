@@ -71,7 +71,6 @@ class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget> {
         controller: _controller,
         showVideoProgressIndicator: false, // Pas de barre de progression
         onReady: () {
-          debugPrint('YouTube Player is ready (background mode).');
         },
       ),
     );

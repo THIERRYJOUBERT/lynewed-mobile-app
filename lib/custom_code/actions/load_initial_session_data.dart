@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
@@ -59,7 +58,6 @@ Future<SessionDataBundleStruct?> loadInitialSessionData() async {
     final client = SupaFlow.client;
     final userId = client.auth.currentUser?.id;
     if (userId == null) {
-      debugPrint('loadInitialSessionData: No authenticated user found.');
       return null;
     }
 
@@ -155,9 +153,7 @@ Future<SessionDataBundleStruct?> loadInitialSessionData() async {
           fixedLocationsQuota: fixedLocationsQuota,
           profession: professionFromString(professionString),
         );
-      } catch (e) {
-        debugPrint(
-            'Error fetching professional subscription/quota, defaulting. Error: $e');
+      } catch (_) {
         proSubscription = ProSubscriptionSummaryStruct(
           profileId: userId,
           subscriptionTier: SubscriptionTierType.inactive,
@@ -174,7 +170,6 @@ Future<SessionDataBundleStruct?> loadInitialSessionData() async {
       proSubscription: proSubscription,
     );
   } catch (e) {
-    debugPrint('loadInitialSessionData critical error: $e');
     return null;
   }
 }

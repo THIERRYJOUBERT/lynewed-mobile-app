@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 // Imports other custom actions
@@ -14,7 +13,6 @@ Future<bool> insertLegalAcceptance() async {
     final client = SupaFlow.client;
     final userId = client.auth.currentUser?.id;
     if (userId == null) {
-      debugPrint('insertLegalAcceptance error: User is not authenticated.');
       return false;
     }
 
@@ -31,7 +29,6 @@ Future<bool> insertLegalAcceptance() async {
 
     return true;
   } catch (e) {
-    debugPrint('insertLegalAcceptance error: $e');
     return false;
   }
 }

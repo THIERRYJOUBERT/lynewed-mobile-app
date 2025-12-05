@@ -32,16 +32,14 @@ void main() async {
   await appState.initializePersistedState();
 
   // Initialize Agora engine at app startup (like Firebase)
+  // Note: Logs removed for production security - errors handled silently
   try {
-    print('🎥 [AGORA] Initializing engine at app startup...');
     await AgoraEngineManager.instance.ensureInitialized(
       appId: FFAppConstants.agoraAppId,
       timeout: const Duration(seconds: 10),
     );
-    print('🎥 [AGORA] ✅ Engine initialized successfully at startup');
-  } catch (e) {
-    print('🎥 [AGORA] ⚠️ Failed to initialize at startup: $e');
-    print('🎥 [AGORA] Engine will be initialized on-demand');
+  } catch (_) {
+    // Engine will be initialized on-demand if startup fails
   }
 
   runApp(ChangeNotifierProvider(

@@ -208,8 +208,6 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
         });
       }
     } catch (e, st) {
-      debugPrint('Error fetching feed data: $e');
-      debugPrint(st.toString());
       if (mounted) {
         setState(() {
           _hasMore = false;

@@ -107,7 +107,6 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
       }
     } catch (e) {
       // En cas d'erreur, on garde la valeur initiale
-      debugPrint('ProDetails: Failed to check favorite status: $e');
     }
   }
 
@@ -135,26 +134,22 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
   bool _shouldShowVideo() {
     final proDetails = widget.proDetails;
     if (proDetails == null) {
-      debugPrint('ProDetails: _shouldShowVideo - proDetails is null');
       return false;
     }
     
     // Must have hasCoverVideo flag set to true
     if (!proDetails.hasCoverVideo) {
-      debugPrint('ProDetails: _shouldShowVideo - hasCoverVideo is false');
       return false;
     }
     
     // Must have a valid video URL
     final videoUrl = proDetails.profileVideoUrl;
     if (videoUrl.isEmpty) {
-      debugPrint('ProDetails: _shouldShowVideo - profileVideoUrl is empty');
       return false;
     }
     
     // Check if it's a valid video URL (YouTube, Vimeo, or direct file)
     final isValid = VideoUrlHelpers.isValidVideoUrl(videoUrl);
-    debugPrint('ProDetails: _shouldShowVideo - videoUrl=$videoUrl, isValid=$isValid, hasCoverVideo=${proDetails.hasCoverVideo}');
     return isValid;
   }
 

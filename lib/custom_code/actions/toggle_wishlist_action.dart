@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
@@ -10,7 +9,6 @@ import '/backend/supabase/supabase.dart';
 /// add the boilerplate code using the green button on the right!
 Future<bool?> toggleWishlistAction(String proProfileId) async {
   if (proProfileId.isEmpty) {
-    debugPrint('toggleWishlistAction error: proProfileId is empty.');
     return null;
   }
 
@@ -26,7 +24,6 @@ Future<bool?> toggleWishlistAction(String proProfileId) async {
     // Si la RPC ne retourne pas le format attendu, on retourne null pour indiquer un problème.
     return null;
   } catch (e) {
-    debugPrint('toggleWishlistAction error: $e');
     return null;
   }
 }

@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
@@ -103,7 +102,6 @@ Future<InboxResultStruct?> getRoomsWithUnreadCountsAction(int? limit) async {
 
     return InboxResultStruct(items: items);
   } catch (e) {
-    debugPrint('getRoomsWithUnreadCountsAction error: $e');
     return InboxResultStruct(items: []);
   }
 }

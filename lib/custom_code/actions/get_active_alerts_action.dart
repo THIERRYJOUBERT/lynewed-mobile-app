@@ -35,8 +35,8 @@ Future<List<AlertItemDataStruct>> getActiveAlertsAction() async {
         isContactable: map['isOwn'] != true,
       );
     }).toList();
-  } catch (e) {
-    print('Error getting active alerts: $e');
+  } catch (_) {
+    // Return empty list on error - no logging in production
     return [];
   }
 }

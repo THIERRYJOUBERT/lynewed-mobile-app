@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
@@ -67,7 +66,6 @@ Future<List<ProDetailsStruct>> getFavoritedProfessionalsAction() async {
         response is! Map<String, dynamic> ||
         response['items'] == null ||
         response['items'] is! List) {
-      debugPrint('getFavoritedProfessionalsAction: Invalid RPC response format.');
       return [];
     }
 
@@ -116,7 +114,6 @@ Future<List<ProDetailsStruct>> getFavoritedProfessionalsAction() async {
 
     return proDetailsList;
   } catch (e) {
-    debugPrint('getFavoritedProfessionalsAction error: $e');
     return []; // Retourne une liste vide en cas d'erreur
   }
 }

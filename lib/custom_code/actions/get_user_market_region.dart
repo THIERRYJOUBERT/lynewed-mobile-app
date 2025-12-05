@@ -1,5 +1,4 @@
 // Get user's market region from Supabase
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 
 /// Get the current user's market region
@@ -16,7 +15,6 @@ Future<String> getUserMarketRegion() async {
     final market = response as String?;
     return market ?? 'GLOBAL';
   } catch (e) {
-    debugPrint('Error getting user market region: $e');
     return 'GLOBAL';
   }
 }

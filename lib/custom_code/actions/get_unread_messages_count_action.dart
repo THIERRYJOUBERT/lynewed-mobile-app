@@ -2,7 +2,6 @@
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
-import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -32,7 +31,6 @@ Future<int?> getUnreadMessagesCountAction() async {
     
     return totalUnread;
   } catch (e) {
-    debugPrint('getUnreadMessagesCountAction error: $e');
     return 0;
   }
 }

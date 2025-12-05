@@ -452,7 +452,6 @@ class _MapPageState extends State<MapPage> {
             onAddressSelected: _onAddressSelected,
             onAddressCleared: () {
               // Clear any selected address
-              debugPrint('Address cleared');
             },
             onSuggestionsVisibilityChanged: (visible) {
               if (_mounted) {
@@ -698,7 +697,6 @@ class _MapPageState extends State<MapPage> {
         ),
       );
     } catch (e) {
-      debugPrint('Error getting location: $e');
     } finally {
       if (_mounted) {
         setState(() => _isLocating = false);

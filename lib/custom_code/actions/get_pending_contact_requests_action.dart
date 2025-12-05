@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
@@ -70,7 +69,6 @@ Future<ContactRequestsResultStruct?> getPendingContactRequestsAction() async {
     }
     return ContactRequestsResultStruct(items: items);
   } catch (e) {
-    debugPrint('getPendingContactRequestsAction error: $e');
     return ContactRequestsResultStruct(items: []);
   }
 }

@@ -30,7 +30,6 @@ class FFAppState extends ChangeNotifier {
           _currentUserPreferences = UserPreferencesStruct.fromSerializableMap(
               jsonDecode(serializedData));
         } catch (e) {
-          debugPrint("Can't decode persisted data type. Error: $e.");
         }
       }
     });

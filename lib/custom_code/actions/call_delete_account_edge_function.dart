@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
@@ -21,15 +20,11 @@ Future<bool> callDeleteAccountEdgeFunction() async {
     );
 
     if (response.status == 200) {
-      debugPrint('Account deletion successful.');
       return true;
     } else {
-      debugPrint(
-          'Failed to delete account. Status: ${response.status}, Data: ${response.data}');
       return false;
     }
   } catch (e) {
-    debugPrint('Exception caught while calling delete account function: $e');
     return false;
   }
 }

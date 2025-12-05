@@ -3,15 +3,18 @@ import 'package:flutter/foundation.dart';
 
 class ErrorHandler {
   /// Log error with context for debugging
+  /// Only logs in debug mode to prevent production data exposure
   static void logError(
     String context,
     dynamic error, {
     StackTrace? stackTrace,
     Map<String, dynamic>? additionalData,
   }) {
+    if (!kDebugMode) return;
+    
     debugPrint('❌ [$context] Error: $error');
     
-    if (stackTrace != null && kDebugMode) {
+    if (stackTrace != null) {
       debugPrint('Stack trace: $stackTrace');
     }
     

@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
@@ -39,7 +38,6 @@ Future<String?> uploadAvatar(String localPath) async {
 
     return publicUrl;
   } catch (e) {
-    debugPrint('Error in uploadAvatar action: $e');
     return null;
   }
 }

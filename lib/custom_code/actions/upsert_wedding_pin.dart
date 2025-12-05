@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
@@ -40,9 +39,7 @@ Future<String?> upsertWeddingPin(
 
     return res.toString();
   } catch (e) {
-    debugPrint('upsertWeddingPin error: $e');
     if (e.toString().contains('INVALID_RADIUS')) {
-      debugPrint('Error Hint: Radius must be one of 5, 10, 20, 50, 100.');
     }
     return null;
   }

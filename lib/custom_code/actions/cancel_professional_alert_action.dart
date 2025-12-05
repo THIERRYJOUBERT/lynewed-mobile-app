@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
@@ -16,7 +15,6 @@ Future<bool> cancelProfessionalAlertAction(
         .rpc('cancel_professional_alert', params: {'p_alert_id': alertId});
     return res == true;
   } catch (e) {
-    debugPrint('cancelProfessionalAlertAction error: $e');
     return false;
   }
 }

@@ -164,7 +164,6 @@ class ChatRoomNotifier extends ChangeNotifier {
   }
 
   void _onRealtimeError(Object error) {
-    debugPrint('ChatRoom realtime error: $error');
     // Attempt to reconnect after a delay
     Future.delayed(const Duration(seconds: 3), () {
       if (_state is ChatRoomLoaded) {
@@ -228,7 +227,6 @@ class ChatRoomNotifier extends ChangeNotifier {
         _emit(updatedState.copyWith(authors: newAuthors));
       }
     } catch (e) {
-      debugPrint('Error loading authors: $e');
     }
   }
 
@@ -493,7 +491,6 @@ class ChatRoomNotifier extends ChangeNotifier {
 
       return null;
     } catch (e) {
-      debugPrint('ChatRoomNotifier.acceptContactRequest error: $e');
       return null;
     }
   }
@@ -522,7 +519,6 @@ class ChatRoomNotifier extends ChangeNotifier {
         _setupRealtimeMessages();
       }
     } catch (e) {
-      debugPrint('ChatRoomNotifier._loadMessagesAfterAccept error: $e');
     }
   }
 

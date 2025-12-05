@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
@@ -22,7 +21,6 @@ Future<bool> deleteWeddingPin(String pinId) async {
 
     return false;
   } catch (e) {
-    debugPrint('deleteWeddingPin error: $e');
     return false;
   }
 }

@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 // Imports other custom actions
@@ -19,6 +18,5 @@ Future<void> markAllNotificationsAsRead() async {
       FFAppState().hasUnreadNotifications = false;
     });
   } catch (e) {
-    debugPrint('Error marking all notifications as read: $e');
   }
 }

@@ -289,7 +289,6 @@ class _AddressSearchWidgetState extends State<AddressSearchWidget> {
       });
       _updateOverlay();
     } catch (e) {
-      debugPrint('AddressSearchWidget: Error fetching predictions: $e');
       setState(() {
         _suggestions = [];
         _showSuggestions = false;
@@ -329,7 +328,6 @@ class _AddressSearchWidgetState extends State<AddressSearchWidget> {
         widget.onSearchTextChanged?.call(suggestion.primaryText);
       }
     } catch (e) {
-      debugPrint('AddressSearchWidget: Error fetching place details: $e');
     } finally {
       _setLoading(false);
     }

@@ -2,7 +2,6 @@
 import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom actions
 // Imports custom functions
-import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -22,6 +21,5 @@ Future<void> refreshUnreadCounts() async {
       FFAppState().unreadMessagesCount = msgCount ?? 0;
     });
   } catch (e) {
-    debugPrint('Error refreshing unread counts: $e');
   }
 }

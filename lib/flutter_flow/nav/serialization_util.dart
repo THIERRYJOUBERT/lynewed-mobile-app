@@ -86,7 +86,6 @@ String? serializeParam(
     }
     return data;
   } catch (e) {
-    debugPrint('Error serializing parameter: $e');
     return null;
   }
 }
@@ -326,7 +325,6 @@ dynamic deserializeParam<T>(
         return null;
     }
   } catch (e) {
-    debugPrint('Error deserializing parameter: $e');
     return null;
   }
 }

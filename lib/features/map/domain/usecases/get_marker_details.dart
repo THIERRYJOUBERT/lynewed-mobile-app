@@ -4,7 +4,6 @@
 /// Each use case is a single-responsibility class with clear interface.
 library;
 
-import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../entities/entities.dart';
@@ -24,7 +23,6 @@ class GetProfessionalDetails implements UseCase<ProfessionalDetails?, String> {
   @override
   Future<ProfessionalDetails?> call(String proProfileId) async {
     if (proProfileId.isEmpty) {
-      debugPrint('GetProfessionalDetails: proProfileId is empty');
       return null;
     }
 
@@ -35,13 +33,11 @@ class GetProfessionalDetails implements UseCase<ProfessionalDetails?, String> {
       );
 
       if (data is! Map<String, dynamic>) {
-        debugPrint('GetProfessionalDetails: Invalid response type');
         return null;
       }
 
       return ProfessionalDetails.fromJson(data);
     } catch (e) {
-      debugPrint('GetProfessionalDetails error: $e');
       return null;
     }
   }
@@ -57,7 +53,6 @@ class GetAlertDetails implements UseCase<AlertDetails?, String> {
   @override
   Future<AlertDetails?> call(String alertId) async {
     if (alertId.isEmpty) {
-      debugPrint('GetAlertDetails: alertId is empty');
       return null;
     }
 
@@ -68,13 +63,11 @@ class GetAlertDetails implements UseCase<AlertDetails?, String> {
       );
 
       if (data is! Map<String, dynamic>) {
-        debugPrint('GetAlertDetails: Invalid response type');
         return null;
       }
 
       return AlertDetails.fromJson(data);
     } catch (e) {
-      debugPrint('GetAlertDetails error: $e');
       return null;
     }
   }

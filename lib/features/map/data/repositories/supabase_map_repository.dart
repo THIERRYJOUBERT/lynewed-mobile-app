@@ -54,9 +54,8 @@ class SupabaseMapRepository implements MapRepository {
         weddings: weddings,
         totalCount: fixedLocations.length + alerts.length + weddings.length,
       );
-    } catch (e) {
-      // Log error but return empty result instead of throwing
-      print('[MapRepository] searchMarkers error: $e');
+    } catch (_) {
+      // Return empty result on error - no logging in production
       return MapSearchResult.empty;
     }
   }

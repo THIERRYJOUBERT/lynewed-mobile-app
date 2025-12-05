@@ -20,8 +20,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     }
     // Pour le débogage, vous pouvez décommenter la ligne suivante pour voir
     // les messages dans la console de votre appareil.
-    // debugPrint('--- Background message received: ${message.messageId}');
   } catch (e) {
-    // debugPrint('--- Background handler error: $e');
   }
 }

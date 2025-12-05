@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
@@ -26,7 +25,6 @@ NotificationType _notificationTypeFromString(String? s) {
 
   // Si aucune correspondance n'est trouvée après avoir tout vérifié,
   // loggez une alerte pour le débogage et retournez un fallback sûr pour éviter le crash.
-  debugPrint('--- WARNING: Unmatched notificationType enum value from DB: "$s" ---');
   return NotificationType.chatMessage; // Fallback sûr
 }
 // --- Fin du Helper ---
@@ -40,7 +38,6 @@ Future<List<AppNotificationStruct>> getNotificationsAction() async {
         response is! Map<String, dynamic> ||
         response['items'] == null ||
         response['items'] is! List) {
-      debugPrint('getNotificationsAction: Invalid RPC response format.');
       return [];
     }
 
@@ -69,7 +66,6 @@ Future<List<AppNotificationStruct>> getNotificationsAction() async {
 
     return notifications;
   } catch (e) {
-    debugPrint('getNotificationsAction error: $e');
     return [];
   }
 }

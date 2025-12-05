@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
@@ -25,12 +24,10 @@ Future<bool> reportMessageAction(
     });
 
     if (response.error != null) {
-      debugPrint('reportMessageAction error: ${response.error!.message}');
       return false;
     }
     return true;
   } catch (e) {
-    debugPrint('reportMessageAction exception: $e');
     return false;
   }
 }

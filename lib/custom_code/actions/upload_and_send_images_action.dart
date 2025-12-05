@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 // Imports other custom actions
@@ -107,7 +106,6 @@ Future<bool> uploadAndSendImagesAction(
             'attachment_url': 'chat-images/$storagePath',
           });
         } catch (e) {
-          debugPrint('upload image failed: $e');
           // Si un upload échoue, on retourne false comme avant
           return false;
         }
@@ -122,7 +120,6 @@ Future<bool> uploadAndSendImagesAction(
 
     return true;
   } catch (e) {
-    debugPrint('uploadAndSendImagesAction error: $e');
     return false;
   }
 }

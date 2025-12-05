@@ -52,7 +52,6 @@ Future<QueryFiltersStruct?> resetAndApplyDefaultFilters(
     // 3. Retourne le nouvel objet de filtres pour que l'UI puisse l'utiliser.
     return defaultFilters;
   } catch (e) {
-    debugPrint('Error in resetAndApplyDefaultFilters: $e');
     return null; // Retourne null en cas d'erreur.
   }
 }

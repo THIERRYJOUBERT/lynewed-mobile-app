@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/supabase/supabase.dart';
 // Imports other custom actions
@@ -17,7 +16,6 @@ Future<List<WishlistedByBrideItemStruct>> getWishlistedByBridesAction() async {
         response is! Map<String, dynamic> ||
         response['items'] == null ||
         response['items'] is! List) {
-      debugPrint('getWishlistedByBridesAction: Invalid RPC response format.');
       return [];
     }
 
@@ -41,7 +39,6 @@ Future<List<WishlistedByBrideItemStruct>> getWishlistedByBridesAction() async {
         .where((item) => item.brideProfileId.isNotEmpty)
         .toList();
   } catch (e) {
-    debugPrint('getWishlistedByBridesAction error: $e');
     return [];
   }
 }

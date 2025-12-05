@@ -85,7 +85,6 @@ class ConversationsNotifier extends ChangeNotifier {
             refresh();
           }
         }, onError: (error) {
-          debugPrint('Conversations realtime error: $error');
         });
 
     // 2. Listen for new contact requests
@@ -101,7 +100,6 @@ class ConversationsNotifier extends ChangeNotifier {
             }
           }
         }, onError: (error) {
-          debugPrint('Contact requests realtime error: $error');
         });
   }
 

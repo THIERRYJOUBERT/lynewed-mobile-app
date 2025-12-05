@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import 'package:flutter/foundation.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 // Imports other custom actions
@@ -30,7 +29,6 @@ Future<bool> checkTosAccepted() async {
     // Si on a trouvé au moins une ligne, c'est que l'utilisateur a accepté
     return (rows.isNotEmpty);
   } catch (e) {
-    debugPrint('checkTosAccepted error: $e');
     return false; // En cas d'erreur, on considère que ce n'est pas accepté
   }
 }

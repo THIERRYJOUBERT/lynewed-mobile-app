@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
-import 'package:flutter/foundation.dart';
 
 class AgoraEngineManager {
   AgoraEngineManager._();
@@ -42,7 +41,6 @@ class AgoraEngineManager {
       final engine = createAgoraRtcEngine();
       
       // STEP 1: Initialize engine FIRST (required by Agora docs)
-      debugPrint('🎥 [AGORA_MANAGER] Initializing engine...');
       await engine
           .initialize(
             RtcEngineContext(
@@ -59,16 +57,10 @@ class AgoraEngineManager {
               );
             },
           );
-      debugPrint('🎥 [AGORA_MANAGER] ✅ Engine initialized');
       
       // STEP 2: Register event handlers AFTER initialize() (per Agora docs)
-      // "You must call initialize before calling registerEventHandler"
-      debugPrint('🎥 [AGORA_MANAGER] Registering event handlers...');
       engine.registerEventHandler(RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-          final channelId = connection.channelId ?? '';
-          final maskedChannel = channelId.length > 8 ? '${channelId.substring(0, 8)}***' : channelId;
-          debugPrint('🎊 [AGORA_MANAGER] onJoinChannelSuccess: channel=$maskedChannel, uid=${connection.localUid}, elapsed=${elapsed}ms');
           _eventController.add({
             'event': 'joinChannelSuccess',
             'channelId': connection.channelId,
@@ -77,9 +69,6 @@ class AgoraEngineManager {
           });
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-          final channelId = connection.channelId ?? '';
-          final maskedChannel = channelId.length > 8 ? '${channelId.substring(0, 8)}***' : channelId;
-          debugPrint('👤 [AGORA_MANAGER] onUserJoined: remoteUid=$remoteUid in $maskedChannel');
           _eventController.add({
             'event': 'userJoined',
             'channelId': connection.channelId,
@@ -88,7 +77,6 @@ class AgoraEngineManager {
           });
         },
         onUserOffline: (RtcConnection connection, int remoteUid, UserOfflineReasonType reason) {
-          debugPrint('👋 [AGORA_MANAGER] onUserOffline: remoteUid=$remoteUid, reason=$reason');
           _eventController.add({
             'event': 'userOffline',
             'channelId': connection.channelId,
@@ -97,7 +85,6 @@ class AgoraEngineManager {
           });
         },
         onError: (ErrorCodeType err, String msg) {
-          debugPrint('⚠️ [AGORA_MANAGER] onError: $err - $msg');
           _eventController.add({
             'event': 'error',
             'errorCode': err.toString(),
@@ -105,9 +92,6 @@ class AgoraEngineManager {
           });
         },
         onConnectionStateChanged: (RtcConnection connection, ConnectionStateType state, ConnectionChangedReasonType reason) {
-          final channelId = connection.channelId ?? '';
-          final maskedChannel = channelId.length > 8 ? '${channelId.substring(0, 8)}***' : channelId;
-          debugPrint('🔗 [AGORA_MANAGER] onConnectionStateChanged: channel=$maskedChannel, state=$state, reason=$reason');
           _eventController.add({
             'event': 'connectionStateChanged',
             'channelId': connection.channelId,
@@ -116,7 +100,6 @@ class AgoraEngineManager {
           });
         },
       ));
-      debugPrint('🎥 [AGORA_MANAGER] ✅ Event handlers registered');
       
       _engine = engine;
       _initializationCompleter!.complete(engine);
@@ -153,42 +136,27 @@ class AgoraEngineManager {
       return;
     }
 
-    debugPrint('🎥 [AGORA_MANAGER] Releasing engine...');
-
-    try {
+try {
       await _engine!.stopPreview();
-    } catch (e) {
-      debugPrint('⚠️ [AGORA_MANAGER] Error stopping preview: $e');
-    }
+    } catch (_) {}
 
     try {
       await _engine!.leaveChannel();
-    } catch (e) {
-      debugPrint('⚠️ [AGORA_MANAGER] Error leaving channel: $e');
-    }
+    } catch (_) {}
 
     try {
       await _engine!.release();
-    } catch (e) {
-      debugPrint('⚠️ [AGORA_MANAGER] Error releasing engine: $e');
-    }
+    } catch (_) {}
 
     _engine = null;
-    debugPrint('🎥 [AGORA_MANAGER] ✅ Engine released');
   }
   
   /// ✅ ROBUSTNESS: Proper dispose with full cleanup
   Future<void> dispose() async {
-    debugPrint('🎥 [AGORA_MANAGER] Disposing manager...');
-    
-    // Release engine first
     await releaseEngine();
     
-    // Close event stream
     if (!_eventController.isClosed) {
       await _eventController.close();
     }
-    
-    debugPrint('🎥 [AGORA_MANAGER] ✅ Manager disposed');
   }
 }

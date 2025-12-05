@@ -146,7 +146,6 @@ class MapActionsService {
           _profileCache[proProfileId] = responseData;
         }
       } catch (rpcError) {
-        debugPrint('RPC failed, using fallback: $rpcError');
         // Fallback to direct query
         final data = await _supabase
             .from('profiles')
@@ -194,7 +193,6 @@ class MapActionsService {
         );
       }
     } catch (e) {
-      debugPrint('Error fetching professional details: $e');
       scaffoldMessenger.showSnackBar(
         const SnackBar(content: Text('Error loading profile')),
       );
@@ -284,7 +282,6 @@ class MapActionsService {
       
       return newValue;
     } catch (e) {
-      debugPrint('Error toggling favorite: $e');
       return currentValue; // Return unchanged on error
     }
   }
@@ -302,7 +299,6 @@ class MapActionsService {
       }
       return false;
     } catch (e) {
-      debugPrint('Error deleting alert: $e');
       return false;
     }
   }
