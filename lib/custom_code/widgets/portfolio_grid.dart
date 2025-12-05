@@ -25,8 +25,21 @@ class PortfolioGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayImages = portfolioImages.take(4).toList();
-    if (displayImages.isEmpty) {
+    // Use V2 images if available, otherwise fallback to legacy
+    final hasV2 = proDetails.hasPortfolioImagesV2();
+    final v2Images = proDetails.portfolioImagesV2;
+    
+    // For grid display: use crop_3x4 from V2, or legacy URLs
+    final displayUrls = hasV2
+        ? v2Images.take(4).map((img) => img.crop3x4).where((url) => url.isNotEmpty).toList()
+        : portfolioImages.take(4).toList();
+    
+    // For fullscreen: use crop_9x16 from V2, or same as display
+    final fullscreenUrls = hasV2
+        ? v2Images.map((img) => img.crop9x16.isNotEmpty ? img.crop9x16 : img.crop3x4).toList()
+        : portfolioImages;
+    
+    if (displayUrls.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -67,21 +80,19 @@ class PortfolioGrid extends StatelessWidget {
           childAspectRatio: childAspectRatio,
         ),
         primary: false,
-        // On enlève shrinkWrap, car le parent a maintenant une taille fixe.
-        physics:
-            const NeverScrollableScrollPhysics(), // La grille ne doit pas défiler.
-        itemCount: displayImages.length,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: displayUrls.length,
         itemBuilder: (context, index) {
-          final imageUrl = displayImages[index];
+          final imageUrl = displayUrls[index];
 
           return GestureDetector(
             onTap: () {
-              // La logique de navigation reste inchangée et correcte
+              // Navigate to fullscreen viewer with fullscreen URLs (crop_9x16)
               context.pushNamed(
                 'PortfolioImageViewer',
                 queryParameters: {
                   'portfolioImages': serializeParam(
-                    portfolioImages,
+                    fullscreenUrls,
                     ParamType.String,
                     isList: true,
                   ),

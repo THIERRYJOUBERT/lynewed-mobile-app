@@ -79,6 +79,25 @@ Future<ProDetailsStruct?> getProItemDetailsAction(String proProfileId) async {
         ? (data['slideshowImages'] as List).map((e) => e.toString()).toList()
         : <String>[];
 
+    // V2 Images with multiple crops
+    final portfolioV2 = <ImageV2Struct>[];
+    if (data['portfolioImagesV2'] is List) {
+      for (final item in (data['portfolioImagesV2'] as List)) {
+        if (item is Map<String, dynamic>) {
+          portfolioV2.add(ImageV2Struct.fromMap(item));
+        }
+      }
+    }
+
+    final slideshowV2 = <ImageV2Struct>[];
+    if (data['slideshowImagesV2'] is List) {
+      for (final item in (data['slideshowImagesV2'] as List)) {
+        if (item is Map<String, dynamic>) {
+          slideshowV2.add(ImageV2Struct.fromMap(item));
+        }
+      }
+    }
+
     // Parse fixedLocations - extract LatLng for backward compatibility
     // New format includes id/label, but we still need List<LatLng> for existing code
     final fixedLocs = <LatLng>[];
@@ -109,7 +128,9 @@ Future<ProDetailsStruct?> getProItemDetailsAction(String proProfileId) async {
       isLive: data['isLive'] == true,
       description: data['description']?.toString() ?? '',
       portfolioImages: portfolio,
-      slideshowImages: slideshow, // NOUVEAU CHAMP LIÉ
+      portfolioImagesV2: portfolioV2,
+      slideshowImages: slideshow,
+      slideshowImagesV2: slideshowV2,
       fixedLocations: fixedLocs,
       instagramUrl: (data['socials'] is Map
               ? data['socials']['instagramUrl']?.toString()

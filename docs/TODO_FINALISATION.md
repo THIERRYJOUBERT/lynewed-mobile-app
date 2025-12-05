@@ -79,20 +79,23 @@
 - [x] Modifier `childAspectRatio` dans `feed_portfolio_grid.dart` de `1/1.2` à `3/4`
 - [x] RPC `get_portfolio_feed` mise à jour avec support V2
 
-### 1.5.2 ProDetails Images V2 (3-4h)
-- [ ] Header slider: `slideshow_images_v2` → `crop_1x1` affiché, `crop_9x16` fullscreen
-- [ ] Portfolio grid: `portfolio_images_v2` → `crop_3x4` affiché, `crop_9x16` fullscreen
-- [ ] Adapter parsing dans `pro_details_model.dart`
+### 1.5.2 ProDetails Images V2 (3-4h) - ✅ TERMINÉ
+- [x] Header slider: `slideshow_images_v2` → `crop_1x1` affiché
+- [x] Portfolio grid: `portfolio_images_v2` → `crop_3x4` affiché, `crop_9x16` fullscreen
+- [x] Créé `ImageV2Struct` pour stocker les crops
+- [x] RPC `get_pro_item_details` retourne `portfolioImagesV2` et `slideshowImagesV2`
+- [x] `ProDetailsStruct` avec champs V2
+- [x] `PortfolioGrid` utilise V2 avec fallback legacy
 
-### 1.5.3 Wed of the Week (3h)
-- [ ] RPC `get_current_wed_article` avec market region
-- [ ] Card Wed of the Week en haut du Feed
-- [ ] Page article complète avec vidéo/gallery
-- [ ] Images V2 pour Wed of the Week
+### 1.5.3 Wed of the Week (3h) - ✅ TERMINÉ
+- [x] RPC `get_latest_wed_article` filtre déjà par market_region
+- [x] Support `target_region`: 'all', 'IN', 'ROW'
+- [ ] ~~Card Wed of the Week en haut du Feed~~ (non requis - page séparée)
+- [ ] ~~Images V2 pour Wed of the Week~~ (à faire si besoin)
 
-### 1.5.4 Bug Fixes & Design (1h)
-- [ ] Corriger bug localisation Paris (hardcodé dans FeedDetailViewerWidget)
-- [ ] Performance optimisations
+### 1.5.4 Bug Fixes & Design (1h) - ✅ TERMINÉ
+- [x] Corrigé bug localisation Paris (données seed incorrectes dans DB)
+- [x] Mis à jour `location_label` pour correspondre au `location_country_code`
 
 ### 1.5.5 Feed pour Pros (1h) - OPTIONNEL
 - [ ] Ajouter onglet Feed dans navbar Pro (remplacer Profil)

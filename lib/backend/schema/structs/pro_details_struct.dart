@@ -24,12 +24,14 @@ class ProDetailsStruct extends BaseStruct {
     bool? isLive,
     String? description,
     List<String>? portfolioImages,
+    List<ImageV2Struct>? portfolioImagesV2,
     List<LatLng>? fixedLocations,
     String? instagramUrl,
     String? websiteUrl,
     bool? canBeContactedByBride,
     bool? canContactBride,
     List<String>? slideshowImages,
+    List<ImageV2Struct>? slideshowImagesV2,
     String? profileVideoUrl,
     bool? hasCoverVideo,
   })  : _proProfileId = proProfileId,
@@ -48,12 +50,14 @@ class ProDetailsStruct extends BaseStruct {
         _isLive = isLive,
         _description = description,
         _portfolioImages = portfolioImages,
+        _portfolioImagesV2 = portfolioImagesV2,
         _fixedLocations = fixedLocations,
         _instagramUrl = instagramUrl,
         _websiteUrl = websiteUrl,
         _canBeContactedByBride = canBeContactedByBride,
         _canContactBride = canContactBride,
         _slideshowImages = slideshowImages,
+        _slideshowImagesV2 = slideshowImagesV2,
         _profileVideoUrl = profileVideoUrl,
         _hasCoverVideo = hasCoverVideo;
 
@@ -168,7 +172,7 @@ class ProDetailsStruct extends BaseStruct {
 
   bool hasDescription() => _description != null;
 
-  // "portfolioImages" field.
+  // "portfolioImages" field (legacy).
   List<String>? _portfolioImages;
   List<String> get portfolioImages => _portfolioImages ?? const [];
   set portfolioImages(List<String>? val) => _portfolioImages = val;
@@ -178,6 +182,17 @@ class ProDetailsStruct extends BaseStruct {
   }
 
   bool hasPortfolioImages() => _portfolioImages != null;
+
+  // "portfolioImagesV2" field - V2 images with multiple crops.
+  List<ImageV2Struct>? _portfolioImagesV2;
+  List<ImageV2Struct> get portfolioImagesV2 => _portfolioImagesV2 ?? const [];
+  set portfolioImagesV2(List<ImageV2Struct>? val) => _portfolioImagesV2 = val;
+
+  void updatePortfolioImagesV2(Function(List<ImageV2Struct>) updateFn) {
+    updateFn(_portfolioImagesV2 ??= []);
+  }
+
+  bool hasPortfolioImagesV2() => _portfolioImagesV2 != null && _portfolioImagesV2!.isNotEmpty;
 
   // "fixedLocations" field.
   List<LatLng>? _fixedLocations;
@@ -218,7 +233,7 @@ class ProDetailsStruct extends BaseStruct {
 
   bool hasCanContactBride() => _canContactBride != null;
 
-  // "slideshowImages" field.
+  // "slideshowImages" field (legacy).
   List<String>? _slideshowImages;
   List<String> get slideshowImages => _slideshowImages ?? const [];
   set slideshowImages(List<String>? val) => _slideshowImages = val;
@@ -228,6 +243,17 @@ class ProDetailsStruct extends BaseStruct {
   }
 
   bool hasSlideshowImages() => _slideshowImages != null;
+
+  // "slideshowImagesV2" field - V2 images with multiple crops.
+  List<ImageV2Struct>? _slideshowImagesV2;
+  List<ImageV2Struct> get slideshowImagesV2 => _slideshowImagesV2 ?? const [];
+  set slideshowImagesV2(List<ImageV2Struct>? val) => _slideshowImagesV2 = val;
+
+  void updateSlideshowImagesV2(Function(List<ImageV2Struct>) updateFn) {
+    updateFn(_slideshowImagesV2 ??= []);
+  }
+
+  bool hasSlideshowImagesV2() => _slideshowImagesV2 != null && _slideshowImagesV2!.isNotEmpty;
 
   // "profileVideoUrl" field.
   String? _profileVideoUrl;

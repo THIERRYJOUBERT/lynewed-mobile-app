@@ -11,6 +11,7 @@ export 'conversation_list_item_struct.dart';
 export 'feed_image_item_struct.dart';
 export 'fixed_location_struct.dart';
 export 'feed_page_result_struct.dart';
+export 'image_v2_struct.dart';
 export 'feed_result_struct.dart';
 export 'inbox_result_struct.dart';
 export 'layer_toggles_struct.dart';

@@ -322,12 +322,13 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                           if (!_shouldShowVideo())
                             Builder(
                               builder: (context) {
-                                final portfolio = widget
-                                        .proDetails?.slideshowImages
-                                        .map((e) => e)
-                                        .toList()
-                                        .toList() ??
-                                    [];
+                                // Use V2 images if available (crop_1x1 for slideshow display)
+                                final hasV2 = widget.proDetails?.hasSlideshowImagesV2() ?? false;
+                                final v2Images = widget.proDetails?.slideshowImagesV2 ?? [];
+                                
+                                final portfolio = hasV2
+                                    ? v2Images.map((img) => img.crop1x1.isNotEmpty ? img.crop1x1 : img.crop3x4).toList()
+                                    : widget.proDetails?.slideshowImages.toList() ?? [];
 
                                 return SizedBox(
                                   width: MediaQuery.sizeOf(context).width * 1.0,
