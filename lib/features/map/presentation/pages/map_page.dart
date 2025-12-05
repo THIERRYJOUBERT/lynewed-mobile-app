@@ -95,6 +95,15 @@ class _MapPageState extends State<MapPage> {
       initialCenter: widget.config.initialCenter,
       initialZoom: widget.config.initialZoom,
     );
+    _loadUserMarket();
+  }
+  
+  /// Load user's market region for profession filtering
+  Future<void> _loadUserMarket() async {
+    final market = await actions.getUserMarketRegion();
+    if (_mounted && market != null) {
+      _mapState.updateUserMarket(market);
+    }
   }
 
   @override
@@ -652,6 +661,7 @@ class _MapPageState extends State<MapPage> {
       builder: (sheetContext) => FilterSheet(
         currentFilter: _mapState.filter,
         userRole: widget.userRole,
+        userMarket: _mapState.userMarket,
         onApply: (filter) {
           _mapState.updateFilter(filter);
           Navigator.pop(sheetContext);

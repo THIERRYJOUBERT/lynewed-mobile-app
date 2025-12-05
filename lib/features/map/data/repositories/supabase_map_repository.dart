@@ -32,20 +32,27 @@ class SupabaseMapRepository implements MapRepository {
         zoomLevel: zoomLevel,
       );
 
-      final professionals = _datasource.parseProfessionals(data).whereType<MapMarker>().toList();
-      final fixedLocations = _datasource.parseFixedLocations(data).whereType<MapMarker>().toList();
-      final alerts = _datasource.parseAlerts(data).whereType<MapMarker>().toList();
-      final weddings = _datasource.parseWeddings(data).whereType<MapMarker>().toList();
+      // Parse all markers from RPC response
+      // Note: professionals and fixedLocations are now merged (RPC returns only fixedLocation type)
+      // We put all pro markers in fixedLocations, professionals stays empty to avoid double counting
+      final allMarkers = _datasource.parseAllMarkers(data);
+      
+      final fixedLocations = allMarkers
+          .where((m) => m.type == MapMarkerType.proFixedLocation)
+          .toList();
+      final alerts = allMarkers
+          .where((m) => m.type == MapMarkerType.professionalAlert)
+          .toList();
+      final weddings = allMarkers
+          .where((m) => m.type == MapMarkerType.wedding)
+          .toList();
 
       return MapSearchResult(
-        professionals: professionals,
+        professionals: const [], // Empty - all pros are in fixedLocations now
         fixedLocations: fixedLocations,
         alerts: alerts,
         weddings: weddings,
-        totalCount: professionals.length +
-            fixedLocations.length +
-            alerts.length +
-            weddings.length,
+        totalCount: fixedLocations.length + alerts.length + weddings.length,
       );
     } catch (e) {
       // Log error but return empty result instead of throwing

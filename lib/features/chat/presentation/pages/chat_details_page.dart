@@ -38,7 +38,6 @@ class ChatDetailsPage extends StatefulWidget {
     this.publicRoomTitle,
     this.publicRoomCoverUrl,
     this.viewerIsReviewer = false,
-    this.firstMessageTextOnly = false,
     this.conversationStatus,
     this.onUnblock,
     this.onRequestAccepted,
@@ -78,9 +77,6 @@ class ChatDetailsPage extends StatefulWidget {
   /// Whether current user is the reviewer (Bride reviewing Pro request)
   final bool viewerIsReviewer;
 
-  /// Whether first message must be text only
-  final bool firstMessageTextOnly;
-
   /// Conversation status (blocked, reported, etc.)
   final ConversationStatus? conversationStatus;
 
@@ -117,7 +113,6 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
       publicRoomTitle: widget.publicRoomTitle,
       pendingRequestId: widget.pendingRequestId,
       viewerIsReviewer: widget.viewerIsReviewer,
-      firstMessageTextOnly: widget.firstMessageTextOnly,
     );
     _notifier.addListener(_onStateChange);
     _notifier.loadMessages();
@@ -639,7 +634,6 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
     return MessageComposer(
       isEnabled: isEnabled,
       isSending: loadedState?.isSending ?? false,
-      firstMessageTextOnly: widget.firstMessageTextOnly,
       onSendText: (content) => _notifier.sendTextMessage(content),
       onSendImage: ({required filePath, required fileName}) =>
           _notifier.sendImageMessage(filePath: filePath, fileName: fileName),

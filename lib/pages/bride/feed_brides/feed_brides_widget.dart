@@ -6,8 +6,9 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/custom_code/widgets/index.dart' as custom_widgets;
-import '/compo_finaux/address_search/address_search_widget.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
+import '/custom_code/actions/get_user_market_region.dart';
+import '/components/nav/nav_bar_pro/nav_bar_pro_widget.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +16,7 @@ import 'package:flutter/scheduler.dart';
 import 'feed_brides_model.dart';
 export 'feed_brides_model.dart';
 import 'feed_profession_grid.dart';
+import 'feed_location_filter.dart';
 
 class FeedBridesWidget extends StatefulWidget {
   const FeedBridesWidget({super.key});
@@ -39,45 +41,33 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
+      
+      // Load user's market region first
+      final market = await getUserMarketRegion();
+      _model.userMarket = market;
+      _model.marketLoaded = true;
+      
+      // For Indian users, force country to India
+      final countryCode = market == 'IN' ? 'IN' : '';
+      if (market == 'IN') {
+        _model.selectedCountry = CountryFilter.india;
+      }
+      
+      // Initialize with EMPTY professions list = no filter = show ALL pros
+      // When user selects a profession, it filters by that profession
       _model.psQueryFilters = QueryFiltersStruct(
         radiusKm: 100.0,
-        professions: [
-          Profession.PHOTOGRAPHER,
-          Profession.FILMMAKER,
-          Profession.PLANNER,
-          Profession.MAKEUP,
-          Profession.HAIRDRESSER,
-          Profession.MAKEUPARTIST,
-          Profession.EVENTDESIGNER,
-          Profession.BRIDALDESIGNER,
-          Profession.VENUE,
-          Profession.BRIDALSHOP,
-          Profession.FLORIST,
-          Profession.PHOTOMOVIE,
-        ],
+        professions: [], // Empty = no filter = show all
         budgetMin: 0.0,
         budgetMax: 40000.0,
-        countryCode: '',
+        countryCode: countryCode,
       );
       _model.psFiltersDraft = QueryFiltersStruct(
         radiusKm: 100.0,
-        professions: [
-          Profession.PHOTOGRAPHER,
-          Profession.FILMMAKER,
-          Profession.PLANNER,
-          Profession.MAKEUP,
-          Profession.HAIRDRESSER,
-          Profession.MAKEUPARTIST,
-          Profession.EVENTDESIGNER,
-          Profession.BRIDALDESIGNER,
-          Profession.VENUE,
-          Profession.BRIDALSHOP,
-          Profession.FLORIST,
-          Profession.PHOTOMOVIE,
-        ],
+        professions: [], // Empty = no filter = show all
         budgetMin: 0.0,
         budgetMax: 40000.0,
-        countryCode: '',
+        countryCode: countryCode,
       );
       if (mounted) {
         safeSetState(() {});
@@ -142,16 +132,29 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
                   ].divide(const SizedBox(height: 0.0)),
                 ),
               ),
-              Align(
-                alignment: const AlignmentDirectional(0.0, 1.0),
-                child: wrapWithModel(
-                  model: _model.navBarBridesModel,
-                  updateCallback: () => safeSetState(() {}),
-                  child: const NavBarBridesWidget(
-                    number: 2,
+              // Show appropriate navbar based on user role
+              if (FFAppState().currentUserRole == UserRole.bride)
+                Align(
+                  alignment: const AlignmentDirectional(0.0, 1.0),
+                  child: wrapWithModel(
+                    model: _model.navBarBridesModel,
+                    updateCallback: () => safeSetState(() {}),
+                    child: const NavBarBridesWidget(
+                      number: 2,
+                    ),
                   ),
                 ),
-              ),
+              if (FFAppState().currentUserRole == UserRole.professional)
+                Align(
+                  alignment: const AlignmentDirectional(0.0, 1.0),
+                  child: wrapWithModel(
+                    model: _model.navBarProModel,
+                    updateCallback: () => safeSetState(() {}),
+                    child: const NavBarProWidget(
+                      number: 4, // Feed is position 4 in Pro navbar
+                    ),
+                  ),
+                ),
               Align(
                 alignment: const AlignmentDirectional(0.0, -1.0),
                 child: Container(
@@ -262,34 +265,26 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
-                                      // Reset filters to default values
+                                      // Reset filters to default values based on market
+                                      // Empty professions list = no filter = show all
+                                      final countryCode = _model.isIndianMarket ? 'IN' : '';
+                                      
                                       _model.updatePsFiltersDraftStruct(
                                         (e) => e
-                                          ..professions = [
-                                            Profession.PHOTOGRAPHER,
-                                            Profession.FILMMAKER,
-                                            Profession.PLANNER,
-                                            Profession.MAKEUP,
-                                            Profession.HAIRDRESSER,
-                                            Profession.MAKEUPARTIST,
-                                            Profession.EVENTDESIGNER,
-                                            Profession.BRIDALDESIGNER,
-                                            Profession.VENUE,
-                                            Profession.BRIDALSHOP,
-                                            Profession.FLORIST,
-                                            Profession.PHOTOMOVIE,
-                                          ]
+                                          ..professions = [] // Empty = no filter = show all
                                           ..budgetMin = 0.0
                                           ..budgetMax = 40000.0
                                           ..center = null
                                           ..radiusKm = 100.0
-                                          ..countryCode = '',
+                                          ..countryCode = countryCode,
                                       );
                                       _model.budgetMin = 0.0;
                                       _model.budgetMax = 40000.0;
                                       _model.sliderValue = 100.0;
                                       _model.psSearchText = '';
-                                      _model.selectedCountry = CountryFilter.world;
+                                      _model.selectedCountry = _model.isIndianMarket 
+                                          ? CountryFilter.india 
+                                          : CountryFilter.world;
                                       safeSetState(() {});
                                     },
                                     child: Row(
@@ -316,124 +311,91 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
                                 ],
                               ),
                               const SizedBox(height: 12.0),
-                              // Country dropdown (1/3) + City search (2/3)
-                              Row(
-                                mainAxisSize: MainAxisSize.max,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Country dropdown - 1/3 width
-                                  Expanded(
-                                    flex: 1,
-                                    child: Container(
-                                      height: 50.0,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFF2F2F2),
-                                        borderRadius: BorderRadius.circular(100.0),
-                                      ),
-                                      child: DropdownButtonHideUnderline(
-                                        child: DropdownButton<CountryFilter>(
-                                          value: _model.selectedCountry,
-                                          isExpanded: true,
-                                          menuMaxHeight: 350.0,
-                                          icon: const Icon(
-                                            Icons.keyboard_arrow_down_rounded,
-                                            color: Color(0xFF888888),
-                                            size: 24.0,
-                                          ),
-                                          padding: const EdgeInsetsDirectional.fromSTEB(
-                                              8.0, 0.0, 8.0, 0.0),
-                                          items: CountryFilter.values.map((country) {
-                                            return DropdownMenuItem<CountryFilter>(
-                                              value: country,
-                                              alignment: Alignment.center,
-                                              child: Text(
-                                                country.displayName,
-                                                style: FlutterFlowTheme.of(context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      fontFamily: 'Haas Grot Text Trial',
-                                                      fontSize: 14.0,
-                                                      letterSpacing: 0.0,
-                                                    ),
-                                                textAlign: TextAlign.center,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            );
-                                          }).toList(),
-                                          onChanged: (newValue) {
-                                            if (newValue != null) {
-                                              _model.selectedCountry = newValue;
-                                              _model.updatePsFiltersDraftStruct(
-                                                (e) => e..countryCode = newValue.code,
-                                              );
-                                              // Also update psQueryFilters immediately to refresh feed
-                                              _model.updatePsQueryFiltersStruct(
-                                                (e) => e..countryCode = newValue.code,
-                                              );
-                                              // Reset address search when country is selected
-                                              if (!newValue.isWorld) {
-                                                _model.psSearchText = '';
-                                                _model.updatePsFiltersDraftStruct(
-                                                  (e) => e..center = null,
-                                                );
-                                                _model.updatePsQueryFiltersStruct(
-                                                  (e) => e..center = null,
-                                                );
-                                              }
-                                              safeSetState(() {});
-                                            }
-                                          },
-                                        ),
-                                      ),
-                                    ),
+                              // Location filters - HIDDEN for Indian users
+                              if (!_model.isIndianMarket) ...[
+                                // Toggleable Country/Address search filter
+                                FeedLocationFilter(
+                                  selectedCountry: _model.selectedCountry,
+                                  isAddressSearchMode: _model.isAddressSearchMode,
+                                  searchText: _model.psSearchText,
+                                  locale: valueOrDefault<String>(
+                                    FFAppState().currentUserPreferences.defaultLocale,
+                                    'en',
                                   ),
-                                  const SizedBox(width: 16.0),
-                                  // City search - 2/3 width (UNIFIED WIDGET)
-                                  Expanded(
-                                    flex: 2,
-                                    child: AddressSearchWidget(
-                                      height: 50.0,
-                                      hintText: _model.selectedCountry.isWorld 
-                                        ? 'Search city or address'
-                                        : 'Disabled (country filter active)',
-                                      initialValue: _model.psSearchText,
-                                      enabled: _model.selectedCountry.isWorld,
-                                      debounceMs: 200,
-                                      locale: valueOrDefault<String>(
-                                        FFAppState().currentUserPreferences.defaultLocale,
-                                        'en',
-                                      ),
-                                      onAddressSelected: (PlaceDetailsDataStruct details) {
-                                        // Business logic: Update filters with selected place
-                                        _model.placeSelected = details;
-                                        _model.updatePsFiltersDraftStruct(
-                                          (e) => e..center = details.coords,
-                                        );
-                                        safeSetState(() {});
-                                      },
-                                      onAddressCleared: () {
-                                        // Business logic: Clear place selection
-                                        _model.placeSelected = null;
-                                        _model.updatePsFiltersDraftStruct(
-                                          (e) => e..center = null,
-                                        );
-                                        safeSetState(() {});
-                                      },
-                                      onSearchTextChanged: (String text) {
-                                        // Optional: Sync with page state (for compatibility)
-                                        _model.psSearchText = text;
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                                                            // Distance slider - disabled when country filter is active
-                              Opacity(
-                                opacity: _model.selectedCountry.isWorld ? 1.0 : 0.4,
-                                child: AbsorbPointer(
-                                  absorbing: !_model.selectedCountry.isWorld,
-                                  child: Column(
+                                  onCountryChanged: (newValue) {
+                                    _model.selectedCountry = newValue;
+                                    _model.updatePsFiltersDraftStruct(
+                                      (e) => e..countryCode = newValue.code,
+                                    );
+                                    // Also update psQueryFilters immediately to refresh feed
+                                    _model.updatePsQueryFiltersStruct(
+                                      (e) => e..countryCode = newValue.code,
+                                    );
+                                    // Reset address search when country is selected
+                                    if (!newValue.isWorld) {
+                                      _model.psSearchText = '';
+                                      _model.updatePsFiltersDraftStruct(
+                                        (e) => e..center = null,
+                                      );
+                                      _model.updatePsQueryFiltersStruct(
+                                        (e) => e..center = null,
+                                      );
+                                    }
+                                    safeSetState(() {});
+                                  },
+                                  onAddressSelected: (PlaceDetailsDataStruct details) {
+                                    _model.placeSelected = details;
+                                    _model.updatePsFiltersDraftStruct(
+                                      (e) => e..center = details.coords,
+                                    );
+                                    _model.updatePsQueryFiltersStruct(
+                                      (e) => e..center = details.coords,
+                                    );
+                                    safeSetState(() {});
+                                  },
+                                  onAddressCleared: () {
+                                    _model.placeSelected = null;
+                                    _model.updatePsFiltersDraftStruct(
+                                      (e) => e..center = null,
+                                    );
+                                    _model.updatePsQueryFiltersStruct(
+                                      (e) => e..center = null,
+                                    );
+                                    safeSetState(() {});
+                                  },
+                                  onSearchTextChanged: (String text) {
+                                    _model.psSearchText = text;
+                                  },
+                                  onModeToggle: () {
+                                    _model.isAddressSearchMode = !_model.isAddressSearchMode;
+                                    // When switching to country mode, reset address search
+                                    if (!_model.isAddressSearchMode) {
+                                      _model.psSearchText = '';
+                                      _model.placeSelected = null;
+                                      _model.updatePsFiltersDraftStruct(
+                                        (e) => e..center = null,
+                                      );
+                                      _model.updatePsQueryFiltersStruct(
+                                        (e) => e..center = null,
+                                      );
+                                    }
+                                    // When switching to address mode, reset country to World
+                                    if (_model.isAddressSearchMode) {
+                                      _model.selectedCountry = CountryFilter.world;
+                                      _model.updatePsFiltersDraftStruct(
+                                        (e) => e..countryCode = '',
+                                      );
+                                      _model.updatePsQueryFiltersStruct(
+                                        (e) => e..countryCode = '',
+                                      );
+                                    }
+                                    safeSetState(() {});
+                                  },
+                                ),
+                                // Distance slider - only visible in address search mode
+                                if (_model.isAddressSearchMode) ...[
+                                  const SizedBox(height: 8.0),
+                                  Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Slider(
@@ -449,13 +411,13 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
                                           100.0,
                                         ),
                                         divisions: 99,
-                                        onChanged: _model.selectedCountry.isWorld ? (newValue) {
+                                        onChanged: (newValue) {
                                           newValue = double.parse(
                                               newValue.toStringAsFixed(2));
                                           safeSetState(
                                               () => _model.sliderValue = newValue);
-                                        } : null,
-                                        onChangeEnd: _model.selectedCountry.isWorld ? (newValue) async {
+                                        },
+                                        onChangeEnd: (newValue) async {
                                           newValue = double.parse(
                                               newValue.toStringAsFixed(2));
                                           safeSetState(
@@ -463,16 +425,17 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
                                           _model.updatePsFiltersDraftStruct(
                                             (e) => e..radiusKm = _model.sliderValue,
                                           );
+                                          _model.updatePsQueryFiltersStruct(
+                                            (e) => e..radiusKm = _model.sliderValue,
+                                          );
                                           safeSetState(() {});
-                                        } : null,
+                                        },
                                       ),
                                       Row(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
                                           Text(
-                                            _model.selectedCountry.isWorld 
-                                              ? '${_model.sliderValue?.toString()} km'
-                                              : 'Distance filter disabled',
+                                            '${_model.sliderValue?.toInt()} km radius',
                                             style: FlutterFlowTheme.of(context)
                                                 .bodyMedium
                                                 .override(
@@ -485,12 +448,13 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
                                       ),
                                     ],
                                   ),
-                                ),
-                              ),
+                                ],
+                              ],
                               Padding(
                                 padding: const EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
                                 child: FeedProfessionGrid(
                                   filters: _model.psFiltersDraft,
+                                  userMarket: _model.userMarket,
                                   onFiltersUpdate: (updateFn) {
                                     _model.updatePsFiltersDraftStruct(updateFn);
                                   },

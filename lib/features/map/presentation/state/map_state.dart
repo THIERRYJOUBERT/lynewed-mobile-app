@@ -26,13 +26,22 @@ class MapState extends ChangeNotifier {
     required String userRole,
     gmaps.LatLng? initialCenter,
     double initialZoom = 12.0,
+    String userMarket = 'GLOBAL',
   })  : _repository = repository,
         _userRole = userRole,
+        _userMarket = userMarket,
         _center = initialCenter ?? const gmaps.LatLng(48.8566, 2.3522),
         _zoom = initialZoom;
 
   final MapRepository _repository;
   final String _userRole;
+  String _userMarket;
+  String get userMarket => _userMarket;
+  
+  void updateUserMarket(String market) {
+    _userMarket = market;
+    notifyListeners();
+  }
 
   // --- État ---
   
@@ -51,7 +60,7 @@ class MapState extends ChangeNotifier {
   // Cache accumulatif de tous les markers chargés
   // Key: marker.id, Value: marker
   // Les markers sont accumulés au fil des pans/zooms
-  final Map<String, MapMarker> _professionalsCache = {};
+  // Note: _professionalsCache is deprecated - all pros are in _fixedLocationsCache now
   final Map<String, MapMarker> _fixedLocationsCache = {};
   final Map<String, MapMarker> _alertsCache = {};
   final Map<String, MapMarker> _weddingsCache = {};
@@ -86,7 +95,14 @@ class MapState extends ChangeNotifier {
 
   /// Appelé quand le mouvement de caméra est terminé
   void onCameraIdle(gmaps.LatLngBounds bounds) {
+    final boundsChanged = _visibleBounds != bounds;
     _visibleBounds = bounds;
+    
+    // Notify to update markersInView count even if no new data loaded
+    if (boundsChanged) {
+      notifyListeners();
+    }
+    
     _debouncedSearch();
   }
 
@@ -185,9 +201,7 @@ class MapState extends ChangeNotifier {
       
       // ACCUMULATE markers in cache (don't replace)
       // This prevents markers from disappearing during pan/zoom
-      for (final m in result.professionals) {
-        _professionalsCache[m.id] = m;
-      }
+      // Note: professionals list is now empty - all pros are in fixedLocations
       for (final m in result.fixedLocations) {
         _fixedLocationsCache[m.id] = m;
       }
@@ -200,12 +214,11 @@ class MapState extends ChangeNotifier {
       
       // Update searchResult with FULL cache contents
       _searchResult = MapSearchResult(
-        professionals: _professionalsCache.values.toList(),
+        professionals: const [], // Empty - all pros in fixedLocations
         fixedLocations: _fixedLocationsCache.values.toList(),
         alerts: _alertsCache.values.toList(),
         weddings: _weddingsCache.values.toList(),
-        totalCount: _professionalsCache.length + 
-                   _fixedLocationsCache.length + 
+        totalCount: _fixedLocationsCache.length + 
                    _alertsCache.length + 
                    _weddingsCache.length,
       );
@@ -221,7 +234,6 @@ class MapState extends ChangeNotifier {
   
   /// Vide le cache des markers (appelé lors d'un changement de filtres significatif)
   void clearMarkersCache() {
-    _professionalsCache.clear();
     _fixedLocationsCache.clear();
     _alertsCache.clear();
     _weddingsCache.clear();
@@ -231,14 +243,14 @@ class MapState extends ChangeNotifier {
 
   // --- Getters dérivés ---
 
-  /// Tous les marqueurs filtrés par les toggles
+  /// Tous les marqueurs filtrés par les toggles (from cache)
+  /// Note: showPros and showFixedLocations are now merged - both control fixedLocations
+  /// (RPC returns all pro markers as fixedLocation type)
   List<MapMarker> get visibleMarkers {
     final markers = <MapMarker>[];
     
-    if (_filter.toggles.showPros) {
-      markers.addAll(_searchResult.professionals);
-    }
-    if (_filter.toggles.showFixedLocations) {
+    // showPros OR showFixedLocations controls pro markers (they're the same now)
+    if (_filter.toggles.showPros || _filter.toggles.showFixedLocations) {
       markers.addAll(_searchResult.fixedLocations);
     }
     if (_filter.toggles.showAlerts) {
@@ -250,9 +262,18 @@ class MapState extends ChangeNotifier {
     
     return markers;
   }
+  
+  /// Markers visibles dans les bounds actuels de la map (pas tout le cache)
+  List<MapMarker> get markersInView {
+    if (_visibleBounds == null) return visibleMarkers;
+    
+    return visibleMarkers.where((marker) {
+      return _visibleBounds!.contains(marker.position);
+    }).toList();
+  }
 
-  /// Nombre total de marqueurs visibles
-  int get visibleMarkersCount => visibleMarkers.length;
+  /// Nombre de marqueurs visibles dans les bounds actuels
+  int get visibleMarkersCount => markersInView.length;
 
   /// Est en chargement
   bool get isLoading => _loadingState == MapLoadingState.loading;

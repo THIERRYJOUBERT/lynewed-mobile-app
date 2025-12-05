@@ -2,7 +2,7 @@
 
 **Version:** v1.1.1+59  
 **Branch:** develop  
-**Last Updated:** 2025-12-04 11:35  
+**Last Updated:** 2025-12-05 11:46  
 **Environment:** Development (hekyovgnovhfhmkpfrna)  
 
 ---
@@ -22,6 +22,8 @@
 - ✅ Data seeding completed (40 users)
 - ✅ Design System unified (`lib/core/design/`)
 - ✅ **🎉 MODULE MAP 100% COMPLET** (2025-12-01)
+  - ✅ **Bug fix** : Double comptage des markers corrigé (2025-12-05)
+  - ✅ **Amélioration** : `visibleMarkersCount` affiche seulement les markers visibles à l'écran
 - ✅ **🎉 MODULE CHAT 100% COMPLET** (2025-12-03)
   - ✅ Audio player refactorisé (design compact, pas de waveform)
   - ✅ Message loading optimisé (cache synchrone + preloading)
@@ -48,13 +50,29 @@
   - ✅ Cohérence Bride/Pro par type
   - ✅ Edge Function respecte les settings utilisateur
 
+- ✅ **🎉 FEED MVP PHASE 1 TERMINÉE** (2025-12-05)
+  - ✅ Segmentation marché IN vs GLOBAL complète
+  - ✅ 6 nouvelles professions ajoutées (3 IN-only, 3 GLOBAL-only)
+  - ✅ `FeedLocationFilter` avec toggle Country/Nearby
+  - ✅ `CountryFilter` enum avec 200+ pays et aliases
+  - ✅ Alertes filtrées par marché (`get_active_alerts_for_market`)
+  - ✅ Salons publics segmentés (3 GLOBAL + 3 IN)
+  - ✅ Chat: suppression `firstMessageTextOnly` (toujours media+audio)
+
+- 🔄 **FEED PHASE 1.5 EN COURS** (2025-12-05)
+  - ✅ **Images V2 Migration**: Format grille 3:4, fullscreen 9:16
+  - ✅ RPC `get_portfolio_feed` utilise `portfolio_images_v2` avec fallback legacy
+  - ✅ `FeedImageItemStruct` avec `fullscreenUrl` et `imageId`
+  - ⏳ ProDetails Images V2 (à faire)
+  - ⏳ Wed of the Week (à faire)
+
 ### Key Metrics
 | Métrique | Valeur |
 |----------|--------|
 | Codebase | ~15,000+ lignes Dart |
 | Architecture | Clean Architecture |
-| Modules terminés | Design System, **Map**, **Chat**, **Notifications** |
-| Migrations | 56 appliquées |
+| Modules terminés | Design System, **Map**, **Chat**, **Notifications**, **Feed MVP** |
+| Migrations | 58 appliquées |
 | Tests Map | 63/63 passants |
 | APIs externes | 4 certifiées |
 
@@ -168,13 +186,13 @@ Le module Map a été entièrement refactorisé de FlutterFlow vers Clean Archit
 
 | Priorité | Module | Description |
 |----------|--------|-------------|
-| 🔴 1 | **Notifications** | Investigation: pourquoi les notifs in-app ne s'affichent pas |
+| 🔴 1 | **Feed Phase 1.5** | Images V2 (format 3:4), Wed of the Week |
 | 2 | **Auth** | Refactorisation Clean Architecture |
 | 3 | **Profile** | Refactorisation pages profil |
 | 4 | **Performance** | Cache, images, lazy loading |
-| 5 | **Analytics** | Tracking utilisateur |
+| 5 | **TestFlight** | Préparation déploiement beta |
 
 ---
 
-**Last Updated**: 2025-12-03 17:50  
-**Status**: ✅ Modules Map et Chat terminés. 🔴 Prochaine priorité: Investigation notifications in-app.
+**Last Updated**: 2025-12-05 11:46  
+**Status**: ✅ Modules Map, Chat, Notifications et Feed MVP terminés. 🔄 Phase 1.5 en cours (Images V2).

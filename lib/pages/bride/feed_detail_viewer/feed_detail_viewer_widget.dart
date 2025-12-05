@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '/backend/schema/structs/index.dart';
+import '/backend/schema/enums/enums.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/core/design/design.dart';
@@ -82,7 +83,8 @@ class _FeedDetailViewerWidgetState extends State<FeedDetailViewerWidget> {
   }
 
   Widget _buildImage(FeedImageItemStruct? feed) {
-    final imageUrl = feed?.imageUrl ?? '';
+    // Use fullscreenUrl (9:16) for fullscreen view, fallback to imageUrl
+    final imageUrl = feed?.fullscreenUrl ?? feed?.imageUrl ?? '';
     
     if (imageUrl.isEmpty) {
       return Container(
@@ -140,7 +142,7 @@ class _FeedDetailViewerWidgetState extends State<FeedDetailViewerWidget> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.black.withOpacity(0.6),
+              Colors.black.withValues(alpha: 0.6),
               Colors.transparent,
             ],
           ),
@@ -159,7 +161,7 @@ class _FeedDetailViewerWidgetState extends State<FeedDetailViewerWidget> {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             shape: BoxShape.circle,
           ),
           child: const Icon(
@@ -247,31 +249,32 @@ class _FeedDetailViewerWidgetState extends State<FeedDetailViewerWidget> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              // Favorite button - Design System v3 (black when active)
-                              GestureDetector(
-                                onTap: _model.isLoadingFav ? null : _toggleFavorite,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4),
-                                  child: _model.isLoadingFav
-                                      ? const SizedBox(
-                                          width: 22,
-                                          height: 22,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: LynewedColors.textSecondary,
+                              // Favorite button - Only visible for Brides (not Pros)
+                              if (FFAppState().currentUserRole == UserRole.bride)
+                                GestureDetector(
+                                  onTap: _model.isLoadingFav ? null : _toggleFavorite,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(4),
+                                    child: _model.isLoadingFav
+                                        ? const SizedBox(
+                                            width: 22,
+                                            height: 22,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: LynewedColors.textSecondary,
+                                            ),
+                                          )
+                                        : Icon(
+                                            _model.fav
+                                                ? Icons.favorite
+                                                : Icons.favorite_border,
+                                            color: _model.fav
+                                                ? LynewedColors.textPrimary
+                                                : LynewedColors.textSecondary,
+                                            size: 22,
                                           ),
-                                        )
-                                      : Icon(
-                                          _model.fav
-                                              ? Icons.favorite
-                                              : Icons.favorite_border,
-                                          color: _model.fav
-                                              ? LynewedColors.textPrimary
-                                              : LynewedColors.textSecondary,
-                                          size: 22,
-                                        ),
+                                  ),
                                 ),
-                              ),
                             ],
                           ),
                           const SizedBox(height: 2),

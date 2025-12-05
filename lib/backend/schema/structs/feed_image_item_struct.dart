@@ -9,6 +9,8 @@ import '/flutter_flow/flutter_flow_util.dart';
 class FeedImageItemStruct extends BaseStruct {
   FeedImageItemStruct({
     String? imageUrl,
+    String? fullscreenUrl,
+    String? imageId,
     int? imageIndex,
     String? proProfileId,
     String? proFullName,
@@ -17,6 +19,8 @@ class FeedImageItemStruct extends BaseStruct {
     String? proLocationLabel,
     bool? isFavorited,
   })  : _imageUrl = imageUrl,
+        _fullscreenUrl = fullscreenUrl,
+        _imageId = imageId,
         _imageIndex = imageIndex,
         _proProfileId = proProfileId,
         _proFullName = proFullName,
@@ -25,12 +29,26 @@ class FeedImageItemStruct extends BaseStruct {
         _proLocationLabel = proLocationLabel,
         _isFavorited = isFavorited;
 
-  // "imageUrl" field.
+  // "imageUrl" field - crop_3x4 for grid display
   String? _imageUrl;
   String get imageUrl => _imageUrl ?? '';
   set imageUrl(String? val) => _imageUrl = val;
 
   bool hasImageUrl() => _imageUrl != null;
+
+  // "fullscreenUrl" field - crop_9x16 for fullscreen display
+  String? _fullscreenUrl;
+  String get fullscreenUrl => _fullscreenUrl ?? _imageUrl ?? '';
+  set fullscreenUrl(String? val) => _fullscreenUrl = val;
+
+  bool hasFullscreenUrl() => _fullscreenUrl != null;
+
+  // "imageId" field - unique ID for matching across formats
+  String? _imageId;
+  String get imageId => _imageId ?? '';
+  set imageId(String? val) => _imageId = val;
+
+  bool hasImageId() => _imageId != null;
 
   // "imageIndex" field.
   int? _imageIndex;
@@ -86,6 +104,8 @@ class FeedImageItemStruct extends BaseStruct {
   static FeedImageItemStruct fromMap(Map<String, dynamic> data) =>
       FeedImageItemStruct(
         imageUrl: data['imageUrl'] as String?,
+        fullscreenUrl: data['fullscreenUrl'] as String?,
+        imageId: data['imageId'] as String?,
         imageIndex: castToType<int>(data['imageIndex']),
         proProfileId: data['proProfileId'] as String?,
         proFullName: data['proFullName'] as String?,
@@ -103,6 +123,8 @@ class FeedImageItemStruct extends BaseStruct {
 
   Map<String, dynamic> toMap() => {
         'imageUrl': _imageUrl,
+        'fullscreenUrl': _fullscreenUrl,
+        'imageId': _imageId,
         'imageIndex': _imageIndex,
         'proProfileId': _proProfileId,
         'proFullName': _proFullName,
@@ -116,6 +138,14 @@ class FeedImageItemStruct extends BaseStruct {
   Map<String, dynamic> toSerializableMap() => {
         'imageUrl': serializeParam(
           _imageUrl,
+          ParamType.String,
+        ),
+        'fullscreenUrl': serializeParam(
+          _fullscreenUrl,
+          ParamType.String,
+        ),
+        'imageId': serializeParam(
+          _imageId,
           ParamType.String,
         ),
         'imageIndex': serializeParam(
@@ -152,6 +182,16 @@ class FeedImageItemStruct extends BaseStruct {
       FeedImageItemStruct(
         imageUrl: deserializeParam(
           data['imageUrl'],
+          ParamType.String,
+          false,
+        ),
+        fullscreenUrl: deserializeParam(
+          data['fullscreenUrl'],
+          ParamType.String,
+          false,
+        ),
+        imageId: deserializeParam(
+          data['imageId'],
           ParamType.String,
           false,
         ),
@@ -199,6 +239,8 @@ class FeedImageItemStruct extends BaseStruct {
   bool operator ==(Object other) {
     return other is FeedImageItemStruct &&
         imageUrl == other.imageUrl &&
+        fullscreenUrl == other.fullscreenUrl &&
+        imageId == other.imageId &&
         imageIndex == other.imageIndex &&
         proProfileId == other.proProfileId &&
         proFullName == other.proFullName &&
@@ -211,6 +253,8 @@ class FeedImageItemStruct extends BaseStruct {
   @override
   int get hashCode => const ListEquality().hash([
         imageUrl,
+        fullscreenUrl,
+        imageId,
         imageIndex,
         proProfileId,
         proFullName,
@@ -223,6 +267,8 @@ class FeedImageItemStruct extends BaseStruct {
 
 FeedImageItemStruct createFeedImageItemStruct({
   String? imageUrl,
+  String? fullscreenUrl,
+  String? imageId,
   int? imageIndex,
   String? proProfileId,
   String? proFullName,
@@ -233,6 +279,8 @@ FeedImageItemStruct createFeedImageItemStruct({
 }) =>
     FeedImageItemStruct(
       imageUrl: imageUrl,
+      fullscreenUrl: fullscreenUrl,
+      imageId: imageId,
       imageIndex: imageIndex,
       proProfileId: proProfileId,
       proFullName: proFullName,

@@ -54,7 +54,7 @@ class MapMarkerColors {
     }
   }
 
-  /// Couleur par profession - aligned with backend enum (14 values)
+  /// Couleur par profession - aligned with backend enum (20 values)
   static Color forProfession(Profession profession) {
     switch (profession) {
       case Profession.photographer:
@@ -85,6 +85,20 @@ class MapMarkerColors {
         return const Color(0xFF00BCD4); // Cyan
       case Profession.other:
         return const Color(0xFF607D8B); // Blue Grey
+      // India-only professions
+      case Profession.caterer:
+        return const Color(0xFFFF5722); // Deep Orange
+      case Profession.dj:
+        return const Color(0xFF3F51B5); // Indigo
+      case Profession.bridalWearDesigner:
+        return const Color(0xFFE040FB); // Purple Accent
+      // Global-only professions
+      case Profession.jeweller:
+        return const Color(0xFFFFD54F); // Amber 300
+      case Profession.stationer:
+        return const Color(0xFF795548); // Brown
+      case Profession.contentCreator:
+        return const Color(0xFF00E676); // Green Accent
     }
   }
 }

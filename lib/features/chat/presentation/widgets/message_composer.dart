@@ -34,7 +34,6 @@ class MessageComposer extends StatefulWidget {
     this.onSendingComplete,
     this.isEnabled = true,
     this.isSending = false,
-    this.firstMessageTextOnly = false,
     this.placeholder = 'Write a message...',
     this.maxLength = 1000,
   });
@@ -56,9 +55,6 @@ class MessageComposer extends StatefulWidget {
 
   /// Whether a message is currently being sent
   final bool isSending;
-
-  /// Whether only text is allowed (first message Pro→Bride)
-  final bool firstMessageTextOnly;
 
   /// Placeholder text
   final String placeholder;
@@ -117,7 +113,6 @@ class _MessageComposerState extends State<MessageComposer> {
   bool get _canAddMedia {
     return widget.isEnabled &&
         !widget.isSending &&
-        !widget.firstMessageTextOnly &&
         !_hasAudioReady;
   }
 
@@ -281,8 +276,7 @@ class _MessageComposerState extends State<MessageComposer> {
 
   /// Determines if mic button should be shown (no text, no images, no audio ready)
   bool get _showMicButton {
-    return !widget.firstMessageTextOnly &&
-        widget.onSendAudio != null &&
+    return widget.onSendAudio != null &&
         !_isRecording &&
         !_hasAudioReady &&
         _textController.text.trim().isEmpty &&
@@ -303,7 +297,7 @@ class _MessageComposerState extends State<MessageComposer> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Image picker button (left side) - only show if not recording and no audio ready
-          if (!widget.firstMessageTextOnly && !_isRecording && !_hasAudioReady) ...[
+          if (!_isRecording && !_hasAudioReady) ...[
             _buildActionButton(
               icon: Icons.add,
               onTap: _canAddMedia ? _pickImages : null,

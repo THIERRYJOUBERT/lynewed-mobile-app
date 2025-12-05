@@ -70,12 +70,24 @@ class _MapPageWrapperState extends State<MapPageWrapper> {
   
   // Loading state
   bool _isLoadingDetails = false;
+  
+  // User market region for profession filtering
+  String _userMarket = 'GLOBAL';
 
   @override
   void initState() {
     super.initState();
     _initializeFromFFAppState();
     _getCurrentLocation();
+    _loadUserMarket();
+  }
+  
+  /// Load user's market region for profession filtering
+  Future<void> _loadUserMarket() async {
+    final market = await actions.getUserMarketRegion();
+    if (mounted && market != null) {
+      setState(() => _userMarket = market);
+    }
   }
 
   /// Initialize filters from FFAppState preferences
@@ -229,6 +241,7 @@ class _MapPageWrapperState extends State<MapPageWrapper> {
       builder: (context) => FilterSheet(
         currentFilter: _currentFilter,
         userRole: widget.userRole,
+        userMarket: _userMarket,
         onApply: (filter) => Navigator.pop(context, filter),
       ),
     );

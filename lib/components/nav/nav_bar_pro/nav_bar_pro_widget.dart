@@ -232,21 +232,12 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                       hoverColor: Colors.transparent,
                       highlightColor: Colors.transparent,
                       onTap: () async {
-                        _model.proDetails =
-                            await actions.getProItemDetailsAction(
-                          currentUserUid,
-                        );
                         _model.number = 4;
                         safeSetState(() {});
 
+                        // Navigate to Feed (reuse FeedBrides page)
                         context.goNamed(
-                          PublicProProfileViewWidget.routeName,
-                          queryParameters: {
-                            'proDetails': serializeParam(
-                              _model.proDetails,
-                              ParamType.DataStruct,
-                            ),
-                          }.withoutNulls,
+                          FeedBridesWidget.routeName,
                           extra: <String, dynamic>{
                             kTransitionInfoKey: const TransitionInfo(
                               hasTransition: true,
@@ -255,15 +246,13 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                             ),
                           },
                         );
-
-                        safeSetState(() {});
                       },
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.person_outlined,
+                            Icons.grid_view_outlined,
                             color: widget.number == 4
                                 ? FlutterFlowTheme.of(context).primaryText
                                 : FlutterFlowTheme.of(context).alternate,
@@ -273,7 +262,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                             padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 5.0, 0.0, 0.0),
                             child: Text(
-                              'Profil',
+                              'Feed',
                               style: FlutterFlowTheme.of(context)
                                   .bodyLarge
                                   .override(

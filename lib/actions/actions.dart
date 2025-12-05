@@ -44,7 +44,6 @@ Future contactChatRoom(
           otherAvatarUrl: contactContext.otherAvatarUrl,
           otherRole: _convertUserRole(contactContext.otherRole),
           viewerIsReviewer: false,
-          firstMessageTextOnly: contactContext.firstMessageTextOnly,
         ),
       ),
     );
@@ -191,7 +190,6 @@ Future contactRoomChatMessagerie(
           otherAvatarUrl: contactContextMessagerie.otherAvatarUrl,
           otherRole: _convertUserRole(contactContextMessagerie.otherRole),
           viewerIsReviewer: isActuallyPending ? contactContextMessagerie.viewerIsReviewer : false,
-          firstMessageTextOnly: contactContextMessagerie.firstMessageTextOnly,
         ),
       ),
     );

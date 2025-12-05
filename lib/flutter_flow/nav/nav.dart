@@ -364,7 +364,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               otherFullName: params.getParam('otherFullName', ParamType.String),
               otherAvatarUrl: params.getParam('otherAvatarUrl', ParamType.String),
               viewerIsReviewer: params.getParam('viewerIsReviewer', ParamType.bool) ?? false,
-              firstMessageTextOnly: params.getParam('firstMessageTextOnly', ParamType.bool) ?? false,
             );
           },
         )

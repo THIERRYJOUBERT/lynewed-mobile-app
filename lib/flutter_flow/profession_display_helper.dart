@@ -31,6 +31,20 @@ String getProfessionDisplayName(Profession profession) {
       return 'Event Designer';
     case Profession.OTHER:
       return 'Other';
+    // 🇮🇳 India-only professions
+    case Profession.CATERER:
+      return 'Caterer';
+    case Profession.DJ:
+      return 'DJ';
+    case Profession.BRIDALWEARDESIGNER:
+      return 'Bridal Wear Designer';
+    // 🌍 Global-only professions
+    case Profession.JEWELLER:
+      return 'Jeweller';
+    case Profession.STATIONER:
+      return 'Stationer';
+    case Profession.CONTENTCREATOR:
+      return 'Content Creator';
     default:
       return profession.name;
   }

@@ -27,7 +27,6 @@ class ChatRoomNotifier extends ChangeNotifier {
     String? publicRoomTitle,
     String? pendingRequestId,
     bool viewerIsReviewer = false,
-    bool firstMessageTextOnly = false,
   })  : _roomId = roomId,
         _chatRepository = chatRepository ?? ChatRepositoryImpl(),
         _contactRepository = contactRepository ?? ContactRepositoryImpl(),
@@ -38,8 +37,7 @@ class ChatRoomNotifier extends ChangeNotifier {
         _isPublicRoom = isPublicRoom,
         _publicRoomTitle = publicRoomTitle,
         _pendingRequestId = pendingRequestId,
-        _viewerIsReviewer = viewerIsReviewer,
-        _firstMessageTextOnly = firstMessageTextOnly;
+        _viewerIsReviewer = viewerIsReviewer;
 
   String _roomId; // Mutable to allow updating after accept
   final ChatRepository _chatRepository;
@@ -54,7 +52,6 @@ class ChatRoomNotifier extends ChangeNotifier {
   final String? _publicRoomTitle;
   String? _pendingRequestId;
   final bool _viewerIsReviewer;
-  final bool _firstMessageTextOnly;
 
   ChatRoomState _state = const ChatRoomInitial();
   ChatRoomState get state => _state;
@@ -90,7 +87,6 @@ class ChatRoomNotifier extends ChangeNotifier {
           hasMoreMessages: false,
           pendingRequestId: _pendingRequestId,
           viewerIsReviewer: _viewerIsReviewer,
-          firstMessageTextOnly: _firstMessageTextOnly,
         ));
         return;
       }
@@ -121,7 +117,6 @@ class ChatRoomNotifier extends ChangeNotifier {
         hasMoreMessages: messages.length >= 50,
         pendingRequestId: _pendingRequestId,
         viewerIsReviewer: _viewerIsReviewer,
-        firstMessageTextOnly: _firstMessageTextOnly,
       ));
 
       // Load author profiles for public rooms

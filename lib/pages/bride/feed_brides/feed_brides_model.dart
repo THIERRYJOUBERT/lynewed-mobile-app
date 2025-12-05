@@ -1,6 +1,7 @@
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/country_filter.dart';
 import '/components/nav/nav_bar_brides/nav_bar_brides_widget.dart';
+import '/components/nav/nav_bar_pro/nav_bar_pro_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'feed_brides_widget.dart' show FeedBridesWidget;
@@ -33,11 +34,25 @@ class FeedBridesModel extends FlutterFlowModel<FeedBridesWidget> {
   double budgetMax = 40000.0;
 
   CountryFilter selectedCountry = CountryFilter.world;
+  
+  /// User's market region ('IN' or 'GLOBAL')
+  String userMarket = 'GLOBAL';
+  
+  /// Whether the user is in the Indian market
+  bool get isIndianMarket => userMarket == 'IN';
+  
+  /// Whether market has been loaded
+  bool marketLoaded = false;
+  
+  /// Location filter mode: false = country dropdown expanded, true = address search expanded
+  bool isAddressSearchMode = false;
 
   ///  State fields for stateful widgets in this page.
 
   // Model for NavBarBrides component.
   late NavBarBridesModel navBarBridesModel;
+  // Model for NavBarPro component (for Pro users accessing Feed).
+  late NavBarProModel navBarProModel;
   // State field(s) for Slider widget.
   double? sliderValue;
   // State field(s) for Checkbox_PHOTOGRAPHER widget.
@@ -70,10 +85,12 @@ class FeedBridesModel extends FlutterFlowModel<FeedBridesWidget> {
   @override
   void initState(BuildContext context) {
     navBarBridesModel = createModel(context, () => NavBarBridesModel());
+    navBarProModel = createModel(context, () => NavBarProModel());
   }
 
   @override
   void dispose() {
     navBarBridesModel.dispose();
+    navBarProModel.dispose();
   }
 }

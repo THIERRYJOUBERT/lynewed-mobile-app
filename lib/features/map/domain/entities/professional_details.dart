@@ -7,10 +7,13 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 
-/// Profession enum - aligned with backend Supabase enum (14 values)
+/// Profession enum - aligned with backend Supabase enum (20 values)
 /// Backend values: PHOTOGRAPHER, FILMMAKER, PLANNER, MAKEUP, HAIRDRESSER, 
 /// DESIGNER, BRIDALDESIGNER, VENUE, BRIDALSHOP, FLORIST, PHOTOMOVIE, 
 /// MAKEUPARTIST, EVENTDESIGNER, OTHER
+/// + 6 new market-specific professions:
+/// India-only: CATERER, DJ, BRIDALWEARDESIGNER
+/// Global-only: JEWELLER, STATIONER, CONTENTCREATOR
 enum Profession {
   photographer,
   filmmaker,
@@ -25,7 +28,15 @@ enum Profession {
   photoMovie,
   makeupArtist,
   eventDesigner,
-  other;
+  other,
+  // India-only professions
+  caterer,
+  dj,
+  bridalWearDesigner,
+  // Global-only professions
+  jeweller,
+  stationer,
+  contentCreator;
 
   String get displayName {
     switch (this) {
@@ -57,6 +68,20 @@ enum Profession {
         return 'Event Designer';
       case Profession.other:
         return 'Other';
+      // India-only
+      case Profession.caterer:
+        return 'Caterer';
+      case Profession.dj:
+        return 'DJ';
+      case Profession.bridalWearDesigner:
+        return 'Bridal Wear Designer';
+      // Global-only
+      case Profession.jeweller:
+        return 'Jeweller';
+      case Profession.stationer:
+        return 'Stationer';
+      case Profession.contentCreator:
+        return 'Content Creator';
     }
   }
 
@@ -91,6 +116,20 @@ enum Profession {
         return 'EVENTDESIGNER';
       case Profession.other:
         return 'OTHER';
+      // India-only
+      case Profession.caterer:
+        return 'CATERER';
+      case Profession.dj:
+        return 'DJ';
+      case Profession.bridalWearDesigner:
+        return 'BRIDALWEARDESIGNER';
+      // Global-only
+      case Profession.jeweller:
+        return 'JEWELLER';
+      case Profession.stationer:
+        return 'STATIONER';
+      case Profession.contentCreator:
+        return 'CONTENTCREATOR';
     }
   }
 
@@ -127,6 +166,20 @@ enum Profession {
         return Profession.makeupArtist;
       case 'EVENTDESIGNER':
         return Profession.eventDesigner;
+      // India-only
+      case 'CATERER':
+        return Profession.caterer;
+      case 'DJ':
+        return Profession.dj;
+      case 'BRIDALWEARDESIGNER':
+        return Profession.bridalWearDesigner;
+      // Global-only
+      case 'JEWELLER':
+        return Profession.jeweller;
+      case 'STATIONER':
+        return Profession.stationer;
+      case 'CONTENTCREATOR':
+        return Profession.contentCreator;
       case 'OTHER':
       default:
         // Fallback: try matching by clean enum name

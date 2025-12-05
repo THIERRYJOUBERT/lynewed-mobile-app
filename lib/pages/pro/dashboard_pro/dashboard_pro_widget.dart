@@ -394,7 +394,7 @@ class _DashboardProWidgetState extends State<DashboardProWidget> with WidgetsBin
 
   /// Paged alerts carousel with snap and navigation chevrons
   Widget _buildAlertsCarousel() {
-    return FutureBuilder<List<ProfessionalAlertsRow>>(
+    return FutureBuilder<List<AlertItemDataStruct>>(
       future: _model.alertsFuture,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
@@ -459,19 +459,19 @@ class _DashboardProWidgetState extends State<DashboardProWidget> with WidgetsBin
             itemCount: alerts.length,
             itemBuilder: (context, index) {
               final alert = alerts[index];
-              final isOwn = alert.authorProfileId == currentUserUid;
+              final isOwn = alert.isOwn;
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4.0),
                 child: _ProAlertTile(
-                  key: Key('alert_${alert.id}'),
-                  alertType: alert.alertType ?? '',
-                  title: alert.title,
+                  key: Key('alert_${alert.alertId}'),
+                  alertType: alert.motifCode,
+                  title: alert.motifLabel,
                   message: alert.message,
                   locationLabel: alert.locationLabel,
-                  expiresAt: alert.expiresAt,
+                  expiresAt: alert.endAt,
                   isOwn: isOwn,
                   onTap: isOwn 
-                      ? () => _deleteAlert(alert.id)
+                      ? () => _deleteAlert(alert.alertId)
                       : () => _contactAlertAuthor(alert),
                 ),
               );
@@ -483,7 +483,7 @@ class _DashboardProWidgetState extends State<DashboardProWidget> with WidgetsBin
   }
 
   /// Contact the alert author to offer help
-  Future<void> _contactAlertAuthor(ProfessionalAlertsRow alert) async {
+  Future<void> _contactAlertAuthor(AlertItemDataStruct alert) async {
     await action_blocks.contactChatRoom(
       context,
       targetProfileID: alert.authorProfileId,

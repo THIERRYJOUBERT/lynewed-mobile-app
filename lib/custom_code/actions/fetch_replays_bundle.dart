@@ -7,51 +7,33 @@ import '/backend/supabase/supabase.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
+/// Fetch replays filtered by user's market region (IN or GLOBAL)
+/// Uses RPC to ensure market filtering is done server-side
 Future<List<ReplayItemStruct>?> fetchReplaysBundle() async {
   try {
     final client = SupaFlow.client;
 
-    // Fetch all replays and their guest assignments
-    // Sorting logic:
-    // 1. Featured replays (is_featured = true) ordered by created_at DESC
-    // 2. Non-featured replays ordered by created_at DESC
-    // Only fetch published replays (is_published = true)
-    final response = await client.from('replays').select('''
-      id,
-      title,
-      description,
-      youtube_url,
-      thumbnail_url,
-      published_at,
-      is_featured,
-      is_published,
-      created_at,
-      replay_guest_assignments (
-        replay_guests (
-          id,
-          full_name,
-          profession,
-          avatar_url
-        )
-      )
-    ''').eq('is_published', true).order('is_featured', ascending: false).order('created_at', ascending: false);
+    // Use RPC to get replays filtered by market region
+    final response = await client.rpc('get_replays_bundle');
+
+    if (response == null) {
+      return [];
+    }
 
     final List<dynamic> data = response as List<dynamic>? ?? [];
     final List<ReplayItemStruct> replays = [];
 
     for (final replayData in data) {
       final List<ReplayGuestItemStruct> guests = [];
-      final assignments =
-          replayData['replay_guest_assignments'] as List<dynamic>? ?? [];
+      final guestsData = replayData['guests'] as List<dynamic>? ?? [];
 
-      for (final assignment in assignments) {
-        final guestData = assignment['replay_guests'];
+      for (final guestData in guestsData) {
         if (guestData != null) {
           guests.add(ReplayGuestItemStruct(
-            guestId: guestData['id'],
-            fullName: guestData['full_name'],
+            guestId: guestData['guestId'],
+            fullName: guestData['fullName'],
             profession: guestData['profession'],
-            avatarUrl: guestData['avatar_url'],
+            avatarUrl: guestData['avatarUrl'],
           ));
         }
       }
@@ -60,10 +42,10 @@ Future<List<ReplayItemStruct>?> fetchReplaysBundle() async {
         replayId: replayData['id'],
         title: replayData['title'],
         description: replayData['description'],
-        youtubeUrl: replayData['youtube_url'],
-        thumbnailUrl: replayData['thumbnail_url'],
-        publishedAt: DateTime.tryParse(replayData['published_at'] ?? ''),
-        isFeatured: replayData['is_featured'] ?? false,
+        youtubeUrl: replayData['youtubeUrl'],
+        thumbnailUrl: replayData['thumbnailUrl'],
+        publishedAt: DateTime.tryParse(replayData['publishedAt'] ?? ''),
+        isFeatured: replayData['isFeatured'] ?? false,
         guests: guests,
       );
 

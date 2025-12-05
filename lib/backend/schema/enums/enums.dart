@@ -28,6 +28,50 @@ enum Profession {
   MAKEUPARTIST,
   EVENTDESIGNER,
   OTHER,
+  // 🇮🇳 India-only professions
+  CATERER,
+  DJ,
+  BRIDALWEARDESIGNER,
+  // 🌍 Global-only professions (not visible in India)
+  JEWELLER,
+  STATIONER,
+  CONTENTCREATOR,
+}
+
+/// Professions only available in India market
+const List<Profession> indiaOnlyProfessions = [
+  Profession.CATERER,
+  Profession.DJ,
+  Profession.BRIDALWEARDESIGNER,
+];
+
+/// Professions only available in Global market (not India)
+const List<Profession> globalOnlyProfessions = [
+  Profession.JEWELLER,
+  Profession.STATIONER,
+  Profession.CONTENTCREATOR,
+];
+
+/// Get available professions based on user's market region
+/// @param market - 'IN' for India, 'GLOBAL' for rest of world
+/// Excludes 'OTHER' as all specific professions are now available
+List<Profession> getAvailableProfessions(String market) {
+  if (market == 'IN') {
+    // India users: all professions EXCEPT global-only ones and OTHER
+    return Profession.values
+        .where((p) => !globalOnlyProfessions.contains(p) && p != Profession.OTHER)
+        .toList();
+  } else {
+    // Global users: all professions EXCEPT india-only ones and OTHER
+    return Profession.values
+        .where((p) => !indiaOnlyProfessions.contains(p) && p != Profession.OTHER)
+        .toList();
+  }
+}
+
+/// Get default selected professions for feed filters based on market
+List<Profession> getDefaultFeedProfessions(String market) {
+  return getAvailableProfessions(market);
 }
 
 enum MapMarkerType {

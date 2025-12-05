@@ -94,10 +94,10 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
     final newFilters = newF ?? QueryFiltersStruct();
 
     // AJOUTÉ : Vérification des filtres de budget
-    if ((oldFilters.budgetMin ?? 0.0) != (newFilters.budgetMin ?? 0.0)) {
+    if (oldFilters.budgetMin != newFilters.budgetMin) {
       return true;
     }
-    if ((oldFilters.budgetMax ?? 0.0) != (newFilters.budgetMax ?? 0.0)) {
+    if (oldFilters.budgetMax != newFilters.budgetMax) {
       return true;
     }
 
@@ -107,10 +107,10 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
     final newLng = newFilters.center?.longitude;
     if (oldLat != newLat || oldLng != newLng) return true;
 
-    if ((oldFilters.radiusKm ?? 0) != (newFilters.radiusKm ?? 0)) return true;
+    if (oldFilters.radiusKm != newFilters.radiusKm) return true;
 
     // CRITICAL: Check country code changes
-    if ((oldFilters.countryCode ?? '') != (newFilters.countryCode ?? '')) return true;
+    if (oldFilters.countryCode != newFilters.countryCode) return true;
 
     List<String> norm(dynamic list) {
       final out = <String>[];
@@ -118,10 +118,11 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
         for (final e in list) {
           if (e is String) {
             out.add(e.toUpperCase());
-          } else if (e is Profession)
+          } else if (e is Profession) {
             out.add(e.name.toUpperCase());
-          else
+          } else {
             out.add(e.toString().toUpperCase());
+          }
         }
       }
       out.sort();
@@ -183,9 +184,9 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
 
       final newItems = <FeedImageItemStruct>[];
       for (final it in result.items) {
-        final pid = it.proProfileId ?? '';
+        final pid = it.proProfileId;
         final idx = it.imageIndex.toString();
-        final url = it.imageUrl ?? '';
+        final url = it.imageUrl;
         final key = (pid.isNotEmpty) ? '$pid#$idx' : url;
 
         if (key.isNotEmpty && !_seenKeys.contains(key)) {
@@ -197,7 +198,7 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
       if (mounted) {
         setState(() {
           _items.addAll(newItems);
-          if ((result.nextCursor ?? '').isNotEmpty) {
+          if (result.nextCursor.isNotEmpty) {
             _nextCursor = result.nextCursor;
             _hasMore = true;
           } else {
@@ -228,6 +229,8 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
     final currentItem = _items[index];
     final updatedItem = FeedImageItemStruct(
       imageUrl: currentItem.imageUrl,
+      fullscreenUrl: currentItem.fullscreenUrl,
+      imageId: currentItem.imageId,
       imageIndex: currentItem.imageIndex,
       proProfileId: currentItem.proProfileId,
       proFullName: currentItem.proFullName,
@@ -277,7 +280,7 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
         crossAxisCount: 2,
         crossAxisSpacing: 4,
         mainAxisSpacing: 4,
-        childAspectRatio: (1 / 1.2),
+        childAspectRatio: (3 / 4),
       ),
       itemCount: _items.length + (_hasMore ? 1 : 0),
       itemBuilder: (context, index) {
@@ -291,7 +294,7 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
         }
 
         final item = _items[index];
-        final url = item.imageUrl ?? '';
+        final url = item.imageUrl;
         if (url.isEmpty) return const SizedBox.shrink();
 
         return GestureDetector(

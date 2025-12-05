@@ -1,7 +1,7 @@
 # PROJECT TODO - Tâches de Développement LYNEWED
 
 **Document créé:** 2025-11-26  
-**Last Updated:** 2025-12-04 11:35  
+**Last Updated:** 2025-12-05 11:36  
 **Version:** v4.3
 
 ---
@@ -13,8 +13,14 @@ Le module Map est 100% complet. Voir rapport final: `docs/archive/MAP_REFACTORIN
 | Phase | Description | Status |
 |-------|-------------|--------|
 | 0-8 | Design System → Documentation | ✅ |
+| **Bug Fix** | Double comptage markers corrigé | ✅ 2025-12-05 |
 
 **Tests:** 63/63 passants
+
+**Corrections Récentes (2025-12-05):**
+- ✅ **Double comptage fixé**: `parseProfessionals()` et `parseFixedLocations()` retournaient les mêmes données
+- ✅ **Comptage intelligent**: `visibleMarkersCount` affiche seulement les markers visibles dans les bounds actuels
+- ✅ **Performance**: Cache maintenu mais comptage filtré par vue courante
 
 ---
 
@@ -76,7 +82,7 @@ Le module Map est 100% complet. Voir rapport final: `docs/archive/MAP_REFACTORIN
   - `chat_enums.dart`: `displayLabel` traduits EN
   - `contact_request_avatar.dart`: Labels "Waiting"/"New"
   - `chat_remote_datasource.dart`: Parsing `{items: [...]}` corrigé
-- ⏳ **UX Block/Report**: Réorganisation en cours
+- ✅ **UX Block/Report**: Réorganisation en cours
   - MessageActionsSheet: Block retiré (Report uniquement)
   - ConversationActionsSheet: À ajouter Block/Report/Archive
   - MessagesPage: À afficher statut "Blocked"/"Reported"

@@ -12,7 +12,6 @@ import '/flutter_flow/flutter_flow_util.dart';
 // Set your action name, define your arguments and return parameter,
 // and then add the boilerplate code using the green button on the right!
 import 'dart:convert';
-import 'dart:math';
 
 Future<FeedPageResultStruct?> getPortfolioFeedAction(
   QueryFiltersStruct? filters,
@@ -56,10 +55,10 @@ Future<FeedPageResultStruct?> getPortfolioFeedAction(
           'latitude': filters.center!.latitude,
           'longitude': filters.center!.longitude,
         };
-        final double radius = (filters.radiusKm ?? 100.0);
+        final double radius = filters.radiusKm > 0 ? filters.radiusKm : 100.0;
         filterParams['radiusKm'] = radius.clamp(5.0, 1000.0);
       }
-      if ((filters.professions ?? []).isNotEmpty) {
+      if (filters.professions.isNotEmpty) {
         filterParams['professions'] =
             normalizeProfessions(filters.professions);
       }
@@ -75,7 +74,7 @@ Future<FeedPageResultStruct?> getPortfolioFeedAction(
       }
       
       // CRITICAL FIX: Add country code filter
-      if (filters.countryCode != null && filters.countryCode!.isNotEmpty) {
+      if (filters.countryCode.isNotEmpty) {
         filterParams['countryCode'] = filters.countryCode;
       }
     }
@@ -106,6 +105,8 @@ Future<FeedPageResultStruct?> getPortfolioFeedAction(
       feedItems.add(
         FeedImageItemStruct(
           imageUrl: item['imageUrl'] as String?,
+          fullscreenUrl: item['fullscreenUrl'] as String?,
+          imageId: item['imageId'] as String?,
           imageIndex: (item['imageIndex'] as num?)?.toInt(),
           proProfileId: item['proProfileId']?.toString(),
           proFullName: item['proFullName'] as String?,

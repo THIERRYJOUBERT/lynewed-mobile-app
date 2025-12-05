@@ -1,7 +1,7 @@
 import '/backend/schema/structs/index.dart';
-import '/backend/supabase/supabase.dart';
 import '/components/item_all_alert_widget.dart';
 import '/components/nav/nav_bar_pro/nav_bar_pro_widget.dart';
+import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'dashboard_pro_widget.dart' show DashboardProWidget;
@@ -35,16 +35,12 @@ class DashboardProModel extends FlutterFlowModel<DashboardProWidget> {
   // State field(s) for PageView widget.
   PageController? pageViewController;
   
-  // Future for alerts list - allows refresh
-  Future<List<ProfessionalAlertsRow>>? alertsFuture;
+  // Future for alerts list - allows refresh (filtered by market)
+  Future<List<AlertItemDataStruct>>? alertsFuture;
   
-  /// Refresh alerts list
+  /// Refresh alerts list (filtered by user's market region)
   void refreshAlerts() {
-    alertsFuture = ProfessionalAlertsTable().queryRows(
-      queryFn: (q) => q
-          .eqOrNull('status', 'active')
-          .order('created_at'),
-    );
+    alertsFuture = actions.getActiveAlertsAction();
   }
 
   int get pageViewCurrentIndex => pageViewController != null &&

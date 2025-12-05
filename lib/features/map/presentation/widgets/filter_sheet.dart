@@ -6,6 +6,8 @@ library;
 import 'package:flutter/material.dart';
 
 import '/core/design/design.dart';
+import '/backend/schema/enums/enums.dart' as backend_enums show Profession, getAvailableProfessions;
+import '/flutter_flow/profession_display_helper.dart';
 import '../../domain/entities/entities.dart';
 
 /// Callback quand les filtres sont appliqués
@@ -18,11 +20,13 @@ class FilterSheet extends StatefulWidget {
     required this.currentFilter,
     required this.userRole,
     required this.onApply,
+    this.userMarket = 'GLOBAL',
   });
 
   final MapFilter currentFilter;
   final String userRole;
   final OnFilterApply onApply;
+  final String userMarket;
 
   @override
   State<FilterSheet> createState() => _FilterSheetState();
@@ -150,6 +154,12 @@ class _FilterSheetState extends State<FilterSheet> {
   }
 
   Widget _buildProfessionChips() {
+    // Get available professions from backend enum (market-filtered)
+    final availableProfessions = backend_enums.getAvailableProfessions(widget.userMarket);
+    
+    // Convert selected map professions to backend profession names for comparison
+    final selectedNames = _selectedProfessions.map((p) => p.name.toUpperCase()).toSet();
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -167,12 +177,12 @@ class _FilterSheetState extends State<FilterSheet> {
         Wrap(
           spacing: LynewedSpacing.sm,
           runSpacing: LynewedSpacing.sm,
-          children: Profession.values.map((profession) {
-            final isSelected = _selectedProfessions.contains(profession);
+          children: availableProfessions.map((backendProf) {
+            final isSelected = selectedNames.contains(backendProf.name);
             // Using Design System chip styling - Standardized 4px radius
             return FilterChip(
               label: Text(
-                _professionLabel(profession),
+                getProfessionDisplayName(backendProf),
                 style: LynewedTextStyles.bodyMedium.copyWith(
                   color: isSelected ? Colors.white : LynewedColors.textPrimary,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
@@ -191,14 +201,18 @@ class _FilterSheetState extends State<FilterSheet> {
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               onSelected: (selected) {
                 setState(() {
-                  if (selected) {
-                    _selectedProfessions.add(profession);
-                  } else {
-                    _selectedProfessions.remove(profession);
+                  // Convert backend profession to map profession
+                  final mapProf = _backendToMapProfession(backendProf);
+                  if (mapProf != null) {
+                    if (selected) {
+                      _selectedProfessions.add(mapProf);
+                    } else {
+                      _selectedProfessions.remove(mapProf);
+                    }
+                    _filter = _filter.copyWith(
+                      professions: _selectedProfessions.toList(),
+                    );
                   }
-                  _filter = _filter.copyWith(
-                    professions: _selectedProfessions.toList(),
-                  );
                 });
               },
             );
@@ -206,6 +220,55 @@ class _FilterSheetState extends State<FilterSheet> {
         ),
       ],
     );
+  }
+  
+  /// Convert backend Profession enum to Map module Profession enum
+  Profession? _backendToMapProfession(backend_enums.Profession backendProf) {
+    // Handle all cases explicitly
+    switch (backendProf) {
+      case backend_enums.Profession.PHOTOGRAPHER:
+        return Profession.photographer;
+      case backend_enums.Profession.FILMMAKER:
+        return Profession.filmmaker;
+      case backend_enums.Profession.PLANNER:
+        return Profession.planner;
+      case backend_enums.Profession.MAKEUP:
+        return Profession.makeup;
+      case backend_enums.Profession.HAIRDRESSER:
+        return Profession.hairdresser;
+      case backend_enums.Profession.DESIGNER:
+        return Profession.designer;
+      case backend_enums.Profession.BRIDALDESIGNER:
+        return Profession.bridalDesigner;
+      case backend_enums.Profession.VENUE:
+        return Profession.venue;
+      case backend_enums.Profession.BRIDALSHOP:
+        return Profession.bridalShop;
+      case backend_enums.Profession.FLORIST:
+        return Profession.florist;
+      case backend_enums.Profession.PHOTOMOVIE:
+        return Profession.photoMovie;
+      case backend_enums.Profession.MAKEUPARTIST:
+        return Profession.makeupArtist;
+      case backend_enums.Profession.EVENTDESIGNER:
+        return Profession.eventDesigner;
+      case backend_enums.Profession.OTHER:
+        return Profession.other;
+      // India-only professions
+      case backend_enums.Profession.CATERER:
+        return Profession.caterer;
+      case backend_enums.Profession.DJ:
+        return Profession.dj;
+      case backend_enums.Profession.BRIDALWEARDESIGNER:
+        return Profession.bridalWearDesigner;
+      // Global-only professions
+      case backend_enums.Profession.JEWELLER:
+        return Profession.jeweller;
+      case backend_enums.Profession.STATIONER:
+        return Profession.stationer;
+      case backend_enums.Profession.CONTENTCREATOR:
+        return Profession.contentCreator;
+    }
   }
 
   Widget _buildBudgetSlider() {
@@ -287,7 +350,4 @@ class _FilterSheetState extends State<FilterSheet> {
       _selectedProfessions.clear();
     });
   }
-
-  /// Use the displayName getter from Profession enum
-  String _professionLabel(Profession profession) => profession.displayName;
 }

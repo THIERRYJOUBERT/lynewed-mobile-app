@@ -51,7 +51,6 @@ class ChatRoomLoaded extends ChatRoomState {
     this.isSending = false,
     this.pendingRequestId,
     this.viewerIsReviewer = false,
-    this.firstMessageTextOnly = false,
     this.authors = const {},
   });
 
@@ -94,9 +93,6 @@ class ChatRoomLoaded extends ChatRoomState {
   /// Whether current user is the reviewer (Bride reviewing Pro request)
   final bool viewerIsReviewer;
 
-  /// Whether first message must be text only
-  final bool firstMessageTextOnly;
-
   /// Authors cache for public rooms (profileId -> AuthorInfo)
   final Map<String, AuthorInfo> authors;
 
@@ -127,7 +123,6 @@ class ChatRoomLoaded extends ChatRoomState {
     String? pendingRequestId,
     bool clearPendingRequestId = false, // Flag to explicitly clear pendingRequestId
     bool? viewerIsReviewer,
-    bool? firstMessageTextOnly,
     Map<String, AuthorInfo>? authors,
   }) {
     return ChatRoomLoaded(
@@ -144,7 +139,6 @@ class ChatRoomLoaded extends ChatRoomState {
       isSending: isSending ?? this.isSending,
       pendingRequestId: clearPendingRequestId ? null : (pendingRequestId ?? this.pendingRequestId),
       viewerIsReviewer: viewerIsReviewer ?? this.viewerIsReviewer,
-      firstMessageTextOnly: firstMessageTextOnly ?? this.firstMessageTextOnly,
       authors: authors ?? this.authors,
     );
   }
