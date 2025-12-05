@@ -12,8 +12,9 @@ import '/backend/supabase/supabase.dart';
 // and then add the boilerplate code using the green button on the right!
 Future<PublicProfileStruct?> saveProfileFields(
   String fullName,
-  String? avatarUrl,
-) async {
+  String? avatarUrl, {
+  String? country,
+}) async {
   // CORRECTION : Le type de retour de la fonction est maintenant 'UserRole' (PascalCase).
   UserRole roleFromString(String? s) {
     switch (s) {
@@ -37,6 +38,9 @@ Future<PublicProfileStruct?> saveProfileFields(
     final Map<String, dynamic> updates = {'full_name': fullName};
     if (avatarUrl != null) {
       updates['avatar_url'] = avatarUrl;
+    }
+    if (country != null && country.isNotEmpty) {
+      updates['country'] = country;
     }
 
     await client.from('profiles').update(updates).eq('id', userId);

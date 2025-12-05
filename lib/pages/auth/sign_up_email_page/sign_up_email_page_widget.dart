@@ -1,7 +1,7 @@
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
+import '/core/design/design.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 import 'package:flutter/gestures.dart';
@@ -483,15 +483,11 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                                     safeSetState(() =>
                                         _model.checkboxCGUValue = newValue!);
                                   },
-                                  side: (FlutterFlowTheme.of(context)
-                                              .secondaryText !=
-                                          null)
-                                      ? BorderSide(
-                                          width: 2,
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText,
-                                        )
-                                      : null,
+                                  side: BorderSide(
+                                    width: 2,
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryText,
+                                  ),
                                   activeColor:
                                       FlutterFlowTheme.of(context).primary,
                                   checkColor: FlutterFlowTheme.of(context).info,
@@ -561,7 +557,8 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         children: [
-                          FFButtonWidget(
+                          LynewedButton(
+                            text: 'Sign up by email',
                             onPressed: () async {
                               if ((_model.checkboxCGUValue == true) &&
                                   (_model.passwordTextController.text ==
@@ -572,9 +569,9 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
                                   _model.emailAddressTextController.text,
                                   _model.passwordTextController.text,
                                 );
-                                if (_model.signUpSuccess == true) {
+                                if (_model.signUpSuccess == true && context.mounted) {
                                   context.goNamed(StartupGateWidget.routeName);
-                                } else {
+                                } else if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(
@@ -628,27 +625,8 @@ class _SignUpEmailPageWidgetState extends State<SignUpEmailPageWidget> {
 
                               safeSetState(() {});
                             },
-                            text: 'Sign up by email',
-                            options: FFButtonOptions(
-                              width: double.infinity,
-                              height: 48.0,
-                              padding: const EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 0.0, 16.0, 0.0),
-                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 0.0),
-                              color: FlutterFlowTheme.of(context).primary,
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .titleSmall
-                                  .override(
-                                    fontFamily: 'Haas Grot Text Trial',
-                                    color: Colors.white,
-                                    fontSize: 14.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.normal,
-                                  ),
-                              elevation: 0.0,
-                              borderRadius: BorderRadius.circular(0.0),
-                            ),
+                            type: LynewedButtonType.primary,
+                            width: double.infinity,
                           ),
                           Padding(
                             padding: const EdgeInsetsDirectional.fromSTEB(

@@ -4,6 +4,7 @@ import '/components/nav/nav_bar_brides/nav_bar_brides_widget.dart';
 import '/components/nav/nav_bar_pro/nav_bar_pro_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/custom_code/actions/index.dart' as actions;
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -278,6 +279,78 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                               ),
                             ),
                           ),
+                          // My Profile - Pro only
+                          if (FFAppState().currentUserRole == UserRole.professional)
+                            InkWell(
+                              splashColor: Colors.transparent,
+                              focusColor: Colors.transparent,
+                              hoverColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                              onTap: () async {
+                                // Fetch own profile details and navigate to ProDetails
+                                final proDetails = await actions.getProItemDetailsAction(
+                                  currentUserUid,
+                                );
+                                if (proDetails != null && context.mounted) {
+                                  context.pushNamed(
+                                    ProDetailsWidget.routeName,
+                                    queryParameters: {
+                                      'profileId': serializeParam(
+                                        currentUserUid,
+                                        ParamType.String,
+                                      ),
+                                    }.withoutNulls,
+                                    extra: <String, dynamic>{
+                                      'proDetails': proDetails,
+                                    },
+                                  );
+                                }
+                              },
+                              child: Container(
+                                width: double.infinity,
+                                decoration: const BoxDecoration(),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsetsDirectional.fromSTEB(
+                                          0.0, 12.0, 0.0, 12.0),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.max,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'My Profile',
+                                            style: FlutterFlowTheme.of(context)
+                                                .bodyMedium
+                                                .override(
+                                                  fontFamily:
+                                                      'Haas Grot Text Trial',
+                                                  letterSpacing: 0.0,
+                                                ),
+                                          ),
+                                          Icon(
+                                            Icons.arrow_forward_ios,
+                                            color: FlutterFlowTheme.of(context)
+                                                .primaryText,
+                                            size: 18.0,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      width: double.infinity,
+                                      height: 1.0,
+                                      decoration: BoxDecoration(
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           InkWell(
                             splashColor: Colors.transparent,
                             focusColor: Colors.transparent,

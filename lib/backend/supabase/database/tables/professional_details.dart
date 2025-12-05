@@ -81,4 +81,8 @@ class ProfessionalDetailsRow extends SupabaseDataRow {
   List<String> get slideshowImages => getListField<String>('slideshow_images');
   set slideshowImages(List<String> value) =>
       setListField<String>('slideshow_images', value);
+
+  /// Upcoming travels - JSONB array
+  dynamic get upcomingTravels => getField<dynamic>('upcoming_travels');
+  set upcomingTravels(dynamic value) => setField<dynamic>('upcoming_travels', value);
 }

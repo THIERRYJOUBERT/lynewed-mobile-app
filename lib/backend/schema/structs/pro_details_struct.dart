@@ -34,6 +34,7 @@ class ProDetailsStruct extends BaseStruct {
     List<ImageV2Struct>? slideshowImagesV2,
     String? profileVideoUrl,
     bool? hasCoverVideo,
+    List<UpcomingTravelStruct>? upcomingTravels,
   })  : _proProfileId = proProfileId,
         _fullName = fullName,
         _avatarUrl = avatarUrl,
@@ -59,7 +60,8 @@ class ProDetailsStruct extends BaseStruct {
         _slideshowImages = slideshowImages,
         _slideshowImagesV2 = slideshowImagesV2,
         _profileVideoUrl = profileVideoUrl,
-        _hasCoverVideo = hasCoverVideo;
+        _hasCoverVideo = hasCoverVideo,
+        _upcomingTravels = upcomingTravels;
 
   // "proProfileId" field.
   String? _proProfileId;
@@ -269,6 +271,17 @@ class ProDetailsStruct extends BaseStruct {
 
   bool hasHasCoverVideo() => _hasCoverVideo != null;
 
+  // "upcomingTravels" field.
+  List<UpcomingTravelStruct>? _upcomingTravels;
+  List<UpcomingTravelStruct> get upcomingTravels => _upcomingTravels ?? const [];
+  set upcomingTravels(List<UpcomingTravelStruct>? val) => _upcomingTravels = val;
+
+  void updateUpcomingTravels(Function(List<UpcomingTravelStruct>) updateFn) {
+    updateFn(_upcomingTravels ??= []);
+  }
+
+  bool hasUpcomingTravels() => _upcomingTravels != null;
+
   static ProDetailsStruct fromMap(Map<String, dynamic> data) =>
       ProDetailsStruct(
         proProfileId: data['proProfileId'] as String?,
@@ -299,6 +312,10 @@ class ProDetailsStruct extends BaseStruct {
         slideshowImages: getDataList(data['slideshowImages']),
         profileVideoUrl: data['profileVideoUrl'] as String?,
         hasCoverVideo: data['hasCoverVideo'] as bool?,
+        upcomingTravels: getStructList(
+          data['upcomingTravels'],
+          UpcomingTravelStruct.fromMap,
+        ),
       );
 
   static ProDetailsStruct? maybeFromMap(dynamic data) => data is Map

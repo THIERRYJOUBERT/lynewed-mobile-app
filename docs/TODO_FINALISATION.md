@@ -104,42 +104,71 @@
 
 ---
 
-## 🟡 PHASE 2 - AUTH REFACTORING (5-8h)
+## ✅ PHASE 2 - AUTH REFACTORING - TERMINÉE (2025-12-05)
 
-### 2.1 Pages Auth Unifiées
-- [ ] Supprimer "reset password" côté pro (géré CRM)
-- [ ] Page d'accueil avec choix rôle (Bride/Pro)
-- [ ] Flow Pro : Login uniquement + redirection site si pas de compte
-- [ ] Flow Bride : Login + Register complet dans app
+### 2.1 Pages Auth Unifiées - ✅ TERMINÉ
+- [x] Supprimer "Set my password" côté pro (géré CRM)
+- [x] Page d'accueil avec choix rôle (Bride/Pro)
+  - Bouton principal "I'm a Bride" → Bottom sheet Login/Register
+  - Lien textuel "I'm a Professional" → Login direct
+- [x] Flow Pro : Login uniquement (pas de register dans l'app)
+- [x] Flow Bride : Login + Register complet dans app
+- [x] Reset password conservé pour les deux rôles
 
-### 2.2 Onboarding Progressif
-- [ ] Demander permissions au bon moment (notif, localisation, photo)
-- [ ] Écran d'accueil rôle explicite
-- [ ] UX épurée sans demandes groupées
+### 2.2 Onboarding Progressif (5 pages) - ✅ TERMINÉ
+- [x] Refonte complète de l'onboarding Brides en 5 étapes
+  - **Page 1/5** : Welcome (introduction app)
+  - **Page 2/5** : Profile (avatar + prénom + nom)
+  - **Page 3/5** : Preferences (country + currency + unit)
+  - **Page 4/5** : Location permission (avec Skip)
+  - **Page 5/5** : Notifications permission (Skip très discret)
+- [x] Permissions demandées au bon moment (pas au login)
+- [x] Structure uniforme avec bouton fixe en bas
+- [x] Logique Currency → Unit cohérente (USD=miles, EUR=km)
+- [x] Widget `DistanceUnitDropdown` créé (même style que `CurrencyDropdown`)
 
-### 2.3 Design System v3
-- [ ] Appliquer `LynewedTheme` sur toutes pages auth
-- [ ] Utiliser composants unifiés (`LynewedSheet`, `LynewedButton`)
+### 2.3 Design System v3 - ✅ TERMINÉ
+- [x] `LynewedButton` sur toutes pages auth
+- [x] `LynewedTextStyles` et `LynewedColors` appliqués
+- [x] Bottom sheets avec border radius 24px
+- [x] Boutons avec border radius 0 (style Lynewed)
+
+### 2.4 Corrections Techniques - ✅ TERMINÉ
+- [x] Fix popup notifications au login (utilisait `requestPermission` au lieu de `getNotificationSettings`)
+- [x] Synchronisation pays onboarding → `profiles.country` + `user_preferences.default_country_code`
+- [x] Dropdown pays ajouté dans page Preferences
 
 ---
 
-## 🟢 PHASE 3 - SETTINGS & PROFIL PRO (4-6h)
+## ✅ PHASE 3 - SETTINGS & PROFIL PRO - TERMINÉE (2025-12-05)
 
-### 3.1 Restructuration Navigation Pro
-- [ ] Supprimer page Profil de la navbar Pro
-- [ ] Ajouter "Mon Profil" dans Settings Pro → ouvre ProDetails (read-only)
-- [ ] Pro peut voir son propre profil via la nouvelle page ProDetails refactorisée
+### 3.1 Restructuration Navigation Pro - ✅ TERMINÉ
+- [x] Navbar Pro analysée: Home, Wedding, Replay, Feed, Settings (pas de page Profil séparée)
+- [x] Ajouté entrée "My Profile" dans Settings Pro
+- [x] Ouvre `ProDetailsWidget` avec `profileId = currentUserUid`
+- [x] Bouton Contact masqué pour son propre profil
+- [x] "Edit my profil" redirige vers site web pour les Pros
 
-### 3.2 Upcoming Travels Connection
-- [ ] Relier frontend existant au backend
-- [ ] Tester création/modification/suppression de voyages
-- [ ] Vérifier affichage sur la map
+### 3.2 Upcoming Travels - ✅ TERMINÉ
+- [x] RPC `get_pro_item_details` mis à jour pour inclure `upcomingTravels`
+- [x] Struct `UpcomingTravelStruct` créé
+- [x] Champ `upcomingTravels` ajouté à `ProDetailsStruct`
+- [x] Sheet `UpcomingTravelsSheet` connecté au backend
+- [x] Affichage des voyages avec dates formatées
+- [x] Empty state si pas de voyages
 
-### 3.3 Validation Settings
-- [ ] Système tickets support fonctionnel
-- [ ] Notes App Store flow opérationnel
-- [ ] Toutes préférences utilisateur testées
-- [ ] Permissions iOS cohérentes
+### 3.3 Pages Settings Existantes - ✅ VALIDÉ
+| Page | Chemin | Statut |
+|------|--------|--------|
+| Preferences | `lib/pages/shared/preference/` | ✅ Fonctionnel |
+| Notification Settings | `lib/pages/shared/notification_settings/` | ✅ Fonctionnel |
+| Permissions | `lib/pages/shared/settings_permissions/` | ✅ Fonctionnel |
+| Support | `lib/pages/shared/support/` | ✅ Fonctionnel |
+
+### 3.4 Corrections Techniques - ✅ TERMINÉ
+- [x] Imports inutilisés supprimés
+- [x] Warnings corrigés
+- [x] Build réussi
 
 ---
 
@@ -206,8 +235,8 @@
 |-------|--------|----------|--------|
 | Feed MVP (Phase 1) | 6-7h | 🔴 CRITIQUE | ✅ TERMINÉ |
 | Feed Compléments (Phase 1.5) | 8-10h | 🟡 IMPORTANTE | ✅ TERMINÉ |
-| Auth Refactoring (Phase 2) | 5-8h | 🟡 IMPORTANTE | ⏳ À FAIRE |
-| Settings & Profil Pro (Phase 3) | 4-6h | 🟢 MODÉRÉE | ⏳ À FAIRE |
+| Auth Refactoring (Phase 2) | 5-8h | 🟡 IMPORTANTE | ✅ TERMINÉ |
+| Settings & Profil Pro (Phase 3) | 4-6h | 🟢 MODÉRÉE | ✅ TERMINÉ |
 | Tests & Validation (Phase 4) | 5-10h | 🔴 CRITIQUE | ⏳ À FAIRE |
 | Cleanup & Production (Phase 5) | 3-5h | � IMPORTANTE | ⏳ À FAIRE |
 | TestFlight Setup (Phase 6) | 2-4h | 🟡 IMPORTANTE | ⏳ À FAIRE |
@@ -274,7 +303,7 @@
 
 ---
 
-**Statut**: ✅ PHASE 1 + 1.5 TERMINÉES - PROCHAINE: PHASE 2 AUTH  
-**Dernière mise à jour**: 2025-12-05 12:25  
-**Prochaine action**: Phase 2 - Auth Refactoring  
-**Ordre d'exécution**: ~~Phase 1~~ ✅ → ~~Phase 1.5~~ ✅ → Phase 2 Auth → Phase 3 Settings → Phase 4 Tests → Phase 5 Cleanup → Phase 6 TestFlight
+**Statut**: ✅ PHASES 1, 1.5, 2, 3 TERMINÉES - PROCHAINE: PHASE 4 TESTS  
+**Dernière mise à jour**: 2025-12-05 13:50  
+**Prochaine action**: Phase 4 - Tests & Validation  
+**Ordre d'exécution**: ~~Phase 1~~ ✅ → ~~Phase 1.5~~ ✅ → ~~Phase 2 Auth~~ ✅ → ~~Phase 3 Settings~~ ✅ → Phase 4 Tests → Phase 5 Cleanup → Phase 6 TestFlight

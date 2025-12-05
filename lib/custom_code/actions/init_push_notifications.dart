@@ -43,12 +43,16 @@ Future<void> initPushNotifications(BuildContext context) async {
       sound: true,
     );
 
-    final settings = await FirebaseMessaging.instance.requestPermission();
-    SecureLogger.debug('FCM permission status: ${settings.authorizationStatus}');
-    if (settings.authorizationStatus != AuthorizationStatus.authorized &&
-        settings.authorizationStatus != AuthorizationStatus.provisional) {
-      SecureLogger.warning('FCM permission refused, stopping initialization');
-      return;
+    // Check current permission status WITHOUT requesting
+    // Permission will be requested during onboarding (step 5)
+    final currentSettings = await FirebaseMessaging.instance.getNotificationSettings();
+    SecureLogger.debug('FCM current permission status: ${currentSettings.authorizationStatus}');
+    
+    if (currentSettings.authorizationStatus != AuthorizationStatus.authorized &&
+        currentSettings.authorizationStatus != AuthorizationStatus.provisional) {
+      SecureLogger.info('FCM permission not yet granted, will be requested during onboarding');
+      // Don't request here - it will be requested in onboarding step 5
+      // Still setup listeners for when permission is granted later
     }
 
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);

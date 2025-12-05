@@ -1,4 +1,5 @@
 import '/backend/schema/structs/index.dart';
+import '/backend/schema/enums/country_filter.dart';
 import '/components/nav/header_bar/header_bar_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/form_field_controller.dart';
@@ -18,6 +19,10 @@ class PreferenceModel extends FlutterFlowModel<PreferenceWidget> {
   FormFieldController<String>? dropDownDistanceValueController;
   // Stores action output result for [Custom Action - saveUserPreferences] action in DropDown_Distance widget.
   UserPreferencesStruct? saveUserPreferencesUnit;
+  // State field(s) for Country selection
+  CountryFilter? selectedCountry;
+  // Stores action output result for [Custom Action - saveUserPreferences] action in Country widget.
+  UserPreferencesStruct? saveUserPreferencesCountry;
   // Model for HeaderBar component.
   late HeaderBarModel headerBarModel;
 

@@ -34,6 +34,7 @@ Future<UserPreferencesStruct?> saveUserPreferences(
     final String finalLastFiltersJson =
         lastFiltersJsonOverride ?? prefs.lastFiltersJson;
 
+    // 1. Update user_preferences
     await client.from('user_preferences').update({
       'distance_unit':
           prefs.distanceUnit == DistanceUnit.miles ? 'miles' : 'km',
@@ -46,6 +47,19 @@ Future<UserPreferencesStruct?> saveUserPreferences(
       'map_toggles': mapToggles,
       'last_filters': finalLastFiltersJson,
     }).eq('profile_id', userId);
+    
+    // 2. Sync country to profiles table (for Brides)
+    if (prefs.defaultCountry.isNotEmpty) {
+      await client.from('profiles').update({
+        'country': prefs.defaultCountry,
+      }).eq('id', userId);
+      
+      // 3. Also sync to professional_details if user is a Pro
+      // This will silently fail if user is not a pro (no matching row)
+      await client.from('professional_details').update({
+        'location_country_code': prefs.defaultCountry,
+      }).eq('profile_id', userId);
+    }
 
     // CORRECTION : FlutterFlow ne génère pas de méthode copyWith.
     // Nous reconstruisons manuellement une nouvelle instance du DataType

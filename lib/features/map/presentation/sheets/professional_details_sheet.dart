@@ -260,6 +260,7 @@ class ProfessionalDetailsSheet extends StatelessWidget {
                   label: 'Upcoming Travels',
                   onTap: () => UpcomingTravelsSheet.show(
                     context: context,
+                    professionalId: details.id,
                     professionalName: details.displayName,
                   ),
                 ),

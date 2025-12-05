@@ -1085,7 +1085,32 @@ if (currentUserRole == 'bride') {
 
 ---
 
-**Statut**: 🚀 PRÊT À DÉMARRER  
-**Dernière mise à jour**: 2025-12-05  
+**Statut**: ✅ PHASE 1 + 1.5 TERMINÉES  
+**Dernière mise à jour**: 2025-12-05 13:35  
 **Approche**: Pragmatique - modifications directes, pas de réécriture  
-**Ordre**: Phase 1 MVP (6-7h) → Validation → Phase 1.5 Compléments (10-12h)
+**Ordre**: ~~Phase 1 MVP~~ ✅ → ~~Phase 1.5 Compléments~~ ✅ → Phase 2 Auth ✅ → Phase 3 Settings
+
+---
+
+## ✅ HISTORIQUE DES PHASES TERMINÉES
+
+### Phase 1 - Feed MVP (2025-12-05) ✅
+- RPC `get_portfolio_feed` avec market region + feed_enabled + ambassador
+- 6 nouvelles professions ajoutées (IN + GLOBAL)
+- `FeedLocationFilter` avec toggle Country/Nearby
+- `CountryFilter` enum avec 200+ pays
+- Segmentation marché IN/GLOBAL complète
+
+### Phase 1.5 - Feed Compléments (2025-12-05) ✅
+- Migration Images V2 (crop_3x4 grille, crop_9x16 fullscreen)
+- ProDetails avec portfolioImagesV2 et slideshowImagesV2
+- Wed of the Week filtré par market_region
+- Bug fixes localisation Paris
+
+### Phase 2 - Auth Refactoring (2025-12-05) ✅
+- Page d'accueil avec choix rôle Bride/Pro
+- Onboarding 5 pages (Welcome → Profile → Preferences → Location → Notifications)
+- Permissions demandées au bon moment
+- Widget `DistanceUnitDropdown` créé
+- Logique Currency → Unit cohérente (USD=miles, EUR=km)
+- Fix popup notifications au login

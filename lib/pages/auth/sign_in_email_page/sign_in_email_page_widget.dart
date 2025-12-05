@@ -2,7 +2,7 @@ import '/auth/supabase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
+import '/core/design/design.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'sign_in_email_page_model.dart';
@@ -406,7 +406,8 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         children: [
-                          FFButtonWidget(
+                          LynewedButton(
+                            text: 'Log in with email',
                             onPressed: () async {
                               GoRouter.of(context).prepareAuthEvent();
 
@@ -419,30 +420,13 @@ class _SignInEmailPageWidgetState extends State<SignInEmailPageWidget> {
                                 return;
                               }
 
-                              context.goNamedAuth(
-                                  StartupGateWidget.routeName, context.mounted);
+                              if (context.mounted) {
+                                context.goNamedAuth(
+                                    StartupGateWidget.routeName, context.mounted);
+                              }
                             },
-                            text: 'Log in with email',
-                            options: FFButtonOptions(
-                              width: double.infinity,
-                              height: 48.0,
-                              padding: const EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 0.0, 16.0, 0.0),
-                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 0.0),
-                              color: FlutterFlowTheme.of(context).primary,
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .titleSmall
-                                  .override(
-                                    fontFamily: 'Haas Grot Text Trial',
-                                    color: Colors.white,
-                                    fontSize: 14.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.normal,
-                                  ),
-                              elevation: 0.0,
-                              borderRadius: BorderRadius.circular(0.0),
-                            ),
+                            type: LynewedButtonType.primary,
+                            width: double.infinity,
                           ),
                           Padding(
                             padding: const EdgeInsetsDirectional.fromSTEB(

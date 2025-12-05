@@ -1,6 +1,6 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
+import '/core/design/design.dart';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'auth_welcome_page_model.dart';
@@ -119,117 +119,55 @@ class _AuthWelcomePageWidgetState extends State<AuthWelcomePageWidget> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        FFButtonWidget(
-                          onPressed: () async {
-                            context.pushNamed(SignInEmailPageWidget.routeName);
-                          },
-                          text: 'Log in',
-                          options: FFButtonOptions(
-                            width: double.infinity,
-                            height: 48.0,
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                16.0, 0.0, 16.0, 0.0),
-                            iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                                0.0, 0.0, 0.0, 0.0),
-                            color:
-                                FlutterFlowTheme.of(context).primaryBackground,
-                            textStyle: FlutterFlowTheme.of(context)
-                                .titleSmall
-                                .override(
-                                  fontFamily: 'Haas Grot Text Trial',
-                                  color:
-                                      FlutterFlowTheme.of(context).primaryText,
-                                  fontSize: 14.0,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                            elevation: 0.0,
-                            borderRadius: BorderRadius.circular(0.0),
-                          ),
-                        ),
-                        FFButtonWidget(
-                          onPressed: () async {
-                            context.pushNamed(SignUpEmailPageWidget.routeName);
-                          },
-                          text: 'Sign in',
-                          options: FFButtonOptions(
-                            width: double.infinity,
-                            height: 48.0,
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                16.0, 0.0, 16.0, 0.0),
-                            iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                                0.0, 0.0, 0.0, 0.0),
-                            color: const Color(0x00FFFFFF),
-                            textStyle: FlutterFlowTheme.of(context)
-                                .titleSmall
-                                .override(
-                                  fontFamily: 'Haas Grot Text Trial',
-                                  color: FlutterFlowTheme.of(context)
-                                      .primaryBackground,
-                                  fontSize: 14.0,
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                            elevation: 0.0,
-                            borderSide: BorderSide(
-                              color: FlutterFlowTheme.of(context)
-                                  .primaryBackground,
+                        // Main CTA - I'm a Bride (white background, black text)
+                        SizedBox(
+                          width: double.infinity,
+                          height: LynewedSpacing.buttonHeight,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              // Navigate to Bride auth choice (login or register)
+                              _showBrideAuthChoice();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: LynewedColors.primary,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(0),
+                              ),
                             ),
-                            borderRadius: BorderRadius.circular(0.0),
+                            child: Text(
+                              'I\'m a Bride',
+                              style: LynewedTextStyles.bodyMedium.copyWith(
+                                color: LynewedColors.primary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
                         ),
+                        // Secondary CTA - I'm a Professional (text link)
                         Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(
-                              0.0, 14.0, 0.0, 0.0),
+                          padding: const EdgeInsets.only(top: 20.0),
                           child: InkWell(
                             splashColor: Colors.transparent,
                             focusColor: Colors.transparent,
                             hoverColor: Colors.transparent,
                             highlightColor: Colors.transparent,
-                            onTap: () async {
-                              var confirmDialogResponse =
-                                  await showDialog<bool>(
-                                        context: context,
-                                        builder: (alertDialogContext) {
-                                          return AlertDialog(
-                                            title: const Text('Professional Access'),
-                                            content: const Text(
-                                                'To ensure the quality of our network, professional registration is handled exclusively through our website.If you already have an account, you can log in here.'),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () => Navigator.pop(
-                                                    alertDialogContext, false),
-                                                child: const Text('I Understand'),
-                                              ),
-                                              TextButton(
-                                                onPressed: () => Navigator.pop(
-                                                    alertDialogContext, true),
-                                                child: const Text('Log In'),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      ) ??
-                                      false;
-                              if (confirmDialogResponse) {
-                                context.pushNamed(
-                                    SignInEmailPageProWidget.routeName);
-                              }
+                            onTap: () {
+                              // Pro can only login, no registration in app
+                              context.pushNamed(SignInEmailPageProWidget.routeName);
                             },
                             child: Text(
-                              'I’M A VENDOR',
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    fontFamily: 'Haas Grot Text Trial',
-                                    color: Colors.white,
-                                    letterSpacing: 0.0,
-                                    decoration: TextDecoration.underline,
-                                  ),
+                              'I\'m a Professional',
+                              style: LynewedTextStyles.bodyMedium.copyWith(
+                                color: Colors.white,
+                                fontSize: 15.0,
+                                decoration: TextDecoration.underline,
+                              ),
                             ),
                           ),
                         ),
-                      ].divide(const SizedBox(height: 14.0)),
+                      ],
                     ),
                   ),
                 ],
@@ -238,6 +176,108 @@ class _AuthWelcomePageWidgetState extends State<AuthWelcomePageWidget> {
           ),
         ),
       ),
+    );
+  }
+
+  /// Show bottom sheet for Bride auth choice (Login or Register)
+  void _showBrideAuthChoice() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(32, 24, 32, 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle bar
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                // Title
+                Text(
+                  'Welcome to Lynewed',
+                  style: LynewedTextStyles.sheetTitle.copyWith(
+                    fontSize: 22,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Find the perfect wedding professionals for your special day',
+                  textAlign: TextAlign.center,
+                  style: LynewedTextStyles.bodyMedium.copyWith(
+                    color: LynewedColors.gray100,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                // Login button
+                SizedBox(
+                  width: double.infinity,
+                  height: LynewedSpacing.buttonHeight,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      context.pushNamed(SignInEmailPageWidget.routeName);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: LynewedColors.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(0),
+                      ),
+                    ),
+                    child: Text(
+                      'Log in',
+                      style: LynewedTextStyles.bodyMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                // Register button
+                SizedBox(
+                  width: double.infinity,
+                  height: LynewedSpacing.buttonHeight,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      context.pushNamed(SignUpEmailPageWidget.routeName);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: LynewedColors.primary,
+                      side: const BorderSide(color: LynewedColors.primary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(0),
+                      ),
+                    ),
+                    child: Text(
+                      'Create an account',
+                      style: LynewedTextStyles.bodyMedium.copyWith(
+                        color: LynewedColors.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

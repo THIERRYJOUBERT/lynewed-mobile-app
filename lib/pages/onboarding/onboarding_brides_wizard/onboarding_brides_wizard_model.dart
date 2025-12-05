@@ -1,4 +1,5 @@
 import '/backend/schema/structs/index.dart';
+import '/backend/schema/enums/country_filter.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/index.dart';
@@ -14,6 +15,9 @@ class OnboardingBridesWizardModel
   String? localAvatarFile;
 
   String? localAvatarPath;
+  
+  /// Selected country for market segmentation (IN vs GLOBAL)
+  CountryFilter selectedCountry = CountryFilter.world;
 
   ///  State fields for stateful widgets in this page.
 

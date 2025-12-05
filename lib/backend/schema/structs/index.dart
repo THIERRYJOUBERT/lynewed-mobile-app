@@ -34,6 +34,7 @@ export 'query_filters_struct.dart';
 export 'replay_guest_item_struct.dart';
 export 'replay_item_struct.dart';
 export 'session_data_bundle_struct.dart';
+export 'upcoming_travel_struct.dart';
 export 'user_preferences_struct.dart';
 export 'wed_article_struct.dart';
 export 'wed_content_block_struct.dart';

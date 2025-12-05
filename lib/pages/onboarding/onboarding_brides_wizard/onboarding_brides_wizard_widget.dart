@@ -1,24 +1,28 @@
-import '/backend/schema/enums/enums.dart';
-import '/backend/schema/structs/index.dart';
-import '/flutter_flow/flutter_flow_drop_down.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/form_field_controller.dart';
 import 'dart:io';
-import '/custom_code/actions/index.dart' as actions;
-import '/flutter_flow/custom_functions.dart' as functions;
-import '/flutter_flow/permissions_util.dart';
-import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:percent_indicator/percent_indicator.dart';
-import '/compo_finaux/address_search/address_search_widget.dart';
+import '/backend/schema/enums/enums.dart';
+import '/backend/schema/enums/country_filter.dart';
+import '/backend/schema/structs/index.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/permissions_util.dart';
+import '/flutter_flow/custom_functions.dart' as functions;
+import '/core/design/design.dart';
 import '/core/widgets/currency_dropdown.dart';
+import '/core/widgets/distance_unit_dropdown.dart';
+import '/custom_code/actions/index.dart' as actions;
+import '/index.dart';
 import 'onboarding_brides_wizard_model.dart';
 export 'onboarding_brides_wizard_model.dart';
 
+/// Onboarding Brides Wizard - Refactored v2
+/// 
+/// Structure: 5 pages with uniform layout
+/// - Page 1: Welcome (introduction)
+/// - Page 2: Profile (avatar, name)
+/// - Page 3: Preferences (country, currency, unit)
+/// - Page 4: Location permission
+/// - Page 5: Notifications permission + Finish
 class OnboardingBridesWizardWidget extends StatefulWidget {
   const OnboardingBridesWizardWidget({super.key});
 
@@ -33,24 +37,17 @@ class OnboardingBridesWizardWidget extends StatefulWidget {
 class _OnboardingBridesWizardWidgetState
     extends State<OnboardingBridesWizardWidget> {
   late OnboardingBridesWizardModel _model;
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  
+  // Total pages for progress indicator
+  static const int _totalPages = 5;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => OnboardingBridesWizardModel());
-
-    // On page load action.
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      await requestPermission(photoLibraryPermission);
-      await requestPermission(cameraPermission);
-      await requestPermission(microphonePermission);
-    });
-
     _model.firstNameTextController ??= TextEditingController();
     _model.firstNameFocusNode ??= FocusNode();
-
     _model.lastnameTextController ??= TextEditingController();
     _model.lastnameFocusNode ??= FocusNode();
   }
@@ -58,7 +55,6 @@ class _OnboardingBridesWizardWidgetState
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
   }
 
@@ -73,917 +69,1007 @@ class _OnboardingBridesWizardWidgetState
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        body: SizedBox(
-          width: MediaQuery.sizeOf(context).width * 1.0,
-          height: MediaQuery.sizeOf(context).height * 1.0,
-          child: PageView(
-            physics: const NeverScrollableScrollPhysics(),
-            controller: _model.pageViewController ??=
-                PageController(initialPage: 0),
-            scrollDirection: Axis.horizontal,
-            children: [
-              Align(
-                alignment: const AlignmentDirectional(0.0, -1.0),
-                child: SingleChildScrollView(
-                  primary: false,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Flexible(
-                        child: Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: FlutterFlowTheme.of(context)
-                                .secondaryBackground,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              Flexible(
-                                child: Align(
-                                  alignment: const AlignmentDirectional(0.0, 0.0),
-                                  child: Stack(
-                                    alignment: const AlignmentDirectional(0.0, -1.0),
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(0.0),
-                                        child: Image.asset(
-                                          'assets/images/25df1c17bbc96fe7af61b08e009c452b_2.png',
-                                          width:
-                                              MediaQuery.sizeOf(context).width *
-                                                  1.0,
-                                          height: 170.0,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                      Align(
-                                        alignment:
-                                            const AlignmentDirectional(0.0, -1.0),
-                                        child: Padding(
-                                          padding:
-                                              const EdgeInsetsDirectional.fromSTEB(
-                                                  32.0, 70.0, 32.0, 0.0),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.max,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                mainAxisSize: MainAxisSize.max,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
-                                                      'LYNEWED',
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            fontFamily:
-                                                                'Haas Grot Text Trial',
-                                                            color: Colors.white,
-                                                            fontSize: 32.0,
-                                                            letterSpacing: 0.0,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  color: const Color(0xCD141414),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          2.0),
-                                                ),
-                                                child: Padding(
-                                                  padding: const EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          12.0, 8.0, 12.0, 8.0),
-                                                  child: Text(
-                                                    '1 / 3',
-                                                    style: FlutterFlowTheme.of(
-                                                            context)
-                                                        .bodyMedium
-                                                        .override(
-                                                          fontFamily:
-                                                              'Haas Grot Text Trial',
-                                                          color: Colors.white,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                        ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ].divide(const SizedBox(height: 12.0)),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Flexible(
-                        child: Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(
-                              32.0, 0.0, 32.0, 0.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                mainAxisSize: MainAxisSize.max,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Align(
-                                    alignment: const AlignmentDirectional(-1.0, -1.0),
-                                    child: Text(
-                                      'WE ARE ALMOST THERE !',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Haas Grot Text Trial',
-                                            fontSize: 22.0,
-                                            letterSpacing: 0.0,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                    ),
-                                  ),
-                                  Text(
-                                    'Complete your profile to finalize your registration.',
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'Haas Grot Text Trial',
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryText,
-                                          letterSpacing: 0.0,
-                                        ),
-                                  ),
-                                ].divide(const SizedBox(height: 8.0)),
-                              ),
-                              InkWell(
-                                splashColor: Colors.transparent,
-                                focusColor: Colors.transparent,
-                                hoverColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                                onTap: () async {
-                                  _model.pickedPath =
-                                      await actions.pickLocalImage();
-                                  if (_model.pickedPath != null &&
-                                      _model.pickedPath != '') {
-                                    _model.localAvatarPath = _model.pickedPath;
-                                    safeSetState(() {});
-                                  }
+        backgroundColor: LynewedColors.background,
+        body: PageView(
+          physics: const NeverScrollableScrollPhysics(),
+          controller: _model.pageViewController ??= PageController(initialPage: 0),
+          children: [
+            _buildWelcomePage(),
+            _buildProfilePage(),
+            _buildPreferencesPage(),
+            _buildLocationPage(),
+            _buildNotificationsPage(),
+          ],
+        ),
+      ),
+    );
+  }
 
-                                  safeSetState(() {});
-                                },
-                                child: Stack(
-                                  alignment: const AlignmentDirectional(1.0, 1.0),
-                                  children: [
-                                    Container(
-                                      width: 100.0,
-                                      height: 100.0,
-                                      decoration: BoxDecoration(
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryBackground,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Container(
-                                        width: 200.0,
-                                        height: 200.0,
-                                        clipBehavior: Clip.antiAlias,
-                                        decoration: const BoxDecoration(
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: _model.localAvatarPath != null &&
-                                                _model.localAvatarPath != ''
-                                            ? Image.file(
-                                                File(_model.localAvatarPath!),
-                                                fit: BoxFit.cover,
-                                              )
-                                            : Image.network(
-                                                valueOrDefault<String>(
-                                                  FFAppState()
-                                                      .selfPublicProfile
-                                                      .avatarUrl,
-                                                  'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/lynewed-alpha-du4al1/assets/egport4rt4rg/person_15429777_1.png',
-                                                ),
-                                                fit: BoxFit.cover,
-                                              ),
-                                      ),
-                                    ),
-                                    Icon(
-                                      Icons.edit,
-                                      color: FlutterFlowTheme.of(context)
-                                          .secondaryText,
-                                      size: 24.0,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                width: double.infinity,
-                                decoration: const BoxDecoration(),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: TextFormField(
-                                        controller:
-                                            _model.firstNameTextController,
-                                        focusNode: _model.firstNameFocusNode,
-                                        autofocus: false,
-                                        obscureText: false,
-                                        decoration: InputDecoration(
-                                          isDense: true,
-                                          labelText: 'First name*',
-                                          labelStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .labelMedium
-                                                  .override(
-                                                    fontFamily:
-                                                        'Haas Grot Text Trial',
-                                                    letterSpacing: 0.0,
-                                                  ),
-                                          hintStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .labelMedium
-                                                  .override(
-                                                    fontFamily:
-                                                        'Haas Grot Text Trial',
-                                                    letterSpacing: 0.0,
-                                                  ),
-                                          enabledBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .accent1,
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(0.0),
-                                          ),
-                                          focusedBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .tertiary,
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(0.0),
-                                          ),
-                                          errorBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .error,
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(0.0),
-                                          ),
-                                          focusedErrorBorder:
-                                              UnderlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .error,
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(0.0),
-                                          ),
-                                          contentPadding:
-                                              const EdgeInsetsDirectional.fromSTEB(
-                                                  4.0, 12.0, 0.0, 12.0),
-                                        ),
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily:
-                                                  'Haas Grot Text Trial',
-                                              letterSpacing: 0.0,
-                                            ),
-                                        keyboardType:
-                                            TextInputType.emailAddress,
-                                        cursorColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primaryText,
-                                        enableInteractiveSelection: true,
-                                        validator: _model
-                                            .firstNameTextControllerValidator
-                                            .asValidator(context),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: TextFormField(
-                                        controller:
-                                            _model.lastnameTextController,
-                                        focusNode: _model.lastnameFocusNode,
-                                        autofocus: false,
-                                        obscureText: false,
-                                        decoration: InputDecoration(
-                                          isDense: true,
-                                          labelText: 'Last name*',
-                                          labelStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .labelMedium
-                                                  .override(
-                                                    fontFamily:
-                                                        'Haas Grot Text Trial',
-                                                    letterSpacing: 0.0,
-                                                  ),
-                                          hintStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .labelMedium
-                                                  .override(
-                                                    fontFamily:
-                                                        'Haas Grot Text Trial',
-                                                    letterSpacing: 0.0,
-                                                  ),
-                                          enabledBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .accent1,
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(0.0),
-                                          ),
-                                          focusedBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .tertiary,
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(0.0),
-                                          ),
-                                          errorBorder: UnderlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .error,
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(0.0),
-                                          ),
-                                          focusedErrorBorder:
-                                              UnderlineInputBorder(
-                                            borderSide: BorderSide(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .error,
-                                              width: 1.0,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(0.0),
-                                          ),
-                                          contentPadding:
-                                              const EdgeInsetsDirectional.fromSTEB(
-                                                  4.0, 12.0, 0.0, 12.0),
-                                        ),
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily:
-                                                  'Haas Grot Text Trial',
-                                              letterSpacing: 0.0,
-                                            ),
-                                        keyboardType:
-                                            TextInputType.emailAddress,
-                                        cursorColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primaryText,
-                                        enableInteractiveSelection: true,
-                                        validator: _model
-                                            .lastnameTextControllerValidator
-                                            .asValidator(context),
-                                      ),
-                                    ),
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Currency',
-                                              style:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        fontFamily:
-                                                            'Haas Grot Text Trial',
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .secondaryText,
-                                                        fontSize: 13.0,
-                                                        letterSpacing: 0.0,
-                                                      ),
-                                            ),
-                                            SizedBox(
-                                              width: 140,
-                                              child: CurrencyDropdown(
-                                                value: _model
-                                                        .dropDownCurrencyValue ??
-                                                    valueOrDefault<String>(
-                                                      FFAppState()
-                                                          .currentUserPreferences
-                                                          .currency,
-                                                      'USD',
-                                                    ),
-                                                onChanged: (code) =>
-                                                    safeSetState(() => _model
-                                                        .dropDownCurrencyValue =
-                                                        code),
-                                                compact: true,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Unit',
-                                              style:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        fontFamily:
-                                                            'Haas Grot Text Trial',
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .secondaryText,
-                                                        fontSize: 13.0,
-                                                        letterSpacing: 0.0,
-                                                      ),
-                                            ),
-                                            FlutterFlowDropDown<String>(
-                                              controller: _model
-                                                      .dropDownDistanceValueController ??=
-                                                  FormFieldController<String>(
-                                                _model.dropDownDistanceValue ??=
-                                                    valueOrDefault<String>(
-                                                  FFAppState()
-                                                      .currentUserPreferences
-                                                      .distanceUnit
-                                                      .name,
-                                                  'km',
-                                                ),
-                                              ),
-                                              options: const ['km', 'miles'],
-                                              onChanged: (val) => safeSetState(
-                                                  () => _model
-                                                          .dropDownDistanceValue =
-                                                      val),
-                                              width: 90.0,
-                                              textStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        fontFamily:
-                                                            'Haas Grot Text Trial',
-                                                        letterSpacing: 0.0,
-                                                      ),
-                                              hintText: 'km',
-                                              icon: Icon(
-                                                Icons.keyboard_arrow_right,
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .secondaryText,
-                                                size: 14.0,
-                                              ),
-                                              elevation: 0.0,
-                                              borderColor: Colors.transparent,
-                                              borderWidth: 1.0,
-                                              borderRadius: 0.0,
-                                              margin: const EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      4.0, 0.0, 12.0, 10.0),
-                                              isOverButton: false,
-                                              isSearchable: false,
-                                              isMultiSelect: false,
-                                            ),
-                                          ],
-                                        ),
-                                      ].divide(const SizedBox(width: 32.0)),
-                                    ),
-                                  ].divide(const SizedBox(height: 24.0)),
-                                ),
-                              ),
-                            ].divide(const SizedBox(height: 32.0)),
-                          ),
-                        ),
-                      ),
-                      Align(
-                        alignment: const AlignmentDirectional(0.0, 0.8),
-                        child: Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(
-                              20.0, 64.0, 20.0, 0.0),
-                          child: FFButtonWidget(
-                            onPressed: () async {
-                              if ((_model.localAvatarPath != null &&
-                                      _model.localAvatarPath != '') ==
-                                  true) {
-                                _model.publicAvatarUrl =
-                                    await actions.uploadAvatar(
-                                  _model.localAvatarPath!,
-                                );
-                                _model.deviceLocale =
-                                    await actions.getDeviceLocale(
-                                  context,
-                                );
-                                FFAppState().updateCurrentUserPreferencesStruct(
-                                  (e) => e
-                                    ..currency = _model.dropDownCurrencyValue
-                                    ..distanceUnit =
-                                        _model.dropDownDistanceValue == 'km'
-                                            ? DistanceUnit.km
-                                            : DistanceUnit.miles
-                                    ..defaultLocale = _model.deviceLocale
-                                    ..mapToggles = LayerTogglesStruct(
-                                      showPros: true,
-                                      showProRecent: true,
-                                      showFixedLocations: true,
-                                      showBridePrivatePoi: true,
-                                      showWeddingPins: true,
-                                      showProAlerts: false,
-                                      showSearchTarget: true,
-                                      showOnlyMyProfessionPins: false,
-                                    )
-                                    ..lastFiltersJson =
-                                        functions.generateDefaultFiltersJson(),
-                                );
-                                safeSetState(() {});
-                                _model.updatedPreferences =
-                                    await actions.saveUserPreferences(
-                                  FFAppState().currentUserPreferences,
-                                  '',
-                                );
-                                _model.updatedProfile =
-                                    await actions.saveProfileFields(
-                                  '${_model.firstNameTextController.text} ${_model.lastnameTextController.text}',
-                                  _model.publicAvatarUrl,
-                                );
-                                FFAppState().currentUserPreferences =
-                                    _model.updatedPreferences!;
-                                FFAppState().userPrefsLastSyncedAt =
-                                    getCurrentTimestamp;
-                                FFAppState().selfPublicProfile =
-                                    _model.updatedProfile!;
-                                safeSetState(() {});
-                                await _model.pageViewController?.nextPage(
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.ease,
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'An error occurred while loading your image. Please try again.',
-                                      style: TextStyle(
-                                        color: FlutterFlowTheme.of(context)
-                                            .primaryText,
-                                      ),
-                                    ),
-                                    duration: const Duration(milliseconds: 2000),
-                                    backgroundColor:
-                                        FlutterFlowTheme.of(context).warning,
-                                  ),
-                                );
-                              }
-
-                              safeSetState(() {});
-                            },
-                            text: 'Next',
-                            options: FFButtonOptions(
-                              width: double.infinity,
-                              height: 48.0,
-                              padding: const EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 0.0, 16.0, 0.0),
-                              iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 0.0, 0.0, 0.0),
-                              color: FlutterFlowTheme.of(context).primary,
-                              textStyle: FlutterFlowTheme.of(context)
-                                  .titleSmall
-                                  .override(
-                                    fontFamily: 'Haas Grot Text Trial',
-                                    color: Colors.white,
-                                    fontSize: 14.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.normal,
-                                  ),
-                              elevation: 0.0,
-                              borderRadius: BorderRadius.circular(0.0),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ].divide(const SizedBox(height: 32.0)),
+  // ============================================================
+  // PAGE 1: WELCOME
+  // ============================================================
+  Widget _buildWelcomePage() {
+    return Stack(
+      children: [
+        // Background image
+        Positioned.fill(
+          child: Image.asset(
+            'assets/images/DSC_0004-2_(1).png',
+            fit: BoxFit.cover,
+          ),
+        ),
+        // Content
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              children: [
+                const Spacer(flex: 1),
+                // Logo & Title
+                Text(
+                  'LYNEWED',
+                  style: LynewedTextStyles.sheetTitle.copyWith(
+                    color: Colors.white,
+                    fontSize: 36,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-              ),
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(0.0),
-                    child: Image.asset(
-                      'assets/images/Group_5.png',
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
+                const SizedBox(height: 12),
+                Text(
+                  'THE WORLD WEDDING INDUSTRY\nIN YOUR POCKET',
+                  textAlign: TextAlign.center,
+                  style: LynewedTextStyles.bodySmall.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 1.2,
                   ),
-                  Padding(
-                    padding:
-                        const EdgeInsetsDirectional.fromSTEB(20.0, 70.0, 20.0, 0.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          'LYNEWED',
-                          textAlign: TextAlign.center,
-                          style:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
-                                    fontFamily: 'Haas Grot Text Trial',
-                                    color: Colors.white,
-                                    fontSize: 32.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xCD141414),
-                            borderRadius: BorderRadius.circular(2.0),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                12.0, 8.0, 12.0, 8.0),
-                            child: Text(
-                              '2 / 3',
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    fontFamily: 'Haas Grot Text Trial',
-                                    color: Colors.white,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                ),
+                const Spacer(flex: 2),
+                // Description
+                Text(
+                  'Discover the best wedding professionals worldwide and plan your perfect day.',
+                  textAlign: TextAlign.center,
+                  style: LynewedTextStyles.bodyMedium.copyWith(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 16,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 40),
+                // Progress indicator
+                _buildProgressIndicator(1, onDark: true),
+                const SizedBox(height: 32),
+                // Button
+                _buildPrimaryButton(
+                  text: 'Get Started',
+                  onPressed: () => _goToPage(1),
+                  onDark: true,
+                ),
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ============================================================
+  // PAGE 2: PROFILE (Avatar + Name)
+  // ============================================================
+  Widget _buildProfilePage() {
+    return Column(
+      children: [
+        // Header with image
+        _buildImageHeader(
+          imagePath: 'assets/images/25df1c17bbc96fe7af61b08e009c452b_2.png',
+          pageNumber: 2,
+        ),
+        // Content
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 32),
+                // Title
+                Text(
+                  'LET\'S GET TO KNOW YOU',
+                  style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 22),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Add a photo and your name to personalize your profile.',
+                  style: LynewedTextStyles.bodyMedium.copyWith(
+                    color: LynewedColors.gray100,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                // Avatar picker
+                Center(child: _buildAvatarPicker()),
+                const SizedBox(height: 32),
+                // First name
+                _buildTextField(
+                  controller: _model.firstNameTextController!,
+                  focusNode: _model.firstNameFocusNode!,
+                  label: 'First name*',
+                ),
+                const SizedBox(height: 16),
+                // Last name
+                _buildTextField(
+                  controller: _model.lastnameTextController!,
+                  focusNode: _model.lastnameFocusNode!,
+                  label: 'Last name*',
+                ),
+                const SizedBox(height: 100), // Space for button
+              ],
+            ),
+          ),
+        ),
+        // Fixed bottom button
+        _buildBottomButton(
+          text: 'Continue',
+          onPressed: _validateAndContinueProfile,
+        ),
+      ],
+    );
+  }
+
+  // ============================================================
+  // PAGE 3: PREFERENCES (Country, Currency, Unit)
+  // ============================================================
+  Widget _buildPreferencesPage() {
+    return Column(
+      children: [
+        // Header with image
+        _buildImageHeader(
+          imagePath: 'assets/images/25df1c17bbc96fe7af61b08e009c452b_2.png',
+          pageNumber: 3,
+        ),
+        // Content
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 32),
+                // Title
+                Text(
+                  'PERSONALIZE YOUR EXPERIENCE',
+                  style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 22),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Set your preferences to see relevant content.',
+                  style: LynewedTextStyles.bodyMedium.copyWith(
+                    color: LynewedColors.gray100,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                // Country
+                Text(
+                  'Country*',
+                  style: LynewedTextStyles.bodyMedium.copyWith(
+                    color: LynewedColors.gray100,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _buildCountrySelector(),
+                const SizedBox(height: 24),
+                // Currency & Unit row
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Currency',
+                            style: LynewedTextStyles.bodyMedium.copyWith(
+                              color: LynewedColors.gray100,
+                              fontSize: 13,
                             ),
                           ),
-                        ),
-                        Align(
-                          alignment: const AlignmentDirectional(0.0, 0.0),
-                          child: LinearPercentIndicator(
-                            percent: 0.66,
-                            width: 326.0,
-                            lineHeight: 5.0,
-                            animation: true,
-                            animateFromLastPercent: true,
-                            progressColor: Colors.white,
-                            backgroundColor: const Color(0x7FFFFFFF),
-                            barRadius: const Radius.circular(99.0),
-                            padding: EdgeInsets.zero,
+                          const SizedBox(height: 8),
+                          CurrencyDropdown(
+                            value: _model.dropDownCurrencyValue ??
+                                (FFAppState().currentUserPreferences.currency.isNotEmpty 
+                                    ? FFAppState().currentUserPreferences.currency 
+                                    : 'USD'),
+                            onChanged: (code) {
+                              safeSetState(() {
+                                _model.dropDownCurrencyValue = code;
+                                // Auto-set coherent unit based on currency
+                                _model.dropDownDistanceValue = 
+                                    DistanceUnitData.getDefaultForCurrency(code);
+                              });
+                            },
+                            compact: true,
                           ),
-                        ),
-                        Flexible(
-                          child: Align(
-                            alignment: const AlignmentDirectional(0.0, 0.45),
-                            child: Text(
-                              'Enable your location to find the best service providers near you and access all our features.',
-                              textAlign: TextAlign.center,
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    fontFamily: 'Haas Grot Text Trial',
-                                    color: Colors.white,
-                                    fontSize: 18.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.normal,
-                                    lineHeight: 1.2,
-                                  ),
-                            ),
-                          ),
-                        ),
-                      ].divide(const SizedBox(height: 12.0)),
-                    ),
-                  ),
-                  Align(
-                    alignment: const AlignmentDirectional(0.0, 0.8),
-                    child: Padding(
-                      padding:
-                          const EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
-                      child: FFButtonWidget(
-                        onPressed: () async {
-                          await requestPermission(locationPermission);
-                          await _model.pageViewController?.nextPage(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.ease,
-                          );
-                        },
-                        text: 'Activate geolocation',
-                        options: FFButtonOptions(
-                          width: double.infinity,
-                          height: 48.0,
-                          padding: const EdgeInsetsDirectional.fromSTEB(
-                              16.0, 0.0, 16.0, 0.0),
-                          iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                              0.0, 0.0, 0.0, 0.0),
-                          color: FlutterFlowTheme.of(context).primaryBackground,
-                          textStyle: FlutterFlowTheme.of(context)
-                              .titleSmall
-                              .override(
-                                fontFamily: 'Haas Grot Text Trial',
-                                color: FlutterFlowTheme.of(context).primaryText,
-                                fontSize: 14.0,
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.normal,
-                              ),
-                          elevation: 0.0,
-                          borderRadius: BorderRadius.circular(0.0),
-                        ),
+                        ],
                       ),
                     ),
+                    const SizedBox(width: 24),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Distance unit',
+                            style: LynewedTextStyles.bodyMedium.copyWith(
+                              color: LynewedColors.gray100,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          DistanceUnitDropdown(
+                            value: _model.dropDownDistanceValue ??
+                                FFAppState().currentUserPreferences.distanceUnit.name,
+                            onChanged: (code) => safeSetState(
+                                () => _model.dropDownDistanceValue = code),
+                            compact: true,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 100), // Space for button
+              ],
+            ),
+          ),
+        ),
+        // Fixed bottom button
+        _buildBottomButton(
+          text: 'Continue',
+          onPressed: _validateAndSavePreferences,
+        ),
+      ],
+    );
+  }
+
+  // ============================================================
+  // PAGE 4: LOCATION PERMISSION
+  // ============================================================
+  Widget _buildLocationPage() {
+    return Stack(
+      children: [
+        // Background image
+        Positioned.fill(
+          child: Image.asset(
+            'assets/images/Group_5.png',
+            fit: BoxFit.cover,
+          ),
+        ),
+        // Content
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                // Logo
+                Text(
+                  'LYNEWED',
+                  style: LynewedTextStyles.sheetTitle.copyWith(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w500,
                   ),
-                ],
-              ),
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(0.0),
-                    child: Image.asset(
-                      'assets/images/Group_5_(1).png',
-                      width: double.infinity,
-                      height: double.infinity,
+                ),
+                const SizedBox(height: 16),
+                _buildProgressIndicator(4, onDark: true),
+                const Spacer(),
+                // Icon
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.location_on_outlined,
+                    color: Colors.white,
+                    size: 40,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Title
+                Text(
+                  'Find professionals near you',
+                  textAlign: TextAlign.center,
+                  style: LynewedTextStyles.sheetTitle.copyWith(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Description
+                Text(
+                  'Enable location to discover the best wedding vendors in your area and get personalized recommendations.',
+                  textAlign: TextAlign.center,
+                  style: LynewedTextStyles.bodyMedium.copyWith(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 16,
+                    height: 1.4,
+                  ),
+                ),
+                const Spacer(),
+                // Enable button
+                _buildPrimaryButton(
+                  text: 'Enable Location',
+                  onPressed: () async {
+                    await requestPermission(locationPermission);
+                    _goToPage(4);
+                  },
+                  onDark: true,
+                ),
+                const SizedBox(height: 16),
+                // Skip button
+                TextButton(
+                  onPressed: () => _goToPage(4),
+                  child: Text(
+                    'Skip for now',
+                    style: LynewedTextStyles.bodyMedium.copyWith(
+                      color: Colors.white.withOpacity(0.8),
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ============================================================
+  // PAGE 5: NOTIFICATIONS PERMISSION + FINISH
+  // ============================================================
+  Widget _buildNotificationsPage() {
+    return Stack(
+      children: [
+        // Background image
+        Positioned.fill(
+          child: Image.asset(
+            'assets/images/Group_5_(1).png',
+            fit: BoxFit.cover,
+          ),
+        ),
+        // Content
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                // Logo
+                Text(
+                  'LYNEWED',
+                  style: LynewedTextStyles.sheetTitle.copyWith(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildProgressIndicator(5, onDark: true),
+                const Spacer(),
+                // Icon
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.notifications_outlined,
+                    color: Colors.white,
+                    size: 40,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Title
+                Text(
+                  'Never miss an update',
+                  textAlign: TextAlign.center,
+                  style: LynewedTextStyles.sheetTitle.copyWith(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Description
+                Text(
+                  'Get notified when vendors respond to your requests, new features arrive, and important updates about your wedding planning.',
+                  textAlign: TextAlign.center,
+                  style: LynewedTextStyles.bodyMedium.copyWith(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 16,
+                    height: 1.4,
+                  ),
+                ),
+                const Spacer(),
+                // Enable notifications button
+                _buildPrimaryButton(
+                  text: 'Enable Notifications',
+                  onPressed: () async {
+                    await requestPermission(notificationsPermission);
+                    await _finishOnboarding();
+                  },
+                  onDark: true,
+                ),
+                const SizedBox(height: 24),
+                // Skip - very subtle text link
+                TextButton(
+                  onPressed: _finishOnboarding,
+                  child: Text(
+                    'Maybe later',
+                    style: LynewedTextStyles.bodySmall.copyWith(
+                      color: Colors.white.withOpacity(0.5),
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ============================================================
+  // REUSABLE COMPONENTS
+  // ============================================================
+
+  /// Image header for profile/preferences pages
+  Widget _buildImageHeader({
+    required String imagePath,
+    required int pageNumber,
+  }) {
+    return Stack(
+      children: [
+        ClipRRect(
+          child: Image.asset(
+            imagePath,
+            width: double.infinity,
+            height: 170,
+            fit: BoxFit.cover,
+          ),
+        ),
+        Positioned.fill(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(32, 60, 32, 0),
+            child: Column(
+              children: [
+                Text(
+                  'LYNEWED',
+                  style: LynewedTextStyles.sheetTitle.copyWith(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildProgressIndicator(pageNumber, onDark: true),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Progress indicator (page X of Y)
+  Widget _buildProgressIndicator(int currentPage, {bool onDark = false}) {
+    final progress = currentPage / _totalPages;
+    final bgColor = onDark ? Colors.white.withOpacity(0.3) : LynewedColors.gray200;
+    final fgColor = onDark ? Colors.white : LynewedColors.primary;
+    final textColor = onDark ? Colors.white : LynewedColors.primary;
+
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: onDark ? const Color(0xCD141414) : LynewedColors.surface,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            '$currentPage / $_totalPages',
+            style: LynewedTextStyles.bodySmall.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: 200,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(99),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 4,
+              backgroundColor: bgColor,
+              valueColor: AlwaysStoppedAnimation<Color>(fgColor),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Avatar picker widget
+  Widget _buildAvatarPicker() {
+    return GestureDetector(
+      onTap: _pickAvatar,
+      child: Stack(
+        alignment: Alignment.bottomRight,
+        children: [
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: LynewedColors.surface,
+              shape: BoxShape.circle,
+              border: Border.all(color: LynewedColors.gray200, width: 2),
+            ),
+            child: ClipOval(
+              child: _model.localAvatarPath != null && _model.localAvatarPath!.isNotEmpty
+                  ? Image.file(
+                      File(_model.localAvatarPath!),
                       fit: BoxFit.cover,
+                      width: 120,
+                      height: 120,
+                    )
+                  : Image.network(
+                      FFAppState().selfPublicProfile.avatarUrl.isNotEmpty
+                          ? FFAppState().selfPublicProfile.avatarUrl
+                          : 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/lynewed-alpha-du4al1/assets/egport4rt4rg/person_15429777_1.png',
+                      fit: BoxFit.cover,
+                      width: 120,
+                      height: 120,
                     ),
-                  ),
-                  Padding(
-                    padding:
-                        const EdgeInsetsDirectional.fromSTEB(32.0, 70.0, 32.0, 40.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                'LYNEWED',
-                                textAlign: TextAlign.center,
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Haas Grot Text Trial',
-                                      color: Colors.white,
-                                      fontSize: 32.0,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: const Color(0xCD141414),
-                                  borderRadius: BorderRadius.circular(2.0),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                      12.0, 8.0, 12.0, 8.0),
-                                  child: Text(
-                                    '3 / 3',
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'Haas Grot Text Trial',
-                                          color: Colors.white,
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                  ),
-                                ),
-                              ),
-                              Align(
-                                alignment: const AlignmentDirectional(0.0, 0.0),
-                                child: LinearPercentIndicator(
-                                  percent: 1.0,
-                                  width: 326.0,
-                                  lineHeight: 5.0,
-                                  animation: true,
-                                  animateFromLastPercent: true,
-                                  progressColor: Colors.white,
-                                  backgroundColor: const Color(0x7FFFFFFF),
-                                  barRadius: const Radius.circular(99.0),
-                                  padding: EdgeInsets.zero,
-                                ),
-                              ),
-                            ].divide(const SizedBox(height: 12.0)),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(
-                              0.0, 0.0, 0.0, 40.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              Text(
-                                'Turn on notifications to receive updates, reminders, and important alerts in real time.',
-                                textAlign: TextAlign.center,
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Haas Grot Text Trial',
-                                      color: Colors.white,
-                                      fontSize: 18.0,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.normal,
-                                      lineHeight: 1.2,
-                                    ),
-                              ),
-                              FFButtonWidget(
-                                onPressed: () async {
-                                  _model.tosAlreadyAccepted =
-                                      await actions.checkTosAccepted();
-                                  if (_model.tosAlreadyAccepted == false) {
-                                    _model.insertLegalAcceptanceSucces =
-                                        await actions.insertLegalAcceptance();
-                                    await requestPermission(
-                                        notificationsPermission);
-                                  }
+            ),
+          ),
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: LynewedColors.primary,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+            child: const Icon(
+              Icons.camera_alt,
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                                  context.goNamed(HomeBridesWidget.routeName);
+  /// Text field with underline style
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    required String label,
+  }) {
+    return TextFormField(
+      controller: controller,
+      focusNode: focusNode,
+      style: LynewedTextStyles.bodyMedium,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: LynewedTextStyles.bodyMedium.copyWith(
+          color: LynewedColors.gray100,
+        ),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: LynewedColors.gray200),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: LynewedColors.primary),
+        ),
+        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+      ),
+    );
+  }
 
-                                  safeSetState(() {});
-                                },
-                                text: 'Finish',
-                                options: FFButtonOptions(
-                                  width: double.infinity,
-                                  height: 48.0,
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                      16.0, 0.0, 16.0, 0.0),
-                                  iconPadding: const EdgeInsetsDirectional.fromSTEB(
-                                      0.0, 0.0, 0.0, 0.0),
-                                  color: FlutterFlowTheme.of(context)
-                                      .primaryBackground,
-                                  textStyle: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .override(
-                                        fontFamily: 'Haas Grot Text Trial',
-                                        color: FlutterFlowTheme.of(context)
-                                            .primaryText,
-                                        fontSize: 14.0,
-                                        letterSpacing: 0.0,
-                                        fontWeight: FontWeight.normal,
-                                      ),
-                                  elevation: 0.0,
-                                  borderRadius: BorderRadius.circular(0.0),
-                                ),
-                              ),
-                            ].divide(const SizedBox(height: 24.0)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+  /// Country selector
+  Widget _buildCountrySelector() {
+    final country = _model.selectedCountry;
+    final hasSelection = !country.isWorld;
+
+    return GestureDetector(
+      onTap: _showCountryPicker,
+      child: Container(
+        width: double.infinity,
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          border: Border.all(color: LynewedColors.gray200),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Row(
+          children: [
+            Text(
+              _getCountryFlag(country.code),
+              style: const TextStyle(fontSize: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                hasSelection ? country.displayName : 'Select your country',
+                style: LynewedTextStyles.bodyMedium.copyWith(
+                  color: hasSelection ? LynewedColors.primary : LynewedColors.gray100,
+                ),
               ),
-            ],
+            ),
+            Icon(
+              Icons.keyboard_arrow_down,
+              color: LynewedColors.gray100,
+              size: 24,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Bottom button container (fixed position)
+  Widget _buildBottomButton({
+    required String text,
+    required VoidCallback onPressed,
+  }) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(32, 16, 32, 0),
+      decoration: BoxDecoration(
+        color: LynewedColors.background,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: LynewedButton(
+          text: text,
+          onPressed: onPressed,
+          type: LynewedButtonType.primary,
+          width: double.infinity,
+        ),
+      ),
+    );
+  }
+
+  /// Primary button (for dark backgrounds)
+  Widget _buildPrimaryButton({
+    required String text,
+    required VoidCallback onPressed,
+    bool onDark = false,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: LynewedSpacing.buttonHeight,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: onDark ? Colors.white : LynewedColors.primary,
+          foregroundColor: onDark ? LynewedColors.primary : Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(0),
+          ),
+        ),
+        child: Text(
+          text,
+          style: LynewedTextStyles.bodyMedium.copyWith(
+            color: onDark ? LynewedColors.primary : Colors.white,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ),
     );
   }
+
+  // ============================================================
+  // ACTIONS
+  // ============================================================
+
+  /// Navigate to specific page
+  void _goToPage(int pageIndex) {
+    _model.pageViewController?.animateToPage(
+      pageIndex,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  /// Pick avatar image
+  Future<void> _pickAvatar() async {
+    await requestPermission(photoLibraryPermission);
+    await requestPermission(cameraPermission);
+
+    final pickedPath = await actions.pickLocalImage();
+    if (pickedPath != null && pickedPath.isNotEmpty) {
+      safeSetState(() {
+        _model.localAvatarPath = pickedPath;
+      });
+    }
+  }
+
+  /// Get country flag emoji
+  String _getCountryFlag(String countryCode) {
+    if (countryCode.isEmpty) return '🌍';
+    return countryCode.toUpperCase().codeUnits
+        .map((c) => String.fromCharCode(c + 127397))
+        .join();
+  }
+
+  /// Show country picker bottom sheet
+  void _showCountryPicker() {
+    final searchController = TextEditingController();
+    List<CountryFilter> filteredCountries = CountryFilter.values.toList()
+      ..remove(CountryFilter.world);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return DraggableScrollableSheet(
+              initialChildSize: 0.7,
+              minChildSize: 0.5,
+              maxChildSize: 0.9,
+              expand: false,
+              builder: (context, scrollController) {
+                return Column(
+                  children: [
+                    // Handle
+                    Container(
+                      margin: const EdgeInsets.only(top: 12),
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: LynewedColors.gray200,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    // Title
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        'Select your country',
+                        style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 18),
+                      ),
+                    ),
+                    // Search
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: TextField(
+                        controller: searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Search country...',
+                          hintStyle: LynewedTextStyles.bodyMedium.copyWith(
+                            color: LynewedColors.gray100,
+                          ),
+                          prefixIcon: const Icon(Icons.search, size: 20),
+                          filled: true,
+                          fillColor: LynewedColors.surface,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                        style: LynewedTextStyles.bodyMedium,
+                        onChanged: (query) {
+                          setSheetState(() {
+                            if (query.isEmpty) {
+                              filteredCountries = CountryFilter.values.toList()
+                                ..remove(CountryFilter.world);
+                            } else {
+                              filteredCountries = CountryFilter.search(query, excludeIndia: false)
+                                ..remove(CountryFilter.world);
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Divider(height: 1),
+                    // List
+                    Expanded(
+                      child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: filteredCountries.length,
+                        itemBuilder: (context, index) {
+                          final country = filteredCountries[index];
+                          final isSelected = country == _model.selectedCountry;
+                          return InkWell(
+                            onTap: () {
+                              Navigator.pop(context);
+                              safeSetState(() {
+                                _model.selectedCountry = country;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                              color: isSelected ? LynewedColors.surface : null,
+                              child: Row(
+                                children: [
+                                  Text(
+                                    _getCountryFlag(country.code),
+                                    style: const TextStyle(fontSize: 20),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      country.displayName,
+                                      style: LynewedTextStyles.bodyMedium.copyWith(
+                                        fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                                      ),
+                                    ),
+                                  ),
+                                  if (isSelected)
+                                    const Icon(Icons.check, size: 20),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// Validate profile page and continue
+  Future<void> _validateAndContinueProfile() async {
+    // Validate avatar
+    if (_model.localAvatarPath == null || _model.localAvatarPath!.isEmpty) {
+      _showError('Please select a profile photo');
+      return;
+    }
+
+    // Validate first name
+    if (_model.firstNameTextController!.text.trim().isEmpty) {
+      _showError('Please enter your first name');
+      return;
+    }
+
+    // Validate last name
+    if (_model.lastnameTextController!.text.trim().isEmpty) {
+      _showError('Please enter your last name');
+      return;
+    }
+
+    _goToPage(2);
+  }
+
+  /// Validate preferences and save
+  Future<void> _validateAndSavePreferences() async {
+    // Validate country
+    if (_model.selectedCountry.isWorld) {
+      _showError('Please select your country');
+      return;
+    }
+
+    // Upload avatar
+    _model.publicAvatarUrl = await actions.uploadAvatar(_model.localAvatarPath!);
+    
+    if (!mounted) return;
+    
+    // Get device locale
+    _model.deviceLocale = await actions.getDeviceLocale(context);
+
+    // Update preferences in app state
+    FFAppState().updateCurrentUserPreferencesStruct(
+      (e) => e
+        ..currency = _model.dropDownCurrencyValue ?? 'USD'
+        ..distanceUnit = _model.dropDownDistanceValue == 'miles'
+            ? DistanceUnit.miles
+            : DistanceUnit.km
+        ..defaultLocale = _model.deviceLocale
+        ..defaultCountry = _model.selectedCountry.code
+        ..mapToggles = LayerTogglesStruct(
+          showPros: true,
+          showProRecent: true,
+          showFixedLocations: true,
+          showBridePrivatePoi: true,
+          showWeddingPins: true,
+          showProAlerts: false,
+          showSearchTarget: true,
+          showOnlyMyProfessionPins: false,
+        )
+        ..lastFiltersJson = functions.generateDefaultFiltersJson(),
+    );
+
+    // Save to database
+    _model.updatedPreferences = await actions.saveUserPreferences(
+      FFAppState().currentUserPreferences,
+      '',
+    );
+
+    final fullName = '${_model.firstNameTextController!.text.trim()} ${_model.lastnameTextController!.text.trim()}';
+    _model.updatedProfile = await actions.saveProfileFields(
+      fullName,
+      _model.publicAvatarUrl,
+      country: _model.selectedCountry.code,
+    );
+
+    // Update app state
+    if (_model.updatedPreferences != null) {
+      FFAppState().currentUserPreferences = _model.updatedPreferences!;
+      FFAppState().userPrefsLastSyncedAt = getCurrentTimestamp;
+    }
+    if (_model.updatedProfile != null) {
+      FFAppState().selfPublicProfile = _model.updatedProfile!;
+    }
+
+    safeSetState(() {});
+    _goToPage(3);
+  }
+
+  /// Finish onboarding
+  Future<void> _finishOnboarding() async {
+    // Check and accept TOS
+    _model.tosAlreadyAccepted = await actions.checkTosAccepted();
+    if (_model.tosAlreadyAccepted == false) {
+      _model.insertLegalAcceptanceSucces = await actions.insertLegalAcceptance();
+    }
+
+    if (mounted) {
+      context.goNamed(HomeBridesWidget.routeName);
+    }
+  }
+
+  /// Show error snackbar
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: LynewedTextStyles.bodyMedium.copyWith(
+            color: LynewedColors.primary,
+          ),
+        ),
+        backgroundColor: LynewedColors.warning,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
 }
