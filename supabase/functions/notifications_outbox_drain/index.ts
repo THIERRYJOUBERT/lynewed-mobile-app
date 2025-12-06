@@ -79,10 +79,12 @@ async function getAccessToken() {
   return access_token;
 }
 async function sendFcmV1(token, title, body, data, isHighPriority = false, ttlSeconds = 300) {
-  if (!ENABLE_PUSH || !FCM_PROJECT_ID) return {
-    ok: false,
-    skipped: true
-  };
+  if (!ENABLE_PUSH || !FCM_PROJECT_ID) {
+    return { ok: false, skipped: true };
+  }
+  if (!FIREBASE_SERVICE_ACCOUNT) {
+    return { ok: false, skipped: true, reason: "missing_service_account" };
+  }
   const accessToken = await getAccessToken();
   const url = `https://fcm.googleapis.com/v1/projects/${FCM_PROJECT_ID}/messages:send`;
   const message = {
@@ -141,9 +143,7 @@ async function sendFcmV1(token, title, body, data, isHighPriority = false, ttlSe
     const t = await res.text();
     throw new Error(`FCM v1 error: ${res.status} ${t}`);
   }
-  return {
-    ok: true
-  };
+  return { ok: true };
 }
 // --- MAPPINGS / I18N ---
 // NOTE: wedPublished et replayPublished sont gérés par l'Edge Function send-broadcast-notification
@@ -275,7 +275,6 @@ async function executePushSends(actions) {
 }
 // --- PROCESSORS ---
 async function processChatMessageCreated(ev) {
-  console.log(`[processChatMessageCreated] Processing event:`, JSON.stringify(ev.payload));
   const actions = {
     inApp: [],
     push: []
