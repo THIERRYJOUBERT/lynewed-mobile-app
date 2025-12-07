@@ -137,7 +137,7 @@ class _AuthWelcomePageWidgetState extends State<AuthWelcomePageWidget> {
                               ),
                             ),
                             child: Text(
-                              'I\'m a Bride',
+                              'I\'m a Bride / Groom',
                               style: LynewedTextStyles.bodyMedium.copyWith(
                                 color: LynewedColors.primary,
                                 fontWeight: FontWeight.w500,

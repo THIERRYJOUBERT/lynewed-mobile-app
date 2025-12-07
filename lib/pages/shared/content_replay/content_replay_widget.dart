@@ -77,7 +77,7 @@ class _ContentReplayWidgetState extends State<ContentReplayWidget> {
               if (_model.featuredReplay != null)
                 Padding(
                   padding:
-                      const EdgeInsetsDirectional.fromSTEB(20.0, 106.0, 20.0, 84.0),
+                      const EdgeInsetsDirectional.fromSTEB(20.0, 110.0, 20.0, 84.0),
                   child: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.max,
@@ -381,7 +381,7 @@ class _ContentReplayWidgetState extends State<ContentReplayWidget> {
                 alignment: const AlignmentDirectional(0.0, -1.0),
                 child: Container(
                   width: double.infinity,
-                  height: 90.0,
+                  height: 110.0,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).primaryBackground,
                   ),
@@ -402,7 +402,7 @@ class _ContentReplayWidgetState extends State<ContentReplayWidget> {
                                   .bodyMedium
                                   .override(
                                     fontFamily: 'Haas Grot Text Trial',
-                                    fontSize: 20.0,
+                                    fontSize: 18.0,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.w500,
                                   ),
