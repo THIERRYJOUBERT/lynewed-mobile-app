@@ -36,7 +36,7 @@
 | Type Enum | Valeurs | Tables/Colonnes Utilisées |
 |-----------|---------|---------------------------|
 | **userRole** | bride, professional | profiles.role, public_profiles.role, public_chat_rooms.audience_role |
-| **profession** | PHOTOGRAPHER, FILMMAKER, PLANNER, MAKEUP, HAIRDRESSER, DESIGNER, BRIDALDESIGNER, VENUE, BRIDALSHOP, FLORIST, PHOTOMOVIE, MAKEUPARTIST, EVENTDESIGNER, OTHER | professional_details.profession |
+| **profession** | PHOTOGRAPHER, FILMMAKER, PLANNER, MAKEUP, HAIRDRESSER, DESIGNER, BRIDALDESIGNER, VENUE, BRIDALSHOP, FLORIST, PHOTOMOVIE, MAKEUPARTIST, EVENTDESIGNER, OTHER, CATERER, MUSIC, BRIDALWEARDESIGNER, JEWELLER, STATIONERY, CONTENTCREATOR | professional_details.profession |
 | **subscriptionTierType** | inactive, trial, earlyAccess, premiumVisibility, ultimateAccess | professional_subscriptions.subscription_tier |
 | **alertStatus** | active, cancelled, expired | professional_alerts.status |
 | **videoSessionStatus** | pending, accepted, declined, missed, completed, cancelled | video_sessions.status |
@@ -86,10 +86,11 @@
 - **Utilisation:** Features access, UI display, business logic
 
 #### Profession
-- **Fichier:** `/lib/backend/schema/enums/enums.dart:16-31`
-- **Valeurs:** PHOTOGRAPHER, FILMMAKER, PLANNER, MAKEUP, HAIRDRESSER, DESIGNER, BRIDALDESIGNER, VENUE, BRIDALSHOP, FLORIST, PHOTOMOVIE, MAKEUPARTIST, EVENTDESIGNER, OTHER
+- **Fichier:** `/lib/backend/schema/enums/enums.dart:16-39`
+- **Valeurs:** PHOTOGRAPHER, FILMMAKER, PLANNER, MAKEUP, HAIRDRESSER, DESIGNER, BRIDALDESIGNER, VENUE, BRIDALSHOP, FLORIST, PHOTOMOVIE, MAKEUPARTIST, EVENTDESIGNER, OTHER, CATERER, MUSIC, BRIDALWEARDESIGNER, JEWELLER, STATIONERY, CONTENTCREATOR
 - **Sérialisation:** String (name)
 - **Utilisation:** Filtrage, recherche, profils professionnels
+- **Marchés:** India-only (CATERER, MUSIC, BRIDALWEARDESIGNER), Global-only (JEWELLER, STATIONERY, CONTENTCREATOR)
 
 #### ConnectionRequestSource
 - **Fichier:** `/lib/backend/schema/enums/enums.dart:64-70`

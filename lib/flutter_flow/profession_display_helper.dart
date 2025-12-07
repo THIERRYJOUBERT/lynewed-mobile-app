@@ -31,18 +31,19 @@ String getProfessionDisplayName(Profession profession) {
       return 'Event Designer';
     case Profession.OTHER:
       return 'Other';
+    // 🌍 Global professions (available everywhere)
+    case Profession.MUSIC:
+      return 'Music';
+    case Profession.STATIONERY:
+      return 'Stationery';
     // 🇮🇳 India-only professions
     case Profession.CATERER:
       return 'Caterer';
-    case Profession.DJ:
-      return 'DJ';
     case Profession.BRIDALWEARDESIGNER:
       return 'Bridal Wear Designer';
-    // 🌍 Global-only professions
+    // 🌍 Global-only professions (not in India)
     case Profession.JEWELLER:
       return 'Jeweller';
-    case Profession.STATIONER:
-      return 'Stationer';
     case Profession.CONTENTCREATOR:
       return 'Content Creator';
     default:

@@ -18,6 +18,9 @@ class LynewedTextField extends StatelessWidget {
     this.readOnly = false,
     this.onTap,
     this.isValueInput = false, // If true, transparent bg + border. If false, grey bg + no border.
+    this.textInputAction,
+    this.onEditingComplete,
+    this.focusNode,
   });
 
   final TextEditingController controller;
@@ -34,6 +37,9 @@ class LynewedTextField extends StatelessWidget {
   final bool readOnly;
   final VoidCallback? onTap;
   final bool isValueInput;
+  final TextInputAction? textInputAction;
+  final VoidCallback? onEditingComplete;
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +71,9 @@ class LynewedTextField extends StatelessWidget {
           enabled: enabled,
           readOnly: readOnly,
           onTap: onTap,
+          focusNode: focusNode,
+          textInputAction: textInputAction ?? (maxLines > 1 ? TextInputAction.newline : TextInputAction.done),
+          onEditingComplete: onEditingComplete ?? () => FocusScope.of(context).unfocus(),
           style: LynewedTextStyles.bodyMedium.copyWith(
             fontWeight: FontWeight.w300,
           ),

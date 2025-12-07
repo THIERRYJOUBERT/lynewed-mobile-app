@@ -163,7 +163,7 @@ class _ArchivedSheetState extends State<ArchivedSheet> {
       children: [
         // Archived conversations section
         if (_archivedConversations.isNotEmpty) ...[
-          Text(
+          const Text(
             'Archived Conversations',
             style: LynewedTextStyles.sectionTitle,
           ),
@@ -223,7 +223,7 @@ class _ArchivedSheetState extends State<ArchivedSheet> {
         
         // Blocked users section (users blocked but no conversation)
         if (_blockedUsers.where((u) => !_archivedConversations.any((c) => c.otherProfileId == u.blockedProfileId)).isNotEmpty) ...[
-          Text(
+          const Text(
             'Blocked Users',
             style: LynewedTextStyles.sectionTitle,
           ),

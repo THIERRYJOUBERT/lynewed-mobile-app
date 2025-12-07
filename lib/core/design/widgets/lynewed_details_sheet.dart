@@ -67,7 +67,10 @@ class LynewedDetailsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ConstrainedBox(
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      behavior: HitTestBehavior.opaque,
+      child: ConstrainedBox(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * maxHeightFraction,
       ),
@@ -102,6 +105,7 @@ class LynewedDetailsSheet extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 

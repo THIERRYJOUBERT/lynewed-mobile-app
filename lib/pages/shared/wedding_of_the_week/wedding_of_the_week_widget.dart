@@ -1,10 +1,8 @@
 import '/backend/schema/enums/enums.dart';
 import '/components/nav/nav_bar_brides/nav_bar_brides_widget.dart';
 import '/components/nav/nav_bar_pro/nav_bar_pro_widget.dart';
-import '/components/ui_system/empty_state/empty_state_widget.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'dart:ui';
+import '/core/design/design.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import 'package:flutter/material.dart';
@@ -64,132 +62,101 @@ class _WeddingOfTheWeekWidgetState extends State<WeddingOfTheWeekWidget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-        body: SizedBox(
-          width: double.infinity,
-          height: MediaQuery.sizeOf(context).height * 1.0,
+        backgroundColor: LynewedColors.background,
+        body: SafeArea(
+          bottom: false, // Navbar handles its own bottom safe area
           child: Stack(
             children: [
+              // Main content
               Column(
-                mainAxisSize: MainAxisSize.max,
                 children: [
-                  Flexible(
-                    child: Align(
-                      alignment: const AlignmentDirectional(-1.0, -1.0),
-                      child: SizedBox(
-                        width: MediaQuery.sizeOf(context).width * 1.0,
-                        height: MediaQuery.sizeOf(context).height * 1.0,
-                        child: custom_widgets.WedArticleRenderer(
-                          width: MediaQuery.sizeOf(context).width * 1.0,
-                          height: MediaQuery.sizeOf(context).height * 1.0,
-                          article: _model.wedArticle,
-                        ),
-                      ),
-                    ),
+                  // Header - Design System v3
+                  _buildHeader(),
+                  
+                  // Divider
+                  const Divider(height: 1, color: LynewedColors.gray200),
+                  
+                  // Content - Only show renderer if article exists
+                  Expanded(
+                    child: _model.wedArticle != null
+                        ? custom_widgets.WedArticleRenderer(
+                            width: MediaQuery.sizeOf(context).width,
+                            height: MediaQuery.sizeOf(context).height,
+                            article: _model.wedArticle,
+                          )
+                        : _buildEmptyState(),
                   ),
                 ],
               ),
+              
+              // Bottom navigation
               Align(
-                alignment: const AlignmentDirectional(0.0, 1.0),
-                child: Stack(
-                  alignment: const AlignmentDirectional(0.0, 1.0),
-                  children: [
-                    if (FFAppState().currentUserRole == UserRole.bride)
-                      Align(
-                        alignment: const AlignmentDirectional(0.0, 1.0),
-                        child: wrapWithModel(
-                          model: _model.navBarBridesModel,
-                          updateCallback: () => safeSetState(() {}),
-                          child: const NavBarBridesWidget(
-                            number: 3,
-                          ),
-                        ),
-                      ),
-                    if (FFAppState().currentUserRole == UserRole.professional)
-                      wrapWithModel(
+                alignment: Alignment.bottomCenter,
+                child: FFAppState().currentUserRole == UserRole.bride
+                    ? wrapWithModel(
+                        model: _model.navBarBridesModel,
+                        updateCallback: () => safeSetState(() {}),
+                        child: const NavBarBridesWidget(number: 3),
+                      )
+                    : wrapWithModel(
                         model: _model.navBarProModel,
                         updateCallback: () => safeSetState(() {}),
-                        child: const NavBarProWidget(
-                          number: 2,
-                        ),
+                        child: const NavBarProWidget(number: 2),
                       ),
-                  ],
-                ),
-              ),
-              if (_model.wedArticle == null)
-                Align(
-                  alignment: const AlignmentDirectional(0.0, 0.0),
-                  child: wrapWithModel(
-                    model: _model.emptyStateModel,
-                    updateCallback: () => safeSetState(() {}),
-                    child: const EmptyStateWidget(
-                      message: 'No weddings this week ',
-                    ),
-                  ),
-                ),
-              Align(
-                alignment: const AlignmentDirectional(0.0, -1.0),
-                child: Container(
-                  width: double.infinity,
-                  height: 110.0,
-                  decoration: const BoxDecoration(
-                    color: Color(0x65FFFFFF),
-                  ),
-                  child: Align(
-                    alignment: const AlignmentDirectional(0.0, 0.0),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(0.0),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(
-                          sigmaX: 2.0,
-                          sigmaY: 4.0,
-                        ),
-                        child: Container(
-                          width: double.infinity,
-                          height: 110.0,
-                          decoration: const BoxDecoration(
-                            color: Color(0x67FFFFFF),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(
-                                0.0, 0.0, 0.0, 14.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsetsDirectional.fromSTEB(
-                                      20.0, 0.0, 20.0, 0.0),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        'LYNEWED',
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily:
-                                                  'Haas Grot Text Trial',
-                                              fontSize: 20.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Header with title - Design System v3
+  /// Uses same style as Replay page (18px, w500)
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+      child: Row(
+        children: [
+          Text(
+            'WEDDING OF THE WEEK',
+            style: LynewedTextStyles.headlineSmall, // 18px, w500 - same as Replay
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Empty state when no wedding article is available
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.favorite_border,
+              size: 64,
+              color: LynewedColors.gray300,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No wedding this week',
+              style: LynewedTextStyles.titleMedium.copyWith(
+                color: LynewedColors.textPrimary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Check back soon for inspiring wedding stories from our community.',
+              style: LynewedTextStyles.bodyMedium.copyWith(
+                color: LynewedColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );

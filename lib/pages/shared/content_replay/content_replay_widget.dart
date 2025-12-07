@@ -77,7 +77,7 @@ class _ContentReplayWidgetState extends State<ContentReplayWidget> {
               if (_model.featuredReplay != null)
                 Padding(
                   padding:
-                      const EdgeInsetsDirectional.fromSTEB(20.0, 110.0, 20.0, 84.0),
+                      const EdgeInsetsDirectional.fromSTEB(20.0, 140.0, 20.0, 84.0), // 110 header + 30 spacing
                   child: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.max,

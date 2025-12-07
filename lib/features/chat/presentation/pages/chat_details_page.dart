@@ -11,7 +11,6 @@ import '/core/design/design.dart';
 import '/core/services/unread_counter_service.dart';
 import '/backend/schema/enums/enums.dart' show PermissionType;
 import '/backend/schema/enums/enums.dart' as app_enums show UserRole;
-import '/app_state.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart' show VideoCallPageWidget;
@@ -256,7 +255,7 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
       height: avatarSize,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isPublic ? LynewedColors.surface.withOpacity(0.2) : LynewedColors.surface,
+        color: isPublic ? LynewedColors.surface.withValues(alpha: 0.2) : LynewedColors.surface,
         border: Border.all(
           color: isPublic ? LynewedColors.textOnPrimary : LynewedColors.border,
           width: 1,
@@ -536,7 +535,9 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
             : null,
         onReport: !isOwnMessage
             ? (reason, details) async {
-                Navigator.pop(sheetContext);
+                // Note: MessageActionsSheet already pops itself before opening ReportMessageSheet
+                // ReportMessageSheet pops itself after successful submission
+                // So we don't need to pop here - just handle the report
                 await _notifier.reportMessage(
                   messageId: message.id,
                   reason: reason,

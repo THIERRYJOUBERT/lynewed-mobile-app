@@ -14,8 +14,9 @@ import '/core/utils/distance_formatter.dart';
 /// DESIGNER, BRIDALDESIGNER, VENUE, BRIDALSHOP, FLORIST, PHOTOMOVIE, 
 /// MAKEUPARTIST, EVENTDESIGNER, OTHER
 /// + 6 new market-specific professions:
-/// India-only: CATERER, DJ, BRIDALWEARDESIGNER
-/// Global-only: JEWELLER, STATIONER, CONTENTCREATOR
+/// Global (everywhere): MUSIC, STATIONERY
+/// India-only: CATERER, BRIDALWEARDESIGNER
+/// Global-only (not India): JEWELLER, CONTENTCREATOR
 enum Profession {
   photographer,
   filmmaker,
@@ -31,13 +32,14 @@ enum Profession {
   makeupArtist,
   eventDesigner,
   other,
+  // Global professions (available everywhere)
+  music,
+  stationery,
   // India-only professions
   caterer,
-  dj,
   bridalWearDesigner,
-  // Global-only professions
+  // Global-only professions (not in India)
   jeweller,
-  stationer,
   contentCreator;
 
   String get displayName {
@@ -70,18 +72,19 @@ enum Profession {
         return 'Event Designer';
       case Profession.other:
         return 'Other';
+      // Global (everywhere)
+      case Profession.music:
+        return 'Music';
+      case Profession.stationery:
+        return 'Stationery';
       // India-only
       case Profession.caterer:
         return 'Caterer';
-      case Profession.dj:
-        return 'DJ';
       case Profession.bridalWearDesigner:
         return 'Bridal Wear Designer';
-      // Global-only
+      // Global-only (not in India)
       case Profession.jeweller:
         return 'Jeweller';
-      case Profession.stationer:
-        return 'Stationer';
       case Profession.contentCreator:
         return 'Content Creator';
     }
@@ -118,18 +121,19 @@ enum Profession {
         return 'EVENTDESIGNER';
       case Profession.other:
         return 'OTHER';
+      // Global (everywhere)
+      case Profession.music:
+        return 'MUSIC';
+      case Profession.stationery:
+        return 'STATIONERY';
       // India-only
       case Profession.caterer:
         return 'CATERER';
-      case Profession.dj:
-        return 'DJ';
       case Profession.bridalWearDesigner:
         return 'BRIDALWEARDESIGNER';
-      // Global-only
+      // Global-only (not in India)
       case Profession.jeweller:
         return 'JEWELLER';
-      case Profession.stationer:
-        return 'STATIONER';
       case Profession.contentCreator:
         return 'CONTENTCREATOR';
     }
@@ -168,18 +172,19 @@ enum Profession {
         return Profession.makeupArtist;
       case 'EVENTDESIGNER':
         return Profession.eventDesigner;
+      // Global (everywhere)
+      case 'MUSIC':
+        return Profession.music;
+      case 'STATIONERY':
+        return Profession.stationery;
       // India-only
       case 'CATERER':
         return Profession.caterer;
-      case 'DJ':
-        return Profession.dj;
       case 'BRIDALWEARDESIGNER':
         return Profession.bridalWearDesigner;
-      // Global-only
+      // Global-only (not in India)
       case 'JEWELLER':
         return Profession.jeweller;
-      case 'STATIONER':
-        return Profession.stationer;
       case 'CONTENTCREATOR':
         return Profession.contentCreator;
       case 'OTHER':

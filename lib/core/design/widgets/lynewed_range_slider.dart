@@ -80,7 +80,7 @@ class _LynewedRangeSliderState extends State<LynewedRangeSlider> {
               activeTrackColor: Colors.black,
               inactiveTrackColor: const Color(0xFFE0E0E0),
               thumbColor: Colors.black,
-              overlayColor: Colors.black.withOpacity(0.1),
+              overlayColor: Colors.black.withValues(alpha: 0.1),
               trackHeight: 4.0,
               rangeThumbShape: const RoundRangeSliderThumbShape(enabledThumbRadius: 10, elevation: 2),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),

@@ -28,27 +28,26 @@ enum Profession {
   MAKEUPARTIST,
   EVENTDESIGNER,
   OTHER,
+  // 🌍 Global professions (available everywhere)
+  MUSIC,
+  STATIONERY,
   // 🇮🇳 India-only professions
   CATERER,
-  DJ,
   BRIDALWEARDESIGNER,
   // 🌍 Global-only professions (not visible in India)
   JEWELLER,
-  STATIONER,
   CONTENTCREATOR,
 }
 
 /// Professions only available in India market
 const List<Profession> indiaOnlyProfessions = [
   Profession.CATERER,
-  Profession.DJ,
   Profession.BRIDALWEARDESIGNER,
 ];
 
 /// Professions only available in Global market (not India)
 const List<Profession> globalOnlyProfessions = [
   Profession.JEWELLER,
-  Profession.STATIONER,
   Profession.CONTENTCREATOR,
 ];
 

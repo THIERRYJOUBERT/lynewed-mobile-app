@@ -257,18 +257,19 @@ class _FilterSheetState extends State<FilterSheet> {
         return Profession.eventDesigner;
       case backend_enums.Profession.OTHER:
         return Profession.other;
+      // Global professions (available everywhere)
+      case backend_enums.Profession.MUSIC:
+        return Profession.music;
+      case backend_enums.Profession.STATIONERY:
+        return Profession.stationery;
       // India-only professions
       case backend_enums.Profession.CATERER:
         return Profession.caterer;
-      case backend_enums.Profession.DJ:
-        return Profession.dj;
       case backend_enums.Profession.BRIDALWEARDESIGNER:
         return Profession.bridalWearDesigner;
-      // Global-only professions
+      // Global-only professions (not in India)
       case backend_enums.Profession.JEWELLER:
         return Profession.jeweller;
-      case backend_enums.Profession.STATIONER:
-        return Profession.stationer;
       case backend_enums.Profession.CONTENTCREATOR:
         return Profession.contentCreator;
     }

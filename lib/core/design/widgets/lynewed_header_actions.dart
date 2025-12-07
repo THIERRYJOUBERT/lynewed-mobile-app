@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../design.dart';
-import 'lynewed_more_menu.dart';
 
 /// Header actions widget with favorite + more menu
 /// 

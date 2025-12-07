@@ -85,18 +85,19 @@ class MapMarkerColors {
         return const Color(0xFF00BCD4); // Cyan
       case Profession.other:
         return const Color(0xFF607D8B); // Blue Grey
+      // Global professions (available everywhere)
+      case Profession.music:
+        return const Color(0xFF3F51B5); // Indigo
+      case Profession.stationery:
+        return const Color(0xFF795548); // Brown
       // India-only professions
       case Profession.caterer:
         return const Color(0xFFFF5722); // Deep Orange
-      case Profession.dj:
-        return const Color(0xFF3F51B5); // Indigo
       case Profession.bridalWearDesigner:
         return const Color(0xFFE040FB); // Purple Accent
-      // Global-only professions
+      // Global-only professions (not in India)
       case Profession.jeweller:
         return const Color(0xFFFFD54F); // Amber 300
-      case Profession.stationer:
-        return const Color(0xFF795548); // Brown
       case Profession.contentCreator:
         return const Color(0xFF00E676); // Green Accent
     }

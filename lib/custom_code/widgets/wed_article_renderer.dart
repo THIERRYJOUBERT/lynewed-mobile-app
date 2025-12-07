@@ -100,24 +100,8 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
     _pageViewController ??= PageController(initialPage: 0);
 
     return ListView(
-      padding: EdgeInsets.zero,
+      padding: EdgeInsets.zero, // Bottom padding handled by last item
       children: [
-        // --- MODIFICATION 1 : Espace blanc en haut ---
-        const SizedBox(height: 110),
-
-        // --- MODIFICATION 2 : Style du titre "Wedding Of The Week" ---
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
-          child: Text(
-            'WEDDING OF THE WEEK',
-            style: FlutterFlowTheme.of(context).titleMedium.override(
-                  fontFamily: 'Haas Grot Text Trial',
-                  fontSize: 16, // Taille de police changée à 16
-                  fontWeight: FontWeight.w500, // Correspond à 'medium'
-                  color: FlutterFlowTheme.of(context).primaryText,
-                ),
-          ),
-        ),
 
         // Carrousel
         _buildCoverCarousel(context, article.coverImages),
@@ -184,7 +168,7 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
 
         // Section Pro
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 114), // 84px navbar + 30px spacing
           child: _buildProfessionalSection(context, article.professional),
         ),
       ],
