@@ -126,9 +126,8 @@ docs/
 ├── PROJECT_TODO.md                 # Future tasks & ideas
 ├── App/
 │   └── DESIGN_SYSTEM.md           # ⭐ UI/UX authoritative reference
-├── REFACTORING_REPORT_MVP_TO_V1.md # V1 refactoring history
-├── RESTRUCTURING_SUMMARY.md        # Documentation history
-└── prompts/                        # Generated prompts for new conversations
+├── prompts/                        # Generated prompts for new conversations
+└── archive/                        # 📦 Archived docs (audits, completed features)
 ```
 
 | File | Role | When to Read |
@@ -203,6 +202,7 @@ docs/
 | **Buttons** | 48px height, 0 radius | w400 text |
 | **Sheets** | 24px top radius | 20px horizontal padding |
 | **Items/Chips** | 4px radius | Cards, list items |
+| **archive/** | Documents archivés (audits, features terminées) | Référence historique, audits |
 
 ### Code Rules
 1. ❌ **NEVER** reuse FlutterFlow components (`lib/compo_finaux/`, `lib/components/`)
@@ -212,6 +212,7 @@ docs/
 5. ✅ **ALWAYS** use `lib/core/design/widgets/` for UI components
 6. ✅ **ALWAYS** verify Supabase schema via MCP before queries
 7. ✅ **ALWAYS** update docs after completing work
+8. ✅ **ALWAYS** move obsolete docs to `docs/archive/` (never delete)
 
 ### Anti-Patterns
 - **Anti-Tunnel Rule:** If same logic fails 3x, STOP and reassess
