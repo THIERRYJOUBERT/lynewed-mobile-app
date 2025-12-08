@@ -346,6 +346,27 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             ),
           ),
         ),
+        FFRoute(
+          name: WowSimpleViewerWidget.routeName,
+          path: WowSimpleViewerWidget.routePath,
+          builder: (context, params) => WowSimpleViewerWidget(
+            portfolioImages: params.getParam<String>(
+              'portfolioImages',
+              ParamType.String,
+              isList: true,
+            ),
+            initialIndex: params.getParam(
+              'initialIndex',
+              ParamType.int,
+            ),
+            proInfo: params.getParam(
+              'proInfo',
+              ParamType.DataStruct,
+              isList: false,
+              structBuilder: ProDetailsStruct.fromSerializableMap,
+            ),
+          ),
+        ),
         // ChatDetailsPage - Clean Architecture (nouvelle page)
         FFRoute(
           name: 'ChatDetailsPage',

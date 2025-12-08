@@ -16,6 +16,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart'
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '/core/utils/video_url_helpers.dart';
 import '/custom_code/widgets/youtube_player_widget.dart';
+import '/custom_code/widgets/vimeo_player_widget.dart';
 import '/custom_code/widgets/videoplayer_filmmaker.dart';
 
 class WedArticleRenderer extends StatefulWidget {
@@ -72,7 +73,7 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
     final initialIndex = _allArticleImages.indexOf(clickedImageUrl);
     if (initialIndex != -1 && widget.article?.professional != null) {
       context.pushNamed(
-        'WowViewerCarrousel',
+        'WowSimpleViewer',
         queryParameters: {
           'portfolioImages':
               serializeParam(_allArticleImages, ParamType.String, isList: true),
@@ -476,20 +477,15 @@ class _VideoBlock extends StatelessWidget {
       );
     }
     
-    // Vimeo URLs - show placeholder (same as ProDetails)
+    // Vimeo URLs use VimeoPlayerWidget
     if (VideoUrlHelpers.isVimeoUrl(url)) {
       return SizedBox(
         width: double.infinity,
         height: 250.0,
-        child: Container(
-          color: Colors.black,
-          child: const Center(
-            child: Text(
-              'Vimeo video\n(Coming soon)',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
+        child: VimeoPlayerWidget(
+          width: double.infinity,
+          height: 250.0,
+          vimeoUrl: url,
         ),
       );
     }

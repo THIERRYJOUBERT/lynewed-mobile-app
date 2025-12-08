@@ -255,13 +255,7 @@ class WeddingDetailsSheet extends StatelessWidget {
           const Text('Organizer', style: LynewedTextStyles.sectionTitle),
           const SizedBox(height: 10),
           
-          Material(
-            color: LynewedColors.background,
-            borderRadius: BorderRadius.circular(4),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: onViewBrideProfile,
-              child: Container(
+          Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(4),
@@ -323,16 +317,9 @@ class WeddingDetailsSheet extends StatelessWidget {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                      )
-                    else
-                      const Icon(
-                        Icons.chevron_right,
-                        color: LynewedColors.textSecondary,
                       ),
                   ],
                 ),
-              ),
-            ),
           ),
         ],
       ),

@@ -1,6 +1,7 @@
 export 'lynewed_mini_map.dart' show LynewedMiniMap;
 export 'youtube_player_widget.dart' show YoutubePlayerWidget;
 export 'youtube_player_with_controls.dart' show YoutubePlayerWithControls;
+export 'vimeo_player_widget.dart' show VimeoPlayerWidget;
 export 'feed_portfolio_grid.dart' show FeedPortfolioGrid;
 export 'chat_message_list.dart' show ChatMessageList;
 export 'audio_recorder_widget.dart' show AudioRecorderWidget;

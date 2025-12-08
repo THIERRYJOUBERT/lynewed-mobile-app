@@ -78,18 +78,12 @@ class MapActionsService {
   }
 
   /// Navigate to bride profile (from wedding)
+  /// Currently disabled - bride profiles are not clickable
   void navigateToBrideProfile(
     BuildContext context,
     WeddingDetails details,
   ) {
-    // Bride profile page doesn't exist yet - planned for Part B
-    // Show informative message
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Profil bride disponible dans une prochaine version'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    // Bride profile page doesn't exist yet - no action
   }
 
   /// Navigate to author profile (from alert)

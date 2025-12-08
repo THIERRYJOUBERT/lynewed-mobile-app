@@ -170,21 +170,15 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
       );
     }
     
-    // Vimeo URLs - for now, show placeholder (Phase 2)
-    // TODO: Implement Vimeo player when needed
+    // Vimeo URLs use VimeoPlayerWidget
     if (VideoUrlHelpers.isVimeoUrl(videoUrl)) {
       return SizedBox(
         width: double.infinity,
         height: 250.0,
-        child: Container(
-          color: Colors.black,
-          child: const Center(
-            child: Text(
-              'Vimeo video\n(Coming soon)',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
+        child: custom_widgets.VimeoPlayerWidget(
+          width: double.infinity,
+          height: 250.0,
+          vimeoUrl: videoUrl,
         ),
       );
     }
@@ -506,6 +500,8 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                       widget.proDetails?.fullName,
                                       'Name...',
                                     ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: LynewedTextStyles.bodyMedium.copyWith(
                                           fontWeight: FontWeight.w500,
                                         ),
@@ -657,6 +653,8 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                                           widget.proDetails?.fullName,
                                           'Name...',
                                         ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                         style: LynewedTextStyles.bodyMedium.copyWith(
                                               fontWeight: FontWeight.w500,
                                             ),

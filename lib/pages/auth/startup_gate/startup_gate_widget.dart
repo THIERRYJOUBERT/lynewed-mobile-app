@@ -43,6 +43,7 @@ class _StartupGateWidgetState extends State<StartupGateWidget> {
         SecureLogger.debug('Password reset deeplink detected, redirecting to reset page');
         
         // Rediriger immédiatement vers la page de reset password
+        if (!mounted) return;
         context.goNamedAuth(
             ResetPasswordNewPageWidget.routeName, context.mounted);
         return; // Arrêter l'exécution ici
@@ -52,13 +53,15 @@ class _StartupGateWidgetState extends State<StartupGateWidget> {
       if (functions.isRecoveryLink(_model.initialLinkUrl) == true) {
         SecureLogger.debug('Recovery link detected, redirecting to reset page');
         
-        // Rediriger immédiatement vers la page de reset passwordNewPageWidget.routeName, context.mounted);
+        // Rediriger immédiatement vers la page de reset password
+        if (!mounted) return;
         context.goNamedAuth(
             ResetPasswordNewPageWidget.routeName, context.mounted);
         return;
       }
       
       // Configurer le listener pour les deeplinks futurs (quand l'app est déjà ouverte)
+      if (!mounted) return;
       await actions.setupDeeplinkListener(context);
       
       if (loggedIn) {
@@ -73,7 +76,39 @@ class _StartupGateWidgetState extends State<StartupGateWidget> {
           if (_model.sessionData!.hasProSubscription()) {
             FFAppState().selfProSubscription = _model.sessionData!.proSubscription;
           }
+          
+          // 🚫 Block inactive pros - they must subscribe via CRM first
+          if (FFAppState().currentUserRole == UserRole.professional &&
+              FFAppState().selfProSubscription.subscriptionTier == SubscriptionTierType.inactive) {
+            SecureLogger.debug('Pro with inactive subscription detected, signing out');
+            
+            if (!mounted) return;
+            GoRouter.of(context).prepareAuthEvent();
+            await authManager.signOut();
+            if (!mounted) return;
+            GoRouter.of(context).clearRedirectLocation();
+
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Your subscription is not active. Please subscribe to a plan on the CRM to access the app.',
+                  style: TextStyle(
+                    color: FlutterFlowTheme.of(context).primaryText,
+                  ),
+                ),
+                duration: const Duration(milliseconds: 5000),
+                backgroundColor: FlutterFlowTheme.of(context).accent2,
+              ),
+            );
+
+            context.goNamedAuth(
+                AuthWelcomePageWidget.routeName, context.mounted);
+            return;
+          }
+          
           safeSetState(() {});
+          if (!mounted) return;
           await actions.initPushNotifications(
             context,
           );
@@ -83,9 +118,11 @@ class _StartupGateWidgetState extends State<StartupGateWidget> {
                   (FFAppState().currentUserPreferences.defaultLocale ==
                           '') ||
                   (_model.tosAccepted == false))) {
+            if (!mounted) return;
             context.goNamedAuth(
                 OnboardingBridesWizardWidget.routeName, context.mounted);
           } else {
+            if (!mounted) return;
             if (FFAppState().currentUserRole == UserRole.bride) {
               context.goNamedAuth(
                   HomeBridesWidget.routeName, context.mounted);
@@ -95,14 +132,17 @@ class _StartupGateWidgetState extends State<StartupGateWidget> {
             }
           }
         } else {
+          if (!mounted) return;
           GoRouter.of(context).prepareAuthEvent();
           await authManager.signOut();
+          if (!mounted) return;
           GoRouter.of(context).clearRedirectLocation();
 
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Erreur de session. Veuillez vous reconnecter.',
+                'Session error. Please log in again.',
                 style: TextStyle(
                   color: FlutterFlowTheme.of(context).primaryText,
                 ),
@@ -116,6 +156,7 @@ class _StartupGateWidgetState extends State<StartupGateWidget> {
               AuthWelcomePageWidget.routeName, context.mounted);
         }
       } else {
+        if (!mounted) return;
         context.goNamedAuth(AuthWelcomePageWidget.routeName, context.mounted);
       }
     });
