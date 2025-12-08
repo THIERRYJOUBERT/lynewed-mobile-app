@@ -8,17 +8,21 @@ import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import 'package:uni_links/uni_links.dart';
+import 'package:app_links/app_links.dart';
 import 'dart:async';
 import '/index.dart';
 
-StreamSubscription? _deeplinkSubscription;
+StreamSubscription<Uri>? _deeplinkSubscription;
 StreamSubscription? _authStateSubscription;
+AppLinks? _appLinks;
 
 Future<void> setupDeeplinkListener(BuildContext context) async {
   // Annuler les anciens listeners s'ils existent
   await _deeplinkSubscription?.cancel();
   await _authStateSubscription?.cancel();
+
+  // Initialiser AppLinks
+  _appLinks = AppLinks();
 
   // Écouter les changements d'état d'authentification Supabase
   _authStateSubscription = SupaFlow.client.auth.onAuthStateChange.listen(
@@ -38,9 +42,10 @@ Future<void> setupDeeplinkListener(BuildContext context) async {
   );
 
   // Créer un listener pour les deeplinks entrants (backup)
-  _deeplinkSubscription = linkStream.listen(
-    (String? link) {
-      if (link != null && link.isNotEmpty) {
+  _deeplinkSubscription = _appLinks!.uriLinkStream.listen(
+    (Uri uri) {
+      final String link = uri.toString();
+      if (link.isNotEmpty) {
         SecureLogger.debugSanitized(
           'Deeplink received during app execution',
           sensitiveKeys: ['access_token', 'refresh_token', 'password', 'reset']

@@ -4,15 +4,15 @@
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import 'package:uni_links/uni_links.dart';
-import 'package:flutter/services.dart';
+import 'package:app_links/app_links.dart';
 
 Future<String?> getInitialDeepLink() async {
   try {
     // Tente de récupérer le lien initial qui a lancé l'application.
-    final String? initialLink = await getInitialLink();
-    return initialLink;
-  } on PlatformException {
+    final appLinks = AppLinks();
+    final Uri? initialUri = await appLinks.getInitialLink();
+    return initialUri?.toString();
+  } catch (e) {
     // Gère les erreurs si le plugin ne parvient pas à communiquer avec la plateforme.
     return null;
   }

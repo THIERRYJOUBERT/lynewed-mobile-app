@@ -65,4 +65,4 @@ ios/Runner.xcworkspace/xcshareddata/
 
 # Documentation avec secrets (jamais à commiter)
 SECRETS_TRACKING.md
-/build/
+/build/.pubspec_hash_android

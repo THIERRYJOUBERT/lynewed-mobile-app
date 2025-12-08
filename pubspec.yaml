@@ -48,7 +48,6 @@ dependencies:
   flutter_dotenv: ^5.1.0
   flutter_image_compress: ^2.0.4
   flutter_inappwebview: ^6.0.0
-  flutter_native_timezone: ^2.0.0
   flutter_secure_storage: 10.0.0-beta.4
   flutter_secure_storage_linux: 2.0.1
   flutter_secure_storage_macos: 4.0.0
@@ -109,7 +108,6 @@ dependencies:
   supabase_flutter: 2.9.0
   synchronized: 3.4.0
   timeago: 3.7.1
-  uni_links: ^0.5.1
   url_launcher: 6.3.1
   url_launcher_android: 6.3.16
   url_launcher_ios: 6.3.3

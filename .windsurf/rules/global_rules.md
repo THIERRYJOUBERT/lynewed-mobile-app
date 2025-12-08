@@ -158,6 +158,7 @@ docs/
 | **Git Commit** | `/commit-github-develop` | Safe commit to develop branch |
 | **Prompt Assistant** | `/prompt-assistant` | Generate prompt for new AI conversation |
 | **Update Docs** | `/update-docs-after-work` | Update documentation after completing work |
+| **Build iOS** | `/build-and-run-app-simulator` | Build & run sur iOS Simulator (bypass codesign) |
 
 ---
 
