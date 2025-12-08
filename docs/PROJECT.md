@@ -65,14 +65,17 @@ lib/
 └── backend/                 # Supabase schema
 ```
 
-### Design System
+### Design System V4
 - **Location:** `lib/core/design/`
+- **Documentation:** `docs/App/DESIGN_SYSTEM.md` (1041 lines - authoritative reference)
 - **Import:** `import '/core/design/design.dart';`
 - **Tokens:** Colors, Typography, Spacing, Borders, Component Styles
 - **Font:** Haas Grot Text Trial
-- **Buttons:** 48px height, 0 radius
-- **Sheets:** 24px top radius
+- **Buttons:** 48px height, 0 radius, **w400** text
+- **Sheets:** 24px top radius, 20px horizontal padding
 - **Items:** 4px radius
+- **Spacing:** 30px inter-section, 10px label→content
+- **Weight Rules:** w300 (inputs), w400 (default), w500 (max - titles only)
 
 ### Validated Integrations
 | Service | Version | Status |
@@ -91,13 +94,20 @@ lib/
 docs/
 ├── PROJECT.md                      # This file - project state
 ├── PROJECT_TODO.md                 # Future tasks and ideas
-├── REFACTORING_REPORT_MVP_TO_V1.md # Complete refactoring report
-└── RESTRUCTURING_SUMMARY.md        # Documentation restructuring history
+├── App/
+│   ├── DESIGN_SYSTEM.md            # ⭐ Design System V4 (authoritative)
+│   ├── APP_SOURCE_OF_TRUTH.md      # Application flows and guidelines
+│   └── ENUMS.md                    # All enums reference
+├── audits/                         # Technical audits
+└── archive/                        # Historical documentation
 ```
 
-### Module Documentation
-- **Map:** `lib/features/map/README.md`
-- **Chat:** `lib/features/chat/` (inline documentation)
+### Key Documentation
+| Document | Purpose |
+|----------|---------|
+| `docs/App/DESIGN_SYSTEM.md` | **Primary UI reference** - All tokens, widgets, patterns |
+| `docs/App/APP_SOURCE_OF_TRUTH.md` | Application flows, bugs, testing |
+| `lib/features/map/README.md` | Map module architecture |
 
 ---
 
@@ -116,15 +126,17 @@ docs/
 ## 🔧 Development Workflow
 
 1. **Start task:** Read `PROJECT.md` + `PROJECT_TODO.md`
-2. **New screen:** Follow Design System in `lib/core/design/`
+2. **New screen:** Follow `docs/App/DESIGN_SYSTEM.md` (authoritative reference)
 3. **New module:** Follow pattern in `lib/features/map/`
 4. **Commit:** Use `/commit-github-develop` workflow
 
 ### Rules
 - ❌ **NEVER** reuse FlutterFlow components
+- ❌ **NEVER** use fontWeight > w500
 - ✅ **ALWAYS** create new components in `lib/features/` or `lib/core/`
-- ✅ **ALWAYS** apply Design System
+- ✅ **ALWAYS** apply Design System (`import '/core/design/design.dart';`)
 - ✅ **ALWAYS** follow Clean Architecture patterns
+- ✅ **ALWAYS** use 30px inter-section spacing, 10px label→content
 
 ---
 
