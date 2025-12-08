@@ -557,7 +557,7 @@ class _WeddingCreateSheetState extends State<WeddingCreateSheet> {
           children: [
             Text(
               currency?.symbol ?? _currency,
-              style: LynewedTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+              style: LynewedTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
             ),
             const SizedBox(width: 4),
             const Icon(Icons.keyboard_arrow_down, size: 18),
@@ -598,7 +598,7 @@ class _WeddingCreateSheetState extends State<WeddingCreateSheet> {
             Text(
               title,
               style: LynewedTextStyles.labelMedium.copyWith(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
                 color: isSelected ? Colors.black : LynewedColors.textPrimary,
               ),
             ),

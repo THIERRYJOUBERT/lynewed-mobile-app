@@ -60,8 +60,8 @@ class ConversationTile extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: LynewedTextStyles.bodyMedium.copyWith(
                             fontWeight: conversation.unreadCount > 0 
-                                ? FontWeight.w600 
-                                : FontWeight.w500,
+                                ? FontWeight.w500 
+                                : FontWeight.w400,
                           ),
                         ),
                       ),
@@ -162,7 +162,7 @@ class ConversationTile extends StatelessWidget {
           style: LynewedTextStyles.labelSmall.copyWith(
             color: LynewedColors.textOnPrimary,
             fontSize: 10,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ),

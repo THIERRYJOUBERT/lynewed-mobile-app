@@ -218,7 +218,7 @@ class _ContactRequestReviewSheetState extends State<ContactRequestReviewSheet> {
                     Text(
                       'Message',
                       style: LynewedTextStyles.labelMedium.copyWith(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 8),

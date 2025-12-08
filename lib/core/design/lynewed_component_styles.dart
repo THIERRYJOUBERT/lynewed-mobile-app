@@ -418,11 +418,8 @@ class LynewedComponentStyles {
     );
   }
   
-  /// Sheet header padding
-  static const EdgeInsets sheetHeaderPadding = EdgeInsets.symmetric(
-    horizontal: 16.0,
-    vertical: 12.0,
-  );
+  /// Sheet header padding (matches LynewedSheet: 20px horizontal, 20px top, 12px bottom)
+  static const EdgeInsets sheetHeaderPadding = EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 12.0);
   
   /// Sheet content padding
   static const EdgeInsets sheetContentPadding = EdgeInsets.symmetric(
@@ -430,10 +427,10 @@ class LynewedComponentStyles {
     vertical: 16.0,
   );
   
-  /// Gap between form sections in sheets
-  static const double formSectionGap = 20.0;
+  /// Gap between form sections in sheets (30px - from wedding_create_sheet reference)
+  static const double formSectionGap = 30.0;
   
-  /// Gap between label and field
+  /// Gap between label and field (10px - from wedding_create_sheet reference)
   static const double labelFieldGap = 10.0;
 
   // ============================================================

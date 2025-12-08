@@ -144,13 +144,8 @@ class _FilterSheetState extends State<FilterSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: LynewedTextStyles.bodyLarge.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        LynewedGap.verticalMd,
+        Text(title, style: LynewedTextStyles.sectionTitle),
+        const SizedBox(height: 10),
         child,
       ],
     );
@@ -188,7 +183,7 @@ class _FilterSheetState extends State<FilterSheet> {
                 getProfessionDisplayName(backendProf),
                 style: LynewedTextStyles.bodyMedium.copyWith(
                   color: isSelected ? Colors.white : LynewedColors.textPrimary,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  fontWeight: isSelected ? FontWeight.w500 : FontWeight.w300,
                 ),
               ),
               selected: isSelected,
@@ -308,10 +303,7 @@ class _FilterSheetState extends State<FilterSheet> {
             style: LynewedComponentStyles.primaryButton(),
             child: Text(
               'Apply Filters',
-              style: LynewedTextStyles.bodyLarge.copyWith(
-                color: LynewedColors.textOnPrimary,
-                fontWeight: FontWeight.w600,
-              ),
+              style: LynewedTextStyles.buttonPrimary,
             ),
           ),
         ),

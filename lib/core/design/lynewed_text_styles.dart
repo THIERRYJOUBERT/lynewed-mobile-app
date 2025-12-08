@@ -170,8 +170,14 @@ class LynewedTextStyles {
   // ============================================================
   
   /// Sheet header title (e.g., "Create Alert", "Edit Wedding")
-  /// 18px, w500 - matches Profile page header
-  static const TextStyle sheetTitle = titleLarge;
+  /// 20px, w500 - standard sheet header size
+  static const TextStyle sheetTitle = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 20.0,
+    fontWeight: FontWeight.w500,
+    color: LynewedColors.textPrimary,
+    height: 1.3,
+  );
   
   /// Form section title (e.g., "Alert Type", "Wedding Date *")
   /// 16px, w500 - matches Profile section headers
@@ -187,9 +193,10 @@ class LynewedTextStyles {
   );
   
   /// Button text (primary action)
-  /// Slightly bolder for CTA emphasis
-  static TextStyle get buttonPrimary => bodyLarge.copyWith(
-    fontWeight: FontWeight.w500,
+  /// 15px, w400 - buttons are NOT bold
+  static TextStyle get buttonPrimary => bodyMedium.copyWith(
+    fontSize: 15.0,
+    fontWeight: FontWeight.w400,
     color: LynewedColors.textOnPrimary,
   );
   

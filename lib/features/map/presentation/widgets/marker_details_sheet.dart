@@ -5,6 +5,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '/core/design/design.dart';
 import '../../domain/entities/entities.dart';
 
 /// Sheet affichant les détails d'un marqueur
@@ -26,8 +27,8 @@ class MarkerDetailsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        color: LynewedColors.background,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -98,9 +99,7 @@ class MarkerDetailsSheet extends StatelessWidget {
             children: [
               Text(
                 name,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: LynewedTextStyles.sectionTitle,
               ),
               if (profession != null)
                 Text(
@@ -164,9 +163,7 @@ class MarkerDetailsSheet extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: LynewedTextStyles.sectionTitle,
                   ),
                   if (alertType != null)
                     Container(
@@ -231,9 +228,7 @@ class MarkerDetailsSheet extends StatelessWidget {
                 children: [
                   Text(
                     venueName,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: LynewedTextStyles.sectionTitle,
                   ),
                   if (brideName != null)
                     Text(

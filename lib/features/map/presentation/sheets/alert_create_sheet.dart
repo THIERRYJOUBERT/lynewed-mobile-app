@@ -253,24 +253,15 @@ class _AlertCreateSheetState extends State<AlertCreateSheet> {
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Text(
-        title,
-        style: LynewedTextStyles.bodyLarge.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+      child: Text(title, style: LynewedTextStyles.sectionTitle),
     );
   }
 
   Widget _buildErrorBanner() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: LynewedColors.error.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: LynewedColors.error.withOpacity(0.3)),
-      ),
+      decoration: LynewedComponentStyles.errorBannerDecoration(),
       child: Row(
         children: [
           const Icon(Icons.error_outline, color: LynewedColors.error, size: 20),
@@ -280,13 +271,6 @@ class _AlertCreateSheetState extends State<AlertCreateSheet> {
               _errorMessage!,
               style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.error),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.close, size: 16),
-            onPressed: () => setState(() => _errorMessage = null),
-            color: LynewedColors.error,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
           ),
         ],
       ),

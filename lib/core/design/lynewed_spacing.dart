@@ -52,8 +52,8 @@ class LynewedSpacing {
   /// Sheet header vertical padding
   static const double sheetHeaderVerticalPadding = 12.0;
   
-  /// Gap between form sections (extracted from Profile: 14-20px)
-  static const double formSectionGap = 20.0;
+  /// Gap between form sections (30px - from wedding_create_sheet reference)
+  static const double formSectionGap = 30.0;
   
   /// Gap between label and input field
   static const double labelFieldGap = 10.0;

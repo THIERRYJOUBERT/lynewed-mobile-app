@@ -71,7 +71,7 @@ class MessageActionsSheet extends StatelessWidget {
           child: Text(
             'Actions',
             style: LynewedTextStyles.titleSmall.copyWith(
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),

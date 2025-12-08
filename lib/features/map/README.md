@@ -277,9 +277,9 @@ LynewedBorders.cardBorderRadius // Bordures
 ```
 
 ### Composants Standards
-- **Chips**: Radius 4px, Padding H8/V6, Noir/Blanc
-- **Titres Section**: `bodyLarge` + `FontWeight.w600`
-- **Boutons Map**: Fond noir, icône blanche
+- **Chips**: Radius 4px, Padding H12/V8, Noir/Blanc, w300 (unselected) / w500 (selected)
+- **Titres Section**: `sectionTitle` (16px, w500)
+- **Boutons Map**: Fond noir, icône blanche, w400
 
 ## 🔗 Références
 

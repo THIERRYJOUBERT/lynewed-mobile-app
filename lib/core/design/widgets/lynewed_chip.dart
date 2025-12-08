@@ -47,7 +47,7 @@ class LynewedChip extends StatelessWidget {
                   count.toString(),
                   style: LynewedTextStyles.labelSmall.copyWith(
                     color: selected ? LynewedColors.primary : Colors.white,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),

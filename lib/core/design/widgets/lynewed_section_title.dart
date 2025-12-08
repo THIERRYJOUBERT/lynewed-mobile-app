@@ -3,10 +3,10 @@ import '../design.dart';
 
 /// Section title widget for sheets and forms
 /// 
-/// Design System v2:
-/// - Style: bodyLarge + w600
+/// Design System V4:
+/// - Style: sectionTitle (16px, w500)
 /// - Color: textPrimary
-/// - Spacing: 10px to content below
+/// - Spacing: 10px to content below (add SizedBox manually)
 class LynewedSectionTitle extends StatelessWidget {
   const LynewedSectionTitle(
     this.title, {

@@ -71,7 +71,7 @@ class LynewedSheet extends StatelessWidget {
                     Expanded(
                       child: Text(
                         title,
-                        style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 20),
+                        style: LynewedTextStyles.sheetTitle,
                       ),
                     ),
                     if (action != null) ...[

@@ -492,41 +492,16 @@ TEMPS TOTAL: < 2 secondes
 
 ## 📁 DOCUMENTATION CRÉÉE
 
-### Documents Principaux (docs/)
-
-| Document | Lignes | Description |
-|----------|--------|-------------|
-| `PROJECT.md` | ~200 | État projet, métriques |
-| `PROJECT_TODO.md` | ~500 | Tâches futures |
-| `TODO_FINALISATION.md` | ~310 | Plan finalisation v1 |
-| `FEED_REFACTORING_PLAN.md` | ~1,100 | Plan Feed détaillé |
-
-### Documentation App (docs/App/)
-
-| Document | Lignes | Description |
-|----------|--------|-------------|
-| `DESIGN_SYSTEM.md` | ~420 | Tokens et composants |
-| `APP_SOURCE_OF_TRUTH.md` | - | Architecture, flux |
-| `ENUMS.md` | - | Tous les enums |
-
-### Audits (docs/audits/)
-
-| Document | Lignes | Description |
-|----------|--------|-------------|
-| `MAP_FEATURE_AUDIT.md` | ~800 | Audit technique Map |
-| `CHAT_CONTACT_FEATURE_AUDIT.md` | ~1,550 | Audit Chat complet |
-| `FEED_FEATURE_AUDIT.md` | ~830 | Audit Feed |
-| `NOTIFICATIONS_AUDIT.md` | ~300 | Audit Notifications |
-| `AUTH_FEATURE_AUDIT.md` | ~200 | Audit Auth |
-
-### Archives (docs/archive/)
+### Current Documentation (docs/) - Post V1 Cleanup
 
 | Document | Description |
 |----------|-------------|
-| `MAP_REFACTORING_COMPLETE_2025-12-01.md` | Rapport final Map |
-| `NOTIFICATIONS_REFACTORING_COMPLETE_2025-12-04.md` | Rapport Notifications |
-| `MAP_REFACTORING_PLAN.md` | Plan historique |
-| + 13 autres fichiers d'archive | Historique complet |
+| `PROJECT.md` | Project state and architecture |
+| `PROJECT_TODO.md` | Future tasks and priorities |
+| `REFACTORING_REPORT_MVP_TO_V1.md` | This file - complete V1 report |
+| `RESTRUCTURING_SUMMARY.md` | Documentation history |
+
+**Note:** Detailed audits, archives, and App documentation were removed during V1 cleanup (2025-12-08). Design System is now in code at `lib/core/design/`.
 
 ---
 
@@ -838,16 +813,15 @@ L'application est désormais **prête pour le déploiement TestFlight** de la v1
 | **Plans** | FEED_REFACTORING_PLAN.md, TODO_FINALISATION.md | Plans d'exécution |
 | **Guides** | GUIDE_EQUIPE_APP_MULTI_FORMAT_IMAGES.md | Guides équipe |
 
-### Fichiers de Référence Clés
+### Key References (Post V1 Cleanup)
 
-| Document | Lignes | Usage |
-|----------|--------|-------|
-| `DESIGN_SYSTEM.md` | ~420 | Source de vérité UI/UX |
-| `APP_SOURCE_OF_TRUTH.md` | ~920 | Architecture et flux |
-| `CHAT_CONTACT_FEATURE_AUDIT.md` | ~1,550 | Audit module chat |
-| `MAP_FEATURE_AUDIT.md` | ~800 | Audit module map |
-| `NOTIFICATIONS_REFACTORING_COMPLETE.md` | ~580 | Rapport notifications |
-| `MAP_REFACTORING_COMPLETE.md` | ~260 | Rapport map |
+| Reference | Location |
+|-----------|----------|
+| Design System | `lib/core/design/` (code) |
+| Map Module | `lib/features/map/README.md` |
+| Chat Module | `lib/features/chat/` (inline docs) |
+| Project State | `docs/PROJECT.md` |
+| Future Tasks | `docs/PROJECT_TODO.md` |
 
 ---
 

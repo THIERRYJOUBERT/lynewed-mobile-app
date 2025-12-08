@@ -161,7 +161,7 @@ class MessageBubble extends StatelessWidget {
                 senderName!,
                 style: LynewedTextStyles.labelSmall.copyWith(
                   color: LynewedColors.textSecondary,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),

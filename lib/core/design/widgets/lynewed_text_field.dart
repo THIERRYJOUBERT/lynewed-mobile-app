@@ -59,7 +59,7 @@ class LynewedTextField extends StatelessWidget {
       children: [
         if (label != null) ...[
           Text(label!, style: LynewedTextStyles.sectionTitle),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
         ],
         TextFormField(
           controller: controller,
