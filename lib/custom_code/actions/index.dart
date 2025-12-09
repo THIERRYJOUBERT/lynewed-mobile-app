@@ -14,7 +14,6 @@ export 'get_device_locale.dart' show getDeviceLocale;
 export 'upsert_notification_setting.dart' show upsertNotificationSetting;
 export 'upsert_notification_settings_batch.dart'
     show upsertNotificationSettingsBatch;
-export 'upsert_pro_recent_opt_in.dart' show upsertProRecentOptIn;
 export 'call_delete_account_edge_function.dart'
     show callDeleteAccountEdgeFunction;
 export 'get_place_details_rich.dart' show getPlaceDetailsRich;

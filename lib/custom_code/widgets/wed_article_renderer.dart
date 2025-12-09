@@ -161,7 +161,17 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
           primary: false,
           shrinkWrap: true,
           itemCount: article.contentBlocks.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 20),
+          separatorBuilder: (context, index) {
+            // Use 8px spacing between image blocks, 20px otherwise
+            final currentBlock = article.contentBlocks[index];
+            final nextBlock = index + 1 < article.contentBlocks.length 
+                ? article.contentBlocks[index + 1] 
+                : null;
+            final imageTypes = {'single_image', 'gallery'};
+            final bothAreImages = imageTypes.contains(currentBlock.type) && 
+                nextBlock != null && imageTypes.contains(nextBlock.type);
+            return SizedBox(height: bothAreImages ? 8 : 20);
+          },
           itemBuilder: (context, index) {
             return _buildContentBlock(context, article.contentBlocks[index]);
           },
@@ -209,10 +219,17 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
     }
 
     if (block.layout == 'row' || block.layout == 'column') {
-      List<Widget> children = block.imageUrls.map((url) {
-        Widget image = _buildImageItem(url);
-        return block.layout == 'row' ? Expanded(child: image) : image;
-      }).toList();
+      List<Widget> children = [];
+      for (int i = 0; i < block.imageUrls.length; i++) {
+        Widget image = _buildImageItem(block.imageUrls[i]);
+        children.add(block.layout == 'row' ? Expanded(child: image) : image);
+        // Add 8px spacing between images (not after the last one)
+        if (i < block.imageUrls.length - 1) {
+          children.add(block.layout == 'row' 
+              ? const SizedBox(width: 8) 
+              : const SizedBox(height: 8));
+        }
+      }
 
       if (block.layout == 'row') {
         return Row(children: children);

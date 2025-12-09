@@ -180,8 +180,8 @@ class MarkerIconGenerator {
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, radius, bgPaint);
 
-    // Heart icon in center
-    _drawHeartIcon(canvas, center, radius * 0.6, const Color(0xFFE91E63));
+    // Push pin icon in center - using Flutter's Icons.push_pin
+    _drawFlutterIcon(canvas, center, radius * 0.6, Icons.push_pin, const Color(0xFFE91E63));
 
     // Rose border
     final borderPaint = Paint()
@@ -302,32 +302,21 @@ class MarkerIconGenerator {
     canvas.drawCircle(center + Offset(0, size * 0.4), size * 0.1, paint);
   }
 
-  void _drawHeartIcon(Canvas canvas, Offset center, double size, Color color) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    final path = Path();
-    final w = size * 0.9;
-    final h = size * 0.85;
-    final topY = center.dy - h * 0.25;
-    
-    // Start at bottom point
-    path.moveTo(center.dx, center.dy + h * 0.4);
-    // Left curve
-    path.cubicTo(
-      center.dx - w * 0.55, center.dy + h * 0.1,
-      center.dx - w * 0.55, topY - h * 0.2,
-      center.dx, topY,
+  void _drawFlutterIcon(Canvas canvas, Offset center, double size, IconData icon, Color color) {
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: String.fromCharCode(icon.codePoint),
+        style: TextStyle(
+          color: color,
+          fontSize: size * 1.5,
+          fontFamily: icon.fontFamily,
+          package: icon.fontPackage,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
     );
-    // Right curve
-    path.cubicTo(
-      center.dx + w * 0.55, topY - h * 0.2,
-      center.dx + w * 0.55, center.dy + h * 0.1,
-      center.dx, center.dy + h * 0.4,
-    );
-    
-    canvas.drawPath(path, paint);
+    textPainter.layout();
+    textPainter.paint(canvas, center - Offset(textPainter.width / 2, textPainter.height / 2));
   }
 
   Color _getBorderColor(MapMarker marker) {

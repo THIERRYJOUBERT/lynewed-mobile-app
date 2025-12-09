@@ -117,19 +117,28 @@ class FFAppState extends ChangeNotifier {
   int _unreadMessagesCount = 0;
   int get unreadMessagesCount => _unreadMessagesCount;
   set unreadMessagesCount(int value) {
-    _unreadMessagesCount = value;
+    if (_unreadMessagesCount != value) {
+      _unreadMessagesCount = value;
+      notifyListeners();
+    }
   }
 
   int _unreadNotificationsCount = 0;
   int get unreadNotificationsCount => _unreadNotificationsCount;
   set unreadNotificationsCount(int value) {
-    _unreadNotificationsCount = value;
+    if (_unreadNotificationsCount != value) {
+      _unreadNotificationsCount = value;
+      notifyListeners();
+    }
   }
 
   bool _hasUnreadNotifications = false;
   bool get hasUnreadNotifications => _hasUnreadNotifications;
   set hasUnreadNotifications(bool value) {
-    _hasUnreadNotifications = value;
+    if (_hasUnreadNotifications != value) {
+      _hasUnreadNotifications = value;
+      notifyListeners();
+    }
   }
 
   bool _isFirebaseMessagingInitialized = false;

@@ -34,28 +34,15 @@ class SettingsPermissionsWidget extends StatefulWidget {
 
 class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
   bool _isLoading = true;
-  bool _proRecentVisibility = false;
   bool _isDeleting = false;
 
   @override
   void initState() {
     super.initState();
-    _loadProRecentStatus();
+    _initializeLoading();
   }
 
-  Future<void> _loadProRecentStatus() async {
-    if (FFAppState().currentUserRole == UserRole.professional) {
-      try {
-        final rows = await ProRecentLocationsTable().queryRows(
-          queryFn: (q) => q.eqOrNull('profile_id', currentUserUid),
-        );
-        if (rows.isNotEmpty) {
-          _proRecentVisibility = rows.first.isOptIn;
-        }
-      } catch (e) {
-        // Silently fail - default to false
-      }
-    }
+  Future<void> _initializeLoading() async {
     if (mounted) {
       setState(() => _isLoading = false);
     }
@@ -70,11 +57,6 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
     } else {
       _showSnackBar(errorMsg, LynewedColors.primary);
     }
-  }
-
-  Future<void> _onToggleProRecent(bool value) async {
-    setState(() => _proRecentVisibility = value);
-    await actions.upsertProRecentOptIn(value);
   }
 
   Future<void> _onDeleteAccountTap() async {
@@ -234,21 +216,7 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                                 'Microphone access is enabled',
                                 'Allow microphone access in settings',
                               ),
-                              showDivider: !isPro, // No divider if Pro section follows
                             ),
-                            
-                            // Visibility Preferences Section (Pro only)
-                            if (isPro) ...[
-                              const SizedBox(height: 30),
-                              Text('Visibility Preferences', style: LynewedTextStyles.sectionTitle),
-                              const SizedBox(height: 16),
-                              _buildToggleItem(
-                                title: 'Share my recent location',
-                                description: 'Allows other users to see your approximate location on the map when you are active.',
-                                value: _proRecentVisibility,
-                                onChanged: _onToggleProRecent,
-                              ),
-                            ],
                             
                             // Account Section
                             const SizedBox(height: 30),
@@ -329,53 +297,6 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
           ),
         ),
         if (showDivider) const Divider(height: 1, color: LynewedColors.gray200),
-      ],
-    );
-  }
-
-  Widget _buildToggleItem({
-    required String title,
-    required String description,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: LynewedTextStyles.bodyMedium.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: LynewedTextStyles.bodySmall.copyWith(
-                        color: LynewedColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Switch.adaptive(
-                value: value,
-                onChanged: onChanged,
-                activeColor: LynewedColors.primary,
-                activeTrackColor: LynewedColors.primary,
-              ),
-            ],
-          ),
-        ),
-        const Divider(height: 1, color: LynewedColors.gray200),
       ],
     );
   }

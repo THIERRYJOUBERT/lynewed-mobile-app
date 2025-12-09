@@ -233,6 +233,10 @@ class SupabaseMapDatasource {
   }
 
   /// Crée ou met à jour le mariage de la bride
+  /// 
+  /// [locationCountryCode] - Code pays ISO2 (ex: 'FR', 'US') pour recherche par pays
+  /// [searchRadiusKm] - Rayon de recherche en km (null = pas de filtre distance)
+  /// [venueLat]/[venueLng] - Coordonnées optionnelles pour recherche locale
   Future<Map<String, dynamic>?> upsertWedding({
     String? weddingName,
     required DateTime eventDate,
@@ -240,12 +244,13 @@ class SupabaseMapDatasource {
     double? venueLat,
     double? venueLng,
     String? venueLabel,
-    int searchRadiusKm = 50,
+    int? searchRadiusKm,
     int? budgetMin,
     int? budgetMax,
     String currency = 'EUR',
     List<String>? professionsNeeded,
     String visibility = 'private',
+    String? locationCountryCode,
   }) async {
     try {
       final response = await _client.rpc('upsert_wedding', params: {
@@ -261,6 +266,7 @@ class SupabaseMapDatasource {
         'p_currency': currency,
         'p_professions_needed': professionsNeeded,
         'p_visibility': visibility,
+        'p_location_country_code': locationCountryCode,
       });
       return response as Map<String, dynamic>?;
     } catch (e) {

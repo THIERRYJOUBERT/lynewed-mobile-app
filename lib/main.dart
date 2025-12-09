@@ -12,6 +12,7 @@ import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/internationalization.dart';
 import 'services/agora_engine_manager.dart';
 import 'core/services/unread_counter_service.dart';
+import 'core/widgets/incoming_call_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -142,6 +143,8 @@ class _MyAppState extends State<MyApp> {
       ),
       themeMode: _themeMode,
       routerConfig: _router,
+      // Wrapper pour afficher l'overlay d'appel entrant au-dessus de tout
+      builder: (context, child) => IncomingCallWrapper(child: child ?? const SizedBox.shrink()),
     );
   }
 }

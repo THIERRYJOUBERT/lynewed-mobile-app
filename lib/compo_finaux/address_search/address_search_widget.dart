@@ -51,6 +51,7 @@ class AddressSearchWidget extends StatefulWidget {
     this.enabled = true,
     this.useOverlay = true,
     this.suggestionsPosition = SuggestionsPosition.below,
+    this.borderRadius,
     this.onAddressSelected,
     this.onAddressCleared,
     this.onSearchTextChanged,
@@ -89,6 +90,10 @@ class AddressSearchWidget extends StatefulWidget {
   /// Position of suggestions dropdown: below (default) or above the search field
   /// Use 'above' when there's not enough space below (e.g., small bottom sheets)
   final SuggestionsPosition suggestionsPosition;
+  
+  /// Border radius for the text field (defaults to 100.0 for pill shape)
+  /// Use 4.0 for rectangular style matching Design System
+  final double? borderRadius;
   
   /// Callback when an address is selected with full details
   final Function(PlaceDetailsDataStruct details)? onAddressSelected;
@@ -400,35 +405,35 @@ class _AddressSearchWidgetState extends State<AddressSearchWidget> {
               color: Color(0x00000000),
               width: 1.0,
             ),
-            borderRadius: BorderRadius.circular(100.0),
+            borderRadius: BorderRadius.circular(widget.borderRadius ?? 100.0),
           ),
           focusedBorder: OutlineInputBorder(
             borderSide: const BorderSide(
               color: Color(0xFFF2F2F2),
               width: 1.0,
             ),
-            borderRadius: BorderRadius.circular(100.0),
+            borderRadius: BorderRadius.circular(widget.borderRadius ?? 100.0),
           ),
           disabledBorder: OutlineInputBorder(
             borderSide: const BorderSide(
               color: Color(0x00000000),
               width: 1.0,
             ),
-            borderRadius: BorderRadius.circular(100.0),
+            borderRadius: BorderRadius.circular(widget.borderRadius ?? 100.0),
           ),
           errorBorder: OutlineInputBorder(
             borderSide: BorderSide(
               color: FlutterFlowTheme.of(context).error,
               width: 1.0,
             ),
-            borderRadius: BorderRadius.circular(100.0),
+            borderRadius: BorderRadius.circular(widget.borderRadius ?? 100.0),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderSide: BorderSide(
               color: FlutterFlowTheme.of(context).error,
               width: 1.0,
             ),
-            borderRadius: BorderRadius.circular(100.0),
+            borderRadius: BorderRadius.circular(widget.borderRadius ?? 100.0),
           ),
           filled: true,
           fillColor: widget.enabled 

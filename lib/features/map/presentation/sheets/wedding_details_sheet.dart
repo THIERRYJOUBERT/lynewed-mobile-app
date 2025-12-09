@@ -46,7 +46,7 @@ class WeddingDetailsSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LynewedDetailsSheet(
-      headerIcon: Icons.favorite,
+      headerIcon: Icons.push_pin,
       headerIconColor: LynewedColors.primary,
       titleWidget: _buildTitleWidget(),
       subtitle: _buildHeaderSubtitle(),

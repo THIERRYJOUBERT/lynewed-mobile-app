@@ -12,6 +12,7 @@ import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/custom_code/actions/index.dart' as actions;
+import 'app_badge_service.dart';
 
 /// Global service for managing unread message counts
 class UnreadCounterService {
@@ -84,9 +85,9 @@ class UnreadCounterService {
   Future<void> refresh() async {
     try {
       final count = await actions.getUnreadMessagesCountAction();
-      FFAppState().update(() {
-        FFAppState().unreadMessagesCount = count ?? 0;
-      });
+      FFAppState().unreadMessagesCount = count ?? 0;
+      // Sync iOS app icon badge
+      await AppBadgeService.instance.updateBadge();
     } catch (e) {
       // Silently fail - don't break the app for counter issues
     }
@@ -99,10 +100,12 @@ class UnreadCounterService {
   }
 
   /// Dispose the service
-  void dispose() {
+  Future<void> dispose() async {
     _debounceTimer?.cancel();
     _channel?.unsubscribe();
     _channel = null;
     _isInitialized = false;
+    // Clear iOS badge on logout
+    await AppBadgeService.instance.clearBadge();
   }
 }

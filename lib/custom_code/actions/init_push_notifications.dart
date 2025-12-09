@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 // Fichier : /custom_code/actions/init_push_notifications.dart
-// VERSION FINALE AVEC LOGIQUE DE REDIRECTION
+// VERSION 2.1 - Avec overlay d'appel entrant via Realtime + FCM
 
 import 'dart:async';
 import 'dart:io' show Platform;
@@ -20,9 +20,12 @@ import '/custom_code/firebase_options.dart';
 import '/custom_code/actions/handle_notification_redirection.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/utils/secure_logger.dart';
+import '/core/services/app_badge_service.dart';
+import '/core/services/incoming_call_service.dart';
 // Pour appNavigatorKey
 
 StreamSubscription<AuthState>? _authStateSubscription;
+RealtimeChannel? _videoSessionsChannel;
 
 // Guard pour éviter la double navigation sur notification vidéo
 bool _initialVideoNotificationHandled = false;
@@ -36,23 +39,23 @@ Future<void> initPushNotifications(BuildContext context) async {
       SecureLogger.info('Firebase initialized');
     }
 
-    await FirebaseMessaging.instance
-        .setForegroundNotificationPresentationOptions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-
     // Check current permission status WITHOUT requesting
     // Permission will be requested during onboarding (step 5)
     final currentSettings = await FirebaseMessaging.instance.getNotificationSettings();
     SecureLogger.debug('FCM current permission status: ${currentSettings.authorizationStatus}');
     
-    if (currentSettings.authorizationStatus != AuthorizationStatus.authorized &&
-        currentSettings.authorizationStatus != AuthorizationStatus.provisional) {
+    // Only configure foreground presentation if permission is already granted
+    // This avoids triggering the permission popup on app startup
+    if (currentSettings.authorizationStatus == AuthorizationStatus.authorized ||
+        currentSettings.authorizationStatus == AuthorizationStatus.provisional) {
+      await FirebaseMessaging.instance
+          .setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+    } else {
       SecureLogger.info('FCM permission not yet granted, will be requested during onboarding');
-      // Don't request here - it will be requested in onboarding step 5
-      // Still setup listeners for when permission is granted later
     }
 
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
@@ -102,14 +105,21 @@ Future<void> initPushNotifications(BuildContext context) async {
         final resp =
             await SupaFlow.client.rpc('get_unread_notifications_count');
         final count = resp as int? ?? 0;
-        FFAppState().update(() {
-          FFAppState().unreadNotificationsCount = count;
-          FFAppState().hasUnreadNotifications = count > 0;
-        });
+        FFAppState().unreadNotificationsCount = count;
+        FFAppState().hasUnreadNotifications = count > 0;
+        // Sync iOS app icon badge
+        await AppBadgeService.instance.updateBadge();
       } catch (e) {
         SecureLogger.error('Badge refresh error', error: e);
       }
     }
+
+    // Configurer les callbacks du service d'appel entrant
+    _setupIncomingCallService(context);
+
+    // ✅ REALTIME: Écouter les nouvelles video_sessions pour afficher l'overlay
+    // Ceci fonctionne même sur simulateur (pas besoin de FCM push)
+    _setupVideoSessionsRealtimeListener(context);
 
     // Écouteur pour les messages reçus quand l'app est OUVERTE (Foreground)
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
@@ -119,9 +129,12 @@ Future<void> initPushNotifications(BuildContext context) async {
       );
       final data = message.data;
       final type = data['type'] as String?;
-      // Les notifications videoIncoming sont gérées par handleNotificationRedirection
-      // Pas besoin de stocker dans AppState
-      if (type != 'videoIncoming') {
+      
+      // Pour les appels vidéo en foreground, afficher l'overlay
+      if (type == 'videoIncoming') {
+        SecureLogger.info('Incoming video call in foreground - showing overlay');
+        _showIncomingCallOverlay(data);
+      } else {
         await refreshUnreadBadge();
       }
     });
@@ -200,4 +213,164 @@ Future<void> initPushNotifications(BuildContext context) async {
     SecureLogger.error('CRITICAL ERROR in initPushNotifications', error: e);
   }
   SecureLogger.functionEnd('initPushNotifications');
+}
+
+/// Configure les callbacks du service d'appel entrant
+void _setupIncomingCallService(BuildContext context) {
+  final callService = IncomingCallService.instance;
+
+  // Callback quand l'utilisateur accepte l'appel
+  callService.onAccept = (call) async {
+    SecureLogger.info('User accepted incoming call');
+    
+    final navContext = appNavigatorKey.currentContext;
+    if (navContext != null && navContext.mounted) {
+      final data = {
+        'type': 'videoIncoming',
+        'video_session_id': call.videoSessionId,
+        'agora_channel_name': call.channelName,
+        'sender_profile_id': call.callerProfileId,
+      };
+      await handleNotificationRedirection(navContext, data);
+    }
+  };
+
+  // Callback quand l'utilisateur decline l'appel
+  callService.onDecline = (call) async {
+    SecureLogger.info('User declined incoming call - session: ${call.videoSessionId}');
+    
+    try {
+      // Utiliser 'declined' pour être explicite (l'enum supporte cette valeur)
+      final response = await SupaFlow.client
+          .from('video_sessions')
+          .update({'status': 'declined'})
+          .eq('id', call.videoSessionId)
+          .select();
+      SecureLogger.info('Video session marked as declined: $response');
+    } catch (e) {
+      SecureLogger.error('Failed to update video session status', error: e);
+    }
+  };
+
+  // Callback quand l'appel expire (timeout 30s)
+  callService.onTimeout = (call) async {
+    SecureLogger.info('Incoming call timed out');
+    
+    try {
+      final resp = await SupaFlow.client.rpc('get_unread_notifications_count');
+      final count = resp as int? ?? 0;
+      FFAppState().unreadNotificationsCount = count;
+      FFAppState().hasUnreadNotifications = count > 0;
+      await AppBadgeService.instance.updateBadge();
+    } catch (e) {
+      SecureLogger.error('Failed to update badge after missed call', error: e);
+    }
+  };
+}
+
+/// Affiche l'overlay d'appel entrant en foreground
+void _showIncomingCallOverlay(Map<String, dynamic> data) {
+  final callData = IncomingCallData.fromFcmPayload(data);
+  
+  if (callData.videoSessionId.isEmpty || callData.channelName.isEmpty) {
+    SecureLogger.error('Invalid incoming call data - missing session or channel');
+    return;
+  }
+
+  // Utilise le ValueNotifier - pas besoin de context!
+  IncomingCallService.instance.showIncomingCall(callData);
+}
+
+/// Configure le listener Supabase Realtime pour les appels vidéo entrants
+/// Ceci permet d'afficher l'overlay même sur simulateur (sans FCM push)
+void _setupVideoSessionsRealtimeListener(BuildContext context) {
+  // Annuler l'ancien channel si existant
+  _videoSessionsChannel?.unsubscribe();
+  
+  if (!loggedIn || currentUserUid.isEmpty) {
+    SecureLogger.debug('Not logged in, skipping video sessions realtime listener');
+    return;
+  }
+
+  final userId = currentUserUid;
+  SecureLogger.info('Setting up video_sessions realtime listener for user: $userId');
+
+  // Écouter TOUS les INSERT sur video_sessions et filtrer côté client
+  // IMPORTANT: Utiliser la syntaxe cascade (..) comme dans chat_message_list.dart
+  _videoSessionsChannel = SupaFlow.client
+      .channel('video_sessions_incoming_$userId')
+      ..onPostgresChanges(
+        event: PostgresChangeEvent.insert,
+        schema: 'public',
+        table: 'video_sessions',
+        callback: (payload) async {
+          SecureLogger.info('Realtime: video_sessions INSERT detected');
+          
+          final newRecord = payload.newRecord;
+          if (newRecord.isEmpty) {
+            SecureLogger.warning('Realtime: Empty payload received');
+            return;
+          }
+
+          // Filtrer côté client: seulement les sessions où je suis le receiver
+          final receiverId = newRecord['receiver_id'] as String?;
+          if (receiverId != userId) {
+            SecureLogger.debug('Realtime: Session not for current user, ignoring');
+            return;
+          }
+
+          final status = newRecord['status'] as String?;
+          if (status != 'pending') {
+            SecureLogger.debug('Realtime: Session status is $status, ignoring');
+            return;
+          }
+
+          SecureLogger.info('Realtime: Incoming call detected for current user!');
+
+          // Récupérer les infos de l'appelant
+          final initiatorId = newRecord['initiator_id'] as String?;
+          final sessionId = newRecord['id'] as String?;
+          final channelName = newRecord['agora_channel_name'] as String?;
+
+          if (initiatorId == null || sessionId == null || channelName == null) {
+            SecureLogger.error('Realtime: Missing required fields in payload');
+            return;
+          }
+
+          // Récupérer le profil de l'appelant
+          try {
+            final initiatorProfile = await SupaFlow.client
+                .from('profiles')
+                .select('full_name, avatar_url')
+                .eq('id', initiatorId)
+                .maybeSingle();
+
+            final callerName = initiatorProfile?['full_name'] as String? ?? 'Unknown';
+            final callerAvatar = initiatorProfile?['avatar_url'] as String?;
+
+            // Construire les données pour l'overlay
+            final callData = IncomingCallData(
+              videoSessionId: sessionId,
+              channelName: channelName,
+              callerProfileId: initiatorId,
+              callerName: callerName,
+              callerAvatarUrl: callerAvatar,
+            );
+
+            // Afficher l'overlay - utilise ValueNotifier, pas besoin de context!
+            SecureLogger.info('Showing incoming call overlay from Realtime');
+            IncomingCallService.instance.showIncomingCall(callData);
+          } catch (e) {
+            SecureLogger.error('Failed to fetch initiator profile', error: e);
+          }
+        },
+      )
+      ..subscribe((status, error) {
+        SecureLogger.info('Realtime channel status: $status');
+        if (error != null) {
+          SecureLogger.error('Realtime channel error', error: error);
+        }
+      });
+
+  SecureLogger.debug('Video sessions realtime channel subscription initiated');
 }

@@ -11,12 +11,14 @@ import 'package:intl/intl.dart';
 import '/core/design/design.dart';
 import '/core/design/widgets/widgets.dart';
 import '/core/constants/currencies.dart';
+import '/core/constants/country_coordinates.dart';
 import '/core/utils/distance_formatter.dart';
-import '/compo_finaux/address_search/address_search_widget.dart';
 import '/backend/schema/structs/index.dart';
+import '/backend/schema/enums/country_filter.dart';
 import '../../domain/entities/wedding_details.dart';
 import '../../domain/entities/professional_details.dart';
 import '../../data/datasources/supabase_map_datasource.dart';
+import '../widgets/wedding_location_filter.dart';
 
 class WeddingCreateSheet extends StatefulWidget {
   const WeddingCreateSheet({
@@ -52,9 +54,16 @@ class _WeddingCreateSheetState extends State<WeddingCreateSheet> {
   WeddingVisibility _visibility = WeddingVisibility.private;
   List<Profession> _selectedProfessions = [];
   
-  // Location
+  // Location - New country/address toggle system
+  CountryFilter _selectedCountry = CountryFilter.world;
+  bool _isAddressSearchMode = false;
+  String? _addressSearchText;
   double? _venueLat;
   double? _venueLng;
+  String? _locationCountryCode;
+  
+  // Distance filter - Optional checkbox
+  bool _useDistanceFilter = false;
   
   // UI state
   bool _isLoading = false;
@@ -88,12 +97,37 @@ class _WeddingCreateSheetState extends State<WeddingCreateSheet> {
     
     _eventDate = DateTime.tryParse(data['eventDate']?.toString() ?? '');
     _eventEndDate = DateTime.tryParse(data['eventEndDate']?.toString() ?? '');
-    _searchRadius = _normalizeRadius((data['searchRadiusKm'] as num?)?.toInt() ?? 50);
     _currency = data['currency']?.toString() ?? 'EUR';
     _visibility = WeddingVisibility.fromString(data['visibility']?.toString());
     
     _venueLat = (data['venueLat'] as num?)?.toDouble();
     _venueLng = (data['venueLng'] as num?)?.toDouble();
+    
+    // Load country code
+    final countryCode = data['locationCountryCode']?.toString();
+    if (countryCode != null && countryCode.isNotEmpty) {
+      _locationCountryCode = countryCode;
+      _selectedCountry = CountryFilter.fromCode(countryCode);
+    }
+    
+    // Determine mode based on saved data
+    final hasCoordinates = _venueLat != null && _venueLng != null;
+    final radiusKm = (data['searchRadiusKm'] as num?)?.toInt();
+    
+    if (hasCoordinates) {
+      // Address mode: has coordinates
+      _isAddressSearchMode = true;
+      _addressSearchText = _venueController.text;
+      
+      // Enable distance filter if radius was saved
+      if (radiusKm != null) {
+        _useDistanceFilter = true;
+        _searchRadius = _normalizeRadius(radiusKm);
+      }
+    } else {
+      // Country mode: no coordinates, just country
+      _isAddressSearchMode = false;
+    }
     
     final profs = data['professionsNeeded'];
     if (profs is List) {
@@ -104,7 +138,7 @@ class _WeddingCreateSheetState extends State<WeddingCreateSheet> {
   }
   
   int _normalizeRadius(int value) {
-    const allowed = [5, 10, 20, 50, 100];
+    const allowed = [5, 10, 20, 50, 100, 200, 300, 500];
     if (allowed.contains(value)) return value;
     int closest = allowed.first;
     int minDiff = (value - closest).abs();
@@ -167,7 +201,20 @@ class _WeddingCreateSheetState extends State<WeddingCreateSheet> {
   String? _validateForm() {
     if (_eventDate == null) return 'Please select a wedding date';
     if (_eventDate!.isBefore(DateTime.now())) return 'Wedding date must be in the future';
-    if (_venueLat == null || _venueLng == null) return 'Please select a venue from suggestions';
+    
+    // Location validation: either country or address must be selected
+    if (_isAddressSearchMode) {
+      // In address mode, need coordinates
+      if (_venueLat == null || _venueLng == null) {
+        return 'Please select an address from suggestions';
+      }
+    } else {
+      // In country mode, need a country selected (not World)
+      if (_selectedCountry.isWorld) {
+        return 'Please select a country';
+      }
+    }
+    
     if (_selectedProfessions.isEmpty) return 'Select at least one profession';
     
     final budgetMin = int.tryParse(_budgetMinController.text);
@@ -193,19 +240,43 @@ class _WeddingCreateSheetState extends State<WeddingCreateSheet> {
     });
 
     try {
+      // Determine location parameters based on mode
+      final String? countryCode;
+      final double? lat;
+      final double? lng;
+      final String? venueLabel;
+      final int? radiusKm;
+      
+      if (_isAddressSearchMode) {
+        // Address mode: use coordinates and optional distance filter
+        countryCode = _locationCountryCode;
+        lat = _venueLat;
+        lng = _venueLng;
+        venueLabel = _venueController.text.isNotEmpty ? _venueController.text : null;
+        radiusKm = _useDistanceFilter ? _searchRadius : null;
+      } else {
+        // Country mode: use country center coordinates for map display
+        countryCode = _selectedCountry.code;
+        lat = getCountryLatitude(countryCode);
+        lng = getCountryLongitude(countryCode);
+        venueLabel = _selectedCountry.displayName;
+        radiusKm = null; // No distance filter in country mode
+      }
+      
       final result = await _datasource.upsertWedding(
         weddingName: _nameController.text.isNotEmpty ? _nameController.text : null,
         eventDate: _eventDate!,
         eventEndDate: _eventEndDate,
-        venueLat: _venueLat,
-        venueLng: _venueLng,
-        venueLabel: _venueController.text.isNotEmpty ? _venueController.text : null,
-        searchRadiusKm: _searchRadius,
+        venueLat: lat,
+        venueLng: lng,
+        venueLabel: venueLabel,
+        searchRadiusKm: radiusKm,
         budgetMin: int.tryParse(_budgetMinController.text),
         budgetMax: int.tryParse(_budgetMaxController.text),
         currency: _currency,
         professionsNeeded: _selectedProfessions.map((p) => p.toRpcValue).toList(),
         visibility: _visibility == WeddingVisibility.visibleToPros ? 'visible_to_pros' : 'private',
+        locationCountryCode: countryCode,
       );
 
       if (result?['error'] != null) {
@@ -323,34 +394,86 @@ class _WeddingCreateSheetState extends State<WeddingCreateSheet> {
             ),
             const SizedBox(height: 30),
 
-            // Venue Section
-            _buildSectionTitle('Venue / Location *'),
-            AddressSearchWidget(
-              hintText: 'Search venue address...',
-              initialValue: _venueController.text,
-              locale: 'fr',
-              useOverlay: true,
-              suggestionsPosition: SuggestionsPosition.below,
+            // Location Section - Country/Address toggle
+            _buildSectionTitle('Location *'),
+            WeddingLocationFilter(
+              selectedCountry: _selectedCountry,
+              isAddressSearchMode: _isAddressSearchMode,
+              searchText: _addressSearchText,
+              locale: 'en',
+              onCountryChanged: (country) {
+                setState(() {
+                  _selectedCountry = country;
+                  _locationCountryCode = country.code;
+                  // Reset address data when country changes
+                  _venueLat = null;
+                  _venueLng = null;
+                  _venueController.clear();
+                  _useDistanceFilter = false;
+                });
+              },
               onAddressSelected: (PlaceDetailsDataStruct details) {
                 setState(() {
                   _venueController.text = details.formattedAddress;
+                  _addressSearchText = details.formattedAddress;
                   if (details.coords != null) {
                     _venueLat = details.coords!.latitude;
                     _venueLng = details.coords!.longitude;
+                  }
+                  // Extract country code from address if available
+                  if (details.countryCode != null) {
+                    _locationCountryCode = details.countryCode;
                   }
                 });
               },
               onAddressCleared: () {
                 setState(() {
                   _venueController.clear();
+                  _addressSearchText = null;
                   _venueLat = null;
                   _venueLng = null;
+                  _useDistanceFilter = false;
+                });
+              },
+              onSearchTextChanged: (text) {
+                _addressSearchText = text;
+              },
+              onModeToggle: () {
+                setState(() {
+                  _isAddressSearchMode = !_isAddressSearchMode;
+                  // Reset data when switching modes
+                  if (!_isAddressSearchMode) {
+                    // Switching to country mode
+                    _addressSearchText = null;
+                    _venueLat = null;
+                    _venueLng = null;
+                    _venueController.clear();
+                    _useDistanceFilter = false;
+                  } else {
+                    // Switching to address mode
+                    _selectedCountry = CountryFilter.world;
+                  }
                 });
               },
             ),
-            if (_venueController.text.isNotEmpty) ...[
+            // Location status indicator
+            if (_isAddressSearchMode && _venueController.text.isNotEmpty) ...[
               const SizedBox(height: 8),
               _buildLocationStatus(),
+            ],
+            if (!_isAddressSearchMode && !_selectedCountry.isWorld) ...[
+              const SizedBox(height: 8),
+              _buildCountrySelectedStatus(),
+            ],
+            
+            // Distance filter checkbox - only visible in address mode
+            if (_isAddressSearchMode && _venueLat != null) ...[
+              const SizedBox(height: 16),
+              _buildDistanceFilterCheckbox(),
+              if (_useDistanceFilter) ...[
+                const SizedBox(height: 12),
+                _buildDistanceSlider(),
+              ],
             ],
             const SizedBox(height: 30),
 
@@ -423,21 +546,6 @@ class _WeddingCreateSheetState extends State<WeddingCreateSheet> {
                   },
                 );
               }).toList(),
-            ),
-            const SizedBox(height: 30),
-
-            // Radius Section (uses user's preferred unit: km or miles)
-            _buildSectionTitle('Search Radius'),
-            LynewedSlider(
-              value: _searchRadius,
-              steps: _allowedRadii,
-              suffix: ' ${DistanceFormatter.unitAbbreviation}',
-              formatValue: (value) {
-                // Convert km to user's unit for display
-                final converted = DistanceFormatter.convertFromKm(value.toDouble());
-                return '${converted.round()} ${DistanceFormatter.unitAbbreviation}';
-              },
-              onChanged: (value) => setState(() => _searchRadius = value),
             ),
             const SizedBox(height: 30),
 
@@ -539,6 +647,86 @@ class _WeddingCreateSheetState extends State<WeddingCreateSheet> {
       ],
     );
   }
+
+  Widget _buildCountrySelectedStatus() {
+    return Row(
+      children: [
+        const Icon(
+          Icons.check_circle,
+          size: 16,
+          color: LynewedColors.success,
+        ),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            'Searching professionals in ${_selectedCountry.displayName}',
+            style: LynewedTextStyles.labelSmall.copyWith(
+              color: LynewedColors.success,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDistanceFilterCheckbox() {
+    return InkWell(
+      onTap: () => setState(() => _useDistanceFilter = !_useDistanceFilter),
+      borderRadius: BorderRadius.circular(4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+        decoration: BoxDecoration(
+          color: LynewedColors.surface,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: _useDistanceFilter ? Colors.black : Colors.transparent,
+                border: Border.all(
+                  color: _useDistanceFilter ? Colors.black : LynewedColors.gray200,
+                  width: 1.5,
+                ),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: _useDistanceFilter
+                  ? const Icon(Icons.check, size: 14, color: Colors.white)
+                  : null,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Search professionals around this address',
+                style: LynewedTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDistanceSlider() {
+    return LynewedSlider(
+      value: _searchRadius,
+      steps: _allowedRadiiExtended,
+      suffix: ' ${DistanceFormatter.unitAbbreviation}',
+      formatValue: (value) {
+        // Convert km to user's unit for display
+        final converted = DistanceFormatter.convertFromKm(value.toDouble());
+        return '${converted.round()} ${DistanceFormatter.unitAbbreviation}';
+      },
+      onChanged: (value) => setState(() => _searchRadius = value),
+    );
+  }
+
+  // Extended radius options for wedding search (5-500km)
+  static const _allowedRadiiExtended = [5, 10, 20, 50, 100, 200, 300, 500];
 
   Widget _buildCurrencySelector() {
     final currency = CurrencyData.getByCode(_currency);

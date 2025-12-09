@@ -46,31 +46,60 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
   }
   
   void _setupRealtimeListener() {
-    _sessionChannel = Supabase.instance.client.channel('video_session_${widget.videoSessionId}')
-      ..onPostgresChanges(
-        event: PostgresChangeEvent.update,
-        schema: 'public',
-        table: 'video_sessions',
-        filter: PostgresChangeFilter(
-          type: PostgresChangeFilterType.eq,
-          column: 'id',
-          value: widget.videoSessionId,
-        ),
-        callback: (payload) {
-          final newStatus = payload.newRecord['status'] as String?;
-          
-          if (newStatus == 'completed' && mounted) {
-            // Navigation vers la home page en fonction du rôle
-            final userRole = FFAppState().currentUserRole;
-            if (userRole == UserRole.professional) {
-              context.goNamed('DashboardPro');
-            } else {
-              context.goNamed('HomeBrides');
+    final sessionId = widget.videoSessionId;
+    if (sessionId == null || sessionId.isEmpty) return;
+    
+    // Écouter les changements sur cette session spécifique
+    // Note: On écoute TOUS les updates et on filtre côté client pour plus de fiabilité
+    _sessionChannel = Supabase.instance.client
+        .channel('video_session_$sessionId')
+        ..onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'video_sessions',
+          callback: (payload) {
+            final recordId = payload.newRecord['id'] as String?;
+            
+            // Filtrer côté client pour cette session uniquement
+            if (recordId != sessionId) return;
+            
+            final newStatus = payload.newRecord['status'] as String?;
+            
+            if (!mounted) return;
+            
+            if (newStatus == 'completed') {
+              // L'autre a raccroché - navigation vers home
+              _navigateToHome();
+            } else if (newStatus == 'missed' || newStatus == 'declined') {
+              // L'autre a décliné l'appel - afficher un message et naviguer
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Call declined'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+              // Nettoyer Agora
+              actions.agoraEndCall().catchError((_) => false);
+              _navigateToHome();
             }
+          },
+        )
+        ..subscribe((status, error) {
+          // Log pour debug
+          if (error != null) {
+            debugPrint('VideoCallPage Realtime error: $error');
           }
-        },
-      )
-      ..subscribe();
+        });
+  }
+  
+  void _navigateToHome() {
+    if (!mounted) return;
+    final userRole = FFAppState().currentUserRole;
+    if (userRole == UserRole.professional) {
+      context.goNamed('DashboardPro');
+    } else {
+      context.goNamed('HomeBrides');
+    }
   }
 
   @override
@@ -112,15 +141,7 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                       widget.videoSessionId!,
                       VideoSessionStatus.completed,
                     );
-                    
-                    // Navigation vers la home page en fonction du rôle
-                    final userRole = FFAppState().currentUserRole;
-                    if (userRole == UserRole.professional) {
-                      context.goNamed('DashboardPro');
-                    } else {
-                      context.goNamed('HomeBrides');
-                    }
-
+                    _navigateToHome();
                     safeSetState(() {});
                   },
                 ),
@@ -253,14 +274,7 @@ class _VideoCallPageWidgetState extends State<VideoCallPageWidget> {
                           highlightColor: Colors.transparent,
                           onTap: () async {
                             // 1. Naviguer vers home IMMÉDIATEMENT
-                            if (mounted) {
-                              final userRole = FFAppState().currentUserRole;
-                              if (userRole == UserRole.professional) {
-                                context.goNamed('DashboardPro');
-                              } else {
-                                context.goNamed('HomeBrides');
-                              }
-                            }
+                            _navigateToHome();
                             
                             // 2. Nettoyer Agora en arrière-plan (non bloquant)
                             actions.agoraEndCall().catchError((_) => false);
