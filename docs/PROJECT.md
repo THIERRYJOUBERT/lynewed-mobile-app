@@ -16,13 +16,18 @@
 
 **Workflow**: `develop` → PR → `main` pour production releases
 
-### Supabase Architecture
-| Environment | Project ID | Branch | Usage |
-|-------------|------------|--------|-------|
-| **PRODUCTION** | `hekyovgnovhfhmkpfrna` | `main` | 🚀 Live users - **NEVER modify directly** |
-| **DEVELOPMENT** | `ozcctfnmmwzmxinsxbzm` | `dev` | 🔧 New features - **Default for all changes** |
+### Supabase
+| Project | ID | Status |
+|---------|-----|--------|
+| **LYNEWED-V1-APP** | `hekyovgnovhfhmkpfrna` | 🚀 Production |
 
-**⚠️ Projet `odzkhcplevcqbuhzqsmq` (Tom Leo App Lynewed) - À SUPPRIMER**
+**Workflow simplifié:**
+- Développement backend directement sur PROD (peu d'utilisateurs actuellement)
+- Code Flutter sur branch `develop`, merge vers `main` pour releases
+- Pas de branch Supabase `dev` (complexité non justifiée à ce stade)
+
+**⚠️ Projets à supprimer:**
+- `odzkhcplevcqbuhzqsmq` (Tom Leo App Lynewed)
 
 ### V1 Accomplishments
 - ✅ **Complete FlutterFlow removal** - 100% autonomous code
@@ -148,5 +153,5 @@ docs/
 
 ---
 
-**Last Updated:** 2025-12-08  
-**Status:** ✅ V1 Complete - Environment cleaned and ready for next development phase
+**Last Updated:** 2025-12-10  
+**Status:** 🚀 V1 IN PRODUCTION - Simplified workflow (single Supabase environment)
