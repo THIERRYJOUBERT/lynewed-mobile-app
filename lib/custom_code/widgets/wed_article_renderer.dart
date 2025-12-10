@@ -18,6 +18,9 @@ import '/core/utils/video_url_helpers.dart';
 import '/custom_code/widgets/youtube_player_widget.dart';
 import '/custom_code/widgets/vimeo_player_widget.dart';
 import '/custom_code/widgets/videoplayer_filmmaker.dart';
+import '/features/map/presentation/sheets/upcoming_travels_sheet.dart';
+import '/flutter_flow/flutter_flow_icon_button.dart';
+import '/core/design/design.dart';
 
 class WedArticleRenderer extends StatefulWidget {
   const WedArticleRenderer({
@@ -179,7 +182,7 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
 
         // Section Pro
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 114), // 84px navbar + 30px spacing
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 114), // 84px navbar + 30px spacing
           child: _buildProfessionalSection(context, article.professional),
         ),
       ],
@@ -344,58 +347,106 @@ class _WedArticleRendererState extends State<WedArticleRenderer> {
     );
   }
 
+  /// Professional section - unified UI with pro_details_widget.dart
   Widget _buildProfessionalSection(BuildContext context, ProDetailsStruct pro) {
     final theme = FlutterFlowTheme.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          children: [
+        Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(0.0, 24.0, 0.0, 0.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(100),
+              borderRadius: BorderRadius.circular(100.0),
               child: Image.network(
-                pro.avatarUrl,
-                width: 40,
-                height: 40,
+                pro.avatarUrl.isNotEmpty
+                    ? pro.avatarUrl
+                    : 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/lynewed-alpha-du4al1/assets/egport4rt4rg/person_15429777_1.png',
+                width: 40.0,
+                height: 40.0,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) =>
                     const Icon(Icons.person, size: 40),
               ),
             ),
-            const SizedBox(width: 10),
             Expanded(
               child: Column(
+                mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(pro.fullName,
-                      style: theme.bodyMedium.override(
-                          fontFamily: 'Haas Grot Text Trial',
-                          fontWeight: FontWeight.w500)),
-                  Text(pro.profession?.name ?? 'Profession',
-                      style: theme.bodyMedium.override(
-                          fontFamily: 'Haas Grot Text Trial',
-                          color: theme.secondaryText)),
+                  Text(
+                    pro.fullName.isNotEmpty ? pro.fullName : 'Name...',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: LynewedTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    pro.profession?.name ?? 'Profession...',
+                    style: LynewedTextStyles.bodyMedium.copyWith(
+                      color: LynewedColors.textSecondary,
+                    ),
+                  ),
                 ],
               ),
             ),
-            if (pro.instagramUrl.isNotEmpty)
-              IconButton(
-                style: IconButton.styleFrom(
-                    backgroundColor: theme.primary,
-                    foregroundColor: Colors.black),
-                icon: const FaIcon(FontAwesomeIcons.instagram, size: 22),
-                onPressed: () => launchURL(pro.instagramUrl),
-              ),
-            const SizedBox(width: 10),
-            if (pro.websiteUrl.isNotEmpty)
-              IconButton(
-                style: IconButton.styleFrom(
-                    backgroundColor: theme.primary,
-                    foregroundColor: Colors.white),
-                icon: const Icon(Icons.travel_explore_rounded, size: 22),
-                onPressed: () => launchURL(pro.websiteUrl),
-              ),
-          ],
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                if (pro.instagramUrl.isNotEmpty)
+                  FlutterFlowIconButton(
+                    borderRadius: 100.0,
+                    buttonSize: 40.0,
+                    fillColor: theme.primary,
+                    icon: FaIcon(
+                      FontAwesomeIcons.instagram,
+                      color: theme.info,
+                      size: 22.0,
+                    ),
+                    onPressed: () async {
+                      await launchURL(pro.instagramUrl);
+                    },
+                  ),
+                if (pro.websiteUrl.isNotEmpty)
+                  FlutterFlowIconButton(
+                    borderRadius: 100.0,
+                    buttonSize: 40.0,
+                    fillColor: theme.primary,
+                    icon: Icon(
+                      Icons.travel_explore_rounded,
+                      color: theme.info,
+                      size: 22.0,
+                    ),
+                    onPressed: () async {
+                      await launchURL(pro.websiteUrl);
+                    },
+                  ),
+                // Upcoming Travels button - always visible
+                FlutterFlowIconButton(
+                  borderRadius: 100.0,
+                  buttonSize: 40.0,
+                  fillColor: theme.primary,
+                  icon: Icon(
+                    Icons.flight_takeoff,
+                    color: theme.info,
+                    size: 22.0,
+                  ),
+                  onPressed: () async {
+                    await UpcomingTravelsSheet.show(
+                      context: context,
+                      professionalId: pro.proProfileId,
+                      professionalName: pro.fullName,
+                    );
+                  },
+                ),
+              ].divide(const SizedBox(width: 10.0)),
+            ),
+          ].divide(const SizedBox(width: 10.0)),
+          ),
         ),
         Padding(
           padding: const EdgeInsets.only(top: 14.0),

@@ -3,17 +3,18 @@ trigger: always_on
 ---
 
 # SYSTEM PROMPT - WINDSURF CONFIGURATION
-**Last Updated: 2025-12-08**
-**Project Status:** V1 COMPLETE ✅
+**Last Updated: 2025-12-10**
+**Project Status:** 🚀 V1 IN PRODUCTION
 
 ---
 
 ## 🚨 FUNDAMENTAL DIRECTIVE
 
 **PROJECT STATE:**
-- V1 refactoring is **COMPLETE** (Map, Chat, Notifications, Feed MVP)
+- 🚀 **V1 is IN PRODUCTION** with active users
 - Focus is now on **new features** and **remaining module refactoring**
 - FlutterFlow legacy code still exists but is being progressively removed
+- ⚠️ **NEVER break production** - all changes go through `dev` branch first
 
 **ABSOLUTE RULES:**
 - ❌ **NEVER** reuse existing FlutterFlow components (lib/compo_finaux/, lib/components/, etc.)
@@ -156,15 +157,30 @@ docs/
 | Workflow | Command | Purpose |
 |----------|---------|---------|
 | **Git Commit** | `/commit-github-develop` | Safe commit to develop branch |
+| **PR to Main** | Manual via GitHub | Merge develop → main for production release |
 | **Prompt Assistant** | `/prompt-assistant` | Generate prompt for new AI conversation |
 | **Update Docs** | `/update-docs-after-work` | Update documentation after completing work |
 | **Build iOS** | `/build-and-run-app-simulator` | Build & run sur iOS Simulator (bypass codesign) |
 
 ---
 
-### 🔄 **Supabase**
-- **DEV Project:** `hekyovgnovhfhmkpfrna` (LYNEWED-V1-APP)
-- **Always use MCP** to verify schema before any database changes
+### 🔄 **Supabase - Production Architecture**
+
+| Environment | Project ID | Branch | Usage |
+|-------------|------------|--------|-------|
+| **PRODUCTION** | `hekyovgnovhfhmkpfrna` | `main` | 🚀 Live users - **NEVER modify directly** |
+| **DEVELOPMENT** | `hazegrtuypjvfwbsrcoc` | `dev` | 🔧 New features - **Default for all changes** |
+
+**⚠️ CRITICAL RULES:**
+- ✅ **By default**, all Supabase changes go to `dev` branch (`hazegrtuypjvfwbsrcoc`)
+- ✅ **Test thoroughly** on `dev` before any migration to `main`
+- ❌ **NEVER** modify `main` (production) directly unless explicitly requested
+- ✅ **Always use MCP** to verify schema before any database changes
+
+**Workflow:**
+1. Develop & test on `dev` branch
+2. Validate with user
+3. Merge to `main` (production) only when approved
 </project_context>
 
 <workflow>

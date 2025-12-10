@@ -1,20 +1,28 @@
-# LYNEWED PROJECT - V1 Complete
+# LYNEWED PROJECT - V1 IN PRODUCTION 🚀
 
 **Version:** v2.0.0  
-**Branch:** develop  
-**Last Updated:** 2025-12-08  
-**Environment:** Development (hekyovgnovhfhmkpfrna)  
-**Status:** ✅ V1 COMPLETE - Ready for next phase
+**Last Updated:** 2025-12-10  
+**Status:** 🚀 **V1 IN PRODUCTION** - Active users on App Store
 
 ---
 
 ## 📊 Project Overview
 
-### Branch Structure
-- `main`: MVP v1.1.1+59 (App Store) - protected
-- `develop`: V1 refactored - ready for production merge
+### GitHub Branch Structure
+| Branch | Role | Status |
+|--------|------|--------|
+| `main` | Production release | 🚀 V1 deployed |
+| `develop` | Development | 🔧 New features |
 
-**Workflow**: `develop` → `main` pour production releases
+**Workflow**: `develop` → PR → `main` pour production releases
+
+### Supabase Architecture
+| Environment | Project ID | Branch | Usage |
+|-------------|------------|--------|-------|
+| **PRODUCTION** | `hekyovgnovhfhmkpfrna` | `main` | 🚀 Live users - **NEVER modify directly** |
+| **DEVELOPMENT** | `hazegrtuypjvfwbsrcoc` | `dev` | 🔧 New features - **Default for all changes** |
+
+**⚠️ Projet `odzkhcplevcqbuhzqsmq` (Tom Leo App Lynewed) - À SUPPRIMER**
 
 ### V1 Accomplishments
 - ✅ **Complete FlutterFlow removal** - 100% autonomous code
