@@ -852,6 +852,12 @@ lib/features/weddings_hub_pro/
 
 ## 🚀 Next Steps
 
+**➡️ Plan d'Implémentation Final:** `docs/MY_WEDDING_SUITE_IMPLEMENTATION_PLAN.md`
+
+Le plan d'implémentation détaillé avec toutes les tâches, fichiers et SQL est disponible dans le document ci-dessus.
+
+### Résumé des étapes:
+
 1. **Créer les migrations Supabase** :
    - Modifier `weddings` (name, cover_image_url, note_for_pros, status, cancelled_at, onboarding_step)
    - Modifier `wedding_participants` (status enum + colonnes mute/left/excluded)
