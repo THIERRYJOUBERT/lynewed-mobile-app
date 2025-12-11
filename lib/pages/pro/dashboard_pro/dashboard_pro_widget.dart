@@ -221,6 +221,12 @@ class _DashboardProWidgetState extends State<DashboardProWidget> with WidgetsBin
                           MaterialPageRoute(builder: (context) => const MessagesPage()),
                         ),
                       ),
+                      const SizedBox(width: 14.0),
+                      // Settings / Profile
+                      _buildHeaderIcon(
+                        icon: Icons.settings_outlined,
+                        onTap: () => context.pushNamed(ProfileBridesAndProWidget.routeName),
+                      ),
                     ],
                   ),
                 ],

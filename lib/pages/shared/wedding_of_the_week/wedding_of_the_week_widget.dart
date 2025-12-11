@@ -96,12 +96,12 @@ class _WeddingOfTheWeekWidgetState extends State<WeddingOfTheWeekWidget> {
                     ? wrapWithModel(
                         model: _model.navBarBridesModel,
                         updateCallback: () => safeSetState(() {}),
-                        child: const NavBarBridesWidget(number: 3),
+                        child: const NavBarBridesWidget(number: 4),
                       )
                     : wrapWithModel(
                         model: _model.navBarProModel,
                         updateCallback: () => safeSetState(() {}),
-                        child: const NavBarProWidget(number: 2),
+                        child: const NavBarProWidget(number: 4),
                       ),
               ),
             ],
