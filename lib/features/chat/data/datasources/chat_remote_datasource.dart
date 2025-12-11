@@ -33,10 +33,10 @@ class ChatRemoteDatasource {
     final Map<String, dynamic> data = response as Map<String, dynamic>;
     final List<dynamic> items = data['items'] as List<dynamic>? ?? [];
     
-    // Filter out public rooms - MessagesPage only shows private 1-1 conversations
+    // Filter out public rooms and wedding team chats - MessagesPage only shows private 1-1 conversations
     return items
         .map((item) => Conversation.fromMap(item as Map<String, dynamic>))
-        .where((conv) => !conv.isPublic)
+        .where((conv) => conv.roomType == RoomType.private)
         .toList();
   }
 

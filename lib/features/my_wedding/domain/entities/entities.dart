@@ -8,3 +8,4 @@ export 'wedding_expense.dart';
 export 'inspiration_album.dart';
 export 'saved_post.dart';
 export 'album_image.dart';
+export 'wedding_team_chat_info.dart';

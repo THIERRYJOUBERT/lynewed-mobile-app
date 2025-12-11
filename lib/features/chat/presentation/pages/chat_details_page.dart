@@ -41,6 +41,7 @@ class ChatDetailsPage extends StatefulWidget {
     this.onUnblock,
     this.onRequestAccepted,
     this.onRequestDeclined,
+    this.hideVideoCall = false,
   });
 
   /// Room ID
@@ -87,6 +88,9 @@ class ChatDetailsPage extends StatefulWidget {
 
   /// Callback when contact request is declined (to refresh parent)
   final VoidCallback? onRequestDeclined;
+
+  /// Whether to hide the video call button (for group chats)
+  final bool hideVideoCall;
 
   static const String routeName = 'ChatDetails';
   static const String routePath = '/chatDetails';
@@ -230,8 +234,8 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
             ),
           ),
 
-          // Video call button (private rooms only)
-          if (!isPublic) _buildVideoCallButton(),
+          // Video call button (private rooms only, unless hidden)
+          if (!isPublic && !widget.hideVideoCall) _buildVideoCallButton(),
         ],
       ),
     );

@@ -115,10 +115,13 @@ enum MessageType {
 /// Room type
 enum RoomType {
   private,
-  public;
+  public,
+  weddingTeam;
 
   static RoomType? fromString(String? value) {
     if (value == null) return null;
+    // Handle snake_case from database
+    if (value == 'wedding_team') return RoomType.weddingTeam;
     return RoomType.values.cast<RoomType?>().firstWhere(
       (e) => e?.name == value,
       orElse: () => null,

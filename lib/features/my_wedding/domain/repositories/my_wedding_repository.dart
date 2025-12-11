@@ -5,6 +5,7 @@
 library;
 
 import '../entities/entities.dart';
+export '../entities/wedding_team_chat_info.dart';
 
 /// Onboarding data for creating/updating a wedding
 class OnboardingData {
@@ -128,6 +129,35 @@ abstract class MyWeddingRepository {
   Future<RepositoryResult<void>> savePostToAlbum({
     required String albumId,
     required String postId,
+  });
+
+  /// Get wedding team chat room info
+  Future<RepositoryResult<WeddingTeamChatInfo?>> getWeddingTeamChat({
+    required String weddingId,
+  });
+
+  /// Get active wedding team members (pros with status = 'active')
+  Future<RepositoryResult<List<WeddingTeamMember>>> getActiveWeddingTeam({
+    required String weddingId,
+  });
+
+  /// Update wedding details
+  Future<RepositoryResult<void>> updateWedding({
+    required String weddingId,
+    String? name,
+    DateTime? eventDate,
+    double? lat,
+    double? lng,
+    String? venueAddress,
+    String? countryCode,
+    int? guestCount,
+    int? budgetMin,
+    int? budgetMax,
+    String? currency,
+    String? visibility,
+    int? searchRadiusKm,
+    String? coverImageUrl,
+    String? noteForPros,
   });
 }
 

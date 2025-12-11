@@ -148,4 +148,70 @@ class MyWeddingRepositoryImpl implements MyWeddingRepository {
       return RepositoryResult.failure('Failed to save post: $e');
     }
   }
+
+  @override
+  Future<RepositoryResult<WeddingTeamChatInfo?>> getWeddingTeamChat({
+    required String weddingId,
+  }) async {
+    try {
+      final chatInfo = await _datasource.getWeddingTeamChat(weddingId: weddingId);
+      return RepositoryResult.success(chatInfo);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get wedding team chat: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<List<WeddingTeamMember>>> getActiveWeddingTeam({
+    required String weddingId,
+  }) async {
+    try {
+      final team = await _datasource.getActiveWeddingTeam(weddingId: weddingId);
+      return RepositoryResult.success(team);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get active wedding team: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<void>> updateWedding({
+    required String weddingId,
+    String? name,
+    DateTime? eventDate,
+    double? lat,
+    double? lng,
+    String? venueAddress,
+    String? countryCode,
+    int? guestCount,
+    int? budgetMin,
+    int? budgetMax,
+    String? currency,
+    String? visibility,
+    int? searchRadiusKm,
+    String? coverImageUrl,
+    String? noteForPros,
+  }) async {
+    try {
+      await _datasource.updateWedding(
+        weddingId: weddingId,
+        name: name,
+        eventDate: eventDate,
+        lat: lat,
+        lng: lng,
+        venueAddress: venueAddress,
+        countryCode: countryCode,
+        guestCount: guestCount,
+        budgetMin: budgetMin,
+        budgetMax: budgetMax,
+        currency: currency,
+        visibility: visibility,
+        searchRadiusKm: searchRadiusKm,
+        coverImageUrl: coverImageUrl,
+        noteForPros: noteForPros,
+      );
+      return const RepositoryResult.success(null);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to update wedding: $e');
+    }
+  }
 }

@@ -1,8 +1,8 @@
 # MY WEDDING SUITE - Plan d'Implémentation Final V2
 
-**Version:** 2.3  
+**Version:** 2.4  
 **Date:** 2025-12-11  
-**Status:** 🚧 EN COURS - Sprint 1 ✅ | Sprint 2 ✅  
+**Status:** 🚧 EN COURS - Sprint 1 ✅ | Sprint 2 ✅ | Sprint 3 ⏳ | Sprint 4 ⏳  
 **Supabase Project:** `hekyovgnovhfhmkpfrna` (PROD)  
 **Audit Validation:** Corrections issues de l'analyse critique intégrées
 
@@ -339,7 +339,7 @@ lib/features/my_wedding/
 ## 📋 SPRINT 3: My Wedding Page (Bride)
 
 **Durée:** 3-4 jours | **Dépendances:** Sprint 2 | **Priorité:** 🔴 HAUTE
-**Status:** ⏳ PARTIELLEMENT FAIT (Overview Card done, sections restantes)
+**Status:** ⏳ EN COURS (80% fait - Wedding Team fonctionnel, sections placeholders)
 
 ### 3.1 Page Skeleton + Routing ✅
 
@@ -351,23 +351,44 @@ lib/features/my_wedding/
 
 **Props:** coverImageUrl, weddingName, eventDate, venueLabel, participantsCount, onEdit
 
-**Checklist:** `[x]` Widget intégré (inline) | `[x]` Calcul countdown | `[ ]` WeddingEditSheet
+**Checklist:** `[x]` Widget intégré (inline) | `[x]` Calcul countdown | `[x]` WeddingEditSheet
 
-### 3.3 Wedding Team Chat Item
+### 3.2.1 WeddingEditSheet ✅ (2025-12-11)
+
+**Fichier:** `lib/features/my_wedding/presentation/sheets/wedding_edit_sheet.dart`
+
+**Features:**
+- `[x]` Date picker natif avec thème Lynewed
+- `[x]` Google Places address search avec autocomplétion
+- `[x]` Affichage adresse actuelle avec bouton suppression
+- `[x]` Champs éditables: nom, date, adresse, guests, budget min/max
+- `[x]` Utilise `LynewedSheet` (Design System)
+- `[x]` Sauvegarde coordonnées GPS et country_code
+
+### 3.3 Wedding Team Chat Item ✅
 
 **Props:** avatarUrls, unreadCount, participantsCount, onTap
 
-**Checklist:** `[ ]` Intégrer widget | `[ ]` Charger avatars | `[ ]` Charger unread | `[ ]` Navigation ChatDetailsPage
+**Checklist:** `[x]` Widget intégré (`_buildWeddingTeamChatItem`) | `[x]` Charger avatars (via `_teamChatInfo`) | `[x]` Charger unread | `[x]` Navigation ChatDetailsPage
 
-### 3.4 Wedding Team Section ⏳ PLACEHOLDER
+### 3.4 Wedding Team Section ✅ (2025-12-11)
 
-Liste de `LynewedProTile` avec actions: Tap → ProDetails | Long press → Modal | Chat icon → Chat 1-1
+Liste de `_buildProTile` avec actions: Tap → ProDetails | Long press → Modal | Chat icon → Chat 1-1
 
-**Status actuel:** Placeholder "No professionals yet" + bouton "Invite Professionals"
+**Fichiers modifiés:**
+- `lib/features/my_wedding/presentation/pages/my_wedding_page.dart`
+- `lib/features/my_wedding/data/datasources/supabase_my_wedding_datasource.dart`
 
-**Checklist:** `[x]` Section placeholder | `[ ]` Charger pros | `[ ]` Tap | `[ ]` Long press modal | `[ ]` Chat 1-1
+**Checklist:** 
+- `[x]` Section avec liste pros (`_buildTeamMembersList`)
+- `[x]` Charger pros actifs (`getActiveWeddingTeam`)
+- `[x]` Tap → ProDetails (fetch Supabase + navigation `ProDetailsWidget`)
+- `[x]` Long press → Modal options (View Profile, Send Message, Remove)
+- `[x]` Chat icon → Chat 1-1 (`action_blocks.contactChatRoom`)
+- `[x]` Empty state avec bouton "Invite Professionals"
+- `[x]` Bouton "+ Add" dans header section
 
-### 3.5 Header avec Icônes
+### 3.5 Header avec Icônes ⏳
 
 Chat → MessagesPage filtré | Settings → Menu mariage
 
@@ -375,13 +396,27 @@ Chat → MessagesPage filtré | Settings → Menu mariage
 
 **Checklist:** `[x]` Header basique | `[ ]` Filtre MessagesPage | `[ ]` Menu settings mariage
 
-### 3.6 Sections Overview (Preview) ⏳ PLACEHOLDER
+### 3.6 Sections Overview ✅ (2025-12-11)
 
 Agenda | Budget | Inspirations | Guests | Note for Pros
 
-**Status actuel:** Sections Agenda et Budget avec "Coming in Sprint 3"
+**Toutes les 5 sections implémentées avec:**
+- `[x]` Agenda section (placeholder "Add Event")
+- `[x]` Budget section (affiche budget si défini, sinon "Set Budget")
+- `[x]` Inspirations section (placeholder "Create Album")
+- `[x]` Guests section (affiche count si défini, "Manage Guests")
+- `[x]` Note for Pros section (affiche note si définie, sinon "Add Note")
+- `[x]` **Boutons style primaire (fond noir)** - tous les boutons de sections
 
-**Checklist:** `[x]` 2 sections placeholder (Agenda, Budget) | `[ ]` 3 sections restantes | `[ ]` Navigation vers pages détail
+### 3.6.1 NoteForProsSheet ✅ (2025-12-11)
+
+**Fichier:** `lib/features/my_wedding/presentation/sheets/note_for_pros_sheet.dart`
+
+**Features:**
+- `[x]` Sous-titre déplacé sous le header (comme `invite_pro_sheet`)
+- `[x]` TextField multi-lignes avec maxLength 1000
+- `[x]` Tips pour une bonne note
+- `[x]` Sauvegarde via `updateWedding`
 
 ### 3.7 Cancelled Wedding View
 
@@ -394,20 +429,45 @@ Si status=cancelled: afficher écran "Mariage annulé" + bouton "Reprendre"
 ## 📋 SPRINT 4: Wedding Team Features
 
 **Durée:** 2-3 jours | **Dépendances:** Sprint 3 | **Priorité:** 🔴 HAUTE
+**Status:** ⏳ EN COURS (InviteProSheet fait, triggers corrigés)
 
-### 4.1 Invite Pro Flow
+### 4.1 Invite Pro Flow ✅ (2025-12-11)
 
-**Sheet:** `invite_pro_sheet.dart`
-**Logique:** Recherche nom OU liste pros contactés → Sélection → Ajout auto → Notification
+**Fichier:** `lib/features/my_wedding/presentation/sheets/invite_pro_sheet.dart`
 
-**Checklist:** `[ ]` InviteProSheet | `[ ]` Recherche | `[ ]` Liste contactés | `[ ]` Ajout | `[ ]` Test notif
+**Logique implémentée:**
+1. Liste des pros contactés (via `get_contacted_pros_for_bride` RPC)
+2. Recherche/filtre par nom ou profession
+3. Bouton "Add" → `inviteProToWedding` (upsert avec profession)
+4. Bouton "Remove" → `excludeProFromWedding`
+5. Tap sur pro → Navigation vers `ProDetailsWidget`
+6. État persistant (affiche "Remove" pour pros déjà invités)
 
-### 4.2 Exclude Pro Flow
+**Checklist:** 
+- `[x]` InviteProSheet avec `LynewedSheet`
+- `[x]` Recherche/filtre
+- `[x]` Liste pros contactés (RPC `get_contacted_pros_for_bride`)
+- `[x]` Ajout pro (`inviteProToWedding` avec profession)
+- `[x]` Retrait pro (`excludeProFromWedding`)
+- `[x]` Navigation vers ProDetails
+- `[x]` État Add/Remove persistant
 
-**Sheet:** `exclude_pro_sheet.dart`
-**Logique:** Confirmation + raison → status=excluded → Retrait chat → Notification
+**Fixes appliqués (2025-12-11):**
+- `[x]` RPC `get_contacted_pros_for_bride` créée (remplace query complexe)
+- `[x]` `getActiveWeddingTeam` corrigé (profession depuis `wedding_participants`)
+- `[x]` `inviteProToWedding` inclut maintenant la profession
+- `[x]` RLS policy "Bride can update wedding participants" ajoutée
 
-**Checklist:** `[ ]` ExcludeProSheet | `[ ]` Confirmation | `[ ]` Update status | `[ ]` Test trigger chat | `[ ]` Test notif
+### 4.2 Exclude Pro Flow ✅ (partiel)
+
+**Logique:** Via long press modal dans Wedding Team Section → "Remove from Team"
+
+**Checklist:** 
+- `[x]` Modal avec option "Remove from Team"
+- `[x]` Confirmation dialog
+- `[x]` Update status via `excludeProFromWedding`
+- `[ ]` ExcludeProSheet dédié (optionnel - modal suffit)
+- `[x]` Test trigger chat (trigger `manage_pro_in_wedding_team_chat`)
 
 ### 4.3 Pro Quit Flow (côté Pro)
 
@@ -416,19 +476,24 @@ Si status=cancelled: afficher écran "Mariage annulé" + bouton "Reprendre"
 
 **Checklist:** `[ ]` LeaveWeddingSheet | `[ ]` Raison obligatoire | `[ ]` Update status | `[ ]` Test trigger | `[ ]` Test notif
 
-### 4.4 Notifications (5 types)
+### 4.4 Notifications - Triggers SQL ✅ (corrigés 2025-12-11)
 
-| Type | Destinataire | Trigger | Désactivable |
-|------|--------------|--------|-------------|
-| `wedding_pro_added` | Pro | INSERT participants (active) | Non |
-| `wedding_pro_excluded` | Pro | UPDATE participants (excluded) | Non |
-| `wedding_pro_left` | Bride | UPDATE participants (left) | Non |
-| `wedding_event_reminder` | Bride | **Edge Function CRON** (24h avant) | ✅ Oui |
-| `wedding_cancelled` | Tous pros | UPDATE weddings (cancelled) | Non |
+| Type | Destinataire | Trigger | Status |
+|------|--------------|--------|--------|
+| `wedding_pro_added` | Pro | INSERT participants (active) | ✅ Corrigé (`full_name`) |
+| `wedding_pro_excluded` | Pro | UPDATE participants (excluded) | ✅ Corrigé (`full_name`) |
+| `wedding_pro_left` | Bride | UPDATE participants (left) | ✅ Corrigé (`full_name`) |
+| `wedding_event_reminder` | Bride | **Edge Function CRON** (24h avant) | ⏳ À faire |
+| `wedding_cancelled` | Tous pros | UPDATE weddings (cancelled) | ✅ Existant |
 
-**Note:** `wedding_team_message` utilise le système de notifications chat existant (déjà désactivable).
+**Fixes appliqués (2025-12-11):**
+- `[x]` `notify_pro_added_to_wedding` → `p.full_name` (était `p.display_name`)
+- `[x]` `notify_pro_excluded_from_wedding` → `p.full_name`
+- `[x]` `notify_wedding_pro_added` → `p.full_name`
+- `[x]` `notify_wedding_pro_excluded` → `p.full_name`
+- `[x]` `notify_wedding_pro_left` → `full_name`
 
-**Checklist:** `[ ]` 4 triggers SQL | `[ ]` Edge Function reminder | `[ ]` Toggle Settings | `[ ]` Test toutes notifs
+**Checklist:** `[x]` 5 triggers SQL corrigés | `[ ]` Edge Function reminder | `[ ]` Toggle Settings
 
 ### 4.5 Edge Function `wedding_event_reminder`
 
