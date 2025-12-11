@@ -35,3 +35,9 @@ export 'widgets/lynewed_chip.dart';
 export 'widgets/lynewed_section_title.dart';
 export 'widgets/lynewed_header_actions.dart';
 export 'widgets/lynewed_more_menu.dart';
+
+// My Wedding Suite widgets
+export 'widgets/lynewed_section_header.dart';
+export 'widgets/lynewed_countdown_card.dart';
+export 'widgets/lynewed_team_chat_item.dart';
+export 'widgets/lynewed_pro_tile.dart';

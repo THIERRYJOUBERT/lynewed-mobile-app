@@ -126,7 +126,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         safeSetState(() {});
 
                         context.goNamed(
-                          WeddingOfTheWeekWidget.routeName,
+                          FeedBridesWidget.routeName,
                           extra: <String, dynamic>{
                             kTransitionInfoKey: const TransitionInfo(
                               hasTransition: true,
@@ -141,7 +141,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.star_border,
+                            Icons.search_sharp,
                             color: widget.number == 2
                                 ? FlutterFlowTheme.of(context).primaryText
                                 : FlutterFlowTheme.of(context).alternate,
@@ -151,7 +151,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                             padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 5.0, 0.0, 0.0),
                             child: Text(
-                              'Wedding',
+                              'Feed',
                               style: FlutterFlowTheme.of(context)
                                   .bodyLarge
                                   .override(
@@ -180,7 +180,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         safeSetState(() {});
 
                         context.goNamed(
-                          ContentReplayWidget.routeName,
+                          WeddingsHubProPage.routeName,
                           extra: <String, dynamic>{
                             kTransitionInfoKey: const TransitionInfo(
                               hasTransition: true,
@@ -195,7 +195,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.mic_none,
+                            Icons.favorite_border,
                             color: widget.number == 3
                                 ? FlutterFlowTheme.of(context).primaryText
                                 : FlutterFlowTheme.of(context).alternate,
@@ -205,7 +205,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                             padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 5.0, 0.0, 0.0),
                             child: Text(
-                              'Replay',
+                              'Weddings',
                               style: FlutterFlowTheme.of(context)
                                   .bodyLarge
                                   .override(
@@ -233,9 +233,8 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         _model.number = 4;
                         safeSetState(() {});
 
-                        // Navigate to Feed (reuse FeedBrides page)
                         context.goNamed(
-                          FeedBridesWidget.routeName,
+                          WeddingOfTheWeekWidget.routeName,
                           extra: <String, dynamic>{
                             kTransitionInfoKey: const TransitionInfo(
                               hasTransition: true,
@@ -250,7 +249,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.search_sharp,
+                            Icons.star_border,
                             color: widget.number == 4
                                 ? FlutterFlowTheme.of(context).primaryText
                                 : FlutterFlowTheme.of(context).alternate,
@@ -260,7 +259,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                             padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 5.0, 0.0, 0.0),
                             child: Text(
-                              'Feed',
+                              'WOTW',
                               style: FlutterFlowTheme.of(context)
                                   .bodyLarge
                                   .override(
@@ -289,7 +288,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         safeSetState(() {});
 
                         context.goNamed(
-                          ProfileBridesAndProWidget.routeName,
+                          ContentReplayWidget.routeName,
                           extra: <String, dynamic>{
                             kTransitionInfoKey: const TransitionInfo(
                               hasTransition: true,
@@ -304,7 +303,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.settings_outlined,
+                            Icons.mic_none,
                             color: widget.number == 5
                                 ? FlutterFlowTheme.of(context).primaryText
                                 : FlutterFlowTheme.of(context).alternate,
@@ -314,7 +313,7 @@ class _NavBarProWidgetState extends State<NavBarProWidget> {
                             padding: const EdgeInsetsDirectional.fromSTEB(
                                 0.0, 5.0, 0.0, 0.0),
                             child: Text(
-                              'Settings',
+                              'Replay',
                               style: FlutterFlowTheme.of(context)
                                   .bodyLarge
                                   .override(

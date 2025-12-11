@@ -848,6 +848,83 @@ lib/features/weddings_hub_pro/
 - Features Preview : écran marketing informatif (pas d'action)
 - ✅ SPEC VALIDÉE - Prêt pour implémentation
 
+### 2025-12-11 - Sprint 2 Implementation 📅
+**Phase 1 COMPLÈTE - My Wedding Suite Core**
+
+#### Implémenté :
+- 📅 **Navbar Restructuring** - Brides (Home, Feed, Wedding, WOTW, Replay) + Pros (Home, Feed, Weddings, WOTW, Replay)
+- 📅 **MyWeddingPage** - Détection onboarding vs overview
+- 📅 **WeddingOnboardingWidget** - 7 étapes (simplifié vs 9 dans la spec)
+  - Step 1: Date (obligatoire)
+  - Step 2: Location avec Google Places (obligatoire)
+  - Step 3: Professionals needed (optionnel)
+  - Step 4: Guest count (optionnel, default 100)
+  - Step 5: Budget range min/max (optionnel)
+  - Step 6: Visibility + Search radius optionnel (checkbox + slider 10-500km)
+  - Step 7: Done + Cover image picker optionnel
+- 📅 **Wedding Overview Card** - Design compact horizontal
+  - Full-width (edge-to-edge, pas de marges)
+  - Countdown badge 64x64px
+  - Titre 16px, textes secondaires 13px
+  - Espacement 4px entre lignes
+  - Icône edit à droite
+- 📅 **Persistence** - Sauvegarde à chaque étape via `onboarding_step`
+- 📅 **Cover Image** - Upload vers bucket `wedding-covers`
+
+#### Décisions techniques :
+- **Budget** : Stocké en devise sélectionnée (pas de conversion USD)
+- **Colonnes supprimées** : `budget_min_eur`, `budget_max_eur`
+- **search_area_coords** : Maintenant populé automatiquement (= venue_coords)
+- **Onboarding simplifié** : 7 étapes au lieu de 9 (Welcome + Features Preview retirés)
+
+#### Fichiers créés (Sprint 2) :
+```
+lib/features/my_wedding/
+├── domain/
+│   ├── entities/
+│   │   └── wedding_overview.dart
+│   ├── repositories/
+│   │   └── my_wedding_repository.dart
+│   └── usecases/
+│       ├── get_wedding_overview.dart
+│       ├── get_wedding_team.dart
+│       ├── invite_pro_to_wedding.dart
+│       ├── save_post_to_album.dart
+│       └── leave_wedding.dart
+├── data/
+│   ├── datasources/
+│   │   └── supabase_my_wedding_datasource.dart
+│   └── repositories/
+│       └── my_wedding_repository_impl.dart
+└── presentation/
+    ├── pages/
+    │   ├── my_wedding_page.dart
+    │   └── wedding_onboarding_page.dart
+    ├── widgets/
+    │   └── wedding_onboarding_widget.dart
+```
+
+#### Fichiers à créer (Sprint 3+) :
+```
+lib/features/my_wedding/presentation/
+├── pages/
+│   ├── wedding_team_page.dart
+│   ├── agenda_page.dart
+│   ├── budget_page.dart
+│   └── inspirations_page.dart
+├── widgets/
+│   ├── wedding_team_tile.dart
+│   └── expense_item.dart
+└── sheets/
+    ├── invite_pro_sheet.dart
+    └── wedding_edit_sheet.dart
+```
+
+#### Sections placeholder (Sprint 3) :
+- Wedding Team (affiche "No professionals yet" + bouton "Invite Professionals")
+- Agenda (affiche "Coming in Sprint 3")
+- Budget (affiche "Coming in Sprint 3")
+
 ---
 
 ## 🚀 Next Steps

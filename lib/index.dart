@@ -70,3 +70,8 @@ export '/pages/shared/wow_simple_viewer/wow_simple_viewer_widget.dart'
     show WowSimpleViewerWidget;
 export '/pages/pro/wishlist_pro/wishlist_pro_widget.dart'
     show WishlistProWidget;
+// My Wedding Suite - Sprint 1
+export '/features/my_wedding/presentation/pages/my_wedding_page.dart'
+    show MyWeddingPage;
+export '/features/weddings_hub_pro/presentation/pages/weddings_hub_pro_page.dart'
+    show WeddingsHubProPage;

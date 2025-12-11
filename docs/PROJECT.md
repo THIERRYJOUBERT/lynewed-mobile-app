@@ -1,7 +1,7 @@
 # LYNEWED PROJECT - V1 IN PRODUCTION 🚀
 
-**Version:** v2.0.0  
-**Last Updated:** 2025-12-10  
+**Version:** v2.1.0  
+**Last Updated:** 2025-12-11  
 **Status:** 🚀 **V1 IN PRODUCTION** - Active users on App Store
 
 ---
@@ -41,13 +41,24 @@
 - ✅ **Security** - RLS, secrets, API key restrictions
 - ✅ **Cleanup** - 135 files deleted, 40,588 lines removed
 
+### Sprint 2 Accomplishments (2025-12-11)
+- ✅ **My Wedding Suite - Phase 1** - Navigation + Onboarding + Overview
+- ✅ **Navbar Restructuring** - Brides (Home, Feed, Wedding, WOTW, Replay) + Pros (Home, Feed, Weddings, WOTW, Replay)
+- ✅ **Wedding Onboarding** - 7-step wizard with persistence (Date, Location, Professionals, Guests, Budget, Visibility, Done)
+- ✅ **Wedding Overview Card** - Compact horizontal design (64px countdown badge, full-width, edge-to-edge)
+- ✅ **Budget Range Selection** - Min/Max saved to `budget_min`/`budget_max` (int4)
+- ✅ **Search Radius Optional** - Checkbox toggle + slider (10-500km) when visibility = visible_to_pros
+- ✅ **Cover Image Upload** - Optional at step 7, uploads to `wedding-covers` bucket
+- ✅ **DB Cleanup** - Removed `budget_min_eur`/`budget_max_eur` columns (values stored in selected currency)
+- ✅ **search_area_coords** - Now correctly populated during wedding creation/update
+
 ### Key Metrics
 | Metric | Value |
 |--------|-------|
 | Codebase | ~71,500 lines Dart |
 | Files | ~400 Dart files |
 | Architecture | Clean Architecture |
-| Completed Modules | Design System, Map, Chat, Notifications, Feed |
+| Completed Modules | Design System, Map, Chat, Notifications, Feed, My Wedding (Phase 1) |
 | SQL Migrations | 58 applied |
 | Map Tests | 63/63 passing |
 | External APIs | 4 certified (Supabase, Google Places, Agora, FCM) |
@@ -67,10 +78,14 @@ lib/
 │   ├── services/            # Shared services
 │   └── utils/               # Utilities
 │
-├── features/                # Clean Architecture modules (~21,000 lines)
+├── features/                # Clean Architecture modules (~23,000 lines)
 │   ├── map/                 # Map module (37 files, ~4,200 lines)
 │   ├── chat/                # Chat module (45 files, ~8,500 lines)
 │   ├── notifications/       # Notifications (5 files, ~1,200 lines)
+│   ├── my_wedding/          # My Wedding Suite (NEW - Sprint 2)
+│   │   ├── domain/          # Entities, repositories
+│   │   ├── data/            # Supabase datasource
+│   │   └── presentation/    # Pages, widgets, sheets
 │   └── dashboard/           # Dashboard module
 │
 ├── pages/                   # Legacy pages (migration in progress)
@@ -128,11 +143,11 @@ docs/
 
 | Priority | Task | Description |
 |----------|------|-------------|
-| 1 | **TestFlight** | Prepare and deploy beta |
-| 2 | **ProDetails** | Complete refactoring with Images V2 |
-| 3 | **Auth Module** | Clean Architecture refactoring |
-| 4 | **Profile Pages** | Refactoring |
-| 5 | **Performance** | Cache, images, lazy loading |
+| 1 | **My Wedding Suite - Sprint 3** | Wedding Team, Agenda, Budget sections |
+| 2 | **Weddings Hub Pro** | Pro-side wedding management |
+| 3 | **TestFlight** | Prepare and deploy beta |
+| 4 | **ProDetails** | Complete refactoring with Images V2 |
+| 5 | **Auth Module** | Clean Architecture refactoring |
 
 ---
 
@@ -153,5 +168,5 @@ docs/
 
 ---
 
-**Last Updated:** 2025-12-10  
-**Status:** 🚀 V1 IN PRODUCTION - Simplified workflow (single Supabase environment)
+**Last Updated:** 2025-12-11  
+**Status:** 🚀 V1 IN PRODUCTION - Sprint 2 Complete (My Wedding Suite Phase 1)

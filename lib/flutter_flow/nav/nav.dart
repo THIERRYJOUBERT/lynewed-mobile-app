@@ -367,6 +367,17 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             ),
           ),
         ),
+        // My Wedding Suite - Sprint 1
+        FFRoute(
+          name: MyWeddingPage.routeName,
+          path: MyWeddingPage.routePath,
+          builder: (context, params) => const MyWeddingPage(),
+        ),
+        FFRoute(
+          name: WeddingsHubProPage.routeName,
+          path: WeddingsHubProPage.routePath,
+          builder: (context, params) => const WeddingsHubProPage(),
+        ),
         // ChatDetailsPage - Clean Architecture (nouvelle page)
         FFRoute(
           name: 'ChatDetailsPage',

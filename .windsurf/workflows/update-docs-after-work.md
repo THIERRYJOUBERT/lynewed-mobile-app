@@ -22,13 +22,6 @@ Analyze the current conversation to identify:
 ### STEP 2: Determine Which Docs Need Updates
 Based on context, identify relevant documents:
 
-| Document | Update When... |
-|----------|----------------|
-| `docs/PROJECT.md` | Project state changes, modules completed, metrics updated |
-| `docs/PROJECT_TODO.md` | Tasks completed, new tasks identified, priorities changed |
-| `docs/REFACTORING_REPORT_MVP_TO_V1.md` | Major milestones, significant changes |
-| `lib/features/[module]/README.md` | Module-specific changes |
-
 ### STEP 3: Read Current State
 Read each identified document to understand current content before updating.
 

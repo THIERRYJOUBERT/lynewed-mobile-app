@@ -68,7 +68,7 @@ La feature **"My Wedding Suite"** a été entièrement spécifiée et validée. 
    - Policies storage
 
 4. **`docs/sql/MY_WEDDING_SUITE_TRIGGERS.sql`**
-   - 8 triggers/functions
+   - 7 triggers/functions
    - Migration one-time pour mariages existants
 
 5. **`docs/App/DESIGN_SYSTEM.md`**
@@ -91,9 +91,9 @@ La feature **"My Wedding Suite"** a été entièrement spécifiée et validée. 
 1. **1.1** Migration table `weddings` (5 colonnes)
 2. **1.2** Migration table `wedding_participants` (enum + colonnes)
 3. **1.3** Migration tables chat (rooms + messages)
-4. **1.4** Créer 7 nouvelles tables
+4. **1.4** Créer 6 nouvelles tables (sans `pro_wedding_notes`)
 5. **1.5** Appliquer toutes les RLS policies
-6. **1.6** Créer 8 triggers/functions
+6. **1.6** Créer 7 triggers/functions
 7. **1.7** Créer 3 storage buckets
 8. **1.8** Créer 4 widgets Design System core
 9. **1.9** Restructurer les 2 navbars
@@ -106,6 +106,13 @@ La feature **"My Wedding Suite"** a été entièrement spécifiée et validée. 
 - [ ] Triggers fonctionnels (tester manuellement)
 - [ ] Navbars affichent les nouveaux onglets
 - [ ] Widgets Design System créés et exportés
+
+### Sprint 4: Wedding Team Features - MISE À JOUR
+**Changements V2.1:**
+- Suppression section 5.5 "Pro Notes" (notes privées reportées)
+- Ajout section 4.6 "Settings - Toggle Rappels Événements"
+- Simplification `wedding_events`: rappel unique 24h avant (CRON horaire)
+- 5 notifications au lieu de 6
 
 ### Sprints 2-8: Voir plan d'implémentation
 Chaque sprint a ses propres checklists détaillées dans `MY_WEDDING_SUITE_IMPLEMENTATION_PLAN.md`.
@@ -120,6 +127,7 @@ Chaque sprint a ses propres checklists détaillées dans `MY_WEDDING_SUITE_IMPLE
 3. **✅ TOUJOURS** créer dans `lib/features/` ou `lib/core/`
 4. **✅ TOUJOURS** utiliser `import '/core/design/design.dart';`
 5. **✅ TOUJOURS** suivre Clean Architecture (domain/data/presentation)
+6. **✅ TOUJOURS** vérifier `docs/MY_WEDDING_SUITE_IMPLEMENTATION_PLAN.md` V2.1 pour les changements
 
 ### Spacing Rules
 - **30px** entre sections
@@ -130,6 +138,8 @@ Chaque sprint a ses propres checklists détaillées dans `MY_WEDDING_SUITE_IMPLE
 1. **ORDRE CRITIQUE:** ADD VALUE enum AVANT UPDATE données
 2. **Vérifier via MCP** avant chaque migration
 3. **Tester chaque trigger** manuellement après création
+4. **wedding_events:** Rappel unique 24h avant (CRON horaire, pas 15 min)
+5. **Pas de `pro_wedding_notes`** - table supprimée en V2.1
 
 ### Workflow
 1. **Un sprint à la fois** - Ne pas sauter d'étapes
@@ -145,7 +155,8 @@ Chaque sprint a ses propres checklists détaillées dans `MY_WEDDING_SUITE_IMPLE
 3. **RLS wedding_team:** Ne pas oublier les policies pour le nouveau type de room
 4. **Storage policies:** Utiliser le pattern `{room_id}/{filename}` pour chat-documents
 5. **Contrainte unique:** Ne pas oublier sur `wedding_participants`
-6. **Notifications:** Les 6 types doivent avoir leurs triggers (5 SQL + 1 Edge Function)
+6. **Notifications:** Les 5 types doivent avoir leurs triggers (4 SQL + 1 Edge Function CRON)
+7. **Toggle Settings:** Ajouter toggle "Rappels événements mariage" dans Settings → Notifications
 
 ---
 
@@ -184,7 +195,7 @@ flutter test              # Lancer tests
 1. Tous les sprints cochés ✅
 2. Tests unitaires usecases
 3. Test manuel complet Bride + Pro
-4. 6 notifications fonctionnelles
+4. 5 notifications fonctionnelles + toggle Settings
 5. Mise à jour `docs/PROJECT.md`
 
 ---
@@ -206,9 +217,10 @@ Résumer:
 - Les 8 sprints et leur ordre
 - Les dépendances entre sprints
 - Les risques identifiés
+- Les changements V2.1 (simplifications)
 
 ### Étape 4: Proposer plan d'action Sprint 1
-Détailler l'ordre exact d'exécution des tâches 1.1 à 1.11.
+Détailler l'ordre exact d'exécution des tâches 1.1 à 1.11 (6 tables, 7 triggers, pas de `pro_wedding_notes`).
 
 ### Étape 5: Attendre validation
 Ne pas exécuter avant confirmation de l'utilisateur.
@@ -217,21 +229,23 @@ Ne pas exécuter avant confirmation de l'utilisateur.
 
 ## 📊 PROGRESS TRACKING
 
-Utiliser cette structure pour reporter l'avancement:
+Mettre à jour le fichier `MY_WEDDING_SUITE_IMPLEMENTATION_PLAN.md` directement en cochant les tâches dans les checklists.
 
-```
-## Sprint 1 Progress
-- [x] 1.1 Migration weddings
-- [x] 1.2 Migration wedding_participants
-- [ ] 1.3 Migration chat tables
-- [ ] 1.4 Nouvelles tables
-...
-```
-
-Mettre à jour le fichier `MY_WEDDING_SUITE_IMPLEMENTATION_PLAN.md` directement en cochant les tâches.
+**Note:** Ce prompt a été généré pour les futures conversations. Consulter toujours `MY_WEDDING_SUITE_IMPLEMENTATION_PLAN.md` V2.1+ pour l'état actuel.
 
 ---
 
 **Prompt généré le:** 2025-12-10  
+**Mis à jour:** 2025-12-11 (V2.1 - simplifications validées)  
 **Pour:** Implémentation My Wedding Suite  
 **Durée estimée totale:** 20-28 jours
+
+---
+
+## 📝 CHANGEMENTS V2.1 (2025-12-11)
+
+**Validés par l'utilisateur:**
+- ❌ Suppression table `pro_wedding_notes` (notes privées pro reportées)
+- ✅ Simplification `wedding_events`: rappel unique 24h avant (CRON horaire)
+- ✅ Ajout toggle Settings "Rappels événements mariage"
+- ✅ Réduction: 8 triggers → 7, 6 notifications → 5, 12 widgets → 11

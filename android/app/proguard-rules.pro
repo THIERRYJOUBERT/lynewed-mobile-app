@@ -10,7 +10,10 @@
 -dontwarn org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider
 -keep class org.xmlpull.v1.** { *; }
 
+# Agora SDK
+-keep class io.agora.** { *; }
+-dontwarn io.agora.**
 
-
-
+# ThrowableExtension (desugar)
+-dontwarn com.google.devtools.build.android.desugar.runtime.ThrowableExtension
 
