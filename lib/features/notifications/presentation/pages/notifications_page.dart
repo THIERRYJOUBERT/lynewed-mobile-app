@@ -433,6 +433,15 @@ class _NotificationTile extends StatelessWidget {
         return Icons.celebration_outlined;
       case NotificationType.replayPublished:
         return Icons.play_circle_outline;
+      // Wedding events
+      case NotificationType.weddingProAdded:
+        return Icons.group_add_outlined;
+      case NotificationType.weddingProExcluded:
+        return Icons.person_remove_outlined;
+      case NotificationType.weddingProLeft:
+        return Icons.exit_to_app_outlined;
+      case NotificationType.weddingCancelled:
+        return Icons.event_busy_outlined;
       default:
         return Icons.notifications_outlined;
     }
@@ -454,6 +463,15 @@ class _NotificationTile extends StatelessWidget {
         return 'Wedding of the Week';
       case NotificationType.replayPublished:
         return 'New Replay';
+      // Wedding events
+      case NotificationType.weddingProAdded:
+        return 'Added to a wedding';
+      case NotificationType.weddingProExcluded:
+        return 'Removed from wedding';
+      case NotificationType.weddingProLeft:
+        return 'Professional left';
+      case NotificationType.weddingCancelled:
+        return 'Wedding cancelled';
       default:
         return 'Notification';
     }

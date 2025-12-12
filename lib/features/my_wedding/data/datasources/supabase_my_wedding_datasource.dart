@@ -640,4 +640,238 @@ class SupabaseMyWeddingDatasource {
       rethrow;
     }
   }
+
+  // ========== WEDDING EVENTS (AGENDA) ==========
+
+  /// Get all events for a wedding
+  Future<List<WeddingEvent>> getWeddingEvents({
+    required String weddingId,
+  }) async {
+    try {
+      final response = await _client
+          .from('wedding_events')
+          .select()
+          .eq('wedding_id', weddingId)
+          .order('event_date', ascending: true);
+
+      return (response as List)
+          .map((json) => WeddingEvent.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      SecureLogger.error('getWeddingEvents error: $e');
+      rethrow;
+    }
+  }
+
+  /// Create a new wedding event
+  Future<WeddingEvent> createWeddingEvent({
+    required String weddingId,
+    required String title,
+    required DateTime eventDate,
+    String? description,
+    DateTime? eventEndDate,
+    String? location,
+    String? linkedProId,
+    bool isPublic = false,
+  }) async {
+    try {
+      final response = await _client
+          .from('wedding_events')
+          .insert({
+            'wedding_id': weddingId,
+            'title': title,
+            'description': description,
+            'event_date': eventDate.toIso8601String(),
+            'event_end_date': eventEndDate?.toIso8601String(),
+            'location': location,
+            'linked_pro_id': linkedProId,
+            'is_public': isPublic,
+            'status': 'pending',
+          })
+          .select()
+          .single();
+
+      SecureLogger.info('createWeddingEvent: Created event for wedding $weddingId');
+      return WeddingEvent.fromJson(response);
+    } catch (e) {
+      SecureLogger.error('createWeddingEvent error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update a wedding event
+  Future<void> updateWeddingEvent({
+    required String eventId,
+    String? title,
+    String? description,
+    DateTime? eventDate,
+    DateTime? eventEndDate,
+    String? location,
+    String? linkedProId,
+    bool? isPublic,
+    String? status,
+  }) async {
+    try {
+      final updateData = <String, dynamic>{};
+      if (title != null) updateData['title'] = title;
+      if (description != null) updateData['description'] = description;
+      if (eventDate != null) updateData['event_date'] = eventDate.toIso8601String();
+      if (eventEndDate != null) updateData['event_end_date'] = eventEndDate.toIso8601String();
+      if (location != null) updateData['location'] = location;
+      if (linkedProId != null) updateData['linked_pro_id'] = linkedProId;
+      if (isPublic != null) updateData['is_public'] = isPublic;
+      if (status != null) updateData['status'] = status;
+      updateData['updated_at'] = DateTime.now().toIso8601String();
+
+      if (updateData.length == 1) {
+        SecureLogger.warning('updateWeddingEvent: No data to update');
+        return;
+      }
+
+      await _client
+          .from('wedding_events')
+          .update(updateData)
+          .eq('id', eventId);
+
+      SecureLogger.info('updateWeddingEvent: Updated event $eventId');
+    } catch (e) {
+      SecureLogger.error('updateWeddingEvent error: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a wedding event
+  Future<void> deleteWeddingEvent({required String eventId}) async {
+    try {
+      await _client
+          .from('wedding_events')
+          .delete()
+          .eq('id', eventId);
+
+      SecureLogger.info('deleteWeddingEvent: Deleted event $eventId');
+    } catch (e) {
+      SecureLogger.error('deleteWeddingEvent error: $e');
+      rethrow;
+    }
+  }
+
+  /// Toggle event status (pending <-> done)
+  Future<void> toggleEventStatus({
+    required String eventId,
+    required String currentStatus,
+  }) async {
+    final newStatus = currentStatus == 'done' ? 'pending' : 'done';
+    await updateWeddingEvent(eventId: eventId, status: newStatus);
+  }
+
+  // ========== WEDDING EXPENSES (BUDGET) ==========
+
+  /// Get all expenses for a wedding
+  Future<List<WeddingExpense>> getWeddingExpenses({
+    required String weddingId,
+  }) async {
+    try {
+      final response = await _client
+          .from('wedding_expenses')
+          .select()
+          .eq('wedding_id', weddingId)
+          .order('created_at', ascending: false);
+
+      return (response as List)
+          .map((json) => WeddingExpense.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      SecureLogger.error('getWeddingExpenses error: $e');
+      rethrow;
+    }
+  }
+
+  /// Create a new wedding expense
+  Future<WeddingExpense> createWeddingExpense({
+    required String weddingId,
+    required String category,
+    required double amount,
+    String? description,
+    String? status,
+    double? paidAmount,
+    DateTime? dueDate,
+    String? linkedProId,
+  }) async {
+    try {
+      final response = await _client
+          .from('wedding_expenses')
+          .insert({
+            'wedding_id': weddingId,
+            'category': category,
+            'description': description,
+            'amount': amount,
+            'status': status ?? 'pending',
+            'paid_amount': paidAmount ?? 0,
+            'due_date': dueDate?.toIso8601String().split('T')[0],
+            'linked_pro_id': linkedProId,
+          })
+          .select()
+          .single();
+
+      SecureLogger.info('createWeddingExpense: Created expense for wedding $weddingId');
+      return WeddingExpense.fromJson(response);
+    } catch (e) {
+      SecureLogger.error('createWeddingExpense error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update a wedding expense
+  Future<void> updateWeddingExpense({
+    required String expenseId,
+    String? category,
+    String? description,
+    double? amount,
+    String? status,
+    double? paidAmount,
+    DateTime? dueDate,
+    String? linkedProId,
+  }) async {
+    try {
+      final updateData = <String, dynamic>{};
+      if (category != null) updateData['category'] = category;
+      if (description != null) updateData['description'] = description;
+      if (amount != null) updateData['amount'] = amount;
+      if (status != null) updateData['status'] = status;
+      if (paidAmount != null) updateData['paid_amount'] = paidAmount;
+      if (dueDate != null) updateData['due_date'] = dueDate.toIso8601String().split('T')[0];
+      if (linkedProId != null) updateData['linked_pro_id'] = linkedProId;
+      updateData['updated_at'] = DateTime.now().toIso8601String();
+
+      if (updateData.length == 1) {
+        SecureLogger.warning('updateWeddingExpense: No data to update');
+        return;
+      }
+
+      await _client
+          .from('wedding_expenses')
+          .update(updateData)
+          .eq('id', expenseId);
+
+      SecureLogger.info('updateWeddingExpense: Updated expense $expenseId');
+    } catch (e) {
+      SecureLogger.error('updateWeddingExpense error: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a wedding expense
+  Future<void> deleteWeddingExpense({required String expenseId}) async {
+    try {
+      await _client
+          .from('wedding_expenses')
+          .delete()
+          .eq('id', expenseId);
+
+      SecureLogger.info('deleteWeddingExpense: Deleted expense $expenseId');
+    } catch (e) {
+      SecureLogger.error('deleteWeddingExpense error: $e');
+      rethrow;
+    }
+  }
 }

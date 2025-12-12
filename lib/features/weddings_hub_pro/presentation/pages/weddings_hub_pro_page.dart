@@ -15,10 +15,15 @@ import '../sheets/wedding_actions_sheet.dart';
 
 /// Weddings Hub Pro Page - List of weddings where pro is participant
 class WeddingsHubProPage extends StatefulWidget {
-  const WeddingsHubProPage({super.key});
+  const WeddingsHubProPage({
+    super.key,
+    this.initialWeddingId,
+  });
 
   static const String routeName = 'weddingsHubPro';
   static const String routePath = '/weddingsHubPro';
+
+  final String? initialWeddingId;
 
   @override
   State<WeddingsHubProPage> createState() => _WeddingsHubProPageState();
@@ -27,6 +32,8 @@ class WeddingsHubProPage extends StatefulWidget {
 class _WeddingsHubProPageState extends State<WeddingsHubProPage> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final _repository = WeddingsHubRepositoryImpl();
+
+  bool _didAutoOpenInitialWedding = false;
 
   bool _isLoading = true;
   List<WeddingClient> _weddings = [];
@@ -57,11 +64,37 @@ class _WeddingsHubProPageState extends State<WeddingsHubProPage> {
         _weddings = result.data ?? [];
         _isLoading = false;
       });
+
+      // If opened from a notification, attempt to auto-open the wedding detail.
+      await _maybeAutoOpenInitialWedding();
     } else {
       setState(() {
         _error = result.error;
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _maybeAutoOpenInitialWedding() async {
+    if (!mounted) return;
+    if (_didAutoOpenInitialWedding) return;
+    final weddingId = widget.initialWeddingId;
+    if (weddingId == null || weddingId.isEmpty) return;
+
+    _didAutoOpenInitialWedding = true;
+
+    // Try to find it in the already loaded list.
+    final inList = _weddings.where((w) => w.weddingId == weddingId).toList();
+    if (inList.isNotEmpty) {
+      _openWeddingDetail(inList.first);
+      return;
+    }
+
+    // Otherwise fetch single wedding and open.
+    final result = await _repository.getWeddingClient(weddingId: weddingId);
+    if (!mounted) return;
+    if (result.isSuccess && result.data != null) {
+      _openWeddingDetail(result.data!);
     }
   }
 

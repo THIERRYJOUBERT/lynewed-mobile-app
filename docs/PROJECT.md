@@ -57,6 +57,12 @@
 - ✅ **Wedding Team Management (Bride)** - Invite pros sheet + exclude/remove flow + pro details navigation
 - ✅ **Weddings Hub Pro** - Weddings list + wedding detail page + mute/unmute + leave wedding (reason required)
 
+### Sprint 3.2 Accomplishments (2025-12-12)
+- ✅ **Agenda Page** - Full CRUD for wedding events (create/edit/delete/toggle status)
+- ✅ **Budget Page** - Full CRUD for expenses + totals header (budget vs spent vs remaining)
+- ✅ **AddEventSheet** - Date/time picker, location, visibility toggle (public/private)
+- ✅ **AddExpenseSheet** - Category selector, amount, status (pending/partial/paid), due date
+
 ### Key Metrics
 | Metric | Value |
 |--------|-------|
@@ -149,7 +155,7 @@ docs/
 | Priority | Task | Description |
 |----------|------|-------------|
 | 1 | **My Wedding Suite - Sprint 6** | Moodboard / Inspirations (albums, save from feed, upload) |
-| 2 | **My Wedding Suite - Sprint 7** | Planning features (Agenda, Budget, Guests) |
+| 2 | **My Wedding Suite - Guests** | Guests list management |
 | 3 | **TestFlight** | Prepare and deploy beta |
 | 4 | **ProDetails** | Complete refactoring with Images V2 |
 | 5 | **Auth Module** | Clean Architecture refactoring |
@@ -174,4 +180,4 @@ docs/
 ---
 
 **Last Updated:** 2025-12-12  
-**Status:** 🚀 V1 IN PRODUCTION - My Wedding Suite Sprints 3-5 Complete
+**Status:** 🚀 V1 IN PRODUCTION - My Wedding Suite Sprint 3.2 Complete (Agenda + Budget)

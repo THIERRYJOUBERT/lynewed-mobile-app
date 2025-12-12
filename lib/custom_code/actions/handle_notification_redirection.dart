@@ -10,8 +10,12 @@ import 'package:flutter/material.dart';
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import '/backend/supabase/supabase.dart';
+import '/backend/schema/structs/index.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/custom_code/actions/index.dart' as actions;
+import '/index.dart' show ProDetailsWidget;
+import '/features/weddings_hub_pro/presentation/pages/weddings_hub_pro_page.dart';
+import '/features/my_wedding/presentation/pages/my_wedding_page.dart';
 
 // ignore_for_file: use_build_context_synchronously
 
@@ -461,6 +465,89 @@ Future<void> handleNotificationRedirection(
     // professionalAlert: CODE MORT - Jamais déclenché
     // professionalAlertReminder24h: CODE MORT - Jamais déclenché
     // weddingPinMatch: CODE MORT - Concept obsolète
+
+    // === WEDDING EVENTS (Sprint 3.1) ===
+    case 'weddingProAdded':
+      {
+        // Pro reçoit une notification qu'il a été ajouté à un mariage
+        // Naviguer vers Weddings Hub Pro (la page de détail n'est pas accessible par route)
+        final weddingId = (data['wedding_id'] as String?) ?? '';
+        SecureLogger.info('💒 weddingProAdded: wedding_id=$weddingId');
+        
+        // Naviguer vers Weddings Hub + ouvrir automatiquement le bon mariage
+        router.pushNamed(
+          WeddingsHubProPage.routeName,
+          queryParameters: {
+            if (weddingId.isNotEmpty) 'weddingId': weddingId,
+          },
+        );
+        break;
+      }
+
+    case 'weddingProExcluded':
+      {
+        // Pro reçoit une notification qu'il a été exclu d'un mariage
+        // Pas d'action nécessaire, juste informer - naviguer vers Weddings Hub
+        final weddingId = (data['wedding_id'] as String?) ?? '';
+        SecureLogger.info('💒 weddingProExcluded: wedding_id=$weddingId');
+        
+        router.pushNamed(WeddingsHubProPage.routeName);
+        break;
+      }
+
+    case 'weddingProLeft':
+      {
+        // Bride reçoit une notification qu'un pro a quitté son mariage
+        // Naviguer vers ProDetails pour voir le profil du pro qui est parti
+        final weddingId = (data['wedding_id'] as String?) ?? '';
+        final proProfileId = (data['pro_profile_id'] as String?) ?? '';
+        SecureLogger.info('💒 weddingProLeft: wedding_id=$weddingId, pro_profile_id=$proProfileId');
+        
+        if (proProfileId.isNotEmpty) {
+          // Récupérer les infos du pro pour naviguer vers ProDetails
+          try {
+            final proData = await SupaFlow.client
+                .from('profiles')
+                .select('id, full_name, avatar_url, user_role')
+                .eq('id', proProfileId)
+                .maybeSingle();
+            
+            if (proData != null && context.mounted) {
+              // Construire ProDetailsStruct minimal pour la navigation
+              final proDetails = ProDetailsStruct(
+                proProfileId: proData['id'] as String?,
+                fullName: proData['full_name'] as String?,
+                avatarUrl: proData['avatar_url'] as String?,
+              );
+              
+              router.pushNamed(
+                ProDetailsWidget.routeName,
+                queryParameters: {
+                  'proDetails': serializeParam(proDetails, ParamType.DataStruct),
+                }.withoutNulls,
+              );
+              break;
+            }
+          } catch (e) {
+            SecureLogger.error('weddingProLeft: Failed to load pro details', error: e);
+          }
+        }
+        
+        // Fallback: naviguer vers My Wedding page
+        router.pushNamed(MyWeddingPage.routeName);
+        break;
+      }
+
+    case 'weddingCancelled':
+      {
+        // Pro reçoit une notification qu'un mariage a été annulé
+        // Naviguer vers Weddings Hub Pro
+        final weddingId = (data['wedding_id'] as String?) ?? '';
+        SecureLogger.info('💒 weddingCancelled: wedding_id=$weddingId');
+        
+        router.pushNamed(WeddingsHubProPage.routeName);
+        break;
+      }
 
     case 'broadcast':
       {

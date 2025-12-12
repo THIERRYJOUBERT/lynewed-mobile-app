@@ -1,8 +1,8 @@
 # PROJECT TODO - LYNEWED V1+
 
-**Last Updated:** 2025-12-11  
-**Version:** v6.0 (Sprint 2 Complete)  
-**Status:** My Wedding Suite Sprints 3-5 Complete - Sprint 6 Planning
+**Last Updated:** 2025-12-12  
+**Version:** v6.1 (Sprint 3.1 Complete)  
+**Status:** My Wedding Suite - Notifications wedding_* fixed
 
 ---
 
@@ -27,7 +27,21 @@
 
 ---
 
-## ⏳ Sprint 3 - My Wedding Suite Phase 2
+## ✅ Sprint 3.1 - COMPLETED (2025-12-12)
+
+### Notifications wedding_* Support
+- [x] Edge Function `notifications_outbox_drain` now handles wedding events
+- [x] Events supported: `wedding_pro_added`, `wedding_pro_excluded`, `wedding_pro_left`, `wedding_cancelled`
+- [x] I18N templates (FR/EN) for all wedding notification types
+- [x] Respects `notification_settings` per user
+
+### Storage Policy Fix
+- [x] Cover image upload now uses `userId/weddingId_timestamp.jpg` format
+- [x] DELETE policy now works correctly (matches folder prefix)
+
+---
+
+## ✅ Sprint 3 - COMPLETED (2025-12-11)
 
 ### Wedding Team Section
 - [x] Wedding Team list (pros added to wedding)

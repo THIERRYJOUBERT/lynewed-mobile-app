@@ -18,6 +18,8 @@ import '../widgets/wedding_onboarding_widget.dart';
 import '../sheets/wedding_edit_sheet.dart';
 import '../sheets/invite_pro_sheet.dart';
 import '../sheets/note_for_pros_sheet.dart';
+import 'agenda_page.dart';
+import 'budget_page.dart';
 
 /// My Wedding Page - Main page for brides to manage their wedding
 ///
@@ -47,6 +49,12 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
   // Wedding Team data
   WeddingTeamChatInfo? _teamChatInfo;
   List<WeddingTeamMember> _teamMembers = [];
+
+  // Agenda & Budget preview data
+  List<WeddingEvent> _upcomingEvents = [];
+  List<WeddingExpense> _expenses = [];
+  double _totalExpenses = 0;
+  double _totalPaid = 0;
 
   @override
   void initState() {
@@ -93,20 +101,38 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
   Future<void> _loadWeddingTeamData() async {
     if (_wedding == null) return;
 
-    // Load team chat info and active team members in parallel
+    // Load team chat info, active team members, events and expenses in parallel
     final results = await Future.wait([
       _repository.getWeddingTeamChat(weddingId: _wedding!.id),
       _repository.getActiveWeddingTeam(weddingId: _wedding!.id),
+      _repository.getWeddingEvents(weddingId: _wedding!.id),
+      _repository.getWeddingExpenses(weddingId: _wedding!.id),
     ]);
 
     final chatResult = results[0] as RepositoryResult<WeddingTeamChatInfo?>;
     final teamResult = results[1] as RepositoryResult<List<WeddingTeamMember>>;
+    final eventsResult = results[2] as RepositoryResult<List<WeddingEvent>>;
+    final expensesResult = results[3] as RepositoryResult<List<WeddingExpense>>;
 
     if (chatResult.isSuccess) {
       _teamChatInfo = chatResult.data;
     }
     if (teamResult.isSuccess) {
       _teamMembers = teamResult.data ?? [];
+    }
+    if (eventsResult.isSuccess) {
+      // Filter upcoming events (not done, not cancelled, future or today)
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      _upcomingEvents = (eventsResult.data ?? [])
+          .where((e) => !e.isDone && !e.isCancelled && !e.eventDate.isBefore(today))
+          .take(5)
+          .toList();
+    }
+    if (expensesResult.isSuccess) {
+      _expenses = expensesResult.data ?? [];
+      _totalExpenses = _expenses.fold(0, (sum, e) => sum + e.amount);
+      _totalPaid = _expenses.fold(0, (sum, e) => sum + e.paidAmount);
     }
   }
 
@@ -515,115 +541,352 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
 
   /// Agenda Section
   Widget _buildAgendaSection() {
+    final hasEvents = _upcomingEvents.isNotEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('AGENDA', style: LynewedTextStyles.sectionTitle),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('AGENDA', style: LynewedTextStyles.sectionTitle),
+            GestureDetector(
+              onTap: _openAgendaPage,
+              child: Text(
+                'View all',
+                style: LynewedTextStyles.labelLarge.copyWith(
+                  color: LynewedColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 4.0),
         Text(
-          'Your upcoming events and tasks',
+          hasEvents ? '${_upcomingEvents.length} upcoming event${_upcomingEvents.length > 1 ? 's' : ''}' : 'Your upcoming events and tasks',
           style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
         ),
         const SizedBox(height: 10.0),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20.0),
-          decoration: BoxDecoration(
-            color: LynewedColors.surface,
-            borderRadius: BorderRadius.circular(4.0),
-          ),
-          child: Column(
+        if (hasEvents)
+          // Show upcoming events list
+          Column(
             children: [
-              const Icon(Icons.event_outlined, size: 32.0, color: LynewedColors.gray300),
-              const SizedBox(height: 8.0),
-              Text(
-                'No events yet',
-                style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
-              ),
-              const SizedBox(height: 12.0),
-              LynewedButton(
-                text: 'Add Event',
-                onPressed: () {
-                  // TODO: Sprint 7 - Add event sheet
-                },
+              ..._upcomingEvents.map((event) => Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: _buildEventPreviewTile(event),
+              )),
+              const SizedBox(height: 4.0),
+              GestureDetector(
+                onTap: _openAgendaPage,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: LynewedColors.gray200),
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'View all events',
+                      style: LynewedTextStyles.labelLarge.copyWith(
+                        color: LynewedColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ],
+          )
+        else
+          // Empty state
+          GestureDetector(
+            onTap: _openAgendaPage,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20.0),
+              decoration: BoxDecoration(
+                color: LynewedColors.surface,
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              child: Column(
+                children: [
+                  const Icon(Icons.event_outlined, size: 32.0, color: LynewedColors.gray300),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    'No upcoming events',
+                    style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
+                  ),
+                  const SizedBox(height: 12.0),
+                  LynewedButton(
+                    text: 'Add Event',
+                    onPressed: _openAgendaPage,
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
       ],
+    );
+  }
+
+  /// Event preview tile for agenda section
+  Widget _buildEventPreviewTile(WeddingEvent event) {
+    final dateFormat = DateFormat('MMM d');
+    final timeFormat = DateFormat('HH:mm');
+
+    return GestureDetector(
+      onTap: _openAgendaPage,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12.0),
+        decoration: BoxDecoration(
+          color: LynewedColors.surface,
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: Row(
+          children: [
+            // Date badge
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: LynewedColors.primary,
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    dateFormat.format(event.eventDate).split(' ')[0].toUpperCase(),
+                    style: LynewedTextStyles.labelSmall.copyWith(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 9,
+                    ),
+                  ),
+                  Text(
+                    dateFormat.format(event.eventDate).split(' ')[1],
+                    style: LynewedTextStyles.bodyMedium.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12.0),
+            // Event info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    event.title,
+                    style: LynewedTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2.0),
+                  Text(
+                    timeFormat.format(event.eventDate),
+                    style: LynewedTextStyles.labelMedium.copyWith(
+                      color: LynewedColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Public indicator
+            if (event.isPublic)
+              Icon(
+                Icons.visibility_outlined,
+                size: 16,
+                color: LynewedColors.textSecondary,
+              ),
+          ],
+        ),
+      ),
     );
   }
 
   /// Budget Section
   Widget _buildBudgetSection() {
     final hasBudget = _wedding!.budgetMax != null && _wedding!.budgetMax! > 0;
-    
+    final hasExpenses = _expenses.isNotEmpty;
+    final budgetMax = _wedding!.budgetMax ?? 0;
+    final currency = _wedding!.currency;
+    final progress = hasBudget && budgetMax > 0 ? (_totalExpenses / budgetMax).clamp(0.0, 1.0) : 0.0;
+    final isOverBudget = hasBudget && _totalExpenses > budgetMax;
+
+    String subtitle;
+    if (hasExpenses) {
+      subtitle = '${_expenses.length} expense${_expenses.length > 1 ? 's' : ''} tracked';
+    } else {
+      subtitle = 'Track your wedding expenses';
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('BUDGET', style: LynewedTextStyles.sectionTitle),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('BUDGET', style: LynewedTextStyles.sectionTitle),
+            GestureDetector(
+              onTap: _openBudgetPage,
+              child: Text(
+                'View all',
+                style: LynewedTextStyles.labelLarge.copyWith(
+                  color: LynewedColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 4.0),
         Text(
-          'Track your wedding expenses',
+          subtitle,
           style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
         ),
         const SizedBox(height: 10.0),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20.0),
-          decoration: BoxDecoration(
-            color: LynewedColors.surface,
-            borderRadius: BorderRadius.circular(4.0),
-          ),
-          child: hasBudget
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Total Budget',
-                          style: LynewedTextStyles.bodyMedium.copyWith(
-                            color: LynewedColors.textSecondary,
+        GestureDetector(
+          onTap: _openBudgetPage,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: LynewedColors.surface,
+              borderRadius: BorderRadius.circular(4.0),
+            ),
+            child: hasExpenses || hasBudget
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Total spent row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Total Spent',
+                            style: LynewedTextStyles.bodyMedium.copyWith(
+                              color: LynewedColors.textSecondary,
+                            ),
+                          ),
+                          Text(
+                            _formatAmount(_totalExpenses, currency),
+                            style: LynewedTextStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: isOverBudget ? LynewedColors.error : LynewedColors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (hasBudget) ...[
+                        const SizedBox(height: 12.0),
+                        // Progress bar
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4.0),
+                          child: LinearProgressIndicator(
+                            value: progress,
+                            backgroundColor: LynewedColors.gray200,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              isOverBudget ? LynewedColors.error : LynewedColors.success,
+                            ),
+                            minHeight: 6,
                           ),
                         ),
-                        Text(
-                          '${_wedding!.budgetMax!.toInt()} ${_wedding!.currency}',
-                          style: LynewedTextStyles.bodyMedium.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
+                        const SizedBox(height: 8.0),
+                        // Budget info row
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              isOverBudget
+                                  ? 'Over by ${_formatAmount(_totalExpenses - budgetMax, currency)}'
+                                  : 'Remaining: ${_formatAmount(budgetMax - _totalExpenses, currency)}',
+                              style: LynewedTextStyles.labelMedium.copyWith(
+                                color: isOverBudget ? LynewedColors.error : LynewedColors.textSecondary,
+                              ),
+                            ),
+                            Text(
+                              'of ${_formatAmount(budgetMax, currency)}',
+                              style: LynewedTextStyles.labelMedium.copyWith(
+                                color: LynewedColors.textSecondary,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 12.0),
-                    LynewedButton(
-                      text: 'View Budget',
-                      onPressed: () {
-                        // TODO: Sprint 7 - Budget page
-                      },
-                      width: double.infinity,
-                    ),
-                  ],
-                )
-              : Column(
-                  children: [
-                    const Icon(Icons.account_balance_wallet_outlined, size: 32.0, color: LynewedColors.gray300),
-                    const SizedBox(height: 8.0),
-                    Text(
-                      'No budget set',
-                      style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
-                    ),
-                    const SizedBox(height: 12.0),
-                    LynewedButton(
-                      text: 'Set Budget',
-                      onPressed: _openEditSheet,
-                    ),
-                  ],
-                ),
+                      const SizedBox(height: 12.0),
+                      // Paid vs Pending mini stats
+                      Row(
+                        children: [
+                          _buildBudgetMiniStat('Paid', _formatAmount(_totalPaid, currency), LynewedColors.success),
+                          const SizedBox(width: 12.0),
+                          _buildBudgetMiniStat('Pending', _formatAmount(_totalExpenses - _totalPaid, currency), LynewedColors.warning),
+                        ],
+                      ),
+                    ],
+                  )
+                : Column(
+                    children: [
+                      const Icon(Icons.account_balance_wallet_outlined, size: 32.0, color: LynewedColors.gray300),
+                      const SizedBox(height: 8.0),
+                      Text(
+                        'No expenses yet',
+                        style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
+                      ),
+                      const SizedBox(height: 12.0),
+                      LynewedButton(
+                        text: 'Add Expense',
+                        onPressed: _openBudgetPage,
+                      ),
+                    ],
+                  ),
+          ),
         ),
       ],
     );
+  }
+
+  Widget _buildBudgetMiniStat(String label, String value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6.0),
+            Expanded(
+              child: Text(
+                '$label: $value',
+                style: LynewedTextStyles.labelSmall.copyWith(
+                  color: LynewedColors.textPrimary,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatAmount(double amount, String currency) {
+    final formatter = NumberFormat('#,##0', 'en_US');
+    return '${formatter.format(amount.toInt())} $currency';
   }
 
   /// Inspirations Section
@@ -869,6 +1132,27 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
         ),
       ),
     );
+  }
+
+  void _openAgendaPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => AgendaPage(weddingId: _wedding!.id),
+      ),
+    ).then((_) => _loadWedding());
+  }
+
+  void _openBudgetPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => BudgetPage(
+          weddingId: _wedding!.id,
+          budgetMin: _wedding!.budgetMin,
+          budgetMax: _wedding!.budgetMax,
+          currency: _wedding!.currency,
+        ),
+      ),
+    ).then((_) => _loadWedding());
   }
 
   Future<void> _openProDetails(String profileId) async {

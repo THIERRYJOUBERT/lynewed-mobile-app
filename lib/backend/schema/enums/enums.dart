@@ -174,6 +174,12 @@ enum NotificationType {
   replayPublished,   // Nouveau Replay - deep link: lynewed://replays
   // Note: 'broadcast' générique n'est pas un enum, c'est un type FCM avec deep link custom
   
+  // === SYSTÈME 3: WEDDING EVENTS (Sprint 3.1) ===
+  weddingProAdded,     // Pro ajouté au mariage → notifie le pro
+  weddingProExcluded,  // Pro exclu du mariage → notifie le pro
+  weddingProLeft,      // Pro a quitté le mariage → notifie la bride
+  weddingCancelled,    // Mariage annulé → notifie tous les pros
+  
   // === TYPES OBSOLÈTES ===
   @Deprecated('Backend ne notifie plus les refus - supprimé en v23')
   connectionRequestDeclined,

@@ -376,7 +376,9 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: WeddingsHubProPage.routeName,
           path: WeddingsHubProPage.routePath,
-          builder: (context, params) => const WeddingsHubProPage(),
+          builder: (context, params) => WeddingsHubProPage(
+            initialWeddingId: params.getParam('weddingId', ParamType.String),
+          ),
         ),
         // ChatDetailsPage - Clean Architecture (nouvelle page)
         FFRoute(

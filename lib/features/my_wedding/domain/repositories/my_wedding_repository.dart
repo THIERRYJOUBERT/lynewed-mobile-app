@@ -165,6 +165,81 @@ abstract class MyWeddingRepository {
     required String weddingId,
     required String status,
   });
+
+  // ========== WEDDING EVENTS (AGENDA) ==========
+
+  /// Get all events for a wedding
+  Future<RepositoryResult<List<WeddingEvent>>> getWeddingEvents({
+    required String weddingId,
+  });
+
+  /// Create a new wedding event
+  Future<RepositoryResult<WeddingEvent>> createWeddingEvent({
+    required String weddingId,
+    required String title,
+    required DateTime eventDate,
+    String? description,
+    DateTime? eventEndDate,
+    String? location,
+    String? linkedProId,
+    bool isPublic = false,
+  });
+
+  /// Update a wedding event
+  Future<RepositoryResult<void>> updateWeddingEvent({
+    required String eventId,
+    String? title,
+    String? description,
+    DateTime? eventDate,
+    DateTime? eventEndDate,
+    String? location,
+    String? linkedProId,
+    bool? isPublic,
+    String? status,
+  });
+
+  /// Delete a wedding event
+  Future<RepositoryResult<void>> deleteWeddingEvent({required String eventId});
+
+  /// Toggle event status (pending <-> done)
+  Future<RepositoryResult<void>> toggleEventStatus({
+    required String eventId,
+    required String currentStatus,
+  });
+
+  // ========== WEDDING EXPENSES (BUDGET) ==========
+
+  /// Get all expenses for a wedding
+  Future<RepositoryResult<List<WeddingExpense>>> getWeddingExpenses({
+    required String weddingId,
+  });
+
+  /// Create a new wedding expense
+  Future<RepositoryResult<WeddingExpense>> createWeddingExpense({
+    required String weddingId,
+    required String category,
+    required double amount,
+    String? description,
+    String? status,
+    double? paidAmount,
+    DateTime? dueDate,
+    String? linkedProId,
+  });
+
+  /// Update a wedding expense
+  Future<RepositoryResult<void>> updateWeddingExpense({
+    required String expenseId,
+    String? category,
+    String? description,
+    double? amount,
+    String? status,
+    double? paidAmount,
+    DateTime? dueDate,
+    String? linkedProId,
+  });
+
+  /// Delete a wedding expense
+  Future<RepositoryResult<void>> deleteWeddingExpense({required String expenseId});
 }
 
 /// Contacted professional for invitation

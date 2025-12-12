@@ -149,7 +149,7 @@ lib/features/weddings_hub_pro/
 | Problème | Gravité | Description | Preuve |
 |----------|---------|-------------|--------|
 | **Notifications non drainées** | 🔴 Critique | Edge function `notifications_outbox_drain` exclut les events `wedding_*` | `index.ts` - switch case incomplet |
-| **Storage delete policy** | 🟡 Moyen | Potentiel mismatch: upload cover image crée un nom de fichier `${weddingId}_${timestamp}.jpg` (pas de prefix folder). La policy delete actuelle n'est pas prouvée dans le repo. | Upload prouvé: `lib/features/my_wedding/presentation/widgets/wedding_onboarding_widget.dart:L1470-L1480`. Policy delete: **Non vérifié** (nécessite extrait `pg_policies` / `storage.objects`). |
+| **Storage delete policy** | 🟡 Moyen | Potentiel mismatch: upload cover image crée un nom de fichier `${weddingId}_${timestamp}.jpg` (pas de prefix folder). La policy delete attend `auth.uid()/...`. | Policy prouvée: `pg_policies` → `Users can delete own covers` (bucket `wedding-covers`, `storage.foldername(name)[1] = auth.uid()`). Upload corrigé: `lib/features/my_wedding/presentation/widgets/wedding_onboarding_widget.dart` (path `userId/weddingId_timestamp.jpg`). |
 | **Enum status non migré** | 🟡 Moyen | Spec prévoit `active/left/excluded`, DB a `requested/accepted/declined` | Code utilise les anciens |
 
 ---
@@ -160,8 +160,8 @@ lib/features/weddings_hub_pro/
 
 | Tâche | Complexité | Dépendances | Description |
 |-------|------------|-------------|-------------|
-| **Fix notifications drain** | S | Aucune | Ajouter `wedding_pro_added`, `wedding_pro_excluded`, `wedding_pro_left`, `wedding_cancelled` dans edge function |
-| **Fix storage delete policy** | S | Aucune | Aligner policy avec convention de nommage réelle |
+| ✅ **Fix notifications drain** | S | Aucune | Support complet des events `wedding_*` (in-app + push) + navigation |
+| ✅ **Fix storage delete policy** | S | Aucune | Upload cover aligné sur policy delete (prefix folder `auth.uid()`) |
 
 ### 3.2 Features Placeholders → Complets (Sprint 3.2-3.4)
 
@@ -197,15 +197,30 @@ lib/features/weddings_hub_pro/
 
 | # | Tâche | Fichier | Priorité |
 |---|-------|---------|----------|
-| 1 | Ajouter wedding_* events dans notifications drain | `supabase/functions/notifications_outbox_drain/index.ts` | 🔴 |
-| 2 | Corriger storage delete policy | Migration SQL | 🟡 |
-| 3 | Tester notifications end-to-end | Manual test | 🔴 |
+| 1 | ✅ Ajouter wedding_* events dans notifications drain | `supabase/functions/notifications_outbox_drain/index.ts` | 🔴 |
+| 2 | ✅ Corriger storage delete policy | `lib/features/my_wedding/presentation/widgets/wedding_onboarding_widget.dart` | 🟡 |
+| 3 | ✅ Tester notifications end-to-end | Test manuel + SQL (outbox + notifications) | 🔴 |
 
 **Critères de succès:**
-- [ ] Notification reçue quand pro ajouté au mariage
-- [ ] Notification reçue quand pro exclu
-- [ ] Notification reçue quand pro quitte
-- [ ] Bride peut supprimer sa cover image
+- [x] Notification reçue quand pro ajouté au mariage
+- [x] Notification reçue quand pro exclu
+- [x] Notification reçue quand pro quitte
+- [x] Bride peut supprimer sa cover image
+
+**Preuves (Sprint 3.1):**
+- **Edge Function:** `supabase/functions/notifications_outbox_drain/index.ts`
+  - Ajout handlers wedding + templates I18N
+  - Fix payload triggers (support `recipient_id`) + payload enrichi (`wedding_id`, `pro_profile_id`, `bride_profile_id`)
+- **DB enum:** migration `add_wedding_notification_types` (ajout: `weddingProAdded`, `weddingProExcluded`, `weddingProLeft`, `weddingCancelled` dans `notificationType`)
+- **RPC notifications UI:** migration `update_get_formatted_notifications_wedding_types` (titres/messages FR/EN)
+- **Navigation:** `lib/custom_code/actions/handle_notification_redirection.dart`
+  - Fix route names (utilise `WeddingsHubProPage.routeName` / `MyWeddingPage.routeName`)
+  - `weddingProAdded` ouvre `WeddingsHubProPage` avec query param `weddingId`
+  - `weddingProLeft` ouvre `ProDetailsWidget` via `pro_profile_id`
+- **Auto-open détail mariage (Pro):**
+  - `lib/flutter_flow/nav/nav.dart` passe `weddingId` → `WeddingsHubProPage(initialWeddingId: ...)`
+  - `lib/features/weddings_hub_pro/presentation/pages/weddings_hub_pro_page.dart` auto-ouvre `_WeddingClientDetailPage`
+- **Build iOS:** workflow `/build-and-run-app-simulator` OK
 
 ---
 

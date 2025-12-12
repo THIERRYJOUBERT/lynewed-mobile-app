@@ -1467,16 +1467,22 @@ class _WeddingOnboardingWidgetState extends State<WeddingOnboardingWidget> {
   Future<String?> _uploadCoverImage(String localPath) async {
     try {
       final file = File(localPath);
-      final fileName = '${_weddingId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final supabase = Supabase.instance.client;
+      final userId = supabase.auth.currentUser?.id;
+      if (userId == null) {
+        debugPrint('Failed to upload cover image: user not authenticated');
+        return null;
+      }
+      // Path format: userId/weddingId_timestamp.jpg (required for DELETE policy)
+      final filePath = '$userId/${_weddingId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
       
       await supabase.storage.from('wedding-covers').upload(
-        fileName,
+        filePath,
         file,
         fileOptions: const FileOptions(contentType: 'image/jpeg'),
       );
       
-      final publicUrl = supabase.storage.from('wedding-covers').getPublicUrl(fileName);
+      final publicUrl = supabase.storage.from('wedding-covers').getPublicUrl(filePath);
       return publicUrl;
     } catch (e) {
       debugPrint('Failed to upload cover image: $e');

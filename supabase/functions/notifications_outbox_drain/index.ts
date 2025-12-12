@@ -199,6 +199,44 @@ const I18N_TEMPLATES = {
   },
   // wedPublished: SUPPRIMÉ - Géré par send-broadcast-notification (Admin Panel)
   // replayPublished: SUPPRIMÉ - Géré par send-broadcast-notification (Admin Panel)
+  
+  // --- WEDDING EVENTS ---
+  weddingProAdded: {
+    title: {
+      en: "Added to a wedding",
+      fr: "Ajouté à un mariage"
+    },
+    body: (ctx, locale)=>locale === "fr" 
+      ? `${ctx.bride_name || "Une mariée"} vous a ajouté à son mariage.`
+      : `${ctx.bride_name || "A bride"} added you to their wedding.`
+  },
+  weddingProExcluded: {
+    title: {
+      en: "Removed from wedding",
+      fr: "Retiré du mariage"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `Vous avez été retiré du mariage de ${ctx.bride_name || "une mariée"}.`
+      : `You have been removed from ${ctx.bride_name || "a bride"}'s wedding.`
+  },
+  weddingProLeft: {
+    title: {
+      en: "Professional left",
+      fr: "Professionnel parti"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `${ctx.pro_name || "Un professionnel"} a quitté votre mariage.`
+      : `${ctx.pro_name || "A professional"} left your wedding.`
+  },
+  weddingCancelled: {
+    title: {
+      en: "Wedding cancelled",
+      fr: "Mariage annulé"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `Le mariage de ${ctx.bride_name || "une mariée"} a été annulé.`
+      : `${ctx.bride_name || "A bride"}'s wedding has been cancelled.`
+  },
 };
 // --- HELPERS DB ---
 // Claim un seul event par son ID (pour le trigger realtime)
@@ -517,6 +555,162 @@ async function processVideoIncoming(ev) {
   }
   return actions;
 }
+
+// --- WEDDING EVENT PROCESSORS ---
+// Handles: wedding_pro_added, wedding_pro_excluded, wedding_pro_left, wedding_cancelled
+async function processWeddingEvent(ev) {
+  const actions = {
+    inApp: [],
+    push: []
+  };
+  
+  const eventType = ev.event_type;
+  // Note: DB triggers use recipient_id for bride, but we also support bride_profile_id for consistency
+  const payload = ev.payload || {};
+  const weddingId = payload.wedding_id;
+  const proId = payload.pro_profile_id;
+  const brideId = payload.bride_profile_id || payload.recipient_id; // recipient_id is used by DB triggers
+  const proName = payload.pro_name; // Already provided by trigger
+  
+  if (!weddingId) {
+    console.warn(`[processWeddingEvent] Missing wedding_id for event ${eventType}`);
+    return actions;
+  }
+  
+  // Determine notification type and recipient based on event
+  let notificationType: string;
+  let recipientId: string | undefined;
+  const ctx: { bride_name?: string; pro_name?: string } = {};
+  
+  switch(eventType) {
+    case "wedding_pro_added":
+      // Pro receives notification that they were added
+      notificationType = "weddingProAdded";
+      recipientId = proId;
+      if (brideId) {
+        const brideProfile = await getProfileSummary(brideId);
+        ctx.bride_name = brideProfile.full_name;
+      }
+      break;
+      
+    case "wedding_pro_excluded":
+      // Pro receives notification that they were excluded
+      notificationType = "weddingProExcluded";
+      recipientId = proId;
+      if (brideId) {
+        const brideProfile = await getProfileSummary(brideId);
+        ctx.bride_name = brideProfile.full_name;
+      }
+      break;
+      
+    case "wedding_pro_left":
+      // Bride receives notification that pro left
+      notificationType = "weddingProLeft";
+      recipientId = brideId;
+      // Use pro_name from payload if available (provided by DB trigger), otherwise fetch
+      if (proName) {
+        ctx.pro_name = proName;
+      } else if (proId) {
+        const proProfile = await getProfileSummary(proId);
+        ctx.pro_name = proProfile.full_name;
+      }
+      break;
+      
+    case "wedding_cancelled":
+      // All pros in wedding receive notification
+      notificationType = "weddingCancelled";
+      // For cancelled, we need to notify all pros - handled below
+      if (brideId) {
+        const brideProfile = await getProfileSummary(brideId);
+        ctx.bride_name = brideProfile.full_name;
+      }
+      break;
+      
+    default:
+      console.warn(`[processWeddingEvent] Unknown wedding event type: ${eventType}`);
+      return actions;
+  }
+  
+  // For wedding_cancelled, get all pros in the wedding
+  let recipients = [];
+  if (eventType === "wedding_cancelled") {
+    const { data: participants } = await supabase
+      .from("wedding_participants")
+      .select("profile_id")
+      .eq("wedding_id", weddingId)
+      .is("left_at", null)
+      .is("excluded_at", null);
+    recipients = (participants || []).map(p => p.profile_id).filter(Boolean);
+  } else if (recipientId) {
+    recipients = [recipientId];
+  }
+  
+  if (recipients.length === 0) {
+    console.log(`[processWeddingEvent] No recipients for event ${eventType}`);
+    return actions;
+  }
+  
+  const tmpl = I18N_TEMPLATES[notificationType];
+  if (!tmpl) {
+    console.warn(`[processWeddingEvent] No template for ${notificationType}`);
+    return actions;
+  }
+  
+  // Process each recipient
+  for (const rid of recipients) {
+    const setting = await getNotificationSetting(rid, notificationType);
+    if (!setting.in_app && !setting.push) continue;
+    
+    const locale = await getUserLocale(rid);
+    const title = tmpl.title[locale] || tmpl.title.en;
+    const body = tmpl.body(ctx, locale);
+    
+    // Include relevant IDs for navigation
+    const basePayload: Record<string, string> = {
+      wedding_id: weddingId,
+      notification_type: notificationType
+    };
+    // For weddingProLeft, bride needs pro_profile_id to navigate to pro details
+    if (eventType === "wedding_pro_left" && proId) {
+      basePayload.pro_profile_id = proId;
+    }
+    // For weddingProAdded/Excluded, pro might need bride_profile_id
+    if ((eventType === "wedding_pro_added" || eventType === "wedding_pro_excluded") && brideId) {
+      basePayload.bride_profile_id = brideId;
+    }
+    
+    if (setting.in_app) {
+      actions.inApp.push({
+        profile_id: rid,
+        type: notificationType,
+        payload: basePayload
+      });
+    }
+    
+    if (setting.push) {
+      const tokens = await getDeviceTokens(rid);
+      const pushData: Record<string, string> = {
+        type: notificationType,
+        wedding_id: String(weddingId)
+      };
+      if (basePayload.pro_profile_id) pushData.pro_profile_id = basePayload.pro_profile_id;
+      if (basePayload.bride_profile_id) pushData.bride_profile_id = basePayload.bride_profile_id;
+      
+      tokens.forEach((t) => actions.push.push({
+        token: t.token,
+        platform: t.platform,
+        title,
+        body,
+        isHighPriority: false,
+        ttlSeconds: 300,
+        data: pushData
+      }));
+    }
+  }
+  
+  console.log(`[processWeddingEvent] ${eventType}: ${actions.inApp.length} in-app, ${actions.push.length} push`);
+  return actions;
+}
 async function markProcessed(id) {
   const { error } = await supabase.from("notifications_outbox").update({
     processed_at: new Date().toISOString(),
@@ -563,6 +757,15 @@ async function processEvent(ev) {
       break;
     // wedPublished: SUPPRIMÉ - Géré par send-broadcast-notification (Admin Panel)
     // replayPublished: SUPPRIMÉ - Géré par send-broadcast-notification (Admin Panel)
+    
+    // --- WEDDING EVENTS ---
+    case "wedding_pro_added":
+    case "wedding_pro_excluded":
+    case "wedding_pro_left":
+    case "wedding_cancelled":
+      actions = await processWeddingEvent(ev);
+      break;
+      
     default:
       console.warn(`Unknown event_type: ${ev.event_type}`);
       return { inApp: 0, push: 0 };
