@@ -617,13 +617,11 @@ async function processWeddingEvent(ev) {
       break;
       
     case "wedding_cancelled":
-      // All pros in wedding receive notification
+      // DB trigger already creates one event per pro with recipient_id = pro
       notificationType = "weddingCancelled";
-      // For cancelled, we need to notify all pros - handled below
-      if (brideId) {
-        const brideProfile = await getProfileSummary(brideId);
-        ctx.bride_name = brideProfile.full_name;
-      }
+      recipientId = payload.recipient_id; // The pro to notify (set by DB trigger)
+      // bride_name is already in payload from DB trigger
+      ctx.bride_name = payload.bride_name;
       break;
       
     default:
@@ -631,19 +629,9 @@ async function processWeddingEvent(ev) {
       return actions;
   }
   
-  // For wedding_cancelled, get all pros in the wedding
-  let recipients = [];
-  if (eventType === "wedding_cancelled") {
-    const { data: participants } = await supabase
-      .from("wedding_participants")
-      .select("profile_id")
-      .eq("wedding_id", weddingId)
-      .is("left_at", null)
-      .is("excluded_at", null);
-    recipients = (participants || []).map(p => p.profile_id).filter(Boolean);
-  } else if (recipientId) {
-    recipients = [recipientId];
-  }
+  // For all wedding events, recipient is already determined above
+  // (DB trigger creates one event per recipient for wedding_cancelled)
+  const recipients = recipientId ? [recipientId] : [];
   
   if (recipients.length === 0) {
     console.log(`[processWeddingEvent] No recipients for event ${eventType}`);

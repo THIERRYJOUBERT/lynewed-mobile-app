@@ -1720,7 +1720,7 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
   Future<void> _resumeWedding() async {
     final result = await _repository.updateWeddingStatus(
       weddingId: _wedding!.id,
-      status: 'active',
+      status: 'planning',
     );
 
     if (!mounted) return;

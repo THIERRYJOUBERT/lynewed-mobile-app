@@ -912,7 +912,7 @@ class SupabaseMyWeddingDatasource {
     }
   }
 
-  /// Update wedding status (active, cancelled)
+  /// Update wedding status (planning, confirmed, completed, cancelled)
   Future<void> updateWeddingStatus({
     required String weddingId,
     required String status,
@@ -925,7 +925,7 @@ class SupabaseMyWeddingDatasource {
       // Set cancelled_at when cancelling, clear it when resuming
       if (status == 'cancelled') {
         updateData['cancelled_at'] = DateTime.now().toIso8601String();
-      } else if (status == 'active') {
+      } else if (status == 'planning') {
         updateData['cancelled_at'] = null;
       }
 
