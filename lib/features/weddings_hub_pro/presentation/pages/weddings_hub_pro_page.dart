@@ -7,6 +7,9 @@ import '/components/nav/nav_bar_pro/nav_bar_pro_widget.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/actions/actions.dart' as action_blocks;
 import '/features/chat/presentation/pages/chat_details_page.dart';
+import '/features/my_wedding/data/repositories/my_wedding_repository_impl.dart';
+import '/features/my_wedding/domain/entities/inspiration_album.dart';
+import '/features/my_wedding/presentation/pages/inspirations_page.dart';
 import '../../data/repositories/weddings_hub_repository_impl.dart';
 import '../../domain/entities/wedding_client.dart';
 import '../../domain/repositories/weddings_hub_repository.dart';
@@ -470,15 +473,29 @@ class _WeddingClientDetailPage extends StatefulWidget {
 
 class _WeddingClientDetailPageState extends State<_WeddingClientDetailPage> {
   final _repository = WeddingsHubRepositoryImpl();
+  final _myWeddingRepository = MyWeddingRepositoryImpl();
   final _moreIconKey = GlobalKey();
   TeamChatInfo? _teamChatInfo;
   late bool _isMuted;
+  List<InspirationAlbum> _inspirationAlbums = [];
+
+  void _openInspirations() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => InspirationsPage(
+          weddingId: widget.wedding.weddingId,
+          isReadOnly: true,
+        ),
+      ),
+    ).then((_) => _loadInspirationAlbums());
+  }
 
   @override
   void initState() {
     super.initState();
     _isMuted = widget.wedding.isMuted;
     _loadTeamChatInfo();
+    _loadInspirationAlbums();
   }
 
   Future<void> _loadTeamChatInfo() async {
@@ -487,6 +504,17 @@ class _WeddingClientDetailPageState extends State<_WeddingClientDetailPage> {
     );
     if (result.isSuccess && mounted) {
       setState(() => _teamChatInfo = result.data);
+    }
+  }
+
+  Future<void> _loadInspirationAlbums() async {
+    final result = await _myWeddingRepository.getInspirationAlbums(
+      weddingId: widget.wedding.weddingId,
+    );
+    if (result.isSuccess && mounted) {
+      // Filter to only show public albums for pros
+      final publicAlbums = (result.data ?? []).where((a) => !a.isPrivate).toList();
+      setState(() => _inspirationAlbums = publicAlbums);
     }
   }
 
@@ -515,6 +543,8 @@ class _WeddingClientDetailPageState extends State<_WeddingClientDetailPage> {
                           _buildTeamChatSection(),
                           const SizedBox(height: 30.0),
                           _buildChatWithBrideSection(),
+                          const SizedBox(height: 30.0),
+                          _buildInspirationsSection(),
                           const SizedBox(height: 30.0),
                           _buildNoteSection(),
                           const SizedBox(height: 20.0),
@@ -949,6 +979,184 @@ class _WeddingClientDetailPageState extends State<_WeddingClientDetailPage> {
     );
   }
 
+  Widget _buildInspirationsSection() {
+    final hasAlbums = _inspirationAlbums.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('INSPIRATIONS', style: LynewedTextStyles.sectionTitle),
+            GestureDetector(
+              onTap: _openInspirations,
+              child: Text(
+                'View all',
+                style: LynewedTextStyles.labelLarge.copyWith(
+                  color: LynewedColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4.0),
+        Text(
+          hasAlbums
+              ? '${_inspirationAlbums.length} public album${_inspirationAlbums.length > 1 ? 's' : ''}'
+              : 'View the bride\'s public albums',
+          style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
+        ),
+        const SizedBox(height: 10.0),
+        if (hasAlbums)
+          Column(
+            children: [
+              ..._inspirationAlbums.take(2).map(
+                    (album) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: _buildInspirationAlbumPreviewTile(album),
+                    ),
+                  ),
+              const SizedBox(height: 4.0),
+              GestureDetector(
+                onTap: _openInspirations,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: LynewedColors.gray200),
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'View all albums',
+                      style: LynewedTextStyles.labelLarge.copyWith(
+                        color: LynewedColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          )
+        else
+          GestureDetector(
+            onTap: _openInspirations,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20.0),
+              decoration: BoxDecoration(
+                color: LynewedColors.surface,
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              child: Column(
+                children: [
+                  const Icon(Icons.photo_library_outlined, size: 32.0, color: LynewedColors.gray300),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    'No public albums shared yet',
+                    style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12.0),
+                  LynewedButton(
+                    text: 'View Inspirations',
+                    onPressed: _openInspirations,
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildInspirationAlbumPreviewTile(InspirationAlbum album) {
+    return GestureDetector(
+      onTap: _openInspirations,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12.0),
+        decoration: BoxDecoration(
+          color: LynewedColors.surface,
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4.0),
+              child: album.coverImageUrl != null && album.coverImageUrl!.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: album.coverImageUrl!,
+                      width: 44,
+                      height: 44,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        width: 44,
+                        height: 44,
+                        color: LynewedColors.gray200,
+                        child: const Icon(
+                          Icons.photo_library_outlined,
+                          color: LynewedColors.gray300,
+                          size: 18,
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        width: 44,
+                        height: 44,
+                        color: LynewedColors.gray200,
+                        child: const Icon(
+                          Icons.photo_library_outlined,
+                          color: LynewedColors.gray300,
+                          size: 18,
+                        ),
+                      ),
+                    )
+                  : Container(
+                      width: 44,
+                      height: 44,
+                      color: LynewedColors.gray200,
+                      child: const Icon(
+                        Icons.photo_library_outlined,
+                        color: LynewedColors.gray300,
+                        size: 18,
+                      ),
+                    ),
+            ),
+            const SizedBox(width: 12.0),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    album.name,
+                    style: LynewedTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2.0),
+                  Text(
+                    '${album.imagesCount} image${album.imagesCount != 1 ? 's' : ''}',
+                    style: LynewedTextStyles.labelSmall.copyWith(
+                      color: LynewedColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              size: 20.0,
+              color: LynewedColors.textSecondary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildNoteSection() {
     final hasNote = widget.wedding.noteForPros != null && widget.wedding.noteForPros!.isNotEmpty;
 
@@ -993,19 +1201,19 @@ class _WeddingClientDetailPageState extends State<_WeddingClientDetailPage> {
     final ensureResult = await _repository.ensureProInWeddingTeamChat(
       weddingId: widget.wedding.weddingId,
     );
+
+    if (!mounted) return;
     
     if (!ensureResult.isSuccess) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              ensureResult.error ?? 'Failed to join chat',
-              style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
-            ),
-            backgroundColor: LynewedColors.error,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            ensureResult.error ?? 'Failed to join chat',
+            style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
           ),
-        );
-      }
+          backgroundColor: LynewedColors.error,
+        ),
+      );
       return;
     }
     

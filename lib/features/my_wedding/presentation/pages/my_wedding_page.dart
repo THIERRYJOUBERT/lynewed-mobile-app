@@ -23,6 +23,7 @@ import '../sheets/invite_pro_sheet.dart';
 import '../sheets/note_for_pros_sheet.dart';
 import 'agenda_page.dart';
 import 'budget_page.dart';
+import 'inspirations_page.dart';
 
 /// My Wedding Page - Main page for brides to manage their wedding
 ///
@@ -58,6 +59,9 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
   List<WeddingExpense> _expenses = [];
   double _totalExpenses = 0;
   double _totalPaid = 0;
+
+  // Inspirations preview data
+  List<InspirationAlbum> _inspirationAlbums = [];
 
   @override
   void initState() {
@@ -110,12 +114,14 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
       _repository.getActiveWeddingTeam(weddingId: _wedding!.id),
       _repository.getWeddingEvents(weddingId: _wedding!.id),
       _repository.getWeddingExpenses(weddingId: _wedding!.id),
+      _repository.getInspirationAlbums(weddingId: _wedding!.id),
     ]);
 
     final chatResult = results[0] as RepositoryResult<WeddingTeamChatInfo?>;
     final teamResult = results[1] as RepositoryResult<List<WeddingTeamMember>>;
     final eventsResult = results[2] as RepositoryResult<List<WeddingEvent>>;
     final expensesResult = results[3] as RepositoryResult<List<WeddingExpense>>;
+    final albumsResult = results[4] as RepositoryResult<List<InspirationAlbum>>;
 
     if (chatResult.isSuccess) {
       _teamChatInfo = chatResult.data;
@@ -144,6 +150,10 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
         final converted = service.convert(e.paidAmount, from: e.currencyCode, to: userCurrency) ?? e.paidAmount;
         return sum + converted;
       });
+    }
+
+    if (albumsResult.isSuccess) {
+      _inspirationAlbums = albumsResult.data ?? [];
     }
   }
 
@@ -913,42 +923,194 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
 
   /// Inspirations Section
   Widget _buildInspirationsSection() {
+    final hasAlbums = _inspirationAlbums.isNotEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('INSPIRATIONS', style: LynewedTextStyles.sectionTitle),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('INSPIRATIONS', style: LynewedTextStyles.sectionTitle),
+            GestureDetector(
+              onTap: _openInspirationsPage,
+              child: Text(
+                'View all',
+                style: LynewedTextStyles.labelLarge.copyWith(
+                  color: LynewedColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 4.0),
         Text(
-          'Your moodboards and saved ideas',
+          hasAlbums
+              ? '${_inspirationAlbums.length} album${_inspirationAlbums.length > 1 ? 's' : ''}'
+              : 'Your moodboards and saved ideas',
           style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
         ),
         const SizedBox(height: 10.0),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20.0),
-          decoration: BoxDecoration(
-            color: LynewedColors.surface,
-            borderRadius: BorderRadius.circular(4.0),
-          ),
-          child: Column(
+        if (hasAlbums)
+          Column(
             children: [
-              const Icon(Icons.photo_library_outlined, size: 32.0, color: LynewedColors.gray300),
-              const SizedBox(height: 8.0),
-              Text(
-                'No albums yet',
-                style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
-              ),
-              const SizedBox(height: 12.0),
-              LynewedButton(
-                text: 'Create Album',
-                onPressed: () {
-                  // TODO: Sprint 6 - Create album sheet
-                },
+              ..._inspirationAlbums.take(2).map(
+                    (album) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: _buildInspirationAlbumPreviewTile(album),
+                    ),
+                  ),
+              const SizedBox(height: 4.0),
+              GestureDetector(
+                onTap: _openInspirationsPage,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: LynewedColors.gray200),
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'View all albums',
+                      style: LynewedTextStyles.labelLarge.copyWith(
+                        color: LynewedColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ],
+          )
+        else
+          GestureDetector(
+            onTap: _openInspirationsPage,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20.0),
+              decoration: BoxDecoration(
+                color: LynewedColors.surface,
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              child: Column(
+                children: [
+                  const Icon(Icons.photo_library_outlined, size: 32.0, color: LynewedColors.gray300),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    'Create albums to organize your inspiration',
+                    style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12.0),
+                  LynewedButton(
+                    text: 'View Inspirations',
+                    onPressed: _openInspirationsPage,
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
       ],
+    );
+  }
+
+  Widget _buildInspirationAlbumPreviewTile(InspirationAlbum album) {
+    return GestureDetector(
+      onTap: _openInspirationsPage,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12.0),
+        decoration: BoxDecoration(
+          color: LynewedColors.surface,
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4.0),
+              child: album.coverImageUrl != null && album.coverImageUrl!.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: album.coverImageUrl!,
+                      width: 44,
+                      height: 44,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        width: 44,
+                        height: 44,
+                        color: LynewedColors.gray200,
+                        child: const Icon(
+                          Icons.photo_library_outlined,
+                          color: LynewedColors.gray300,
+                          size: 18,
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        width: 44,
+                        height: 44,
+                        color: LynewedColors.gray200,
+                        child: const Icon(
+                          Icons.photo_library_outlined,
+                          color: LynewedColors.gray300,
+                          size: 18,
+                        ),
+                      ),
+                    )
+                  : Container(
+                      width: 44,
+                      height: 44,
+                      color: LynewedColors.gray200,
+                      child: const Icon(
+                        Icons.photo_library_outlined,
+                        color: LynewedColors.gray300,
+                        size: 18,
+                      ),
+                    ),
+            ),
+            const SizedBox(width: 12.0),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          album.name,
+                          style: LynewedTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (album.isPrivate) ...[
+                        const SizedBox(width: 6.0),
+                        const Icon(
+                          Icons.lock_outline,
+                          size: 14,
+                          color: LynewedColors.textSecondary,
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 2.0),
+                  Text(
+                    '${album.imagesCount} image${album.imagesCount != 1 ? 's' : ''}',
+                    style: LynewedTextStyles.labelSmall.copyWith(
+                      color: LynewedColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              size: 20.0,
+              color: LynewedColors.textSecondary,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1173,6 +1335,14 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
           budgetMax: _wedding!.budgetMax,
           currency: _wedding!.currency,
         ),
+      ),
+    ).then((_) => _loadWedding());
+  }
+
+  void _openInspirationsPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => InspirationsPage(weddingId: _wedding!.id),
       ),
     ).then((_) => _loadWedding());
   }

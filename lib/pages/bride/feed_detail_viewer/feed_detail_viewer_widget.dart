@@ -8,6 +8,9 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/core/design/design.dart';
 import '/index.dart';
+import '/features/my_wedding/data/repositories/my_wedding_repository_impl.dart';
+import '/features/my_wedding/domain/repositories/my_wedding_repository.dart';
+import '/features/my_wedding/presentation/sheets/save_to_album_sheet.dart';
 import 'feed_detail_viewer_model.dart';
 export 'feed_detail_viewer_model.dart';
 
@@ -36,19 +39,62 @@ class FeedDetailViewerWidget extends StatefulWidget {
 class _FeedDetailViewerWidgetState extends State<FeedDetailViewerWidget> {
   late FeedDetailViewerModel _model;
   bool _isLoadingProfile = false;
+  bool _isOpeningSaveSheet = false;
+  String? _cachedWeddingId;
+  late final MyWeddingRepository _myWeddingRepository;
+  bool _isSaved = false;
+  bool _isLoadingSaved = false;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => FeedDetailViewerModel());
+    _myWeddingRepository = MyWeddingRepositoryImpl();
 
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       _model.fav = widget.feedInfosPro?.isFavorited ?? false;
+      await _loadInitialSavedStatus();
       if (mounted) {
         safeSetState(() {});
       }
     });
+  }
+
+  Future<void> _loadInitialSavedStatus() async {
+    final feed = widget.feedInfosPro;
+    if (feed == null) return;
+
+    final imageUrl = feed.fullscreenUrl.isNotEmpty ? feed.fullscreenUrl : feed.imageUrl;
+    if (imageUrl.isEmpty) return;
+
+    if (!mounted) return;
+    setState(() => _isLoadingSaved = true);
+
+    try {
+      String? weddingId = _cachedWeddingId;
+      if (weddingId == null) {
+        final result = await _myWeddingRepository.getMyWedding();
+        final wedding = result.data;
+        if (wedding == null || !(wedding.isOnboardingComplete)) {
+          return;
+        }
+        weddingId = wedding.id;
+        _cachedWeddingId = weddingId;
+      }
+
+      final isSaved = await _myWeddingRepository.isImageSavedInWedding(
+        weddingId: weddingId,
+        imageUrl: imageUrl,
+      );
+      if (mounted) {
+        setState(() => _isSaved = isSaved.data ?? false);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingSaved = false);
+      }
+    }
   }
 
   @override
@@ -249,31 +295,60 @@ class _FeedDetailViewerWidgetState extends State<FeedDetailViewerWidget> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              // Favorite button - Only visible for Brides (not Pros)
+                              // Actions - Only visible for Brides (not Pros)
                               if (FFAppState().currentUserRole == UserRole.bride)
-                                GestureDetector(
-                                  onTap: _model.isLoadingFav ? null : _toggleFavorite,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(4),
-                                    child: _model.isLoadingFav
-                                        ? const SizedBox(
-                                            width: 22,
-                                            height: 22,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: LynewedColors.textSecondary,
-                                            ),
-                                          )
-                                        : Icon(
-                                            _model.fav
-                                                ? Icons.favorite
-                                                : Icons.favorite_border,
-                                            color: _model.fav
-                                                ? LynewedColors.textPrimary
-                                                : LynewedColors.textSecondary,
-                                            size: 22,
-                                          ),
-                                  ),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: _isOpeningSaveSheet ? null : () => _handleBookmarkTap(feed),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(4),
+                                        child: _isOpeningSaveSheet || _isLoadingSaved
+                                            ? const SizedBox(
+                                                width: 22,
+                                                height: 22,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: LynewedColors.textSecondary,
+                                                ),
+                                              )
+                                            : Icon(
+                                                _isSaved
+                                                    ? Icons.bookmark
+                                                    : Icons.bookmark_border,
+                                                color: _isSaved
+                                                    ? LynewedColors.textPrimary
+                                                    : LynewedColors.textSecondary,
+                                                size: 22,
+                                              ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: _model.isLoadingFav ? null : _toggleFavorite,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(4),
+                                        child: _model.isLoadingFav
+                                            ? const SizedBox(
+                                                width: 22,
+                                                height: 22,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: LynewedColors.textSecondary,
+                                                ),
+                                              )
+                                            : Icon(
+                                                _model.fav
+                                                    ? Icons.favorite
+                                                    : Icons.favorite_border,
+                                                color: _model.fav
+                                                    ? LynewedColors.textPrimary
+                                                    : LynewedColors.textSecondary,
+                                                size: 22,
+                                              ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                             ],
                           ),
@@ -329,19 +404,25 @@ class _FeedDetailViewerWidgetState extends State<FeedDetailViewerWidget> {
     final feed = widget.feedInfosPro;
     if (feed == null) return;
 
-    // Optimistic update
-    safeSetState(() => _model.fav = !_model.fav);
-    _model.isLoadingFav = true;
-    safeSetState(() {});
+    final previous = _model.fav;
+
+    setState(() {
+      _model.fav = !previous;
+      _model.isLoadingFav = true;
+    });
 
     try {
       final newStatus = await actions.toggleWishlistAction(feed.proProfileId);
       
       if (newStatus != null) {
-        _model.fav = newStatus;
+        if (mounted) {
+          setState(() => _model.fav = newStatus);
+        }
       } else {
         // Revert on error
-        _model.fav = !_model.fav;
+        if (mounted) {
+          setState(() => _model.fav = previous);
+        }
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -353,10 +434,13 @@ class _FeedDetailViewerWidgetState extends State<FeedDetailViewerWidget> {
       }
     } catch (e) {
       // Revert on error
-      _model.fav = !_model.fav;
+      if (mounted) {
+        setState(() => _model.fav = previous);
+      }
     } finally {
-      _model.isLoadingFav = false;
-      if (mounted) safeSetState(() {});
+      if (mounted) {
+        setState(() => _model.isLoadingFav = false);
+      }
     }
   }
 
@@ -380,6 +464,147 @@ class _FeedDetailViewerWidgetState extends State<FeedDetailViewerWidget> {
     } finally {
       if (mounted) {
         setState(() => _isLoadingProfile = false);
+      }
+    }
+  }
+
+  /// Handle bookmark tap: if saved, remove; if not saved, open save sheet
+  Future<void> _handleBookmarkTap(FeedImageItemStruct feed) async {
+    if (_isSaved) {
+      await _removeSavedImage(feed);
+    } else {
+      await _openSaveToAlbumSheet(feed);
+    }
+  }
+
+  /// Remove a saved image from the wedding albums
+  Future<void> _removeSavedImage(FeedImageItemStruct feed) async {
+    final imageUrl = feed.fullscreenUrl.isNotEmpty ? feed.fullscreenUrl : feed.imageUrl;
+    if (imageUrl.isEmpty) return;
+
+    if (!mounted) return;
+    setState(() => _isOpeningSaveSheet = true);
+
+    try {
+      String? weddingId = _cachedWeddingId;
+
+      if (weddingId == null) {
+        final result = await _myWeddingRepository.getMyWedding();
+        final wedding = result.data;
+        if (wedding == null || !(wedding.isOnboardingComplete)) {
+          return;
+        }
+        weddingId = wedding.id;
+        _cachedWeddingId = weddingId;
+      }
+
+      final result = await _myWeddingRepository.removeSavedPostByImageUrl(
+        weddingId: weddingId,
+        imageUrl: imageUrl,
+      );
+
+      if (!mounted) return;
+
+      if (result.isSuccess && result.data == true) {
+        setState(() => _isSaved = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Image removed from album',
+              style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
+            ),
+            backgroundColor: LynewedColors.textPrimary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to remove image',
+              style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
+            ),
+            backgroundColor: LynewedColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isOpeningSaveSheet = false);
+      }
+    }
+  }
+
+  Future<void> _openSaveToAlbumSheet(FeedImageItemStruct feed) async {
+    final imageUrl = feed.fullscreenUrl.isNotEmpty ? feed.fullscreenUrl : feed.imageUrl;
+    if (imageUrl.isEmpty) {
+      return;
+    }
+
+    if (!mounted) return;
+
+    setState(() => _isOpeningSaveSheet = true);
+
+    try {
+      String? weddingId = _cachedWeddingId;
+
+      if (weddingId == null) {
+        final result = await _myWeddingRepository.getMyWedding();
+        final wedding = result.data;
+        if (wedding == null || !(wedding.isOnboardingComplete)) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Please complete your wedding setup first',
+                  style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
+                ),
+                backgroundColor: LynewedColors.textPrimary,
+              ),
+            );
+          }
+          return;
+        }
+        weddingId = wedding.id;
+        _cachedWeddingId = weddingId;
+      }
+
+      if (!mounted) return;
+
+      await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => SafeArea(
+          top: false,
+          child: SaveToAlbumSheet(
+            weddingId: weddingId!,
+            imageUrl: imageUrl,
+            sourceProfileId: feed.proProfileId.isNotEmpty ? feed.proProfileId : null,
+            onSaved: () {
+              if (mounted) {
+                setState(() => _isSaved = true);
+              }
+            },
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Unable to save this image',
+              style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
+            ),
+            backgroundColor: LynewedColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isOpeningSaveSheet = false);
       }
     }
   }

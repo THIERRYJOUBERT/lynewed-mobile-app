@@ -159,7 +159,7 @@ class _FeedBridesWidgetState extends State<FeedBridesWidget> {
                     model: _model.navBarProModel,
                     updateCallback: () => safeSetState(() {}),
                     child: const NavBarProWidget(
-                      number: 4, // Feed is position 4 in Pro navbar
+                      number: 2,
                     ),
                   ),
                 ),

@@ -2,7 +2,7 @@
 
 **Version:** 2.0  
 **Date:** 2025-12-12  
-**Status:** ✅ SPRINT 3.2 TERMINÉ (100%) - Basé sur Audit Réel  
+**Status:** ✅ SPRINT 3.3 TERMINÉ (100%) - Basé sur Audit Réel  
 **Supabase Project:** `hekyovgnovhfhmkpfrna` (PROD)
 
 ---
@@ -36,10 +36,9 @@
 | **Cover Image Upload** | ✅ | Bucket `wedding-covers` | `lib/features/my_wedding/presentation/widgets/wedding_onboarding_widget.dart` | Upload + public URL (`lib/features/my_wedding/presentation/widgets/wedding_onboarding_widget.dart:L1470-L1480`) |
 | **Agenda** | ✅ | UI complète + CRUD + preview sur MyWedding | `lib/features/my_wedding/presentation/pages/agenda_page.dart`, `lib/features/my_wedding/presentation/sheets/add_event_sheet.dart` | CRUD + toggle done/public + preview (max 5) |
 | **Budget Tracker** | ✅ | UI complète + CRUD + multi-devise + preview sur MyWedding | `lib/features/my_wedding/presentation/pages/budget_page.dart`, `lib/features/my_wedding/presentation/sheets/add_expense_sheet.dart` | `currency_code` par dépense + conversion vers devise user |
-| **Inspirations/Moodboard** | ⏳ | Tables OK, UI placeholder | `public.inspiration_albums`, `public.saved_posts`, `public.album_images` | Non vérifié (placeholder exact non retrouvé via grep sur `"Coming soon"`) |
+| **Inspirations/Moodboard** | ✅ | Albums + uploads + save from feed + preview Bride/Pro | `lib/features/my_wedding/presentation/pages/inspirations_page.dart`, `lib/features/my_wedding/presentation/pages/album_detail_page.dart`, `lib/features/my_wedding/presentation/sheets/create_album_sheet.dart`, `lib/features/my_wedding/presentation/sheets/save_to_album_sheet.dart`, `lib/pages/bride/feed_detail_viewer/feed_detail_viewer_widget.dart`, `public.inspiration_albums`, `public.saved_posts`, `public.album_images` | CRUD + upload `wedding-albums` + read-only pro (public albums only) |
 | **Guests List** | ⏳ | Table OK, UI placeholder | `public.wedding_guests` | Non vérifié (placeholder exact non retrouvé via grep sur `"Coming soon"`) |
 | **Documents in Chat** | ❌ | Non implémenté | - | Pas de type `document` |
-| **Pro Private Notes** | ❌ | Table absente | - | `pro_wedding_notes` non créée |
 | **Cancel/Resume Wedding** | ⏳ | Colonnes OK, UI non fait | `cancelled_at` colonne | Flow UI manquant |
 | **Notifications wedding_*** | ⚠️ | Triggers OK, drain KO | `supabase/functions/notifications_outbox_drain/index.ts` | Aucun `case "wedding_*"` + mapping `EVENT_TO_NOTIFICATION_TYPE` sans wedding (`supabase/functions/notifications_outbox_drain/index.ts:L151-L161` et `:L548-L563`) |
 
@@ -98,7 +97,7 @@ lib/features/weddings_hub_pro/
 | `wedding_expenses` | `id`, `wedding_id`, `title`, `amount`, `category`, `status` | ✅ | MCP audit |
 | `wedding_guests` | `id`, `wedding_id`, `name`, `email`, `phone`, `role` | ✅ | MCP audit |
 | `inspiration_albums` | `id`, `wedding_id`, `bride_profile_id`, `name`, `is_private`, `category` | ✅ | MCP audit |
-| `saved_posts` | `id`, `album_id`, `post_id` | ✅ | MCP audit |
+| `saved_posts` | `id`, `album_id`, `image_url`, `source_profile_id`, `saved_at` | ✅ | MCP audit |
 | `album_images` | `id`, `album_id`, `image_url` | ✅ | MCP audit |
 | `chat_rooms` | `id`, `type` (private/public/wedding_team), `wedding_id` | ✅ | MCP audit |
 
@@ -177,7 +176,6 @@ lib/features/weddings_hub_pro/
 | Feature | Complexité | Dépendances | Tâches |
 |---------|------------|-------------|--------|
 | **Documents in Chat** | M | Chat module | Type `document` dans enum, upload PDF, display widget |
-| **Pro Private Notes** | S | Créer table | Table `pro_wedding_notes`, UI sheet, CRUD |
 | **Cancel/Resume Wedding** | M | Colonnes OK | CancelWeddingSheet, ResumeFlow, notifications |
 
 ### 3.4 Améliorations UX (Sprint 3.6)
@@ -185,7 +183,7 @@ lib/features/weddings_hub_pro/
 | Feature | Complexité | Description |
 |---------|------------|-------------|
 | **Mute global settings** | S | Toggle dans Settings pour muter tous les Wedding Team Chats |
-| **Wedding Team Chat improvements** | S | Badge unread, avatars stack |
+| **Wedding Team Chat improvements** | S | Badge unread, avatars stack | //Déjà fait je pense, à vérifier. 
 
 ---
 
@@ -267,27 +265,38 @@ lib/features/weddings_hub_pro/
 
 | # | Tâche | Fichier | Complexité |
 |---|-------|---------|------------|
-| 1 | Créer `InspirationsPage` | `lib/features/my_wedding/presentation/pages/inspirations_page.dart` | M |
-| 2 | Créer `CreateAlbumSheet` | `lib/features/my_wedding/presentation/sheets/create_album_sheet.dart` | S |
-| 3 | Créer `AlbumDetailPage` | `lib/features/my_wedding/presentation/pages/album_detail_page.dart` | M |
-| 4 | Créer `SaveToAlbumSheet` | `lib/features/my_wedding/presentation/sheets/save_to_album_sheet.dart` | M |
-| 5 | Ajouter icône signet dans FeedDetailViewer | `feed_detail_viewer_widget.dart` | S |
-| 6 | Implémenter upload depuis galerie | Image picker + Storage | M |
-| 7 | Implémenter CRUD albums | `supabase_my_wedding_datasource.dart` | S |
-| 8 | Toggle privé/public album | UI + datasource | S |
-| 9 | Remplacer placeholder dans MyWeddingPage | `my_wedding_page.dart` | S |
+| 1 | ✅ Créer `InspirationsPage` | `lib/features/my_wedding/presentation/pages/inspirations_page.dart` | M |
+| 2 | ✅ Créer `CreateAlbumSheet` | `lib/features/my_wedding/presentation/sheets/create_album_sheet.dart` | S |
+| 3 | ✅ Créer `AlbumDetailPage` | `lib/features/my_wedding/presentation/pages/album_detail_page.dart` | M |
+| 4 | ✅ Créer `SaveToAlbumSheet` | `lib/features/my_wedding/presentation/sheets/save_to_album_sheet.dart` | M |
+| 5 | ✅ Ajouter icône signet dans FeedDetailViewer | `lib/pages/bride/feed_detail_viewer/feed_detail_viewer_widget.dart` | S |
+| 6 | ✅ Implémenter upload depuis galerie | `album_detail_page.dart` + bucket `wedding-albums` | M |
+| 7 | ✅ Implémenter CRUD albums/images | `lib/features/my_wedding/data/datasources/supabase_my_wedding_datasource.dart` | S |
+| 8 | ✅ Toggle privé/public album | `CreateAlbumSheet` | S |
+| 9 | ✅ Remplacer placeholder dans MyWeddingPage | `lib/features/my_wedding/presentation/pages/my_wedding_page.dart` | S |
 
 **Critères de succès:**
-- [ ] Bride peut créer albums Wedding et Privés
-- [ ] Bride peut sauvegarder posts du feed dans albums
-- [ ] Bride peut uploader images depuis galerie
-- [ ] Pros voient uniquement albums Wedding (is_private=false)
+- [x] Bride peut créer albums Wedding et Privés
+- [x] Bride peut sauvegarder images du feed dans albums
+- [x] Bride peut uploader images depuis galerie
+- [x] Pros voient uniquement albums Wedding (is_private=false)
+
+**Preuves (Sprint 3.3):**
+- **UI albums:**
+  - `lib/features/my_wedding/presentation/pages/inspirations_page.dart`
+  - `lib/features/my_wedding/presentation/sheets/create_album_sheet.dart`
+  - `lib/features/my_wedding/presentation/pages/album_detail_page.dart`
+  - `lib/features/my_wedding/presentation/sheets/save_to_album_sheet.dart`
+- **Feed save toggle:** `lib/pages/bride/feed_detail_viewer/feed_detail_viewer_widget.dart`
+- **Datasource CRUD:** `lib/features/my_wedding/data/datasources/supabase_my_wedding_datasource.dart`
+- **Bride preview:** `lib/features/my_wedding/presentation/pages/my_wedding_page.dart` (preview albums)
+- **Pro entry + preview:** `lib/features/weddings_hub_pro/presentation/pages/weddings_hub_pro_page.dart` (read-only + albums publics)
 
 ---
 
-### Sprint 3.4 — Guests & Pro Notes (2 jours)
+### Sprint 3.4 — Guests (2 jours)
 
-**Objectif:** Compléter les features Guests et Pro Private Notes.
+**Objectif:** Compléter la feature Guests.
 
 #### Guests
 
@@ -298,20 +307,8 @@ lib/features/weddings_hub_pro/
 | 3 | Implémenter CRUD guests | `supabase_my_wedding_datasource.dart` | S |
 | 4 | Remplacer placeholder dans MyWeddingPage | `my_wedding_page.dart` | S |
 
-#### Pro Private Notes
-
-| # | Tâche | Fichier | Complexité |
-|---|-------|---------|------------|
-| 1 | Créer table `pro_wedding_notes` | Migration SQL | S |
-| 2 | Créer RLS policies | Migration SQL | S |
-| 3 | Créer `ProNotesSheet` | `lib/features/weddings_hub_pro/presentation/sheets/pro_notes_sheet.dart` | S |
-| 4 | Implémenter CRUD notes | `supabase_weddings_hub_datasource.dart` | S |
-| 5 | Ajouter section dans WeddingClientDetailPage | Si existe, sinon créer | S |
-
 **Critères de succès:**
 - [ ] Bride peut gérer liste d'invités
-- [ ] Pro peut créer/modifier notes privées par mariage
-- [ ] Notes privées non visibles par bride
 
 ---
 

@@ -388,23 +388,323 @@ class SupabaseMyWeddingDatasource {
     }
   }
 
-  /// Save a post to an inspiration album
-  Future<void> savePostToAlbum({
-    required String albumId,
-    required String postId,
+  // ========== INSPIRATION ALBUMS ==========
+
+  /// Get all inspiration albums for a wedding
+  Future<List<InspirationAlbum>> getInspirationAlbums({
+    required String weddingId,
   }) async {
     try {
+      final response = await _client
+          .from('inspiration_albums')
+          .select('''
+            *,
+            album_images(count),
+            saved_posts(count)
+          ''')
+          .eq('wedding_id', weddingId)
+          .order('sort_order', ascending: true)
+          .order('created_at', ascending: false);
+
+      return (response as List).map((raw) {
+        final json = Map<String, dynamic>.from(raw as Map);
+
+        final albumImagesAgg = (json['album_images'] as List?)?.cast<dynamic>();
+        final savedPostsAgg = (json['saved_posts'] as List?)?.cast<dynamic>();
+
+        final albumImagesCount = albumImagesAgg != null && albumImagesAgg.isNotEmpty
+            ? (albumImagesAgg.first as Map)['count'] as int? ?? 0
+            : 0;
+        final savedPostsCount = savedPostsAgg != null && savedPostsAgg.isNotEmpty
+            ? (savedPostsAgg.first as Map)['count'] as int? ?? 0
+            : 0;
+
+        json['images_count'] = albumImagesCount + savedPostsCount;
+
+        return InspirationAlbum.fromJson(json);
+      }).toList();
+    } catch (e) {
+      SecureLogger.error('getInspirationAlbums error: $e');
+      rethrow;
+    }
+  }
+
+  /// Create a new inspiration album
+  Future<InspirationAlbum> createInspirationAlbum({
+    required String weddingId,
+    required String name,
+    String? category,
+    bool isPrivate = false,
+  }) async {
+    final userId = _currentUserId;
+    if (userId == null) {
+      throw Exception('No authenticated user');
+    }
+
+    try {
+      final response = await _client
+          .from('inspiration_albums')
+          .insert({
+            'wedding_id': weddingId,
+            'bride_profile_id': userId,
+            'name': name,
+            'category': category ?? 'general',
+            'is_private': isPrivate,
+          })
+          .select()
+          .single();
+
+      SecureLogger.info('createInspirationAlbum: Created album for wedding $weddingId');
+      return InspirationAlbum.fromJson(response);
+    } catch (e) {
+      SecureLogger.error('createInspirationAlbum error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update an inspiration album
+  Future<void> updateInspirationAlbum({
+    required String albumId,
+    String? name,
+    String? category,
+    bool? isPrivate,
+    String? coverImageUrl,
+    int? sortOrder,
+  }) async {
+    try {
+      final updateData = <String, dynamic>{
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+      if (name != null) updateData['name'] = name;
+      if (category != null) updateData['category'] = category;
+      if (isPrivate != null) updateData['is_private'] = isPrivate;
+      if (coverImageUrl != null) updateData['cover_image_url'] = coverImageUrl;
+      if (sortOrder != null) updateData['sort_order'] = sortOrder;
+
+      if (updateData.length == 1) {
+        SecureLogger.warning('updateInspirationAlbum: No data to update');
+        return;
+      }
+
       await _client
+          .from('inspiration_albums')
+          .update(updateData)
+          .eq('id', albumId);
+
+      SecureLogger.info('updateInspirationAlbum: Updated album $albumId');
+    } catch (e) {
+      SecureLogger.error('updateInspirationAlbum error: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete an inspiration album
+  Future<void> deleteInspirationAlbum({required String albumId}) async {
+    try {
+      await _client
+          .from('inspiration_albums')
+          .delete()
+          .eq('id', albumId);
+
+      SecureLogger.info('deleteInspirationAlbum: Deleted album $albumId');
+    } catch (e) {
+      SecureLogger.error('deleteInspirationAlbum error: $e');
+      rethrow;
+    }
+  }
+
+  // ========== ALBUM IMAGES (uploaded from gallery) ==========
+
+  /// Get all images in an album (both uploaded and saved)
+  Future<List<AlbumImage>> getAlbumImages({
+    required String albumId,
+  }) async {
+    try {
+      final response = await _client
+          .from('album_images')
+          .select()
+          .eq('album_id', albumId)
+          .order('uploaded_at', ascending: false);
+
+      return (response as List)
+          .map((json) => AlbumImage.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      SecureLogger.error('getAlbumImages error: $e');
+      rethrow;
+    }
+  }
+
+  /// Upload an image to an album (from gallery)
+  Future<AlbumImage> uploadAlbumImage({
+    required String albumId,
+    required String imageUrl,
+    String? thumbnailUrl,
+  }) async {
+    try {
+      final response = await _client
+          .from('album_images')
+          .insert({
+            'album_id': albumId,
+            'image_url': imageUrl,
+            'thumbnail_url': thumbnailUrl,
+          })
+          .select()
+          .single();
+
+      SecureLogger.info('uploadAlbumImage: Added image to album $albumId');
+      return AlbumImage.fromJson(response);
+    } catch (e) {
+      SecureLogger.error('uploadAlbumImage error: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete an image from an album
+  Future<void> deleteAlbumImage({required String imageId}) async {
+    try {
+      await _client
+          .from('album_images')
+          .delete()
+          .eq('id', imageId);
+
+      SecureLogger.info('deleteAlbumImage: Deleted image $imageId');
+    } catch (e) {
+      SecureLogger.error('deleteAlbumImage error: $e');
+      rethrow;
+    }
+  }
+
+  // ========== SAVED POSTS (saved from feed) ==========
+
+  /// Get all saved posts in an album
+  Future<List<SavedPost>> getSavedPosts({
+    required String albumId,
+  }) async {
+    try {
+      final response = await _client
+          .from('saved_posts')
+          .select('''
+            *,
+            profiles:source_profile_id(full_name)
+          ''')
+          .eq('album_id', albumId)
+          .order('saved_at', ascending: false);
+
+      return (response as List)
+          .map((json) => SavedPost.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      SecureLogger.error('getSavedPosts error: $e');
+      rethrow;
+    }
+  }
+
+  /// Save an image from feed to an album
+  Future<SavedPost> saveImageToAlbum({
+    required String albumId,
+    required String imageUrl,
+    String? sourceProfileId,
+  }) async {
+    try {
+      final response = await _client
           .from('saved_posts')
           .insert({
             'album_id': albumId,
-            'post_id': postId,
-            'saved_at': DateTime.now().toIso8601String(),
-          });
+            'image_url': imageUrl,
+            if (sourceProfileId != null) 'source_profile_id': sourceProfileId,
+          })
+          .select()
+          .single();
 
-      SecureLogger.info('savePostToAlbum: Saved post $postId to album $albumId');
+      // Auto-set cover if missing
+      try {
+        final album = await _client
+            .from('inspiration_albums')
+            .select('cover_image_url')
+            .eq('id', albumId)
+            .maybeSingle();
+        final currentCover = album?['cover_image_url'] as String?;
+        if (currentCover == null || currentCover.isEmpty) {
+          await updateInspirationAlbum(
+            albumId: albumId,
+            coverImageUrl: imageUrl,
+          );
+        }
+      } catch (_) {
+        // Ignore cover update failure (non-blocking)
+      }
+
+      SecureLogger.info('saveImageToAlbum: Saved image to album $albumId');
+      return SavedPost.fromJson(response);
     } catch (e) {
-      SecureLogger.error('savePostToAlbum error: $e');
+      SecureLogger.error('saveImageToAlbum error: $e');
+      rethrow;
+    }
+  }
+
+  /// Remove a saved post from an album
+  Future<void> removeSavedPost({required String savedPostId}) async {
+    try {
+      await _client
+          .from('saved_posts')
+          .delete()
+          .eq('id', savedPostId);
+
+      SecureLogger.info('removeSavedPost: Removed saved post $savedPostId');
+    } catch (e) {
+      SecureLogger.error('removeSavedPost error: $e');
+      rethrow;
+    }
+  }
+
+  /// Check if an image is already saved in any album for this wedding
+  Future<bool> isImageSavedInWedding({
+    required String weddingId,
+    required String imageUrl,
+  }) async {
+    try {
+      final response = await _client
+          .from('saved_posts')
+          .select('id, inspiration_albums!inner(wedding_id)')
+          .eq('image_url', imageUrl)
+          .eq('inspiration_albums.wedding_id', weddingId)
+          .maybeSingle();
+
+      return response != null;
+    } catch (e) {
+      SecureLogger.error('isImageSavedInWedding error: $e');
+      return false;
+    }
+  }
+
+  /// Remove a saved post by image URL for a specific wedding
+  /// Returns true if deleted, false if not found
+  Future<bool> removeSavedPostByImageUrl({
+    required String weddingId,
+    required String imageUrl,
+  }) async {
+    try {
+      // First find the saved post
+      final response = await _client
+          .from('saved_posts')
+          .select('id, inspiration_albums!inner(wedding_id)')
+          .eq('image_url', imageUrl)
+          .eq('inspiration_albums.wedding_id', weddingId)
+          .maybeSingle();
+
+      if (response == null) {
+        SecureLogger.info('removeSavedPostByImageUrl: No saved post found for image');
+        return false;
+      }
+
+      final savedPostId = response['id'] as String;
+      await _client.from('saved_posts').delete().eq('id', savedPostId);
+
+      SecureLogger.info('removeSavedPostByImageUrl: Removed saved post $savedPostId');
+      return true;
+    } catch (e) {
+      SecureLogger.error('removeSavedPostByImageUrl error: $e');
       rethrow;
     }
   }

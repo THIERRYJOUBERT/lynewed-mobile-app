@@ -125,10 +125,78 @@ abstract class MyWeddingRepository {
     required String weddingId,
   });
 
-  /// Save a post to an inspiration album
-  Future<RepositoryResult<void>> savePostToAlbum({
+  // ========== INSPIRATION ALBUMS ==========
+
+  /// Get all inspiration albums for a wedding
+  Future<RepositoryResult<List<InspirationAlbum>>> getInspirationAlbums({
+    required String weddingId,
+  });
+
+  /// Create a new inspiration album
+  Future<RepositoryResult<InspirationAlbum>> createInspirationAlbum({
+    required String weddingId,
+    required String name,
+    String? category,
+    bool isPrivate = false,
+  });
+
+  /// Update an inspiration album
+  Future<RepositoryResult<void>> updateInspirationAlbum({
     required String albumId,
-    required String postId,
+    String? name,
+    String? category,
+    bool? isPrivate,
+    String? coverImageUrl,
+    int? sortOrder,
+  });
+
+  /// Delete an inspiration album
+  Future<RepositoryResult<void>> deleteInspirationAlbum({required String albumId});
+
+  // ========== ALBUM IMAGES ==========
+
+  /// Get all images in an album
+  Future<RepositoryResult<List<AlbumImage>>> getAlbumImages({
+    required String albumId,
+  });
+
+  /// Upload an image to an album
+  Future<RepositoryResult<AlbumImage>> uploadAlbumImage({
+    required String albumId,
+    required String imageUrl,
+    String? thumbnailUrl,
+  });
+
+  /// Delete an image from an album
+  Future<RepositoryResult<void>> deleteAlbumImage({required String imageId});
+
+  // ========== SAVED POSTS ==========
+
+  /// Get all saved posts in an album
+  Future<RepositoryResult<List<SavedPost>>> getSavedPosts({
+    required String albumId,
+  });
+
+  /// Save an image from feed to an album
+  Future<RepositoryResult<SavedPost>> saveImageToAlbum({
+    required String albumId,
+    required String imageUrl,
+    String? sourceProfileId,
+  });
+
+  /// Remove a saved post from an album
+  Future<RepositoryResult<void>> removeSavedPost({required String savedPostId});
+
+  /// Remove a saved post by image URL for a specific wedding
+  Future<RepositoryResult<bool>> removeSavedPostByImageUrl({
+    required String weddingId,
+    required String imageUrl,
+  });
+
+  /// Check if an image is already saved in any album for this wedding
+  Future<RepositoryResult<bool>> isImageSavedInWedding({
+    required String weddingId,
+    required String imageUrl,
   });
 
   /// Get wedding team chat room info

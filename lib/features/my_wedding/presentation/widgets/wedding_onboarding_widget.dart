@@ -1193,31 +1193,6 @@ class _WeddingOnboardingWidgetState extends State<WeddingOnboardingWidget> {
     );
   }
 
-  Widget _buildFeaturePreview(IconData icon, String title, String subtitle) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: LynewedColors.surface,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: LynewedColors.textPrimary),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: LynewedTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w500)),
-                Text(subtitle, style: LynewedTextStyles.labelSmall.copyWith(color: LynewedColors.textSecondary)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   // ============================================================
   // REUSABLE WIDGETS
   // ============================================================

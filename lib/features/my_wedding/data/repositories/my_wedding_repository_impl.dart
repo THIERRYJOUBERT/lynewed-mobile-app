@@ -133,19 +133,187 @@ class MyWeddingRepositoryImpl implements MyWeddingRepository {
     }
   }
 
+  // ========== INSPIRATION ALBUMS ==========
+
   @override
-  Future<RepositoryResult<void>> savePostToAlbum({
-    required String albumId,
-    required String postId,
+  Future<RepositoryResult<List<InspirationAlbum>>> getInspirationAlbums({
+    required String weddingId,
   }) async {
     try {
-      await _datasource.savePostToAlbum(
+      final albums = await _datasource.getInspirationAlbums(weddingId: weddingId);
+      return RepositoryResult.success(albums);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get albums: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<InspirationAlbum>> createInspirationAlbum({
+    required String weddingId,
+    required String name,
+    String? category,
+    bool isPrivate = false,
+  }) async {
+    try {
+      final album = await _datasource.createInspirationAlbum(
+        weddingId: weddingId,
+        name: name,
+        category: category,
+        isPrivate: isPrivate,
+      );
+      return RepositoryResult.success(album);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to create album: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<void>> updateInspirationAlbum({
+    required String albumId,
+    String? name,
+    String? category,
+    bool? isPrivate,
+    String? coverImageUrl,
+    int? sortOrder,
+  }) async {
+    try {
+      await _datasource.updateInspirationAlbum(
         albumId: albumId,
-        postId: postId,
+        name: name,
+        category: category,
+        isPrivate: isPrivate,
+        coverImageUrl: coverImageUrl,
+        sortOrder: sortOrder,
       );
       return const RepositoryResult.success(null);
     } catch (e) {
-      return RepositoryResult.failure('Failed to save post: $e');
+      return RepositoryResult.failure('Failed to update album: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<void>> deleteInspirationAlbum({required String albumId}) async {
+    try {
+      await _datasource.deleteInspirationAlbum(albumId: albumId);
+      return const RepositoryResult.success(null);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to delete album: $e');
+    }
+  }
+
+  // ========== ALBUM IMAGES ==========
+
+  @override
+  Future<RepositoryResult<List<AlbumImage>>> getAlbumImages({
+    required String albumId,
+  }) async {
+    try {
+      final images = await _datasource.getAlbumImages(albumId: albumId);
+      return RepositoryResult.success(images);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get album images: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<AlbumImage>> uploadAlbumImage({
+    required String albumId,
+    required String imageUrl,
+    String? thumbnailUrl,
+  }) async {
+    try {
+      final image = await _datasource.uploadAlbumImage(
+        albumId: albumId,
+        imageUrl: imageUrl,
+        thumbnailUrl: thumbnailUrl,
+      );
+      return RepositoryResult.success(image);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to upload image: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<void>> deleteAlbumImage({required String imageId}) async {
+    try {
+      await _datasource.deleteAlbumImage(imageId: imageId);
+      return const RepositoryResult.success(null);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to delete image: $e');
+    }
+  }
+
+  // ========== SAVED POSTS ==========
+
+  @override
+  Future<RepositoryResult<List<SavedPost>>> getSavedPosts({
+    required String albumId,
+  }) async {
+    try {
+      final posts = await _datasource.getSavedPosts(albumId: albumId);
+      return RepositoryResult.success(posts);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get saved posts: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<SavedPost>> saveImageToAlbum({
+    required String albumId,
+    required String imageUrl,
+    String? sourceProfileId,
+  }) async {
+    try {
+      final savedPost = await _datasource.saveImageToAlbum(
+        albumId: albumId,
+        imageUrl: imageUrl,
+        sourceProfileId: sourceProfileId,
+      );
+      return RepositoryResult.success(savedPost);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to save image: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<void>> removeSavedPost({required String savedPostId}) async {
+    try {
+      await _datasource.removeSavedPost(savedPostId: savedPostId);
+      return const RepositoryResult.success(null);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to remove saved post: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<bool>> removeSavedPostByImageUrl({
+    required String weddingId,
+    required String imageUrl,
+  }) async {
+    try {
+      final deleted = await _datasource.removeSavedPostByImageUrl(
+        weddingId: weddingId,
+        imageUrl: imageUrl,
+      );
+      return RepositoryResult.success(deleted);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to remove saved post: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<bool>> isImageSavedInWedding({
+    required String weddingId,
+    required String imageUrl,
+  }) async {
+    try {
+      final isSaved = await _datasource.isImageSavedInWedding(
+        weddingId: weddingId,
+        imageUrl: imageUrl,
+      );
+      return RepositoryResult.success(isSaved);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to check if image is saved: $e');
     }
   }
 

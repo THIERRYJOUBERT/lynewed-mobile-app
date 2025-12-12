@@ -1,7 +1,7 @@
 # LYNEWED PROJECT - V1 IN PRODUCTION 🚀
 
 **Version:** v2.1.0  
-**Last Updated:** 2025-12-11  
+**Last Updated:** 2025-12-12  
 **Status:** 🚀 **V1 IN PRODUCTION** - Active users on App Store
 
 ---
@@ -63,6 +63,16 @@
 - ✅ **AddEventSheet** - Date/time picker, location, visibility toggle (public/private)
 - ✅ **AddExpenseSheet** - Category selector, amount, status (pending/partial/paid), due date
 - ✅ **Budget Multi-Currency** - `wedding_expenses.currency_code` + per-expense currency selector + UI conversion to user's preferred currency
+
+### Sprint 3.3 Accomplishments (2025-12-12)
+- ✅ **Inspirations / Moodboard** - Albums + uploads + save from feed
+- ✅ **InspirationsPage** - Albums list (Wedding vs Private)
+- ✅ **CreateAlbumSheet** - Create shared/private album
+- ✅ **AlbumDetailPage** - Grid + upload from gallery to `wedding-albums`
+- ✅ **SaveToAlbumSheet** - Save feed image to album
+- ✅ **Feed Detail Viewer** - Bookmark icon (save + remove) + real-time state
+- ✅ **Bride MyWeddingPage** - Inspirations albums preview
+- ✅ **Pro Wedding Detail** - Read-only access to public albums + preview
 
 ### Key Metrics
 | Metric | Value |
@@ -155,11 +165,10 @@ docs/
 
 | Priority | Task | Description |
 |----------|------|-------------|
-| 1 | **My Wedding Suite - Sprint 6** | Moodboard / Inspirations (albums, save from feed, upload) |
-| 2 | **My Wedding Suite - Guests** | Guests list management |
-| 3 | **TestFlight** | Prepare and deploy beta |
-| 4 | **ProDetails** | Complete refactoring with Images V2 |
-| 5 | **Auth Module** | Clean Architecture refactoring |
+| 1 | **My Wedding Suite - Guests** | Guests list management |
+| 2 | **TestFlight** | Prepare and deploy beta |
+| 3 | **ProDetails** | Complete refactoring with Images V2 |
+| 4 | **Auth Module** | Clean Architecture refactoring |
 
 ---
 
@@ -181,4 +190,4 @@ docs/
 ---
 
 **Last Updated:** 2025-12-12  
-**Status:** 🚀 V1 IN PRODUCTION - My Wedding Suite Sprint 3.2 Complete (Agenda + Budget)
+**Status:** 🚀 V1 IN PRODUCTION - My Wedding Suite Sprint 3.3 Complete (Agenda + Budget + Inspirations)
