@@ -646,7 +646,15 @@ class _MapPageState extends State<MapPage> {
         marker: marker,
         userRole: widget.userRole,
         mapState: _mapState,
-        onEditWedding: () => _showCreateSheet(context),
+        onEditWedding: () => _openMyWeddingPage(context),
+      ),
+    );
+  }
+
+  void _openMyWeddingPage(BuildContext ctx) {
+    Navigator.of(ctx).push(
+      MaterialPageRoute(
+        builder: (context) => const MyWeddingPage(),
       ),
     );
   }
@@ -730,6 +738,9 @@ class _MapPageState extends State<MapPage> {
     await _mapController!.animateCamera(gmaps.CameraUpdate.zoomOut());
   }
 
+  /// Handle wedding icon tap for brides:
+  /// - If wedding exists with coordinates → Navigate to wedding location on map
+  /// - If no wedding or no coordinates → Navigate to MyWeddingPage (onboarding)
   void _showCreateSheet(BuildContext ctx) async {
     if (!_mounted) return;
     final isBride = widget.userRole == 'bride';
@@ -755,39 +766,30 @@ class _MapPageState extends State<MapPage> {
 
         if (!ctx.mounted) return;
         
-        // Show create/edit sheet
-        showModalBottomSheet(
-          context: ctx,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (c) => WeddingCreateSheet(
-            existingWedding: existingWedding,
-            onSaved: () {
-              // Invalidate cache to show updated data
-              MarkerDetailsServiceProvider.instance.clearCache();
-              scaffoldMessenger.showSnackBar(
-                SnackBar(
-                  content: Text(
-                    existingWedding != null 
-                      ? 'Wedding updated successfully' 
-                      : 'Wedding created successfully'
-                  ),
-                  backgroundColor: LynewedColors.success,
-                ),
-              );
-              _mapState.refresh(); // Refresh map
-            },
-            onDeleted: () {
-              scaffoldMessenger.showSnackBar(
-                const SnackBar(
-                  content: Text('Wedding deleted successfully'),
-                  backgroundColor: LynewedColors.success,
-                ),
-              );
-              _mapState.refresh(); // Refresh map
-            },
-          ),
-        );
+        // Check if wedding exists with valid coordinates
+        final exists = existingWedding?['exists'] == true;
+        final venueLat = (existingWedding?['venueLat'] as num?)?.toDouble() ??
+            (existingWedding?['venue_lat'] as num?)?.toDouble();
+        final venueLng = (existingWedding?['venueLng'] as num?)?.toDouble() ??
+            (existingWedding?['venue_lng'] as num?)?.toDouble();
+
+        if (exists && venueLat != null && venueLng != null) {
+          // Wedding exists → Navigate to wedding location on map
+          final weddingPosition = gmaps.LatLng(venueLat, venueLng);
+          
+          if (_mapController != null) {
+            await _mapController!.animateCamera(
+              gmaps.CameraUpdate.newLatLngZoom(weddingPosition, 14.0),
+            );
+          }
+        } else {
+          // No wedding or incomplete → Navigate to MyWeddingPage (onboarding)
+          navigator.push(
+            MaterialPageRoute(
+              builder: (context) => const MyWeddingPage(),
+            ),
+          );
+        }
       } catch (e) {
         if (!_mounted) return;
         navigator.pop(); // Hide loader on error

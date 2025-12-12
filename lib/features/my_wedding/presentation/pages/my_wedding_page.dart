@@ -24,6 +24,7 @@ import '../sheets/note_for_pros_sheet.dart';
 import 'agenda_page.dart';
 import 'budget_page.dart';
 import 'inspirations_page.dart';
+import 'guests_page.dart';
 
 /// My Wedding Page - Main page for brides to manage their wedding
 ///
@@ -62,6 +63,9 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
 
   // Inspirations preview data
   List<InspirationAlbum> _inspirationAlbums = [];
+
+  // Guests preview data
+  List<WeddingGuest> _guests = [];
 
   @override
   void initState() {
@@ -108,13 +112,14 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
   Future<void> _loadWeddingTeamData() async {
     if (_wedding == null) return;
 
-    // Load team chat info, active team members, events and expenses in parallel
+    // Load team chat info, active team members, events, expenses, albums and guests in parallel
     final results = await Future.wait([
       _repository.getWeddingTeamChat(weddingId: _wedding!.id),
       _repository.getActiveWeddingTeam(weddingId: _wedding!.id),
       _repository.getWeddingEvents(weddingId: _wedding!.id),
       _repository.getWeddingExpenses(weddingId: _wedding!.id),
       _repository.getInspirationAlbums(weddingId: _wedding!.id),
+      _repository.getWeddingGuests(weddingId: _wedding!.id),
     ]);
 
     final chatResult = results[0] as RepositoryResult<WeddingTeamChatInfo?>;
@@ -122,6 +127,7 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
     final eventsResult = results[2] as RepositoryResult<List<WeddingEvent>>;
     final expensesResult = results[3] as RepositoryResult<List<WeddingExpense>>;
     final albumsResult = results[4] as RepositoryResult<List<InspirationAlbum>>;
+    final guestsResult = results[5] as RepositoryResult<List<WeddingGuest>>;
 
     if (chatResult.isSuccess) {
       _teamChatInfo = chatResult.data;
@@ -154,6 +160,10 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
 
     if (albumsResult.isSuccess) {
       _inspirationAlbums = albumsResult.data ?? [];
+    }
+
+    if (guestsResult.isSuccess) {
+      _guests = guestsResult.data ?? [];
     }
   }
 
@@ -1116,45 +1126,188 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
 
   /// Guests Section
   Widget _buildGuestsSection() {
+    final hasGuests = _guests.isNotEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('GUESTS', style: LynewedTextStyles.sectionTitle),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('GUESTS', style: LynewedTextStyles.sectionTitle),
+            GestureDetector(
+              onTap: _openGuestsPage,
+              child: Text(
+                'View all',
+                style: LynewedTextStyles.labelLarge.copyWith(
+                  color: LynewedColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 4.0),
         Text(
-          'Manage your guest list',
+          hasGuests
+              ? '${_guests.length} guest${_guests.length > 1 ? 's' : ''} added'
+              : 'Manage your guest list',
           style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
         ),
         const SizedBox(height: 10.0),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20.0),
-          decoration: BoxDecoration(
-            color: LynewedColors.surface,
-            borderRadius: BorderRadius.circular(4.0),
-          ),
-          child: Column(
+        if (hasGuests)
+          Column(
             children: [
-              const Icon(Icons.groups_outlined, size: 32.0, color: LynewedColors.gray300),
-              const SizedBox(height: 8.0),
-              Text(
-                _wedding!.guestCount != null && _wedding!.guestCount! > 0
-                    ? '${_wedding!.guestCount} guests expected'
-                    : 'No guests added yet',
-                style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
-              ),
-              const SizedBox(height: 12.0),
-              LynewedButton(
-                text: 'Manage Guests',
-                onPressed: () {
-                  // TODO: Sprint 7 - Guests page
-                },
+              ..._guests.take(3).map(
+                    (guest) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: _buildGuestPreviewTile(guest),
+                    ),
+                  ),
+              const SizedBox(height: 4.0),
+              GestureDetector(
+                onTap: _openGuestsPage,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: LynewedColors.gray200),
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'View all guests',
+                      style: LynewedTextStyles.labelLarge.copyWith(
+                        color: LynewedColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ],
+          )
+        else
+          GestureDetector(
+            onTap: _openGuestsPage,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20.0),
+              decoration: BoxDecoration(
+                color: LynewedColors.surface,
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              child: Column(
+                children: [
+                  const Icon(Icons.people_outline, size: 32.0, color: LynewedColors.gray300),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    'No guests added yet',
+                    style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
+                  ),
+                  const SizedBox(height: 12.0),
+                  LynewedButton(
+                    text: 'Add Guests',
+                    onPressed: _openGuestsPage,
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
       ],
     );
+  }
+
+  /// Guest preview tile for guests section
+  Widget _buildGuestPreviewTile(WeddingGuest guest) {
+    return GestureDetector(
+      onTap: _openGuestsPage,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12.0),
+        decoration: BoxDecoration(
+          color: LynewedColors.surface,
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: Row(
+          children: [
+            // Avatar with initials
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: LynewedColors.gray200,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Center(
+                child: Text(
+                  _getGuestInitials(guest.name ?? ''),
+                  style: LynewedTextStyles.labelMedium.copyWith(
+                    color: LynewedColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12.0),
+            // Guest info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    guest.name ?? 'Unknown',
+                    style: LynewedTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (guest.role != GuestRole.guest) ...[
+                    const SizedBox(height: 2.0),
+                    Text(
+                      _getGuestRoleLabel(guest.role),
+                      style: LynewedTextStyles.labelSmall.copyWith(
+                        color: LynewedColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              size: 20.0,
+              color: LynewedColors.textSecondary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getGuestInitials(String name) {
+    if (name.isEmpty) return '?';
+    final parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return name[0].toUpperCase();
+  }
+
+  String _getGuestRoleLabel(GuestRole role) {
+    switch (role) {
+      case GuestRole.bridesmaid:
+        return 'Bridesmaid';
+      case GuestRole.bestMan:
+        return 'Best Man';
+      case GuestRole.family:
+        return 'Family';
+      case GuestRole.witness:
+        return 'Witness';
+      case GuestRole.other:
+        return 'Other';
+      case GuestRole.guest:
+        return 'Guest';
+    }
   }
 
   /// Note for Pros Section
@@ -1343,6 +1496,14 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => InspirationsPage(weddingId: _wedding!.id),
+      ),
+    ).then((_) => _loadWedding());
+  }
+
+  void _openGuestsPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => GuestsPage(weddingId: _wedding!.id),
       ),
     ).then((_) => _loadWedding());
   }

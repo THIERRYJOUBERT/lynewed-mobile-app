@@ -74,6 +74,13 @@
 - ✅ **Bride MyWeddingPage** - Inspirations albums preview
 - ✅ **Pro Wedding Detail** - Read-only access to public albums + preview
 
+### Sprint 3.4 Accomplishments (2025-12-12)
+- ✅ **Guests Module** - Full CRUD for wedding guests
+- ✅ **GuestsPage** - List guests + empty state + loading + error state
+- ✅ **AddGuestSheet** - Create/edit guest (name, role, email, phone, notes)
+- ✅ **Guest Roles** - Guest, Bridesmaid, Best Man, Family, Witness, Other
+- ✅ **MyWeddingPage** - Guests preview section (up to 3 guests + "View all")
+
 ### Key Metrics
 | Metric | Value |
 |--------|-------|
@@ -165,10 +172,9 @@ docs/
 
 | Priority | Task | Description |
 |----------|------|-------------|
-| 1 | **My Wedding Suite - Guests** | Guests list management |
-| 2 | **TestFlight** | Prepare and deploy beta |
-| 3 | **ProDetails** | Complete refactoring with Images V2 |
-| 4 | **Auth Module** | Clean Architecture refactoring |
+| 1 | **TestFlight** | Prepare and deploy beta |
+| 2 | **ProDetails** | Complete refactoring with Images V2 |
+| 3 | **Auth Module** | Clean Architecture refactoring |
 
 ---
 
@@ -190,4 +196,4 @@ docs/
 ---
 
 **Last Updated:** 2025-12-12  
-**Status:** 🚀 V1 IN PRODUCTION - My Wedding Suite Sprint 3.3 Complete (Agenda + Budget + Inspirations)
+**Status:** 🚀 V1 IN PRODUCTION - My Wedding Suite Sprint 3.4 Complete (Agenda + Budget + Inspirations + Guests)

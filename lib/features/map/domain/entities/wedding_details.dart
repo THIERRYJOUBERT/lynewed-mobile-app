@@ -83,6 +83,7 @@ class WeddingDetails {
     this.professionsNeeded = const [],
     this.eventDate,
     this.eventEndDate,
+    this.guestCount,
     this.budgetMin,
     this.budgetMax,
     this.currency = 'EUR',
@@ -103,6 +104,7 @@ class WeddingDetails {
   final List<Profession> professionsNeeded;
   final DateTime? eventDate;
   final DateTime? eventEndDate;
+  final int? guestCount;
   final int? budgetMin;
   final int? budgetMax;
   final String currency;
@@ -125,6 +127,15 @@ class WeddingDetails {
   String get budgetRange {
     return BudgetFormatter.format(
       min: budgetMin,
+      max: budgetMax,
+      sourceCurrency: currency,
+    );
+  }
+
+  /// Budget formatted using only budgetMax (in user's preferred currency)
+  String get budgetMaxOnly {
+    return BudgetFormatter.format(
+      min: null,
       max: budgetMax,
       sourceCurrency: currency,
     );
@@ -200,6 +211,7 @@ class WeddingDetails {
       professionsNeeded: _parseProfessionsList(json['professionsNeeded']),
       eventDate: _parseDateTime(json['eventDate']),
       eventEndDate: _parseDateTime(json['eventEndDate']),
+      guestCount: (json['guestCount'] as num?)?.toInt() ?? (json['guest_count'] as num?)?.toInt(),
       budgetMin: (json['budgetMin'] as num?)?.toInt(),
       budgetMax: (json['budgetMax'] as num?)?.toInt(),
       currency: json['currency']?.toString() ?? 'EUR',

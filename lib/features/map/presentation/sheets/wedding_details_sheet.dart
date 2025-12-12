@@ -166,10 +166,19 @@ class WeddingDetailsSheet extends StatelessWidget {
               
               // Budget (uses dynamic currency icon)
               LynewedBudgetRow(
-                budget: details.budgetRange,
+                budget: details.budgetMaxOnly,
               ),
             ],
           ),
+
+          // Guest count (estimated)
+          if (details.guestCount != null) ...[
+            const SizedBox(height: 10),
+            LynewedInfoRow(
+              icon: Icons.people_outline,
+              text: '${details.guestCount} guests expected',
+            ),
+          ],
           
           // Search radius (if available)
           if (details.radiusFormatted != null) ...[

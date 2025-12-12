@@ -310,6 +310,36 @@ abstract class MyWeddingRepository {
 
   /// Delete a wedding expense
   Future<RepositoryResult<void>> deleteWeddingExpense({required String expenseId});
+
+  // ========== WEDDING GUESTS ==========
+
+  /// Get all guests for a wedding
+  Future<RepositoryResult<List<WeddingGuest>>> getWeddingGuests({
+    required String weddingId,
+  });
+
+  /// Create a new wedding guest
+  Future<RepositoryResult<WeddingGuest>> createWeddingGuest({
+    required String weddingId,
+    required String name,
+    String? email,
+    String? phone,
+    String? role,
+    String? notes,
+  });
+
+  /// Update a wedding guest
+  Future<RepositoryResult<void>> updateWeddingGuest({
+    required String guestId,
+    String? name,
+    String? email,
+    String? phone,
+    String? role,
+    String? notes,
+  });
+
+  /// Delete a wedding guest
+  Future<RepositoryResult<void>> deleteWeddingGuest({required String guestId});
 }
 
 /// Contacted professional for invitation

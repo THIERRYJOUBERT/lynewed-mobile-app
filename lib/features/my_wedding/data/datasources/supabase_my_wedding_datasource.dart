@@ -1178,4 +1178,107 @@ class SupabaseMyWeddingDatasource {
       rethrow;
     }
   }
+
+  // ========== WEDDING GUESTS ==========
+
+  /// Get all guests for a wedding
+  Future<List<WeddingGuest>> getWeddingGuests({
+    required String weddingId,
+  }) async {
+    try {
+      final response = await _client
+          .from('wedding_guests')
+          .select()
+          .eq('wedding_id', weddingId)
+          .order('created_at', ascending: false);
+
+      return (response as List)
+          .map((json) => WeddingGuest.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      SecureLogger.error('getWeddingGuests error: $e');
+      rethrow;
+    }
+  }
+
+  /// Create a new wedding guest
+  Future<WeddingGuest> createWeddingGuest({
+    required String weddingId,
+    required String name,
+    String? email,
+    String? phone,
+    String? role,
+    String? notes,
+  }) async {
+    try {
+      final response = await _client
+          .from('wedding_guests')
+          .insert({
+            'wedding_id': weddingId,
+            'name': name,
+            'email': email,
+            'phone': phone,
+            'role': role ?? 'guest',
+            'notes': notes,
+          })
+          .select()
+          .single();
+
+      SecureLogger.info('createWeddingGuest: Created guest for wedding $weddingId');
+      return WeddingGuest.fromJson(response);
+    } catch (e) {
+      SecureLogger.error('createWeddingGuest error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update a wedding guest
+  Future<void> updateWeddingGuest({
+    required String guestId,
+    String? name,
+    String? email,
+    String? phone,
+    String? role,
+    String? notes,
+  }) async {
+    try {
+      final updateData = <String, dynamic>{};
+      if (name != null) updateData['name'] = name;
+      if (email != null) updateData['email'] = email;
+      if (phone != null) updateData['phone'] = phone;
+      if (role != null) updateData['role'] = role;
+      if (notes != null) updateData['notes'] = notes;
+      updateData['updated_at'] = DateTime.now().toIso8601String();
+
+      if (updateData.length == 1) {
+        SecureLogger.warning('updateWeddingGuest: No data to update');
+        return;
+      }
+
+      await _client
+          .from('wedding_guests')
+          .update(updateData)
+          .eq('id', guestId);
+
+      SecureLogger.info('updateWeddingGuest: Updated guest $guestId');
+    } catch (e) {
+      SecureLogger.error('updateWeddingGuest error: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a wedding guest
+  Future<void> deleteWeddingGuest({required String guestId}) async {
+    try {
+      await _client
+          .from('wedding_guests')
+          .delete()
+          .eq('id', guestId);
+
+      SecureLogger.info('deleteWeddingGuest: Deleted guest $guestId');
+    } catch (e) {
+      SecureLogger.error('deleteWeddingGuest error: $e');
+      rethrow;
+    }
+  }
 }

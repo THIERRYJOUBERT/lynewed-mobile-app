@@ -580,4 +580,76 @@ class MyWeddingRepositoryImpl implements MyWeddingRepository {
       return RepositoryResult.failure('Failed to delete expense: $e');
     }
   }
+
+  // ========== WEDDING GUESTS ==========
+
+  @override
+  Future<RepositoryResult<List<WeddingGuest>>> getWeddingGuests({
+    required String weddingId,
+  }) async {
+    try {
+      final guests = await _datasource.getWeddingGuests(weddingId: weddingId);
+      return RepositoryResult.success(guests);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get guests: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<WeddingGuest>> createWeddingGuest({
+    required String weddingId,
+    required String name,
+    String? email,
+    String? phone,
+    String? role,
+    String? notes,
+  }) async {
+    try {
+      final guest = await _datasource.createWeddingGuest(
+        weddingId: weddingId,
+        name: name,
+        email: email,
+        phone: phone,
+        role: role,
+        notes: notes,
+      );
+      return RepositoryResult.success(guest);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to create guest: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<void>> updateWeddingGuest({
+    required String guestId,
+    String? name,
+    String? email,
+    String? phone,
+    String? role,
+    String? notes,
+  }) async {
+    try {
+      await _datasource.updateWeddingGuest(
+        guestId: guestId,
+        name: name,
+        email: email,
+        phone: phone,
+        role: role,
+        notes: notes,
+      );
+      return const RepositoryResult.success(null);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to update guest: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<void>> deleteWeddingGuest({required String guestId}) async {
+    try {
+      await _datasource.deleteWeddingGuest(guestId: guestId);
+      return const RepositoryResult.success(null);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to delete guest: $e');
+    }
+  }
 }

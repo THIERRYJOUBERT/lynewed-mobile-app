@@ -2,7 +2,7 @@
 
 **Version:** 2.0  
 **Date:** 2025-12-12  
-**Status:** ✅ SPRINT 3.3 TERMINÉ (100%) - Basé sur Audit Réel  
+**Status:** ✅ SPRINT 3.4 TERMINÉ (100%) - Guests + Map wedding UX alignée  
 **Supabase Project:** `hekyovgnovhfhmkpfrna` (PROD)
 
 ---
@@ -37,7 +37,9 @@
 | **Agenda** | ✅ | UI complète + CRUD + preview sur MyWedding | `lib/features/my_wedding/presentation/pages/agenda_page.dart`, `lib/features/my_wedding/presentation/sheets/add_event_sheet.dart` | CRUD + toggle done/public + preview (max 5) |
 | **Budget Tracker** | ✅ | UI complète + CRUD + multi-devise + preview sur MyWedding | `lib/features/my_wedding/presentation/pages/budget_page.dart`, `lib/features/my_wedding/presentation/sheets/add_expense_sheet.dart` | `currency_code` par dépense + conversion vers devise user |
 | **Inspirations/Moodboard** | ✅ | Albums + uploads + save from feed + preview Bride/Pro | `lib/features/my_wedding/presentation/pages/inspirations_page.dart`, `lib/features/my_wedding/presentation/pages/album_detail_page.dart`, `lib/features/my_wedding/presentation/sheets/create_album_sheet.dart`, `lib/features/my_wedding/presentation/sheets/save_to_album_sheet.dart`, `lib/pages/bride/feed_detail_viewer/feed_detail_viewer_widget.dart`, `public.inspiration_albums`, `public.saved_posts`, `public.album_images` | CRUD + upload `wedding-albums` + read-only pro (public albums only) |
-| **Guests List** | ⏳ | Table OK, UI placeholder | `public.wedding_guests` | Non vérifié (placeholder exact non retrouvé via grep sur `"Coming soon"`) |
+| **Guests List** | ✅ | UI complète + CRUD + preview sur MyWedding | `lib/features/my_wedding/presentation/pages/guests_page.dart`, `lib/features/my_wedding/presentation/sheets/add_guest_sheet.dart`, `public.wedding_guests` | CRUD + long-press edit/delete + preview (max 3) dans `my_wedding_page.dart` |
+| **Map - Wedding Icon (Bride)** | ✅ | Tap icône wedding: centre sur le mariage si existant, sinon ouvre l'onboarding MyWedding | `lib/features/map/presentation/pages/map_page.dart`, RPC `get_my_wedding()` | Utilise `exists` + `venueLat/venueLng` (fallback) + `Edit Wedding` ouvre `MyWeddingPage` |
+| **Map - Wedding Details Sheet** | ✅ | Budget = uniquement max + guests count estimé | `lib/features/map/presentation/sheets/wedding_details_sheet.dart`, `lib/features/map/domain/entities/wedding_details.dart` | `budgetMaxOnly` + `guestCount` (parse `guestCount`/`guest_count`) |
 | **Documents in Chat** | ❌ | Non implémenté | - | Pas de type `document` |
 | **Cancel/Resume Wedding** | ⏳ | Colonnes OK, UI non fait | `cancelled_at` colonne | Flow UI manquant |
 | **Notifications wedding_*** | ⚠️ | Triggers OK, drain KO | `supabase/functions/notifications_outbox_drain/index.ts` | Aucun `case "wedding_*"` + mapping `EVENT_TO_NOTIFICATION_TYPE` sans wedding (`supabase/functions/notifications_outbox_drain/index.ts:L151-L161` et `:L548-L563`) |
@@ -302,13 +304,45 @@ lib/features/weddings_hub_pro/
 
 | # | Tâche | Fichier | Complexité |
 |---|-------|---------|------------|
-| 1 | Créer `GuestsPage` | `lib/features/my_wedding/presentation/pages/guests_page.dart` | S |
-| 2 | Créer `AddGuestSheet` | `lib/features/my_wedding/presentation/sheets/add_guest_sheet.dart` | S |
-| 3 | Implémenter CRUD guests | `supabase_my_wedding_datasource.dart` | S |
-| 4 | Remplacer placeholder dans MyWeddingPage | `my_wedding_page.dart` | S |
+| 1 | ✅ Créer `GuestsPage` | `lib/features/my_wedding/presentation/pages/guests_page.dart` | S |
+| 2 | ✅ Créer `AddGuestSheet` | `lib/features/my_wedding/presentation/sheets/add_guest_sheet.dart` | S |
+| 3 | ✅ Implémenter CRUD guests | `lib/features/my_wedding/data/datasources/supabase_my_wedding_datasource.dart` | S |
+| 4 | ✅ Remplacer placeholder dans MyWeddingPage (preview max 3 + navigation) | `lib/features/my_wedding/presentation/pages/my_wedding_page.dart` | S |
 
 **Critères de succès:**
-- [ ] Bride peut gérer liste d'invités
+- [x] Bride peut créer un invité
+- [x] Bride peut modifier un invité
+- [x] Bride peut supprimer un invité
+- [x] Preview Guests visible sur `MyWeddingPage` (max 3)
+- [x] Navigation `MyWeddingPage` → `GuestsPage`
+
+**Preuves (Sprint 3.4):**
+- **UI Guests list:** `lib/features/my_wedding/presentation/pages/guests_page.dart`
+- **UI Add/Edit sheet:** `lib/features/my_wedding/presentation/sheets/add_guest_sheet.dart`
+- **Datasource CRUD:** `lib/features/my_wedding/data/datasources/supabase_my_wedding_datasource.dart` (section `WEDDING GUESTS`)
+- **Repository methods:**
+  - `lib/features/my_wedding/domain/repositories/my_wedding_repository.dart` (section `WEDDING GUESTS`)
+  - `lib/features/my_wedding/data/repositories/my_wedding_repository_impl.dart` (section `WEDDING GUESTS`)
+- **Preview + navigation:** `lib/features/my_wedding/presentation/pages/my_wedding_page.dart` (section `GUESTS`)
+
+#### Map (Sprint 3.4) — Wedding UX Bride
+
+**Objectif:** Aligner le comportement de l'icône wedding sur la map avec la logique produit.
+
+| # | Tâche | Fichier | Complexité |
+|---|-------|---------|------------|
+| 1 | ✅ Tap icône wedding (bride): si wedding existe → centre sur le point | `lib/features/map/presentation/pages/map_page.dart` | S |
+| 2 | ✅ Tap icône wedding (bride): si pas de wedding → ouvre `MyWeddingPage` (onboarding) | `lib/features/map/presentation/pages/map_page.dart` | S |
+| 3 | ✅ "Edit Wedding" depuis `WeddingDetailsSheet` → ouvre `MyWeddingPage` | `lib/features/map/presentation/pages/map_page.dart` | S |
+| 4 | ✅ `WeddingDetailsSheet`: budget affiche uniquement `budgetMax` + affiche `guestCount` | `lib/features/map/presentation/sheets/wedding_details_sheet.dart` | S |
+
+**Preuves (Map Sprint 3.4):**
+- **RPC wedding coords:** `supabase/migrations/00000000000000_initial_schema.sql` → `get_my_wedding()` renvoie `exists`, `venueLat`, `venueLng`
+- **Map icon behavior:** `lib/features/map/presentation/pages/map_page.dart` (méthode `_showCreateSheet`)
+- **Edit wedding navigation:** `lib/features/map/presentation/pages/map_page.dart` (wiring `onEditWedding: _openMyWeddingPage`)
+- **Sheet budget/guests:**
+  - `lib/features/map/domain/entities/wedding_details.dart` (`guestCount`, `budgetMaxOnly`)
+  - `lib/features/map/presentation/sheets/wedding_details_sheet.dart` (affichage `budgetMaxOnly` + `guests expected`)
 
 ---
 
@@ -396,3 +430,6 @@ lib/features/weddings_hub_pro/
 - Écarts documentés avec preuves
 - Plan révisé basé sur état réel
 - Sprints 3.x définis pour compléter la feature
+
+### V2.1 (2025-12-12)
+- Sprint 3.4 complété: Guests + alignement UX Map wedding (icône + sheet)
