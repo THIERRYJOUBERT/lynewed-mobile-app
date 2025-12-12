@@ -45,12 +45,13 @@ class CurrencyDropdown extends StatelessWidget {
     final currency = CurrencyData.getByCode(value);
     return InkWell(
       onTap: () => _showCurrencyPicker(context),
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(4),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
           border: Border.all(color: LynewedColors.border),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(4),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

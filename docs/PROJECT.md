@@ -62,6 +62,7 @@
 - ✅ **Budget Page** - Full CRUD for expenses + totals header (budget vs spent vs remaining)
 - ✅ **AddEventSheet** - Date/time picker, location, visibility toggle (public/private)
 - ✅ **AddExpenseSheet** - Category selector, amount, status (pending/partial/paid), due date
+- ✅ **Budget Multi-Currency** - `wedding_expenses.currency_code` + per-expense currency selector + UI conversion to user's preferred currency
 
 ### Key Metrics
 | Metric | Value |

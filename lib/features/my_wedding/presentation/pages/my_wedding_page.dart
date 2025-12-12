@@ -14,6 +14,9 @@ import '/index.dart';
 import '../../data/repositories/my_wedding_repository_impl.dart';
 import '../../domain/entities/entities.dart';
 import '../../domain/repositories/my_wedding_repository.dart';
+import '/core/utils/budget_formatter.dart';
+import '/core/services/currency_service.dart';
+import '/core/constants/currencies.dart';
 import '../widgets/wedding_onboarding_widget.dart';
 import '../sheets/wedding_edit_sheet.dart';
 import '../sheets/invite_pro_sheet.dart';
@@ -131,8 +134,16 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
     }
     if (expensesResult.isSuccess) {
       _expenses = expensesResult.data ?? [];
-      _totalExpenses = _expenses.fold(0, (sum, e) => sum + e.amount);
-      _totalPaid = _expenses.fold(0, (sum, e) => sum + e.paidAmount);
+      final userCurrency = BudgetFormatter.userCurrency;
+      final service = CurrencyService.instance;
+      _totalExpenses = _expenses.fold(0, (sum, e) {
+        final converted = service.convert(e.amount, from: e.currencyCode, to: userCurrency) ?? e.amount;
+        return sum + converted;
+      });
+      _totalPaid = _expenses.fold(0, (sum, e) {
+        final converted = service.convert(e.paidAmount, from: e.currencyCode, to: userCurrency) ?? e.paidAmount;
+        return sum + converted;
+      });
     }
   }
 
@@ -714,10 +725,21 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
   Widget _buildBudgetSection() {
     final hasBudget = _wedding!.budgetMax != null && _wedding!.budgetMax! > 0;
     final hasExpenses = _expenses.isNotEmpty;
-    final budgetMax = _wedding!.budgetMax ?? 0;
-    final currency = _wedding!.currency;
-    final progress = hasBudget && budgetMax > 0 ? (_totalExpenses / budgetMax).clamp(0.0, 1.0) : 0.0;
-    final isOverBudget = hasBudget && _totalExpenses > budgetMax;
+    final weddingCurrency = _wedding!.currency;
+    final userCurrency = BudgetFormatter.userCurrency;
+    final currencySymbol = CurrencyData.getSymbol(userCurrency);
+
+    final service = CurrencyService.instance;
+    final totalExpensesDisplay = service.convert(_totalExpenses, from: weddingCurrency, to: userCurrency) ?? _totalExpenses;
+    final totalPaidDisplay = service.convert(_totalPaid, from: weddingCurrency, to: userCurrency) ?? _totalPaid;
+    final budgetMaxDisplay = _wedding!.budgetMax != null
+        ? (service.convert(_wedding!.budgetMax!.toDouble(), from: weddingCurrency, to: userCurrency) ?? _wedding!.budgetMax!.toDouble())
+        : 0.0;
+
+    final progress = hasBudget && budgetMaxDisplay > 0
+        ? (totalExpensesDisplay / budgetMaxDisplay).clamp(0.0, 1.0)
+        : 0.0;
+    final isOverBudget = hasBudget && totalExpensesDisplay > budgetMaxDisplay;
 
     String subtitle;
     if (hasExpenses) {
@@ -774,7 +796,7 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
                             ),
                           ),
                           Text(
-                            _formatAmount(_totalExpenses, currency),
+                            _formatAmount(totalExpensesDisplay, currencySymbol),
                             style: LynewedTextStyles.bodyMedium.copyWith(
                               fontWeight: FontWeight.w500,
                               color: isOverBudget ? LynewedColors.error : LynewedColors.textPrimary,
@@ -791,7 +813,7 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
                             value: progress,
                             backgroundColor: LynewedColors.gray200,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              isOverBudget ? LynewedColors.error : LynewedColors.success,
+                              isOverBudget ? LynewedColors.error : LynewedColors.textPrimary,
                             ),
                             minHeight: 6,
                           ),
@@ -803,14 +825,14 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
                           children: [
                             Text(
                               isOverBudget
-                                  ? 'Over by ${_formatAmount(_totalExpenses - budgetMax, currency)}'
-                                  : 'Remaining: ${_formatAmount(budgetMax - _totalExpenses, currency)}',
+                                  ? 'Over by ${_formatAmount(totalExpensesDisplay - budgetMaxDisplay, currencySymbol)}'
+                                  : 'Remaining: ${_formatAmount(budgetMaxDisplay - totalExpensesDisplay, currencySymbol)}',
                               style: LynewedTextStyles.labelMedium.copyWith(
                                 color: isOverBudget ? LynewedColors.error : LynewedColors.textSecondary,
                               ),
                             ),
                             Text(
-                              'of ${_formatAmount(budgetMax, currency)}',
+                              'of ${_formatAmount(budgetMaxDisplay, currencySymbol)}',
                               style: LynewedTextStyles.labelMedium.copyWith(
                                 color: LynewedColors.textSecondary,
                               ),
@@ -822,9 +844,9 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
                       // Paid vs Pending mini stats
                       Row(
                         children: [
-                          _buildBudgetMiniStat('Paid', _formatAmount(_totalPaid, currency), LynewedColors.success),
+                          _buildBudgetMiniStat('Paid', _formatAmount(totalPaidDisplay, currencySymbol), LynewedColors.success),
                           const SizedBox(width: 12.0),
-                          _buildBudgetMiniStat('Pending', _formatAmount(_totalExpenses - _totalPaid, currency), LynewedColors.warning),
+                          _buildBudgetMiniStat('Pending', _formatAmount(totalExpensesDisplay - totalPaidDisplay, currencySymbol), LynewedColors.warning),
                         ],
                       ),
                     ],

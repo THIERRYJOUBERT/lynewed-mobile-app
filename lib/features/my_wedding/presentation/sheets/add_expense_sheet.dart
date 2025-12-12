@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '/core/design/design.dart';
+import '/core/utils/budget_formatter.dart';
+import '/core/widgets/currency_dropdown.dart';
 import '../../data/repositories/my_wedding_repository_impl.dart';
 import '../../domain/entities/entities.dart';
 
@@ -35,6 +37,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
 
   String _selectedCategory = 'other';
   ExpenseStatus _status = ExpenseStatus.pending;
+  late String _currencyCode;
   DateTime? _dueDate;
   bool _isSaving = false;
 
@@ -65,6 +68,10 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
     _paidAmountController = TextEditingController(
       text: widget.expense != null ? widget.expense!.paidAmount.toStringAsFixed(0) : '',
     );
+
+    _currencyCode = widget.expense?.currencyCode.isNotEmpty == true
+        ? widget.expense!.currencyCode
+        : BudgetFormatter.userCurrency;
 
     if (widget.expense != null) {
       _selectedCategory = widget.expense!.category;
@@ -122,6 +129,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
         category: _selectedCategory,
         description: description.isNotEmpty ? description : null,
         amount: amount,
+        currencyCode: _currencyCode,
         status: _status.name,
         paidAmount: paidAmount,
         dueDate: _dueDate,
@@ -155,6 +163,7 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
         weddingId: widget.weddingId,
         category: _selectedCategory,
         amount: amount,
+        currencyCode: _currencyCode,
         description: description.isNotEmpty ? description : null,
         status: _status.name,
         paidAmount: paidAmount,
@@ -234,21 +243,10 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Container(
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: LynewedColors.surface,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Center(
-                    child: Text(
-                      widget.currency,
-                      style: LynewedTextStyles.bodyMedium.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
+                CurrencyDropdown(
+                  value: _currencyCode,
+                  onChanged: (code) => setState(() => _currencyCode = code),
+                  compact: true,
                 ),
               ],
             ),
@@ -281,21 +279,10 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Container(
-                    height: 48,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: LynewedColors.surface,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Center(
-                      child: Text(
-                        widget.currency,
-                        style: LynewedTextStyles.bodyMedium.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
+                  CurrencyDropdown(
+                    value: _currencyCode,
+                    onChanged: (code) => setState(() => _currencyCode = code),
+                    compact: true,
                   ),
                 ],
               ),
@@ -466,4 +453,5 @@ class _AddExpenseSheetState extends State<AddExpenseSheet> {
       ),
     );
   }
+
 }

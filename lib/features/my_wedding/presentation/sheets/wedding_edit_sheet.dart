@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '/core/design/design.dart';
+import '/core/widgets/currency_dropdown.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/backend/schema/structs/index.dart';
 import '/custom_code/actions/index.dart' as custom_actions;
@@ -31,8 +32,7 @@ class _WeddingEditSheetState extends State<WeddingEditSheet> {
   late TextEditingController _nameController;
   late TextEditingController _addressSearchController;
   late TextEditingController _guestCountController;
-  late TextEditingController _budgetMinController;
-  late TextEditingController _budgetMaxController;
+  late TextEditingController _budgetController;
 
   // State
   DateTime? _eventDate;
@@ -40,6 +40,7 @@ class _WeddingEditSheetState extends State<WeddingEditSheet> {
   double? _venueLat;
   double? _venueLng;
   String? _countryCode;
+  late String _currencyCode;
   bool _isSaving = false;
   bool _isSearchingAddress = false;
   List<PlaceSuggestionStruct> _addressSuggestions = [];
@@ -53,11 +54,9 @@ class _WeddingEditSheetState extends State<WeddingEditSheet> {
     _guestCountController = TextEditingController(
       text: widget.wedding.guestCount?.toString() ?? '',
     );
-    _budgetMinController = TextEditingController(
-      text: widget.wedding.budgetMin?.toInt().toString() ?? '',
-    );
-    _budgetMaxController = TextEditingController(
-      text: widget.wedding.budgetMax?.toInt().toString() ?? '',
+    final initialBudget = widget.wedding.budgetMax ?? widget.wedding.budgetMin;
+    _budgetController = TextEditingController(
+      text: initialBudget?.toInt().toString() ?? '',
     );
     
     // Initialize from existing wedding data
@@ -66,6 +65,7 @@ class _WeddingEditSheetState extends State<WeddingEditSheet> {
     _venueLat = widget.wedding.position?.latitude;
     _venueLng = widget.wedding.position?.longitude;
     _countryCode = widget.wedding.countryCode;
+    _currencyCode = widget.wedding.currency;
   }
 
   @override
@@ -73,8 +73,7 @@ class _WeddingEditSheetState extends State<WeddingEditSheet> {
     _nameController.dispose();
     _addressSearchController.dispose();
     _guestCountController.dispose();
-    _budgetMinController.dispose();
-    _budgetMaxController.dispose();
+    _budgetController.dispose();
     super.dispose();
   }
 
@@ -175,8 +174,9 @@ class _WeddingEditSheetState extends State<WeddingEditSheet> {
       venueAddress: _venueAddress,
       countryCode: _countryCode,
       guestCount: int.tryParse(_guestCountController.text),
-      budgetMin: int.tryParse(_budgetMinController.text),
-      budgetMax: int.tryParse(_budgetMaxController.text),
+      budgetMin: int.tryParse(_budgetController.text),
+      budgetMax: int.tryParse(_budgetController.text),
+      currency: _currencyCode,
     );
 
     if (!mounted) return;
@@ -392,38 +392,23 @@ class _WeddingEditSheetState extends State<WeddingEditSheet> {
             const SizedBox(height: 30),
             
             // Budget
-            const Text('Budget Range', style: LynewedTextStyles.labelMedium),
+            const Text('Budget', style: LynewedTextStyles.labelMedium),
             const SizedBox(height: 10),
             Row(
               children: [
                 Expanded(
                   child: LynewedTextField(
-                    controller: _budgetMinController,
-                    hint: 'Min',
+                    controller: _budgetController,
+                    hint: 'e.g., 20000',
                     keyboardType: TextInputType.number,
+                    isValueInput: true,
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  '-',
-                  style: LynewedTextStyles.bodyMedium.copyWith(
-                    color: LynewedColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: LynewedTextField(
-                    controller: _budgetMaxController,
-                    hint: 'Max',
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  widget.wedding.currency,
-                  style: LynewedTextStyles.bodyMedium.copyWith(
-                    color: LynewedColors.textSecondary,
-                  ),
+                CurrencyDropdown(
+                  value: _currencyCode,
+                  onChanged: (code) => setState(() => _currencyCode = code),
+                  compact: true,
                 ),
               ],
             ),

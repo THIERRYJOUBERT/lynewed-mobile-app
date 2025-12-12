@@ -21,6 +21,7 @@ class WeddingExpense {
     required this.weddingId,
     required this.category,
     required this.amount,
+    required this.currencyCode,
     this.description,
     this.status = ExpenseStatus.pending,
     this.paidAmount = 0,
@@ -44,6 +45,9 @@ class WeddingExpense {
 
   /// Total amount
   final double amount;
+
+  /// Currency code of the amount (e.g. EUR, USD)
+  final String currencyCode;
 
   /// Payment status
   final ExpenseStatus status;
@@ -80,6 +84,7 @@ class WeddingExpense {
       category: json['category'] as String,
       description: json['description'] as String?,
       amount: (json['amount'] as num).toDouble(),
+      currencyCode: (json['currency_code'] as String?)?.toUpperCase() ?? 'EUR',
       status: _parseStatus(json['status'] as String?),
       paidAmount: (json['paid_amount'] as num?)?.toDouble() ?? 0,
       dueDate: json['due_date'] != null 
@@ -110,6 +115,7 @@ class WeddingExpense {
       'category': category,
       'description': description,
       'amount': amount,
+      'currency_code': currencyCode,
       'status': status.name,
       'paid_amount': paidAmount,
       'due_date': dueDate?.toIso8601String(),
@@ -123,6 +129,7 @@ class WeddingExpense {
     String? category,
     String? description,
     double? amount,
+    String? currencyCode,
     ExpenseStatus? status,
     double? paidAmount,
     DateTime? dueDate,
@@ -136,6 +143,7 @@ class WeddingExpense {
       category: category ?? this.category,
       description: description ?? this.description,
       amount: amount ?? this.amount,
+      currencyCode: currencyCode ?? this.currencyCode,
       status: status ?? this.status,
       paidAmount: paidAmount ?? this.paidAmount,
       dueDate: dueDate ?? this.dueDate,

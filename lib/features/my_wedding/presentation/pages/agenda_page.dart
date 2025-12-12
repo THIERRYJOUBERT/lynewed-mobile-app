@@ -316,7 +316,7 @@ class _AgendaPageState extends State<AgendaPage> {
         decoration: BoxDecoration(
           color: isPast || isDone ? LynewedColors.surface : LynewedColors.background,
           border: Border.all(
-            color: isDone ? LynewedColors.success : LynewedColors.gray200,
+            color: isDone ? LynewedColors.textPrimary : LynewedColors.gray200,
             width: isDone ? 1.5 : 1,
           ),
           borderRadius: BorderRadius.circular(4),
@@ -332,9 +332,9 @@ class _AgendaPageState extends State<AgendaPage> {
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: isDone ? LynewedColors.success : Colors.transparent,
+                  color: isDone ? LynewedColors.textPrimary : Colors.transparent,
                   border: Border.all(
-                    color: isDone ? LynewedColors.success : LynewedColors.gray200,
+                    color: isDone ? LynewedColors.textPrimary : LynewedColors.gray200,
                     width: 2,
                   ),
                   borderRadius: BorderRadius.circular(4),

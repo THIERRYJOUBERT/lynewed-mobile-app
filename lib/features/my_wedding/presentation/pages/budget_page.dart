@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '/core/design/design.dart';
+import '/core/utils/budget_formatter.dart';
+import '/core/services/currency_service.dart';
+import '/core/constants/currencies.dart';
 import '../../data/repositories/my_wedding_repository_impl.dart';
 import '../../domain/entities/entities.dart';
 import '../sheets/add_expense_sheet.dart';
@@ -34,7 +37,9 @@ class _BudgetPageState extends State<BudgetPage> {
   List<WeddingExpense> _expenses = [];
   String? _error;
 
-  String get _currency => widget.currency ?? '€';
+  String get _displayCurrency => BudgetFormatter.userCurrency;
+  String get _currencySymbol => CurrencyData.getSymbol(_displayCurrency);
+  final _currencyService = CurrencyService.instance;
 
   @override
   void initState() {
@@ -76,7 +81,7 @@ class _BudgetPageState extends State<BudgetPage> {
         heightFactor: 0.85,
         child: AddExpenseSheet(
           weddingId: widget.weddingId,
-          currency: _currency,
+          currency: _currencySymbol,
           expense: expense,
           onSaved: _loadExpenses,
         ),
@@ -131,10 +136,9 @@ class _BudgetPageState extends State<BudgetPage> {
     }
   }
 
-  // Totals calculations
-  double get _totalExpenses => _expenses.fold(0, (sum, e) => sum + e.amount);
-  double get _totalPaid => _expenses.fold(0, (sum, e) => sum + e.paidAmount);
-  double get _totalPending => _totalExpenses - _totalPaid;
+  // Totals calculations (converted to user's preferred currency)
+  double get _totalExpenses => _expenses.fold(0, (sum, e) => sum + _convertAmount(e.amount, sourceCurrency: e.currencyCode));
+  double get _totalPaid => _expenses.fold(0, (sum, e) => sum + _convertAmount(e.paidAmount, sourceCurrency: e.currencyCode));
 
   @override
   Widget build(BuildContext context) {
@@ -179,8 +183,17 @@ class _BudgetPageState extends State<BudgetPage> {
   Widget _buildTotalsHeader() {
     final hasBudget = widget.budgetMax != null && widget.budgetMax! > 0;
     final budgetMax = widget.budgetMax ?? 0;
-    final progress = hasBudget && budgetMax > 0 ? (_totalExpenses / budgetMax).clamp(0.0, 1.0) : 0.0;
-    final isOverBudget = hasBudget && _totalExpenses > budgetMax;
+    // Budget is stored on wedding in wedding currency; keep current behavior here (assume EUR if unknown)
+    final budgetCurrency = widget.currency ?? 'EUR';
+    final budgetMaxDisplay = _convertAmount(budgetMax.toDouble(), sourceCurrency: budgetCurrency);
+    final totalExpensesDisplay = _totalExpenses;
+    final totalPaidDisplay = _totalPaid;
+    final totalPendingDisplay = totalExpensesDisplay - totalPaidDisplay;
+
+    final progress = hasBudget && budgetMaxDisplay > 0
+        ? (totalExpensesDisplay / budgetMaxDisplay).clamp(0.0, 1.0)
+        : 0.0;
+    final isOverBudget = hasBudget && totalExpensesDisplay > budgetMaxDisplay;
 
     return Container(
       width: double.infinity,
@@ -194,7 +207,7 @@ class _BudgetPageState extends State<BudgetPage> {
               Expanded(
                 child: _buildTotalItem(
                   label: 'Total Expenses',
-                  value: _formatAmount(_totalExpenses),
+                  value: _formatAmount(totalExpensesDisplay),
                   isMain: true,
                 ),
               ),
@@ -207,7 +220,7 @@ class _BudgetPageState extends State<BudgetPage> {
                 Expanded(
                   child: _buildTotalItem(
                     label: 'Budget',
-                    value: _formatAmount(budgetMax),
+                    value: _formatAmount(budgetMaxDisplay),
                     isMain: false,
                   ),
                 ),
@@ -223,7 +236,7 @@ class _BudgetPageState extends State<BudgetPage> {
                 value: progress,
                 backgroundColor: Colors.white.withValues(alpha: 0.2),
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  isOverBudget ? LynewedColors.error : LynewedColors.success,
+                  isOverBudget ? LynewedColors.error : LynewedColors.textPrimary,
                 ),
                 minHeight: 8,
               ),
@@ -232,8 +245,8 @@ class _BudgetPageState extends State<BudgetPage> {
             // Remaining/Over budget
             Text(
               isOverBudget
-                  ? 'Over budget by ${_formatAmount(_totalExpenses - budgetMax)}'
-                  : 'Remaining: ${_formatAmount(budgetMax - _totalExpenses)}',
+                  ? 'Over budget by ${_formatAmount(totalExpensesDisplay - budgetMaxDisplay)}'
+                  : 'Remaining: ${_formatAmount(budgetMaxDisplay - totalExpensesDisplay)}',
               style: LynewedTextStyles.labelSmall.copyWith(
                 color: isOverBudget
                     ? LynewedColors.error
@@ -248,7 +261,7 @@ class _BudgetPageState extends State<BudgetPage> {
               Expanded(
                 child: _buildSmallTotal(
                   label: 'Paid',
-                  value: _formatAmount(_totalPaid),
+                  value: _formatAmount(totalPaidDisplay),
                   color: LynewedColors.success,
                 ),
               ),
@@ -256,7 +269,7 @@ class _BudgetPageState extends State<BudgetPage> {
               Expanded(
                 child: _buildSmallTotal(
                   label: 'Pending',
-                  value: _formatAmount(_totalPending),
+                  value: _formatAmount(totalPendingDisplay),
                   color: LynewedColors.warning,
                 ),
               ),
@@ -431,13 +444,13 @@ class _BudgetPageState extends State<BudgetPage> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: _getCategoryColor(expense.category).withValues(alpha: 0.1),
+                color: LynewedColors.gray200,
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Icon(
                 _getCategoryIcon(expense.category),
                 size: 20,
-                color: _getCategoryColor(expense.category),
+                color: LynewedColors.textPrimary,
               ),
             ),
             const SizedBox(width: 12),
@@ -462,13 +475,22 @@ class _BudgetPageState extends State<BudgetPage> {
                         ),
                       ),
                       Text(
-                        _formatAmount(expense.amount),
+                        _formatAmount(_convertAmount(expense.amount, sourceCurrency: expense.currencyCode)),
                         style: LynewedTextStyles.bodyMedium.copyWith(
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
+                  if (expense.currencyCode != _displayCurrency) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      '${NumberFormat('#,##0', 'en_US').format(expense.amount.toInt())} ${CurrencyData.getSymbol(expense.currencyCode)}',
+                      style: LynewedTextStyles.labelSmall.copyWith(
+                        color: LynewedColors.textSecondary,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 4),
                   Row(
                     children: [
@@ -491,7 +513,7 @@ class _BudgetPageState extends State<BudgetPage> {
                       const Spacer(),
                       if (expense.status == ExpenseStatus.partial)
                         Text(
-                          'Paid: ${_formatAmount(expense.paidAmount)}',
+                          'Paid: ${_formatAmount(_convertAmount(expense.paidAmount, sourceCurrency: expense.currencyCode))}',
                           style: LynewedTextStyles.labelSmall.copyWith(
                             color: LynewedColors.textSecondary,
                           ),
@@ -592,9 +614,18 @@ class _BudgetPageState extends State<BudgetPage> {
     );
   }
 
+  double _convertAmount(double amount, {required String sourceCurrency}) {
+    final converted = _currencyService.convert(
+      amount,
+      from: sourceCurrency,
+      to: _displayCurrency,
+    );
+    return converted ?? amount;
+  }
+
   String _formatAmount(double amount) {
     final formatter = NumberFormat('#,##0', 'en_US');
-    return '${formatter.format(amount.toInt())} $_currency';
+    return '${formatter.format(amount.toInt())} $_currencySymbol';
   }
 
   String _formatCategory(String category) {
@@ -647,30 +678,6 @@ class _BudgetPageState extends State<BudgetPage> {
         return Icons.diamond_outlined;
       default:
         return Icons.receipt_outlined;
-    }
-  }
-
-  Color _getCategoryColor(String category) {
-    switch (category.toLowerCase()) {
-      case 'venue':
-        return const Color(0xFF6366F1);
-      case 'photographer':
-      case 'photography':
-        return const Color(0xFFEC4899);
-      case 'dress':
-      case 'attire':
-        return const Color(0xFF8B5CF6);
-      case 'flowers':
-      case 'florist':
-        return const Color(0xFF10B981);
-      case 'catering':
-      case 'food':
-        return const Color(0xFFF59E0B);
-      case 'music':
-      case 'dj':
-        return const Color(0xFF3B82F6);
-      default:
-        return LynewedColors.textSecondary;
     }
   }
 }

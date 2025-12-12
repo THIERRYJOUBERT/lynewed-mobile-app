@@ -2,7 +2,7 @@
 
 **Version:** 2.0  
 **Date:** 2025-12-12  
-**Status:** 📋 EN COURS - Basé sur Audit Réel  
+**Status:** ✅ SPRINT 3.2 TERMINÉ (100%) - Basé sur Audit Réel  
 **Supabase Project:** `hekyovgnovhfhmkpfrna` (PROD)
 
 ---
@@ -34,8 +34,8 @@
 | **Pro Leave Wedding** | ✅ | Sheet avec raison | `leave_wedding_sheet.dart` | Update `wedding_participants` |
 | **Note for Pros** | ✅ | Note bride visible par pros | `note_for_pros_sheet.dart` | `weddings.note_for_pros` |
 | **Cover Image Upload** | ✅ | Bucket `wedding-covers` | `lib/features/my_wedding/presentation/widgets/wedding_onboarding_widget.dart` | Upload + public URL (`lib/features/my_wedding/presentation/widgets/wedding_onboarding_widget.dart:L1470-L1480`) |
-| **Agenda** | ⏳ | Table OK, UI placeholder | `public.wedding_events` | Non vérifié (placeholder exact non retrouvé via grep sur `"Coming soon"`) |
-| **Budget Tracker** | ⏳ | Table OK, UI placeholder | `public.wedding_expenses` | Non vérifié (placeholder exact non retrouvé via grep sur `"Coming soon"`) |
+| **Agenda** | ✅ | UI complète + CRUD + preview sur MyWedding | `lib/features/my_wedding/presentation/pages/agenda_page.dart`, `lib/features/my_wedding/presentation/sheets/add_event_sheet.dart` | CRUD + toggle done/public + preview (max 5) |
+| **Budget Tracker** | ✅ | UI complète + CRUD + multi-devise + preview sur MyWedding | `lib/features/my_wedding/presentation/pages/budget_page.dart`, `lib/features/my_wedding/presentation/sheets/add_expense_sheet.dart` | `currency_code` par dépense + conversion vers devise user |
 | **Inspirations/Moodboard** | ⏳ | Tables OK, UI placeholder | `public.inspiration_albums`, `public.saved_posts`, `public.album_images` | Non vérifié (placeholder exact non retrouvé via grep sur `"Coming soon"`) |
 | **Guests List** | ⏳ | Table OK, UI placeholder | `public.wedding_guests` | Non vérifié (placeholder exact non retrouvé via grep sur `"Coming soon"`) |
 | **Documents in Chat** | ❌ | Non implémenté | - | Pas de type `document` |
@@ -232,28 +232,32 @@ lib/features/weddings_hub_pro/
 
 | # | Tâche | Fichier | Complexité |
 |---|-------|---------|------------|
-| 1 | Créer `AgendaPage` | `lib/features/my_wedding/presentation/pages/agenda_page.dart` | M |
-| 2 | Créer `AddEventSheet` | `lib/features/my_wedding/presentation/sheets/add_event_sheet.dart` | M |
-| 3 | Implémenter CRUD events | `supabase_my_wedding_datasource.dart` | S |
-| 4 | Toggle public/privé par event | UI + datasource | S |
-| 5 | Remplacer placeholder dans MyWeddingPage | `my_wedding_page.dart` | S |
+| 1 | ✅ Créer `AgendaPage` | `lib/features/my_wedding/presentation/pages/agenda_page.dart` | M |
+| 2 | ✅ Créer `AddEventSheet` | `lib/features/my_wedding/presentation/sheets/add_event_sheet.dart` | M |
+| 3 | ✅ Implémenter CRUD events | `lib/features/my_wedding/data/datasources/supabase_my_wedding_datasource.dart` | S |
+| 4 | ✅ Toggle public/privé par event | UI + datasource | S |
+| 5 | ✅ Remplacer placeholder dans MyWeddingPage (preview max 5) | `lib/features/my_wedding/presentation/pages/my_wedding_page.dart` | S |
 
 #### Budget Tracker
 
 | # | Tâche | Fichier | Complexité |
 |---|-------|---------|------------|
-| 1 | Créer `BudgetPage` | `lib/features/my_wedding/presentation/pages/budget_page.dart` | M |
-| 2 | Créer `AddExpenseSheet` | `lib/features/my_wedding/presentation/sheets/add_expense_sheet.dart` | M |
-| 3 | Header avec totaux (budget vs dépenses) | Widget | S |
-| 4 | Implémenter CRUD expenses | `supabase_my_wedding_datasource.dart` | S |
-| 5 | Statuts (pending/partial/paid) | UI + datasource | S |
-| 6 | Remplacer placeholder dans MyWeddingPage | `my_wedding_page.dart` | S |
+| 1 | ✅ Créer `BudgetPage` | `lib/features/my_wedding/presentation/pages/budget_page.dart` | M |
+| 2 | ✅ Créer `AddExpenseSheet` | `lib/features/my_wedding/presentation/sheets/add_expense_sheet.dart` | M |
+| 3 | ✅ Header avec totaux (budget vs dépenses) | `lib/features/my_wedding/presentation/pages/budget_page.dart` | S |
+| 4 | ✅ Implémenter CRUD expenses | `lib/features/my_wedding/data/datasources/supabase_my_wedding_datasource.dart` | S |
+| 5 | ✅ Statuts (pending/partial/paid) | UI + datasource | S |
+| 6 | ✅ Remplacer placeholder dans MyWeddingPage (summary + progress) | `lib/features/my_wedding/presentation/pages/my_wedding_page.dart` | S |
+| 7 | ✅ Multi-devise par dépense (`currency_code`) + conversion UI vers devise user | entity + datasource + UI | M |
+| 8 | ✅ Wedding edit: budget précis + sélection devise | `lib/features/my_wedding/presentation/sheets/wedding_edit_sheet.dart` | S |
 
 **Critères de succès:**
-- [ ] Bride peut créer/modifier/supprimer des événements
-- [ ] Bride peut marquer événements comme public (visible par pros)
-- [ ] Bride peut créer/modifier/supprimer des dépenses
-- [ ] Totaux budget affichés correctement
+- [x] Bride peut créer/modifier/supprimer des événements
+- [x] Bride peut marquer événements comme public (visible par pros)
+- [x] Bride peut créer/modifier/supprimer des dépenses
+- [x] Totaux budget affichés correctement
+- [x] Affichage multi-devise cohérent (conversion vers devise user)
+- [x] Preview Agenda/Budget visible sur MyWeddingPage (max 5 événements)
 
 ---
 

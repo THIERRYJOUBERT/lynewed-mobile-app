@@ -791,6 +791,7 @@ class SupabaseMyWeddingDatasource {
     required String weddingId,
     required String category,
     required double amount,
+    required String currencyCode,
     String? description,
     String? status,
     double? paidAmount,
@@ -805,6 +806,7 @@ class SupabaseMyWeddingDatasource {
             'category': category,
             'description': description,
             'amount': amount,
+            'currency_code': currencyCode,
             'status': status ?? 'pending',
             'paid_amount': paidAmount ?? 0,
             'due_date': dueDate?.toIso8601String().split('T')[0],
@@ -827,6 +829,7 @@ class SupabaseMyWeddingDatasource {
     String? category,
     String? description,
     double? amount,
+    String? currencyCode,
     String? status,
     double? paidAmount,
     DateTime? dueDate,
@@ -837,6 +840,7 @@ class SupabaseMyWeddingDatasource {
       if (category != null) updateData['category'] = category;
       if (description != null) updateData['description'] = description;
       if (amount != null) updateData['amount'] = amount;
+      if (currencyCode != null) updateData['currency_code'] = currencyCode;
       if (status != null) updateData['status'] = status;
       if (paidAmount != null) updateData['paid_amount'] = paidAmount;
       if (dueDate != null) updateData['due_date'] = dueDate.toIso8601String().split('T')[0];
