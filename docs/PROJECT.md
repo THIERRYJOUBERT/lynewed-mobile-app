@@ -52,6 +52,11 @@
 - ✅ **DB Cleanup** - Removed `budget_min_eur`/`budget_max_eur` columns (values stored in selected currency)
 - ✅ **search_area_coords** - Now correctly populated during wedding creation/update
 
+### Sprint 3-5 Accomplishments (2025-12-12)
+- ✅ **My Wedding Page (Bride)** - Wedding Team section + settings (edit/cancel) + cancelled/resume flow
+- ✅ **Wedding Team Management (Bride)** - Invite pros sheet + exclude/remove flow + pro details navigation
+- ✅ **Weddings Hub Pro** - Weddings list + wedding detail page + mute/unmute + leave wedding (reason required)
+
 ### Key Metrics
 | Metric | Value |
 |--------|-------|
@@ -143,8 +148,8 @@ docs/
 
 | Priority | Task | Description |
 |----------|------|-------------|
-| 1 | **My Wedding Suite - Sprint 3** | Wedding Team, Agenda, Budget sections |
-| 2 | **Weddings Hub Pro** | Pro-side wedding management |
+| 1 | **My Wedding Suite - Sprint 6** | Moodboard / Inspirations (albums, save from feed, upload) |
+| 2 | **My Wedding Suite - Sprint 7** | Planning features (Agenda, Budget, Guests) |
 | 3 | **TestFlight** | Prepare and deploy beta |
 | 4 | **ProDetails** | Complete refactoring with Images V2 |
 | 5 | **Auth Module** | Clean Architecture refactoring |
@@ -168,5 +173,5 @@ docs/
 
 ---
 
-**Last Updated:** 2025-12-11  
-**Status:** 🚀 V1 IN PRODUCTION - Sprint 2 Complete (My Wedding Suite Phase 1)
+**Last Updated:** 2025-12-12  
+**Status:** 🚀 V1 IN PRODUCTION - My Wedding Suite Sprints 3-5 Complete

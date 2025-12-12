@@ -103,19 +103,17 @@ class LynewedSheet extends StatelessWidget {
           Flexible(
             child: SingleChildScrollView(
               padding: padding,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  child,
-                  if (bottomAction != null) ...[
-                    const SizedBox(height: 32),
-                    bottomAction!,
-                    const SizedBox(height: 20), // Safe area buffer
-                  ],
-                ],
-              ),
+              child: child,
             ),
           ),
+          
+          // Bottom Action - fixed at bottom, outside scroll
+          if (bottomAction != null) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+              child: bottomAction!,
+            ),
+          ],
         ],
       ),
     ),

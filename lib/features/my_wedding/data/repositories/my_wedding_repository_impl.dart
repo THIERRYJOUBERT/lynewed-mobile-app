@@ -214,4 +214,20 @@ class MyWeddingRepositoryImpl implements MyWeddingRepository {
       return RepositoryResult.failure('Failed to update wedding: $e');
     }
   }
+
+  @override
+  Future<RepositoryResult<void>> updateWeddingStatus({
+    required String weddingId,
+    required String status,
+  }) async {
+    try {
+      await _datasource.updateWeddingStatus(
+        weddingId: weddingId,
+        status: status,
+      );
+      return const RepositoryResult.success(null);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to update wedding status: $e');
+    }
+  }
 }

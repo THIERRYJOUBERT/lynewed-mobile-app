@@ -210,6 +210,11 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
       );
     }
 
+    // Wedding cancelled → Show cancelled view
+    if (_wedding != null && _wedding!.isCancelled) {
+      return _buildCancelledWeddingView();
+    }
+
     // Wedding exists and onboarding complete → Show overview
     return _buildWeddingOverview();
   }
@@ -228,11 +233,6 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Wedding Team Chat Item
-                if (_teamChatInfo != null) ...[
-                  _buildWeddingTeamChatItem(),
-                  const SizedBox(height: 30.0),
-                ],
                 // Wedding Team Section
                 _buildWeddingTeamSection(),
                 const SizedBox(height: 30.0),
@@ -346,156 +346,6 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
               size: 18,
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  /// Wedding Team Chat Item - style similar to public chat room tiles
-  Widget _buildWeddingTeamChatItem() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('TEAM CHAT', style: LynewedTextStyles.sectionTitle),
-        const SizedBox(height: 10.0),
-        GestureDetector(
-          onTap: _openTeamChat,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12.0),
-            decoration: BoxDecoration(
-              color: LynewedColors.textPrimary,
-              borderRadius: BorderRadius.circular(4.0),
-            ),
-            child: Row(
-              children: [
-                // Avatars stack
-                SizedBox(
-                  width: 48.0,
-                  height: 48.0,
-                  child: _buildAvatarsStack(),
-                ),
-                const SizedBox(width: 12.0),
-                // Chat info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Wedding Team',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: LynewedTextStyles.bodyMedium.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 4.0),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.people_alt_outlined,
-                            color: LynewedColors.gray300,
-                            size: 14.0,
-                          ),
-                          const SizedBox(width: 4.0),
-                          Text(
-                            '${_teamChatInfo!.participantsCount} participants',
-                            style: LynewedTextStyles.labelLarge.copyWith(
-                              color: LynewedColors.gray300,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                // Unread badge
-                if (_teamChatInfo!.unreadCount > 0) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                    decoration: BoxDecoration(
-                      color: LynewedColors.error,
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    child: Text(
-                      _teamChatInfo!.unreadCount > 99 
-                          ? '99+' 
-                          : _teamChatInfo!.unreadCount.toString(),
-                      style: LynewedTextStyles.labelSmall.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8.0),
-                ],
-                // Arrow
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  color: LynewedColors.gray300,
-                  size: 16.0,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Build avatars stack for team chat item
-  Widget _buildAvatarsStack() {
-    final avatars = _teamChatInfo?.participantAvatars ?? [];
-    if (avatars.isEmpty) {
-      return Container(
-        width: 48.0,
-        height: 48.0,
-        decoration: BoxDecoration(
-          color: LynewedColors.gray200,
-          borderRadius: BorderRadius.circular(24.0),
-        ),
-        child: const Icon(Icons.group, color: LynewedColors.gray300, size: 24.0),
-      );
-    }
-
-    // Show up to 4 avatars in a 2x2 grid
-    if (avatars.length == 1) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(24.0),
-        child: CachedNetworkImage(
-          imageUrl: avatars[0],
-          width: 48.0,
-          height: 48.0,
-          fit: BoxFit.cover,
-          placeholder: (_, __) => Container(color: LynewedColors.gray200),
-          errorWidget: (_, __, ___) => Container(
-            color: LynewedColors.gray200,
-            child: const Icon(Icons.person, color: LynewedColors.gray300),
-          ),
-        ),
-      );
-    }
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(4.0),
-      child: SizedBox(
-        width: 48.0,
-        height: 48.0,
-        child: GridView.count(
-          crossAxisCount: 2,
-          mainAxisSpacing: 1,
-          crossAxisSpacing: 1,
-          physics: const NeverScrollableScrollPhysics(),
-          children: List.generate(
-            avatars.length.clamp(0, 4),
-            (index) => CachedNetworkImage(
-              imageUrl: avatars[index],
-              fit: BoxFit.cover,
-              placeholder: (_, __) => Container(color: LynewedColors.gray200),
-              errorWidget: (_, __, ___) => Container(color: LynewedColors.gray200),
-            ),
-          ),
         ),
       ),
     );
@@ -890,7 +740,7 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
                       Text(
                         _wedding!.noteForPros!,
                         style: LynewedTextStyles.bodyMedium,
-                        maxLines: 3,
+                        maxLines: 20,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 8.0),
@@ -923,6 +773,45 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
     );
   }
 
+  /// Cancelled Wedding View - shown when wedding status is 'cancelled'
+  Widget _buildCancelledWeddingView() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.event_busy_outlined,
+              size: 64.0,
+              color: LynewedColors.gray300,
+            ),
+            const SizedBox(height: 24.0),
+            Text(
+              'Wedding Cancelled',
+              style: LynewedTextStyles.headlineMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12.0),
+            Text(
+              'Your wedding planning has been paused. You can resume at any time.',
+              style: LynewedTextStyles.bodyMedium.copyWith(
+                color: LynewedColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32.0),
+            LynewedButton(
+              text: 'Resume Planning',
+              onPressed: _resumeWedding,
+              width: double.infinity,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ========== ACTIONS ==========
 
   void _openEditSheet() {
@@ -944,6 +833,7 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
         builder: (context) => ChatDetailsPage(
           roomId: _teamChatInfo!.roomId,
           isPublicRoom: true,
+          isWeddingTeamChat: true,
           publicRoomTitle: 'Wedding Team',
           hideVideoCall: true,
         ),
@@ -956,9 +846,12 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => InviteProSheet(
-        weddingId: _wedding!.id,
-        onProInvited: _loadWedding,
+      builder: (context) => FractionallySizedBox(
+        heightFactor: 0.75,
+        child: InviteProSheet(
+          weddingId: _wedding!.id,
+          onProInvited: _loadWedding,
+        ),
       ),
     );
   }
@@ -968,9 +861,12 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => NoteForProsSheet(
-        wedding: _wedding!,
-        onSaved: _loadWedding,
+      builder: (context) => FractionallySizedBox(
+        heightFactor: 0.70,
+        child: NoteForProsSheet(
+          wedding: _wedding!,
+          onSaved: _loadWedding,
+        ),
       ),
     );
   }
@@ -1052,62 +948,105 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
   }
 
   void _showProOptionsModal(WeddingTeamMember member) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20.0),
-        decoration: const BoxDecoration(
-          color: LynewedColors.background,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.0)),
+      barrierColor: Colors.transparent,
+      builder: (dialogContext) => GestureDetector(
+        onTap: () => Navigator.pop(dialogContext),
+        behavior: HitTestBehavior.opaque,
+        child: Align(
+          alignment: Alignment.center,
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: 230.0,
+              decoration: BoxDecoration(
+                color: LynewedColors.surface,
+                borderRadius: BorderRadius.circular(4.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 10.0,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 14.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildActionRow(
+                      icon: Icons.person_outline,
+                      label: 'View Profile',
+                      onTap: () {
+                        Navigator.pop(dialogContext);
+                        _openProDetails(member.profileId);
+                      },
+                    ),
+                    const SizedBox(height: 4.0),
+                    _buildActionRow(
+                      icon: Icons.chat_bubble_outline,
+                      label: 'Send Message',
+                      onTap: () {
+                        Navigator.pop(dialogContext);
+                        _openChatWithPro(member.profileId);
+                      },
+                    ),
+                    const SizedBox(height: 4.0),
+                    _buildActionRow(
+                      icon: Icons.person_remove_outlined,
+                      label: 'Remove from Team',
+                      onTap: () {
+                        Navigator.pop(dialogContext);
+                        _confirmExcludePro(member);
+                      },
+                      isDestructive: true,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
-        child: Column(
+      ),
+    );
+  }
+
+  Widget _buildActionRow({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool isDestructive = false,
+  }) {
+    final color = isDestructive ? LynewedColors.error : LynewedColors.textSecondary;
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        height: 36.0,
+        decoration: const BoxDecoration(),
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40.0,
-              height: 4.0,
+              width: 30.0,
+              height: 30.0,
               decoration: BoxDecoration(
-                color: LynewedColors.gray200,
-                borderRadius: BorderRadius.circular(2.0),
+                color: LynewedColors.background,
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              child: Center(
+                child: Icon(icon, color: color, size: 14.0),
               ),
             ),
-            const SizedBox(height: 20.0),
+            const SizedBox(width: 12.0),
             Text(
-              member.displayName,
-              style: LynewedTextStyles.headlineSmall,
+              label,
+              style: LynewedTextStyles.labelLarge.copyWith(
+                color: isDestructive ? LynewedColors.error : LynewedColors.textPrimary,
+              ),
             ),
-            const SizedBox(height: 20.0),
-            LynewedButton(
-              text: 'View Profile',
-              onPressed: () {
-                Navigator.pop(context);
-                _openProDetails(member.profileId);
-              },
-              type: LynewedButtonType.secondary,
-              width: double.infinity,
-            ),
-            const SizedBox(height: 10.0),
-            LynewedButton(
-              text: 'Send Message',
-              onPressed: () {
-                Navigator.pop(context);
-                _openChatWithPro(member.profileId);
-              },
-              type: LynewedButtonType.secondary,
-              width: double.infinity,
-            ),
-            const SizedBox(height: 10.0),
-            LynewedButton(
-              text: 'Remove from Team',
-              onPressed: () {
-                Navigator.pop(context);
-                _confirmExcludePro(member);
-              },
-              type: LynewedButtonType.secondary,
-              width: double.infinity,
-            ),
-            const SizedBox(height: 20.0),
           ],
         ),
       ),
@@ -1141,6 +1080,38 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
     );
   }
 
+  Future<void> _resumeWedding() async {
+    final result = await _repository.updateWeddingStatus(
+      weddingId: _wedding!.id,
+      status: 'active',
+    );
+
+    if (!mounted) return;
+
+    if (result.isSuccess) {
+      _loadWedding();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Wedding resumed',
+            style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
+          ),
+          backgroundColor: LynewedColors.textPrimary,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result.error ?? 'Failed to resume wedding',
+            style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
+          ),
+          backgroundColor: LynewedColors.error,
+        ),
+      );
+    }
+  }
+
   /// Header with title and action icons - same style as home_brides
   Widget _buildHeader() {
     return Align(
@@ -1162,18 +1133,44 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
                     'WEDDING',
                     style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 18.0),
                   ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Settings
-                      _buildHeaderIcon(
-                        icon: Icons.settings_outlined,
-                        onTap: () {
-                          // TODO: Navigate to wedding settings
-                        },
+                  // Team Chat - group icon with unread badge
+                  if (_teamChatInfo != null)
+                    GestureDetector(
+                      onTap: _openTeamChat,
+                      behavior: HitTestBehavior.opaque,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          const Icon(
+                            Icons.groups_outlined,
+                            color: LynewedColors.textPrimary,
+                            size: 26.0,
+                          ),
+                          if (_teamChatInfo!.unreadCount > 0)
+                            Positioned(
+                              top: -6,
+                              right: -8,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: LynewedColors.primary,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                constraints: const BoxConstraints(minWidth: 18),
+                                child: Text(
+                                  _teamChatInfo!.unreadCount > 99 ? '99+' : '${_teamChatInfo!.unreadCount}',
+                                  style: LynewedTextStyles.labelSmall.copyWith(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
                 ],
               ),
             ),
@@ -1185,18 +1182,4 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
     );
   }
 
-  /// Header icon without badge - fixed 32x32 size for uniform alignment
-  Widget _buildHeaderIcon({required IconData icon, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 32.0,
-        height: 32.0,
-        child: Center(
-          child: Icon(icon, color: LynewedColors.textPrimary, size: 24.0),
-        ),
-      ),
-    );
-  }
 }

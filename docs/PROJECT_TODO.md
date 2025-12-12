@@ -2,7 +2,7 @@
 
 **Last Updated:** 2025-12-11  
 **Version:** v6.0 (Sprint 2 Complete)  
-**Status:** My Wedding Suite Phase 1 Complete - Sprint 3 Planning
+**Status:** My Wedding Suite Sprints 3-5 Complete - Sprint 6 Planning
 
 ---
 
@@ -30,21 +30,21 @@
 ## ⏳ Sprint 3 - My Wedding Suite Phase 2
 
 ### Wedding Team Section
-- [ ] Wedding Team list (pros added to wedding)
-- [ ] Invite Pro sheet (search + add)
-- [ ] Pro tile with chat icon
-- [ ] Exclude pro functionality
-- [ ] Wedding Team Chat item (group chat access)
+- [x] Wedding Team list (pros added to wedding)
+- [x] Invite Pro sheet (search + add)
+- [x] Pro tile with chat icon
+- [x] Exclude pro functionality
+- [x] Wedding Team Chat item (group chat access)
 
 ### Placeholder Sections (Coming Soon)
-- [ ] Agenda section (todo list with dates)
-- [ ] Budget section (expense tracking)
-- [ ] Inspirations section (moodboard albums)
+- [x] Agenda section (placeholder)
+- [x] Budget section (placeholder)
+- [x] Inspirations section (placeholder)
 
 ### Weddings Hub Pro
-- [ ] WeddingsHubProPage (list of client weddings)
-- [ ] WeddingClientDetailPage (pro view of wedding)
-- [ ] Pro can leave wedding with reason
+- [x] WeddingsHubProPage (list of client weddings)
+- [x] WeddingClientDetailPage (pro view of wedding)
+- [x] Pro can leave wedding with reason
 - [ ] Pro private notes per wedding
 
 ---
@@ -60,7 +60,7 @@
 ### Planning Features
 - [ ] Agenda full page (events list)
 - [ ] Budget full page (expenses list)
-- [ ] Note for Pros (single note, max 1000 chars)
+- [x] Note for Pros (single note, max 1000 chars)
 - [ ] Wedding Guests list (anticipation)
 
 ---

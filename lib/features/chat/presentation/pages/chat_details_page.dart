@@ -28,6 +28,7 @@ class ChatDetailsPage extends StatefulWidget {
     super.key,
     required this.roomId,
     this.isPublicRoom = false,
+    this.isWeddingTeamChat = false,
     this.pendingRequestId,
     this.initialMessage,
     this.otherProfileId,
@@ -49,6 +50,9 @@ class ChatDetailsPage extends StatefulWidget {
 
   /// Whether this is a public room
   final bool isPublicRoom;
+
+  /// Whether this is a wedding team chat (allows all participants to write)
+  final bool isWeddingTeamChat;
 
   /// Pending contact request ID (for Pro→Bride flow)
   final String? pendingRequestId;
@@ -578,10 +582,14 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
     final state = _notifier.state;
     final isLoaded = state is ChatRoomLoaded;
 
-    // For public rooms, only brides can write
+    // For public rooms, only brides can write (except wedding team chats)
     // For private rooms, always enabled when loaded
+    // For wedding team chats, all participants can write
     bool isEnabled;
-    if (widget.isPublicRoom) {
+    if (widget.isWeddingTeamChat) {
+      // Wedding team chats: all participants can write
+      isEnabled = isLoaded;
+    } else if (widget.isPublicRoom) {
       // Public rooms: enabled only for brides
       final currentUserRole = FFAppState().currentUserRole;
       isEnabled = isLoaded && currentUserRole == app_enums.UserRole.bride;

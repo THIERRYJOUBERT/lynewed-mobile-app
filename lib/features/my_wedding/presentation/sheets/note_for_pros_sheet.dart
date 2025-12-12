@@ -87,6 +87,7 @@ class _NoteForProsSheetState extends State<NoteForProsSheet> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Subtitle (outside header)
           Text(
@@ -96,10 +97,11 @@ class _NoteForProsSheetState extends State<NoteForProsSheet> {
             ),
           ),
           const SizedBox(height: 20),
+          // Text field with 12 lines max for comfortable editing
           LynewedTextField(
             controller: _noteController,
             hint: 'e.g., Our theme is bohemian chic with pastel colors. We want a relaxed and romantic atmosphere...',
-            maxLines: 6,
+            maxLines: 12,
             maxLength: 1000,
           ),
           const SizedBox(height: 16),

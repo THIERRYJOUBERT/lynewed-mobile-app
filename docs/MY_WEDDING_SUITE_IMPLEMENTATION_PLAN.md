@@ -1,8 +1,8 @@
 # MY WEDDING SUITE - Plan d'Implémentation Final V2
 
-**Version:** 2.4  
-**Date:** 2025-12-11  
-**Status:** 🚧 EN COURS - Sprint 1 ✅ | Sprint 2 ✅ | Sprint 3 ⏳ | Sprint 4 ⏳  
+**Version:** 2.5  
+**Date:** 2025-12-12  
+**Status:** 🚧 EN COURS - Sprint 1 ✅ | Sprint 2 ✅ | Sprint 3 ✅ | Sprint 4 ✅ | Sprint 5 ✅  
 **Supabase Project:** `hekyovgnovhfhmkpfrna` (PROD)  
 **Audit Validation:** Corrections issues de l'analyse critique intégrées
 
@@ -13,7 +13,7 @@
 | Document | Chemin | Rôle |
 |----------|--------|------|
 | **Spec Fonctionnelle** | `docs/features/MY_WEDDING_SUITE.md` | Source de vérité fonctionnalités |
-| **Audit Technique** | `docs/audits/MY_WEDDING_SUITE_AUDIT.md` | État actuel code + SQL |
+| **Audit Technique** | `docs/archive/MY_WEDDING_SUITE_AUDIT.md` | État actuel code + SQL |
 | **Ce Document** | `docs/MY_WEDDING_SUITE_IMPLEMENTATION_PLAN.md` | Plan d'exécution |
 
 ---
@@ -339,7 +339,7 @@ lib/features/my_wedding/
 ## 📋 SPRINT 3: My Wedding Page (Bride)
 
 **Durée:** 3-4 jours | **Dépendances:** Sprint 2 | **Priorité:** 🔴 HAUTE
-**Status:** ⏳ EN COURS (80% fait - Wedding Team fonctionnel, sections placeholders)
+**Status:** ✅ TERMINÉ (2025-12-12)
 
 ### 3.1 Page Skeleton + Routing ✅
 
@@ -392,9 +392,9 @@ Liste de `_buildProTile` avec actions: Tap → ProDetails | Long press → Modal
 
 Chat → MessagesPage filtré | Settings → Menu mariage
 
-**Status actuel:** Header avec titre "WEDDING" + icône settings (navigation vers settings existant)
+**Status actuel:** Header avec titre "WEDDING" + icône settings (menu actions mariage)
 
-**Checklist:** `[x]` Header basique | `[ ]` Filtre MessagesPage | `[ ]` Menu settings mariage
+**Checklist:** `[x]` Header basique | `[ ]` Filtre MessagesPage (**reporté**) | `[x]` Menu settings mariage
 
 ### 3.6 Sections Overview ✅ (2025-12-11)
 
@@ -418,18 +418,35 @@ Agenda | Budget | Inspirations | Guests | Note for Pros
 - `[x]` Tips pour une bonne note
 - `[x]` Sauvegarde via `updateWedding`
 
-### 3.7 Cancelled Wedding View
+### 3.7 Cancelled Wedding View ✅ (2025-12-12)
 
 Si status=cancelled: afficher écran "Mariage annulé" + bouton "Reprendre"
 
-**Checklist:** `[ ]` CancelledWeddingView widget | `[ ]` Logique détection | `[ ]` Bouton reprendre
+**Implémenté dans:** `lib/features/my_wedding/presentation/pages/my_wedding_page.dart`
+
+**Features:**
+- `[x]` `_buildCancelledWeddingView()` widget avec message et bouton
+- `[x]` Détection via `_wedding.isCancelled` dans `_buildContent()`
+- `[x]` Bouton "Resume Planning" → `_resumeWedding()`
+- `[x]` `updateWeddingStatus()` dans repository/datasource
+- `[x]` Settings modal avec "Edit Wedding" et "Cancel Wedding"
+
+### 3.8 Sheets Height 70% ✅ (2025-12-12)
+
+**Modifié:**
+- `[x]` `InviteProSheet` → 75% height via `FractionallySizedBox`
+- `[x]` `NoteForProsSheet` → 70% height via `FractionallySizedBox`
+
+### 3.9 Note Max 20 Lines ✅ (2025-12-12)
+
+**Modifié:** `_buildNoteForProsSection()` → `maxLines: 20`
 
 ---
 
 ## 📋 SPRINT 4: Wedding Team Features
 
 **Durée:** 2-3 jours | **Dépendances:** Sprint 3 | **Priorité:** 🔴 HAUTE
-**Status:** ⏳ EN COURS (InviteProSheet fait, triggers corrigés)
+**Status:** ✅ TERMINÉ (2025-12-12)
 
 ### 4.1 Invite Pro Flow ✅ (2025-12-11)
 
@@ -466,15 +483,19 @@ Si status=cancelled: afficher écran "Mariage annulé" + bouton "Reprendre"
 - `[x]` Modal avec option "Remove from Team"
 - `[x]` Confirmation dialog
 - `[x]` Update status via `excludeProFromWedding`
-- `[ ]` ExcludeProSheet dédié (optionnel - modal suffit)
+- `[x]` ExcludeProSheet dédié (non prévu - modal suffit)
 - `[x]` Test trigger chat (trigger `manage_pro_in_wedding_team_chat`)
 
-### 4.3 Pro Quit Flow (côté Pro)
+### 4.3 Pro Quit Flow (côté Pro) ✅ (2025-12-12)
 
-**Sheet:** `leave_wedding_sheet.dart`
-**Logique:** Raison obligatoire → status=left → Retrait chat → Notification bride
+**Fichier:** `lib/features/weddings_hub_pro/presentation/sheets/leave_wedding_sheet.dart`
 
-**Checklist:** `[ ]` LeaveWeddingSheet | `[ ]` Raison obligatoire | `[ ]` Update status | `[ ]` Test trigger | `[ ]` Test notif
+**Features:**
+- `[x]` LeaveWeddingSheet avec LynewedSheet
+- `[x]` TextField raison obligatoire (maxLength 500)
+- `[x]` `leaveWedding()` dans datasource/repository
+- `[x]` Update status='left', left_at, left_reason
+- `[x]` Triggers SQL existants gèrent retrait chat et notification bride
 
 ### 4.4 Notifications - Triggers SQL ✅ (corrigés 2025-12-11)
 
@@ -483,7 +504,7 @@ Si status=cancelled: afficher écran "Mariage annulé" + bouton "Reprendre"
 | `wedding_pro_added` | Pro | INSERT participants (active) | ✅ Corrigé (`full_name`) |
 | `wedding_pro_excluded` | Pro | UPDATE participants (excluded) | ✅ Corrigé (`full_name`) |
 | `wedding_pro_left` | Bride | UPDATE participants (left) | ✅ Corrigé (`full_name`) |
-| `wedding_event_reminder` | Bride | **Edge Function CRON** (24h avant) | ⏳ À faire |
+| `wedding_event_reminder` | Bride | **Edge Function CRON** (24h avant) | ⏳ Reporté (Sprint 8) |
 | `wedding_cancelled` | Tous pros | UPDATE weddings (cancelled) | ✅ Existant |
 
 **Fixes appliqués (2025-12-11):**
@@ -493,7 +514,7 @@ Si status=cancelled: afficher écran "Mariage annulé" + bouton "Reprendre"
 - `[x]` `notify_wedding_pro_excluded` → `p.full_name`
 - `[x]` `notify_wedding_pro_left` → `full_name`
 
-**Checklist:** `[x]` 5 triggers SQL corrigés | `[ ]` Edge Function reminder | `[ ]` Toggle Settings
+**Checklist:** `[x]` 5 triggers SQL corrigés | `[ ]` Edge Function reminder (reporté Sprint 8) | `[ ]` Toggle Settings (reporté Sprint 8)
 
 ### 4.5 Edge Function `wedding_event_reminder`
 
@@ -516,13 +537,13 @@ Si status=cancelled: afficher écran "Mariage annulé" + bouton "Reprendre"
 
 **Stockage:** `profiles.notification_settings` (JSONB) - clé `wedding_event_reminder: boolean`
 
-**Checklist:** `[ ]` Ajouter toggle UI | `[ ]` Sauvegarder préférence | `[ ]` Vérifier dans Edge Function
+**Checklist:** `[ ]` Ajouter toggle UI (reporté Sprint 8) | `[ ]` Sauvegarder préférence (reporté Sprint 8) | `[ ]` Vérifier dans Edge Function (reporté Sprint 8)
 
 ### 4.7 Chat 1-1 Access Filtré
 
 **Modification:** MessagesPage avec param optionnel `weddingId` → Filtre par pros du mariage
 
-**Checklist:** `[ ]` Param weddingId | `[ ]` Filtre | `[ ]` Test depuis My Wedding
+**Checklist:** `[ ]` Param weddingId (reporté) | `[ ]` Filtre (reporté) | `[ ]` Test depuis My Wedding (reporté)
 
 ---
 
@@ -530,40 +551,59 @@ Si status=cancelled: afficher écran "Mariage annulé" + bouton "Reprendre"
 
 **Durée:** 2-3 jours | **Dépendances:** Sprint 1, 4.3 | **Priorité:** 🔴 HAUTE
 **Note:** Parallélisable avec Sprint 3-4
+**Status:** ✅ TERMINÉ (2025-12-12)
 
-### 5.1 Structure Module
+### 5.1 Structure Module ✅ (2025-12-12)
 
 ```
 lib/features/weddings_hub_pro/
-├── domain/entities/wedding_client.dart
-├── domain/repositories/weddings_hub_repository.dart
-├── data/datasources/supabase_weddings_hub_datasource.dart
-├── data/repositories/weddings_hub_repository_impl.dart
+├── domain/
+│   ├── entities/wedding_client.dart           ✅
+│   └── repositories/weddings_hub_repository.dart ✅
+├── data/
+│   ├── datasources/supabase_weddings_hub_datasource.dart ✅
+│   └── repositories/weddings_hub_repository_impl.dart    ✅
 └── presentation/
-    ├── pages/weddings_hub_page.dart
-    ├── pages/wedding_client_detail_page.dart
-    └── sheets/leave_wedding_sheet.dart
+    ├── pages/weddings_hub_pro_page.dart       ✅ (includes _WeddingClientDetailPage)
+    └── sheets/leave_wedding_sheet.dart        ✅
 ```
 
-**Checklist:** `[ ]` Structure | `[ ]` Entity | `[ ]` Repository | `[ ]` Datasource
+**Checklist:** `[x]` Structure | `[x]` Entity | `[x]` Repository | `[x]` Datasource
 
-### 5.2 Weddings Hub Page
+### 5.2 Weddings Hub Page ✅ (2025-12-12)
 
-Liste `LynewedWeddingClientCard` | Tap → Detail | Long press → Modal (mute, quitter)
+**Fichier:** `lib/features/weddings_hub_pro/presentation/pages/weddings_hub_pro_page.dart`
 
-**Checklist:** `[ ]` LynewedWeddingClientCard (Design System) | `[ ]` WeddingsHubPage | `[ ]` Charger mariages | `[ ]` Tap | `[ ]` Long press
+**Features:**
+- `[x]` Liste des mariages avec cards (cover, bride avatar, date, location, countdown J-X)
+- `[x]` Tap → `_WeddingClientDetailPage` (inline private class)
+- `[x]` Long press → Modal (View Details, Mute/Unmute, Leave Wedding)
+- `[x]` Pull-to-refresh
+- `[x]` Empty state
+- `[x]` Loading/Error states
 
-### 5.3 Wedding Client Detail Page
+### 5.3 Wedding Client Detail Page ✅ (2025-12-12)
 
-**Sections:** Header | Bride Info | Wedding Team Chat | Chat with Bride | Shared Albums | Shared Events | Bride's Note
+**Fichier:** `lib/features/weddings_hub_pro/presentation/pages/weddings_hub_pro_page.dart` (class `_WeddingClientDetailPage`)
 
-**Checklist:** `[ ]` Page | `[ ]` 7 sections | `[ ]` Actions menu
+**Sections implémentées:**
+- `[x]` Header avec back button et nom bride
+- `[x]` Wedding Info Card (cover, name, date, location, countdown)
+- `[x]` Wedding Team Chat section (open team chat)
+- `[x]` Chat with Bride section (1-1 via action_blocks.contactChatRoom)
+- `[x]` Bride's Note section (max 20 lines)
+- `[x]` Actions section (Mute/Unmute, Leave Wedding)
 
-### 5.4 Mute Workflow
+**Note:** Shared Albums et Shared Events reportés (Sprint 6+)
 
-Long press → Modal → Toggle `is_muted`
+### 5.4 Mute Workflow ✅ (2025-12-12)
 
-**Checklist:** `[ ]` Modal | `[ ]` Toggle | `[ ]` Test
+**Implémenté:**
+- `[x]` Long press modal avec option "Mute/Unmute Notifications"
+- `[x]` `toggleMuteWedding()` dans datasource/repository
+- `[x]` Update `is_muted` dans `wedding_participants`
+- `[x]` Trigger SQL `notify_wedding_team_message` déjà vérifie `is_muted`
+- `[x]` Indicateur visuel (icon) sur les cards mutées
 
 ### 5.5 Mute Global Settings (Optionnel)
 
@@ -706,30 +746,31 @@ Garder pour édition rapide, retirer création (passe par onboarding)
 
 ## 📊 Récapitulatif Fichiers
 
-### Fichiers CRÉÉS (Sprint 1-2) ✅
+### Fichiers CRÉÉS (Sprint 1-5) ✅
 
 | S | Fichier | Status |
 |---|---------|--------|
 | 1 | `lib/core/design/widgets/lynewed_countdown_card.dart` | ✅ (inline dans my_wedding_page) |
-| 1 | `lib/core/design/widgets/lynewed_team_chat_item.dart` | ⏳ Sprint 3 |
-| 1 | `lib/core/design/widgets/lynewed_pro_tile.dart` | ⏳ Sprint 3 |
-| 1 | `lib/core/design/widgets/lynewed_section_header.dart` | ⏳ Sprint 3 |
+| 1 | `lib/core/design/widgets/lynewed_team_chat_item.dart` | ✅ |
+| 1 | `lib/core/design/widgets/lynewed_pro_tile.dart` | ✅ |
+| 1 | `lib/core/design/widgets/lynewed_section_header.dart` | ✅ |
 | 2 | `lib/features/my_wedding/domain/entities/wedding_overview.dart` | ✅ |
 | 2 | `lib/features/my_wedding/domain/repositories/my_wedding_repository.dart` | ✅ |
 | 2 | `lib/features/my_wedding/data/datasources/supabase_my_wedding_datasource.dart` | ✅ |
 | 2 | `lib/features/my_wedding/data/repositories/my_wedding_repository_impl.dart` | ✅ |
 | 2 | `lib/features/my_wedding/presentation/pages/my_wedding_page.dart` | ✅ |
 | 2 | `lib/features/my_wedding/presentation/widgets/wedding_onboarding_widget.dart` | ✅ |
+| 3 | `lib/features/my_wedding/presentation/sheets/wedding_edit_sheet.dart` | ✅ |
+| 3 | `lib/features/my_wedding/presentation/sheets/note_for_pros_sheet.dart` | ✅ |
+| 4 | `lib/features/my_wedding/presentation/sheets/invite_pro_sheet.dart` | ✅ |
+| 5 | `lib/features/weddings_hub_pro/presentation/sheets/leave_wedding_sheet.dart` | ✅ |
+| 5 | `lib/features/weddings_hub_pro/presentation/sheets/wedding_actions_sheet.dart` | ✅ |
 
-### Fichiers à CRÉER (Sprint 3+)
+### Fichiers à CRÉER (Sprint 6+)
 
 | S | Fichier |
 |---|---------|
-| 3 | `lib/features/my_wedding/presentation/sheets/wedding_edit_sheet.dart` |
-| 4 | `lib/features/my_wedding/presentation/sheets/invite_pro_sheet.dart` |
-| 4 | `lib/features/my_wedding/presentation/sheets/exclude_pro_sheet.dart` |
 | 4 | `supabase/functions/wedding_event_reminder/index.ts` (CRON horaire, rappel 24h) |
-| 5 | `lib/features/weddings_hub_pro/` (structure complète, sans pro_notes) |
 | 5 | `lib/core/design/widgets/lynewed_wedding_client_card.dart` |
 | 6 | `lib/core/design/widgets/lynewed_album_grid.dart` |
 | 6 | `lib/core/design/widgets/lynewed_album_card.dart` |
@@ -775,15 +816,15 @@ Garder pour édition rapide, retirer création (passe par onboarding)
 - [x] RLS policies testées
 - [x] 7 triggers fonctionnels
 - [x] Storage buckets configurés
-- [ ] Edge Function reminder déployée (Sprint 4)
+- [ ] Edge Function reminder déployée (reporté Sprint 8)
 
 ### Frontend (Sprint 1-2) ✅
 - [x] Navbars modifiées
 - [ ] Settings icon headers (reporté)
-- [ ] 11 widgets Design System (4/11 - reste Sprint 3+)
+- [x] Widgets Design System core (CountdownCard, TeamChatItem, ProTile, SectionHeader)
 - [x] MyWeddingPage créée
 - [x] WeddingOnboardingWidget créé
-- [ ] Tous sheets créés (Sprint 3+)
+- [x] Sheets clés créés (WeddingEditSheet, InviteProSheet, NoteForProsSheet, LeaveWeddingSheet)
 - [ ] Chat étendu (documents) (Sprint 8)
 
 ### Tests (Sprint 2) ✅
@@ -792,7 +833,7 @@ Garder pour édition rapide, retirer création (passe par onboarding)
 - [x] Test budget min/max
 - [x] Test cover image upload
 - [ ] Tests unitaires usecases (Sprint 3+)
-- [ ] Test manuel Pro (Sprint 5)
+- [x] Test manuel Pro (Sprint 5)
 
 ### Documentation (Sprint 2) ✅
 - [x] Mise à jour PROJECT.md
@@ -810,9 +851,9 @@ Garder pour édition rapide, retirer création (passe par onboarding)
 |--------|--------|------------|----------|
 | 1 | ✅ TERMINÉ | 2025-12-10 | 2025-12-10 |
 | 2 | ✅ TERMINÉ | 2025-12-10 | 2025-12-11 |
-| 3 | ⏳ Pending | - | - |
-| 4 | ⏳ Pending | - | - |
-| 5 | ⏳ Pending | - | - |
+| 3 | ✅ TERMINÉ | 2025-12-11 | 2025-12-12 |
+| 4 | ✅ TERMINÉ | 2025-12-11 | 2025-12-12 |
+| 5 | ✅ TERMINÉ | 2025-12-12 | 2025-12-12 |
 | 6 | ⏳ Pending | - | - |
 | 7 | ⏳ Pending | - | - |
 | 8 | ⏳ Pending | - | - |
@@ -820,14 +861,11 @@ Garder pour édition rapide, retirer création (passe par onboarding)
 ---
 
 **Document créé:** 2025-12-10  
-**Version:** 2.3 (Sprint 2 terminé 2025-12-11)  
-**Changements V2.3:**
-- ✅ Sprint 1 TERMINÉ (migrations, triggers, RLS, buckets, navbar)
-- ✅ Sprint 2 TERMINÉ (onboarding 7 étapes, persistence, overview card)
-- ✅ Onboarding simplifié: 7 étapes au lieu de 9 (Welcome + Features Preview retirés)
-- ✅ Budget: stocké en devise sélectionnée (colonnes `_eur` supprimées)
-- ✅ Search radius: optionnel avec checkbox + slider (10-500km)
-- ✅ Cover image: upload vers bucket `wedding-covers`
-- ✅ search_area_coords: maintenant populé automatiquement
+**Version:** 2.5 (Sprints 1-5 terminés 2025-12-12)  
+**Changements V2.5:**
+- ✅ Sprints 1-2 TERMINÉS (backend + onboarding)
+- ✅ Sprint 3 TERMINÉ (My Wedding Page + Wedding Team + sections)
+- ✅ Sprint 4 TERMINÉ (Invite/Exclude + leave wedding pro + triggers notifications corrigés)
+- ✅ Sprint 5 TERMINÉ (Weddings Hub Pro + detail page + mute + leave)
 
-**Prochaine action:** Démarrer Sprint 3 - My Wedding Page sections (Wedding Team, Agenda, Budget)
+**Prochaine action:** Démarrer Sprint 6 - Moodboard / Inspirations (albums + save depuis Feed + upload galerie)

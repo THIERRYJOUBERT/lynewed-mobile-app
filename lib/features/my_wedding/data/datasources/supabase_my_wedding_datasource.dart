@@ -611,4 +611,33 @@ class SupabaseMyWeddingDatasource {
       rethrow;
     }
   }
+
+  /// Update wedding status (active, cancelled)
+  Future<void> updateWeddingStatus({
+    required String weddingId,
+    required String status,
+  }) async {
+    try {
+      final updateData = <String, dynamic>{
+        'status': status,
+      };
+
+      // Set cancelled_at when cancelling, clear it when resuming
+      if (status == 'cancelled') {
+        updateData['cancelled_at'] = DateTime.now().toIso8601String();
+      } else if (status == 'active') {
+        updateData['cancelled_at'] = null;
+      }
+
+      await _client
+          .from('weddings')
+          .update(updateData)
+          .eq('id', weddingId);
+
+      SecureLogger.info('updateWeddingStatus: Updated wedding $weddingId to status $status');
+    } catch (e) {
+      SecureLogger.error('updateWeddingStatus error: $e');
+      rethrow;
+    }
+  }
 }

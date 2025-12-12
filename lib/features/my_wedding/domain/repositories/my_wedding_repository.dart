@@ -159,6 +159,12 @@ abstract class MyWeddingRepository {
     String? coverImageUrl,
     String? noteForPros,
   });
+
+  /// Update wedding status (active, cancelled)
+  Future<RepositoryResult<void>> updateWeddingStatus({
+    required String weddingId,
+    required String status,
+  });
 }
 
 /// Contacted professional for invitation

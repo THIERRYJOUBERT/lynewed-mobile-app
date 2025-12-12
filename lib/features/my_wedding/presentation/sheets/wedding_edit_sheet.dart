@@ -204,13 +204,26 @@ class _WeddingEditSheetState extends State<WeddingEditSheet> {
     return LynewedSheet(
       title: 'Edit Wedding',
       onClose: () => Navigator.pop(context),
-      bottomAction: SizedBox(
-        width: double.infinity,
-        child: LynewedButton(
-          text: 'Save Changes',
-          onPressed: _isSaving ? null : _save,
-          isLoading: _isSaving,
-        ),
+      bottomAction: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          LynewedButton(
+            text: 'Save Changes',
+            onPressed: _isSaving ? null : _save,
+            isLoading: _isSaving,
+            width: double.infinity,
+          ),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: _confirmCancelWedding,
+            child: Text(
+              'Cancel Wedding',
+              style: LynewedTextStyles.bodyMedium.copyWith(
+                color: LynewedColors.error,
+              ),
+            ),
+          ),
+        ],
       ),
       child: Form(
         key: _formKey,
@@ -414,10 +427,60 @@ class _WeddingEditSheetState extends State<WeddingEditSheet> {
                 ),
               ],
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
+  }
+
+  void _confirmCancelWedding() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Cancel Wedding?'),
+        content: const Text(
+          'Your wedding planning will be paused. You can resume at any time. '
+          'All your data and team members will be preserved.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Keep Planning'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              await _cancelWedding();
+            },
+            child: const Text('Cancel Wedding', style: TextStyle(color: LynewedColors.error)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _cancelWedding() async {
+    final result = await _repository.updateWeddingStatus(
+      weddingId: widget.wedding.id,
+      status: 'cancelled',
+    );
+
+    if (!mounted) return;
+
+    if (result.isSuccess) {
+      Navigator.pop(context);
+      widget.onSaved();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result.error ?? 'Failed to cancel wedding',
+            style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
+          ),
+          backgroundColor: LynewedColors.error,
+        ),
+      );
+    }
   }
 }
