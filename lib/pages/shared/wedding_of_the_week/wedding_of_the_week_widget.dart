@@ -6,6 +6,7 @@ import '/core/design/design.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import 'package:flutter/material.dart';
+import 'wotw_history_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/scheduler.dart';
 import 'wedding_of_the_week_model.dart';
@@ -111,20 +112,58 @@ class _WeddingOfTheWeekWidgetState extends State<WeddingOfTheWeekWidget> {
     );
   }
 
-  /// Header with title - Design System v3
+  /// Header with title + history icon - Design System v3
   /// Uses same style as Replay page (18px, w500)
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       child: Row(
         children: [
-          Text(
-            'WEDDING OF THE WEEK',
-            style: LynewedTextStyles.headlineSmall, // 18px, w500 - same as Replay
+          Expanded(
+            child: Text(
+              'WEDDING OF THE WEEK',
+              style: LynewedTextStyles.headlineSmall, // 18px, w500 - same as Replay
+            ),
+          ),
+          // History icon
+          GestureDetector(
+            onTap: _showHistorySheet,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              child: Icon(
+                Icons.history,
+                size: 24,
+                color: LynewedColors.textPrimary,
+              ),
+            ),
           ),
         ],
       ),
     );
+  }
+
+  /// Show WOTW history sheet
+  void _showHistorySheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => WotwHistorySheet(
+        onArticleSelected: (articleId) {
+          _loadArticleById(articleId);
+        },
+      ),
+    );
+  }
+
+  /// Load a specific article by ID
+  Future<void> _loadArticleById(String articleId) async {
+    final locale = FFAppState().currentUserPreferences.defaultLocale;
+    final article = await actions.getWedArticleById(articleId, locale);
+    if (article != null) {
+      _model.wedArticle = article;
+      safeSetState(() {});
+    }
   }
 
   /// Empty state when no wedding article is available

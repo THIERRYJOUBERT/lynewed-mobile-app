@@ -276,7 +276,7 @@ class _MapPageState extends State<MapPage> {
       child: IconButton(
         onPressed: () => _showCreateSheet(context),
         icon: Icon(
-          widget.userRole == 'bride' ? Icons.push_pin : Icons.crisis_alert_rounded,
+          widget.userRole == 'bride' ? Icons.diamond_outlined : Icons.crisis_alert_rounded,
           color: Colors.white,
           size: 24.0,
         ),

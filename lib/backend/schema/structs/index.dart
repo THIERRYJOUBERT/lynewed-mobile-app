@@ -34,6 +34,7 @@ export 'session_data_bundle_struct.dart';
 export 'upcoming_travel_struct.dart';
 export 'user_preferences_struct.dart';
 export 'wed_article_struct.dart';
+export 'wed_article_summary_struct.dart';
 export 'wed_content_block_struct.dart';
 export 'wishlisted_by_bride_item_struct.dart';
 export 'viewportinfo_struct.dart';

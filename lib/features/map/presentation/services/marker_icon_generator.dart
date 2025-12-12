@@ -180,8 +180,8 @@ class MarkerIconGenerator {
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, radius, bgPaint);
 
-    // Push pin icon in center - using Flutter's Icons.push_pin
-    _drawFlutterIcon(canvas, center, radius * 0.6, Icons.push_pin, const Color(0xFFE91E63));
+    // Diamond icon in center - unified wedding icon
+    _drawFlutterIcon(canvas, center, radius * 0.6, Icons.diamond_outlined, const Color(0xFFE91E63));
 
     // Rose border
     final borderPaint = Paint()

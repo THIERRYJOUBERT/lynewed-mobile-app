@@ -53,6 +53,8 @@ export 'update_video_session_status_action.dart'
 export 'handle_video_session_timeout.dart' show handleVideoSessionTimeout;
 export 'fetch_replays_bundle.dart' show fetchReplaysBundle;
 export 'get_latest_wed_article.dart' show getLatestWedArticle;
+export 'get_all_wed_articles.dart' show getAllWedArticles;
+export 'get_wed_article_by_id.dart' show getWedArticleById;
 export 'get_favorited_professionals_action.dart'
     show getFavoritedProfessionalsAction;
 export 'get_wishlisted_by_brides_action.dart' show getWishlistedByBridesAction;
