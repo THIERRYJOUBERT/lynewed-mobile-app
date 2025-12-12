@@ -395,6 +395,47 @@ class ChatRoomNotifier extends ChangeNotifier {
     }
   }
 
+  /// Send a document message (PDF)
+  Future<bool> sendDocumentMessage({
+    required String filePath,
+    required String fileName,
+    required int fileSize,
+  }) async {
+    final currentState = _state;
+    if (currentState is! ChatRoomLoaded) return false;
+
+    _emit(currentState.copyWith(isSending: true));
+
+    try {
+      // Upload document first
+      final uploadResult = await _chatRepository.uploadDocument(
+        roomId: _roomId,
+        filePath: filePath,
+        fileName: fileName,
+      );
+
+      if (uploadResult.isFailure) {
+        _emit(currentState.copyWith(isSending: false));
+        return false;
+      }
+
+      // Send message with attachment URL and metadata
+      final result = await _chatRepository.sendDocumentMessage(
+        roomId: _roomId,
+        attachmentUrl: uploadResult.data!,
+        attachmentName: fileName,
+        attachmentSize: fileSize,
+        attachmentMimeType: 'application/pdf',
+      );
+
+      _emit(currentState.copyWith(isSending: false));
+      return result.isSuccess;
+    } catch (e) {
+      _emit(currentState.copyWith(isSending: false));
+      return false;
+    }
+  }
+
   // ============================================================
   // MESSAGE ACTIONS
   // ============================================================

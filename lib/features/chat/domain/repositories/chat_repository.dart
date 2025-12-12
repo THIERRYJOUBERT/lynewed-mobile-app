@@ -72,6 +72,15 @@ abstract class ChatRepository {
     required String attachmentUrl,
   });
 
+  /// Send a document message (PDF)
+  Future<ChatResult<ChatMessage>> sendDocumentMessage({
+    required String roomId,
+    required String attachmentUrl,
+    required String attachmentName,
+    required int attachmentSize,
+    required String attachmentMimeType,
+  });
+
   /// Delete own message (soft delete)
   Future<ChatResult<void>> deleteMessage(int messageId);
 
@@ -104,6 +113,13 @@ abstract class ChatRepository {
 
   /// Upload audio to chat storage
   Future<ChatResult<String>> uploadAudio({
+    required String roomId,
+    required String filePath,
+    required String fileName,
+  });
+
+  /// Upload document (PDF) to chat storage
+  Future<ChatResult<String>> uploadDocument({
     required String roomId,
     required String filePath,
     required String fileName,

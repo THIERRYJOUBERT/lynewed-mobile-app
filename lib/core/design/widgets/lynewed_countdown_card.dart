@@ -215,7 +215,7 @@ class LynewedCountdownCard extends StatelessWidget {
       color: LynewedColors.gray200,
       child: const Center(
         child: Icon(
-          Icons.favorite_border,
+          Icons.diamond_outlined,
           size: 48.0,
           color: LynewedColors.gray300,
         ),

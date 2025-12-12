@@ -195,7 +195,7 @@ class _NavBarBridesWidgetState extends State<NavBarBridesWidget> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.favorite_border,
+                            Icons.diamond_outlined,
                             color: widget.number == 3
                                 ? FlutterFlowTheme.of(context).primaryText
                                 : FlutterFlowTheme.of(context).alternate,

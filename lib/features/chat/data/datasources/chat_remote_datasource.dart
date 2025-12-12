@@ -105,6 +105,9 @@ class ChatRemoteDatasource {
     required MessageType type,
     String? content,
     String? attachmentUrl,
+    String? attachmentName,
+    int? attachmentSize,
+    String? attachmentMimeType,
   }) async {
     final response = await _client
         .from('chat_messages')
@@ -114,6 +117,9 @@ class ChatRemoteDatasource {
           'content': content,
           'message_type': type.name,
           'attachment_url': attachmentUrl,
+          'attachment_name': attachmentName,
+          'attachment_size': attachmentSize,
+          'attachment_mime_type': attachmentMimeType,
         })
         .select()
         .single();
@@ -553,6 +559,22 @@ final result = response as Map<String, dynamic>;
     return path;
   }
 
+  /// Upload document (PDF) to chat storage
+  /// Bucket: chat-documents
+  Future<String> uploadDocument({
+    required String roomId,
+    required String filePath,
+    required String fileName,
+  }) async {
+    final file = File(filePath);
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final path = '$roomId/${timestamp}_$fileName';
+    
+    await _client.storage.from('chat-documents').upload(path, file);
+    
+    return path;
+  }
+
   /// Get signed URL for media
   /// Automatically detects bucket based on file extension
   Future<String> getSignedUrl(String path) async {
@@ -566,6 +588,8 @@ final result = response as Map<String, dynamic>;
         lowerPath.endsWith('.aac') ||
         lowerPath.endsWith('.ogg')) {
       bucket = 'chat-audio';
+    } else if (lowerPath.endsWith('.pdf')) {
+      bucket = 'chat-documents';
     } else {
       bucket = 'chat-images';
     }

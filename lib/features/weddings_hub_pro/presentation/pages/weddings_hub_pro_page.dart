@@ -206,7 +206,7 @@ class _WeddingsHubProPageState extends State<WeddingsHubProPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.favorite_border, size: 64.0, color: LynewedColors.gray300),
+          const Icon(Icons.diamond_outlined, size: 64.0, color: LynewedColors.gray300),
           const SizedBox(height: 16.0),
           Text('No Weddings Yet', style: LynewedTextStyles.headlineMedium),
           const SizedBox(height: 8.0),

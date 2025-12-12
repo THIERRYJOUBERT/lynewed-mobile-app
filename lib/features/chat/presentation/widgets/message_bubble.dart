@@ -200,6 +200,8 @@ class MessageBubble extends StatelessWidget {
         return _buildImageContent();
       case MessageType.audio:
         return _buildAudioContent();
+      case MessageType.document:
+        return _buildDocumentContent();
     }
   }
 
@@ -319,6 +321,96 @@ class MessageBubble extends StatelessWidget {
         isOwnMessage: isOwnMessage,
       ),
     );
+  }
+
+  Widget _buildDocumentContent() {
+    final fileName = message.attachmentName ?? 'Document.pdf';
+    final fileSize = message.attachmentSize;
+    
+    return GestureDetector(
+      onTap: onImageTap, // Reuse for document tap (will open/download)
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 260),
+        margin: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isOwnMessage 
+              ? Colors.white.withValues(alpha: 0.15)
+              : LynewedColors.background,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // PDF icon
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isOwnMessage 
+                    ? Colors.white.withValues(alpha: 0.2)
+                    : LynewedColors.error.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.picture_as_pdf,
+                color: isOwnMessage 
+                    ? LynewedColors.textOnPrimary
+                    : LynewedColors.error,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 10),
+            // File info
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    fileName,
+                    style: LynewedTextStyles.bodySmall.copyWith(
+                      color: isOwnMessage 
+                          ? LynewedColors.textOnPrimary
+                          : LynewedColors.textPrimary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (fileSize != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      _formatFileSize(fileSize),
+                      style: LynewedTextStyles.labelSmall.copyWith(
+                        color: isOwnMessage 
+                            ? LynewedColors.textOnPrimary.withValues(alpha: 0.7)
+                            : LynewedColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Download indicator
+            Icon(
+              Icons.download_outlined,
+              color: isOwnMessage 
+                  ? LynewedColors.textOnPrimary.withValues(alpha: 0.7)
+                  : LynewedColors.textSecondary,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
   String _formatTime(DateTime dateTime) {

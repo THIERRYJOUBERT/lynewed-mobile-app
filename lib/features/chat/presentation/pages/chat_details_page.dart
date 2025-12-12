@@ -7,6 +7,7 @@ library;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '/core/design/design.dart';
 import '/core/services/unread_counter_service.dart';
 import '/backend/schema/enums/enums.dart' show PermissionType;
@@ -567,15 +568,39 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
   void _handleImageTap(ChatMessage message) async {
     if (message.attachmentUrl == null) return;
 
-    // Get signed URL for the image
+    // Get signed URL for the attachment
     final signedUrl = await _notifier.getSignedUrl(message.attachmentUrl!);
     if (signedUrl == null || !mounted) return;
 
+    // Handle document tap - open in browser/external app
+    if (message.messageType == MessageType.document) {
+      _openDocument(signedUrl, message.attachmentName ?? 'document.pdf');
+      return;
+    }
+
+    // Handle image tap - show fullscreen
     FullscreenImageViewer.show(
       context,
       imageUrl: signedUrl,
       heroTag: 'image_${message.id}',
     );
+  }
+
+  Future<void> _openDocument(String url, String fileName) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          _showSnackBar('Cannot open document', isError: true);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar('Failed to open document', isError: true);
+      }
+    }
   }
 
   Widget _buildComposer() {
@@ -652,6 +677,8 @@ class _ChatDetailsPageState extends State<ChatDetailsPage> {
           _notifier.sendImageMessage(filePath: filePath, fileName: fileName),
       onSendAudio: ({required filePath, required fileName}) =>
           _notifier.sendAudioMessage(filePath: filePath, fileName: fileName),
+      onSendDocument: ({required filePath, required fileName, required fileSize}) =>
+          _notifier.sendDocumentMessage(filePath: filePath, fileName: fileName, fileSize: fileSize),
       onSendingComplete: () => _notifier.markSendingComplete(),
     );
   }

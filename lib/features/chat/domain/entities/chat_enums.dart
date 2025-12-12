@@ -101,7 +101,8 @@ enum ContactRequestSource {
 enum MessageType {
   text,
   image,
-  audio;
+  audio,
+  document;
 
   static MessageType? fromString(String? value) {
     if (value == null) return null;

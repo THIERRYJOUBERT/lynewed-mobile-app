@@ -152,6 +152,29 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
+  Future<ChatResult<ChatMessage>> sendDocumentMessage({
+    required String roomId,
+    required String attachmentUrl,
+    required String attachmentName,
+    required int attachmentSize,
+    required String attachmentMimeType,
+  }) async {
+    try {
+      final message = await _datasource.sendMessage(
+        roomId: roomId,
+        type: MessageType.document,
+        attachmentUrl: attachmentUrl,
+        attachmentName: attachmentName,
+        attachmentSize: attachmentSize,
+        attachmentMimeType: attachmentMimeType,
+      );
+      return ChatResult.success(message);
+    } catch (e) {
+      return ChatResult.failure('Failed to send document: $e');
+    }
+  }
+
+  @override
   Future<ChatResult<void>> deleteMessage(int messageId) async {
     try {
       await _datasource.deleteMessage(messageId);
@@ -227,6 +250,24 @@ class ChatRepositoryImpl implements ChatRepository {
       return ChatResult.success(path);
     } catch (e) {
       return ChatResult.failure('Failed to upload audio: $e');
+    }
+  }
+
+  @override
+  Future<ChatResult<String>> uploadDocument({
+    required String roomId,
+    required String filePath,
+    required String fileName,
+  }) async {
+    try {
+      final path = await _datasource.uploadDocument(
+        roomId: roomId,
+        filePath: filePath,
+        fileName: fileName,
+      );
+      return ChatResult.success(path);
+    } catch (e) {
+      return ChatResult.failure('Failed to upload document: $e');
     }
   }
 

@@ -17,6 +17,9 @@ class ChatMessage {
     required this.createdAt,
     this.content,
     this.attachmentUrl,
+    this.attachmentName,
+    this.attachmentSize,
+    this.attachmentMimeType,
     this.isDeleted = false,
   });
 
@@ -32,11 +35,20 @@ class ChatMessage {
   /// Message content (text)
   final String? content;
 
-  /// Type of message (text, image, audio)
+  /// Type of message (text, image, audio, document)
   final MessageType messageType;
 
-  /// URL for attachments (images, audio)
+  /// URL for attachments (images, audio, documents)
   final String? attachmentUrl;
+
+  /// File name for document attachments
+  final String? attachmentName;
+
+  /// File size in bytes for document attachments
+  final int? attachmentSize;
+
+  /// MIME type for document attachments (e.g., application/pdf)
+  final String? attachmentMimeType;
 
   /// Whether message has been deleted/hidden
   final bool isDeleted;
@@ -53,6 +65,9 @@ class ChatMessage {
       content: map['content'] as String?,
       messageType: MessageType.fromString(map['message_type'] as String?) ?? MessageType.text,
       attachmentUrl: map['attachment_url'] as String?,
+      attachmentName: map['attachment_name'] as String?,
+      attachmentSize: map['attachment_size'] as int?,
+      attachmentMimeType: map['attachment_mime_type'] as String?,
       isDeleted: map['is_deleted'] as bool? ?? false,
       createdAt: DateTime.parse(map['created_at'] as String),
     );
@@ -66,6 +81,9 @@ class ChatMessage {
       'content': content,
       'message_type': messageType.name,
       'attachment_url': attachmentUrl,
+      'attachment_name': attachmentName,
+      'attachment_size': attachmentSize,
+      'attachment_mime_type': attachmentMimeType,
     };
   }
 
@@ -76,6 +94,9 @@ class ChatMessage {
     String? content,
     MessageType? messageType,
     String? attachmentUrl,
+    String? attachmentName,
+    int? attachmentSize,
+    String? attachmentMimeType,
     bool? isDeleted,
     DateTime? createdAt,
   }) {
@@ -86,6 +107,9 @@ class ChatMessage {
       content: content ?? this.content,
       messageType: messageType ?? this.messageType,
       attachmentUrl: attachmentUrl ?? this.attachmentUrl,
+      attachmentName: attachmentName ?? this.attachmentName,
+      attachmentSize: attachmentSize ?? this.attachmentSize,
+      attachmentMimeType: attachmentMimeType ?? this.attachmentMimeType,
       isDeleted: isDeleted ?? this.isDeleted,
       createdAt: createdAt ?? this.createdAt,
     );
@@ -101,6 +125,9 @@ class ChatMessage {
         other.content == content &&
         other.messageType == messageType &&
         other.attachmentUrl == attachmentUrl &&
+        other.attachmentName == attachmentName &&
+        other.attachmentSize == attachmentSize &&
+        other.attachmentMimeType == attachmentMimeType &&
         other.isDeleted == isDeleted &&
         other.createdAt == createdAt;
   }
@@ -113,6 +140,9 @@ class ChatMessage {
         content,
         messageType,
         attachmentUrl,
+        attachmentName,
+        attachmentSize,
+        attachmentMimeType,
         isDeleted,
         createdAt,
       );

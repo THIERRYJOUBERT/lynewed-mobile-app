@@ -1,11 +1,12 @@
 /// Message composer widget - Clean Architecture
 /// 
-/// Input field for composing and sending messages (text, image, audio).
+/// Input field for composing and sending messages (text, image, audio, document).
 library;
 
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
@@ -22,6 +23,11 @@ typedef SendAudioCallback = Future<bool> Function({
   required String filePath,
   required String fileName,
 });
+typedef SendDocumentCallback = Future<bool> Function({
+  required String filePath,
+  required String fileName,
+  required int fileSize,
+});
 
 /// Widget for composing and sending messages
 class MessageComposer extends StatefulWidget {
@@ -30,6 +36,7 @@ class MessageComposer extends StatefulWidget {
     required this.onSendText,
     this.onSendImage,
     this.onSendAudio,
+    this.onSendDocument,
     this.onSendingComplete,
     this.isEnabled = true,
     this.isSending = false,
@@ -45,6 +52,9 @@ class MessageComposer extends StatefulWidget {
 
   /// Callback to send audio message
   final SendAudioCallback? onSendAudio;
+
+  /// Callback to send document message (PDF)
+  final SendDocumentCallback? onSendDocument;
 
   /// Callback when all sending is complete (for multiple images)
   final VoidCallback? onSendingComplete;
@@ -172,6 +182,91 @@ class _MessageComposerState extends State<MessageComposer> {
     });
   }
 
+  void _showAttachmentOptions() {
+    if (!_canAddMedia) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: LynewedColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle bar
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: LynewedColors.gray300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Photo option
+                _buildAttachmentOption(
+                  icon: Icons.photo_library_outlined,
+                  label: 'Photo',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImages();
+                  },
+                ),
+                const SizedBox(height: 12),
+                // Document option (only show if callback provided)
+                if (widget.onSendDocument != null)
+                  _buildAttachmentOption(
+                    icon: Icons.description_outlined,
+                    label: 'Document (PDF)',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickDocument();
+                    },
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAttachmentOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        decoration: BoxDecoration(
+          color: LynewedColors.background,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: LynewedColors.textPrimary, size: 24),
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: LynewedTextStyles.bodyMedium.copyWith(
+                color: LynewedColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _pickImages() async {
     if (!_canAddMedia) return;
 
@@ -187,6 +282,48 @@ class _MessageComposerState extends State<MessageComposer> {
         });
       }
     } catch (e) {
+    }
+  }
+
+  Future<void> _pickDocument() async {
+    if (!_canAddMedia || widget.onSendDocument == null) return;
+
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+        allowMultiple: false,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        if (file.path != null) {
+          // Send document immediately
+          final success = await widget.onSendDocument!(
+            filePath: file.path!,
+            fileName: file.name,
+            fileSize: file.size,
+          );
+          
+          if (!success && mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Failed to send document'),
+                backgroundColor: LynewedColors.error,
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to pick document'),
+            backgroundColor: LynewedColors.error,
+          ),
+        );
+      }
     }
   }
 
@@ -294,11 +431,11 @@ class _MessageComposerState extends State<MessageComposer> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Image picker button (left side) - only show if not recording and no audio ready
+          // Attachment button (left side) - only show if not recording and no audio ready
           if (!_isRecording && !_hasAudioReady) ...[
             _buildActionButton(
               icon: Icons.add,
-              onTap: _canAddMedia ? _pickImages : null,
+              onTap: _canAddMedia ? _showAttachmentOptions : null,
               enabled: _canAddMedia,
               size: buttonSize,
             ),
