@@ -774,7 +774,7 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                                         ),
                                   ),
                                   Text(
-                                    'v1.2.2',
+                                    'v1.2.3',
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
