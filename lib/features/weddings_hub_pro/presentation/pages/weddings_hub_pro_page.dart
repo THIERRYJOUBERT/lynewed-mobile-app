@@ -9,6 +9,7 @@ import '/actions/actions.dart' as action_blocks;
 import '/features/chat/presentation/pages/chat_details_page.dart';
 import '/features/my_wedding/data/repositories/my_wedding_repository_impl.dart';
 import '/features/my_wedding/domain/entities/inspiration_album.dart';
+import '/features/my_wedding/domain/entities/wedding_event.dart';
 import '/features/my_wedding/presentation/pages/inspirations_page.dart';
 import '../../data/repositories/weddings_hub_repository_impl.dart';
 import '../../domain/entities/wedding_client.dart';
@@ -478,6 +479,7 @@ class _WeddingClientDetailPageState extends State<_WeddingClientDetailPage> {
   TeamChatInfo? _teamChatInfo;
   late bool _isMuted;
   List<InspirationAlbum> _inspirationAlbums = [];
+  List<WeddingEvent> _publicEvents = [];
 
   void _openInspirations() {
     Navigator.of(context).push(
@@ -496,6 +498,7 @@ class _WeddingClientDetailPageState extends State<_WeddingClientDetailPage> {
     _isMuted = widget.wedding.isMuted;
     _loadTeamChatInfo();
     _loadInspirationAlbums();
+    _loadPublicEvents();
   }
 
   Future<void> _loadTeamChatInfo() async {
@@ -515,6 +518,17 @@ class _WeddingClientDetailPageState extends State<_WeddingClientDetailPage> {
       // Filter to only show public albums for pros
       final publicAlbums = (result.data ?? []).where((a) => !a.isPrivate).toList();
       setState(() => _inspirationAlbums = publicAlbums);
+    }
+  }
+
+  Future<void> _loadPublicEvents() async {
+    final result = await _myWeddingRepository.getWeddingEvents(
+      weddingId: widget.wedding.weddingId,
+    );
+    if (result.isSuccess && mounted) {
+      // Filter to only show public events for pros
+      final publicEvents = (result.data ?? []).where((e) => e.isPublic).toList();
+      setState(() => _publicEvents = publicEvents);
     }
   }
 
@@ -545,6 +559,8 @@ class _WeddingClientDetailPageState extends State<_WeddingClientDetailPage> {
                           _buildChatWithBrideSection(),
                           const SizedBox(height: 30.0),
                           _buildInspirationsSection(),
+                          const SizedBox(height: 30.0),
+                          _buildAgendaSection(),
                           const SizedBox(height: 30.0),
                           _buildNoteSection(),
                           const SizedBox(height: 20.0),
@@ -1152,6 +1168,253 @@ class _WeddingClientDetailPageState extends State<_WeddingClientDetailPage> {
               color: LynewedColors.textSecondary,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAgendaSection() {
+    final hasEvents = _publicEvents.isNotEmpty;
+    // Get upcoming events (not past, sorted by date)
+    final upcomingEvents = _publicEvents
+        .where((e) => !e.isPast)
+        .toList()
+      ..sort((a, b) => a.eventDate.compareTo(b.eventDate));
+    final displayEvents = upcomingEvents.take(3).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('AGENDA', style: LynewedTextStyles.sectionTitle),
+        const SizedBox(height: 4.0),
+        Text(
+          hasEvents
+              ? '${_publicEvents.length} public event${_publicEvents.length > 1 ? 's' : ''}'
+              : 'No public events shared',
+          style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
+        ),
+        const SizedBox(height: 10.0),
+        if (hasEvents)
+          Column(
+            children: [
+              ...displayEvents.map(
+                (event) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: _buildEventTile(event),
+                ),
+              ),
+              if (_publicEvents.length > 3) ...[
+                const SizedBox(height: 4.0),
+                GestureDetector(
+                  onTap: () => _showAllEventsSheet(),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: LynewedColors.gray200),
+                      borderRadius: BorderRadius.circular(4.0),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'View all ${_publicEvents.length} events',
+                        style: LynewedTextStyles.labelLarge.copyWith(
+                          color: LynewedColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          )
+        else
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20.0),
+            decoration: BoxDecoration(
+              color: LynewedColors.surface,
+              borderRadius: BorderRadius.circular(4.0),
+            ),
+            child: Column(
+              children: [
+                const Icon(Icons.event_outlined, size: 32.0, color: LynewedColors.gray300),
+                const SizedBox(height: 8.0),
+                Text(
+                  'No public events shared yet',
+                  style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildEventTile(WeddingEvent event) {
+    final isDone = event.isDone;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: isDone ? LynewedColors.surface : LynewedColors.background,
+        border: Border.all(
+          color: isDone ? LynewedColors.textPrimary : LynewedColors.gray200,
+          width: isDone ? 1.5 : 1,
+        ),
+        borderRadius: BorderRadius.circular(4.0),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Status indicator (no checkbox for pros - read only)
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: isDone ? LynewedColors.textPrimary : Colors.transparent,
+              border: Border.all(
+                color: isDone ? LynewedColors.textPrimary : LynewedColors.gray200,
+                width: 2,
+              ),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: isDone
+                ? const Icon(Icons.check, size: 16, color: Colors.white)
+                : null,
+          ),
+          const SizedBox(width: 12),
+          // Content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  event.title,
+                  style: LynewedTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w500,
+                    decoration: isDone ? TextDecoration.lineThrough : null,
+                    color: isDone ? LynewedColors.textSecondary : LynewedColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.event_outlined,
+                      size: 14,
+                      color: LynewedColors.textSecondary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      DateFormat('MMM d, HH:mm').format(event.eventDate),
+                      style: LynewedTextStyles.labelMedium.copyWith(
+                        color: LynewedColors.textSecondary,
+                      ),
+                    ),
+                    if (event.location != null && event.location!.isNotEmpty) ...[
+                      const SizedBox(width: 12),
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 14,
+                        color: LynewedColors.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          event.location!,
+                          style: LynewedTextStyles.labelMedium.copyWith(
+                            color: LynewedColors.textSecondary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                if (event.description != null && event.description!.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    event.description!,
+                    style: LynewedTextStyles.bodySmall.copyWith(
+                      color: LynewedColors.textSecondary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAllEventsSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        maxChildSize: 0.9,
+        minChildSize: 0.5,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: LynewedColors.background,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: LynewedColors.gray200,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'All Events',
+                        style: LynewedTextStyles.sheetTitle,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: const Icon(Icons.close, color: LynewedColors.gray300),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1, color: LynewedColors.gray200),
+              // Events list
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(20),
+                  itemCount: _publicEvents.length,
+                  itemBuilder: (context, index) {
+                    final event = _publicEvents[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _buildEventTile(event),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

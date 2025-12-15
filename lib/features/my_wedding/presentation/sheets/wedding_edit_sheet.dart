@@ -5,6 +5,7 @@ import '/core/widgets/currency_dropdown.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/backend/schema/structs/index.dart';
 import '/custom_code/actions/index.dart' as custom_actions;
+import '/features/map/domain/entities/wedding_details.dart' show WeddingVisibility;
 import '../../domain/entities/wedding_overview.dart';
 import '../../data/repositories/my_wedding_repository_impl.dart';
 
@@ -41,6 +42,7 @@ class _WeddingEditSheetState extends State<WeddingEditSheet> {
   double? _venueLng;
   String? _countryCode;
   late String _currencyCode;
+  late WeddingVisibility _visibility;
   bool _isSaving = false;
   bool _isSearchingAddress = false;
   List<PlaceSuggestionStruct> _addressSuggestions = [];
@@ -66,6 +68,7 @@ class _WeddingEditSheetState extends State<WeddingEditSheet> {
     _venueLng = widget.wedding.position?.longitude;
     _countryCode = widget.wedding.countryCode;
     _currencyCode = widget.wedding.currency;
+    _visibility = widget.wedding.visibility;
   }
 
   @override
@@ -177,6 +180,7 @@ class _WeddingEditSheetState extends State<WeddingEditSheet> {
       budgetMin: int.tryParse(_budgetController.text),
       budgetMax: int.tryParse(_budgetController.text),
       currency: _currencyCode,
+      visibility: _visibility.name == 'visibleToPros' ? 'visible_to_pros' : 'private',
     );
 
     if (!mounted) return;
@@ -412,7 +416,82 @@ class _WeddingEditSheetState extends State<WeddingEditSheet> {
                 ),
               ],
             ),
+            const SizedBox(height: 30),
+            
+            // Visibility
+            const Text('Visibility', style: LynewedTextStyles.labelMedium),
+            const SizedBox(height: 10),
+            _buildVisibilityOption(
+              WeddingVisibility.private,
+              Icons.lock_outline,
+              'Private',
+              'Only you can see',
+            ),
+            const SizedBox(height: 12),
+            _buildVisibilityOption(
+              WeddingVisibility.visibleToPros,
+              Icons.visibility_outlined,
+              'Visible to Pros',
+              'Professionals can see your wedding',
+            ),
             const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVisibilityOption(
+    WeddingVisibility value,
+    IconData icon,
+    String title,
+    String subtitle,
+  ) {
+    final isSelected = _visibility == value;
+    return InkWell(
+      onTap: () => setState(() => _visibility = value),
+      child: Container(
+        height: 80,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: isSelected ? Colors.black : LynewedColors.gray200,
+            width: isSelected ? 1.5 : 1,
+          ),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? Colors.black : LynewedColors.textSecondary,
+              size: 24,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: LynewedTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: isSelected ? Colors.black : LynewedColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: LynewedTextStyles.labelSmall.copyWith(
+                      color: LynewedColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check, color: Colors.black, size: 20),
           ],
         ),
       ),

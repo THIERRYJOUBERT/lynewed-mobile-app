@@ -67,45 +67,50 @@ class LynewedDetailsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       behavior: HitTestBehavior.opaque,
-      child: ConstrainedBox(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * maxHeightFraction,
-      ),
-      child: Container(
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          color: LynewedColors.background,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24.0),
-            topRight: Radius.circular(24.0),
+      child: Padding(
+        padding: EdgeInsets.only(bottom: bottomInset),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * maxHeightFraction,
           ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Handle bar
-            _buildHandleBar(),
-            
-            // Header (if any header content)
-            if (_hasHeader) _buildHeader(),
-            
-            // Scrollable content
-            Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                child: child,
+          child: Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: LynewedColors.background,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24.0),
+                topRight: Radius.circular(24.0),
               ),
             ),
-            
-            // Action buttons (fixed at bottom)
-            if (actions != null) _buildActions(),
-          ],
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle bar
+                _buildHandleBar(),
+                
+                // Header (if any header content)
+                if (_hasHeader) _buildHeader(),
+                
+                // Scrollable content
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                    child: child,
+                  ),
+                ),
+                
+                // Action buttons (fixed at bottom)
+                if (actions != null) _buildActions(),
+              ],
+            ),
+          ),
         ),
       ),
-    ),
     );
   }
 
