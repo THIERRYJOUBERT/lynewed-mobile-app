@@ -55,6 +55,7 @@ class SupabaseMyWeddingDatasource {
             created_at
           ''')
           .eq('bride_profile_id', userId)
+          .eq('is_deleted', false)
           .maybeSingle();
 
       if (response == null) {

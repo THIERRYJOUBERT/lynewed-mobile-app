@@ -118,6 +118,37 @@ class _MapPageState extends State<MapPage> {
   /// Callback when map controller is ready
   void _onMapControllerReady(gmaps.GoogleMapController controller) {
     _mapController = controller;
+    // Auto-center on user's location when map is ready (if no initial center provided)
+    if (widget.config.initialCenter == null) {
+      _goToMyLocationOnInit();
+    }
+  }
+
+  /// Go to user's location on map initialization (silent, no loading indicator)
+  Future<void> _goToMyLocationOnInit() async {
+    if (_mapController == null) return;
+    
+    try {
+      final hasPermission = await _ensureLocationPermission();
+      if (!hasPermission || !_mounted) return;
+      
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+      
+      if (!_mounted || _mapController == null) return;
+      
+      await _mapController!.animateCamera(
+        gmaps.CameraUpdate.newLatLngZoom(
+          gmaps.LatLng(position.latitude, position.longitude),
+          _mapState.zoom,
+        ),
+      );
+    } catch (e) {
+      // Silent fail - keep default Paris location if geolocation fails
+    }
   }
 
   @override
