@@ -169,7 +169,7 @@ class _SupportWidgetState extends State<SupportWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Subject Section
-                      Text('Subject', style: LynewedTextStyles.sectionTitle),
+                      const Text('Subject', style: LynewedTextStyles.sectionTitle),
                       const SizedBox(height: 12),
                       _buildSubjectDropdown(),
                       

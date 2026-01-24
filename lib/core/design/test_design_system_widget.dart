@@ -313,13 +313,13 @@ class DesignSystemTestWidget extends StatelessWidget {
           ],
         ),
         LynewedGap.verticalLg,
-        Text('Safe Area Padding Examples:'),
+        const Text('Safe Area Padding Examples:'),
         LynewedGap.verticalSm,
         Container(
           width: double.infinity,
           padding: LynewedSpacing.pageContent,
           decoration: LynewedComponentStyles.cardDecoration(),
-          child: Text('Page Content Padding (20, 70, 20, 0)'),
+          child: const Text('Page Content Padding (20, 70, 20, 0)'),
         ),
       ],
     );

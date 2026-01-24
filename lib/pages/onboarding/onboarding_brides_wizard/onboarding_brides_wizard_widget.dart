@@ -717,7 +717,7 @@ class _OnboardingBridesWizardWidgetState
                 ),
               ),
             ),
-            Icon(
+            const Icon(
               Icons.keyboard_arrow_down,
               color: LynewedColors.gray100,
               size: 24,

@@ -331,7 +331,7 @@ class LynewedComponentStyles {
         horizontal: LynewedSpacing.xl,
         vertical: LynewedSpacing.sm,
       ),
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: LynewedBorders.borderRadiusNone,
       ),
     );

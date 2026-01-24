@@ -195,7 +195,7 @@ class _AgendaPageState extends State<AgendaPage> {
           children: [
             const Icon(Icons.error_outline, size: 48, color: LynewedColors.error),
             const SizedBox(height: 16),
-            Text('Something went wrong', style: LynewedTextStyles.headlineSmall),
+            const Text('Something went wrong', style: LynewedTextStyles.headlineSmall),
             const SizedBox(height: 8),
             Text(
               _error!,
@@ -253,7 +253,7 @@ class _AgendaPageState extends State<AgendaPage> {
           children: [
             const Icon(Icons.event_outlined, size: 64, color: LynewedColors.gray300),
             const SizedBox(height: 24),
-            Text(
+            const Text(
               'No events yet',
               style: LynewedTextStyles.headlineMedium,
               textAlign: TextAlign.center,
@@ -365,8 +365,8 @@ class _AgendaPageState extends State<AgendaPage> {
                         ),
                       ),
                       if (event.isPublic)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8),
+                        const Padding(
+                          padding: EdgeInsets.only(left: 8),
                           child: Icon(
                             Icons.visibility_outlined,
                             size: 16,
@@ -378,7 +378,7 @@ class _AgendaPageState extends State<AgendaPage> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.access_time,
                         size: 14,
                         color: LynewedColors.textSecondary,
@@ -392,7 +392,7 @@ class _AgendaPageState extends State<AgendaPage> {
                       ),
                       if (event.location != null && event.location!.isNotEmpty) ...[
                         const SizedBox(width: 12),
-                        Icon(
+                        const Icon(
                           Icons.location_on_outlined,
                           size: 14,
                           color: LynewedColors.textSecondary,

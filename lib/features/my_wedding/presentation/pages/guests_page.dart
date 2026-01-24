@@ -197,7 +197,7 @@ class _GuestsPageState extends State<GuestsPage> {
           children: [
             const Icon(Icons.error_outline, size: 48, color: LynewedColors.error),
             const SizedBox(height: 16),
-            Text('Something went wrong', style: LynewedTextStyles.headlineSmall),
+            const Text('Something went wrong', style: LynewedTextStyles.headlineSmall),
             const SizedBox(height: 8),
             Text(
               _error!,
@@ -244,7 +244,7 @@ class _GuestsPageState extends State<GuestsPage> {
           children: [
             const Icon(Icons.people_outline, size: 64, color: LynewedColors.gray300),
             const SizedBox(height: 24),
-            Text(
+            const Text(
               'No guests yet',
               style: LynewedTextStyles.headlineMedium,
               textAlign: TextAlign.center,
@@ -337,7 +337,7 @@ class _GuestsPageState extends State<GuestsPage> {
                     Row(
                       children: [
                         if (guest.email != null && guest.email!.isNotEmpty) ...[
-                          Icon(
+                          const Icon(
                             Icons.email_outlined,
                             size: 14,
                             color: LynewedColors.textSecondary,
@@ -358,7 +358,7 @@ class _GuestsPageState extends State<GuestsPage> {
                             guest.phone != null && guest.phone!.isNotEmpty)
                           const SizedBox(width: 12),
                         if (guest.phone != null && guest.phone!.isNotEmpty) ...[
-                          Icon(
+                          const Icon(
                             Icons.phone_outlined,
                             size: 14,
                             color: LynewedColors.textSecondary,

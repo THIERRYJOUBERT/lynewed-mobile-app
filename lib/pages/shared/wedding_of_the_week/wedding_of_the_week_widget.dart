@@ -119,7 +119,7 @@ class _WeddingOfTheWeekWidgetState extends State<WeddingOfTheWeekWidget> {
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       child: Row(
         children: [
-          Expanded(
+          const Expanded(
             child: Text(
               'WEDDING OF THE WEEK',
               style: LynewedTextStyles.headlineSmall, // 18px, w500 - same as Replay
@@ -128,8 +128,8 @@ class _WeddingOfTheWeekWidgetState extends State<WeddingOfTheWeekWidget> {
           // History icon
           GestureDetector(
             onTap: _showHistorySheet,
-            child: Container(
-              padding: const EdgeInsets.all(8),
+            child: const Padding(
+              padding: EdgeInsets.all(8),
               child: Icon(
                 Icons.history,
                 size: 24,

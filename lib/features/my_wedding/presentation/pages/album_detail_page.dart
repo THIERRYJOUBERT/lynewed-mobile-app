@@ -219,7 +219,7 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
               color: LynewedColors.error,
             ),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               'Something went wrong',
               style: LynewedTextStyles.headlineSmall,
             ),
@@ -282,7 +282,7 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
               color: LynewedColors.gray300,
             ),
             const SizedBox(height: 24),
-            Text(
+            const Text(
               'No images yet',
               style: LynewedTextStyles.headlineMedium,
               textAlign: TextAlign.center,

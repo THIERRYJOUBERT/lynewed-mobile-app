@@ -361,9 +361,9 @@ class _MessagesPageState extends State<MessagesPage> {
           ],
 
           // Conversations Section Title - 30px top spacing, 10px bottom
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 30, 20, 10),
+              padding: EdgeInsets.fromLTRB(20, 30, 20, 10),
               child: Text(
                 'Conversations',
                 style: LynewedTextStyles.sectionTitle, // 16px, w500
@@ -424,8 +424,8 @@ class _MessagesPageState extends State<MessagesPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section title - 30px top spacing, 10px bottom
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 30, 20, 10),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(20, 30, 20, 10),
           child: Text(
             'Contact Requests',
             style: LynewedTextStyles.sectionTitle, // 16px, w500

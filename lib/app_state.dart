@@ -50,11 +50,7 @@ class FFAppState extends ChangeNotifier {
 
   late FlutterSecureStorage secureStorage;
 
-  UserRole? _currentUserRole = UserRole.bride;
-  UserRole? get currentUserRole => _currentUserRole;
-  set currentUserRole(UserRole? value) {
-    _currentUserRole = value;
-  }
+  UserRole? currentUserRole = UserRole.bride;
 
   UserPreferencesStruct _currentUserPreferences =
       UserPreferencesStruct.fromSerializableMap(jsonDecode(
@@ -76,28 +72,20 @@ class FFAppState extends ChangeNotifier {
         'ff_currentUserPreferences', _currentUserPreferences.serialize());
   }
 
-  PublicProfileStruct _selfPublicProfile =
+  PublicProfileStruct selfPublicProfile =
       PublicProfileStruct.fromSerializableMap(jsonDecode(
           '{"role":"bride","avatarUrl":"https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/lynewed-alpha-du4al1/assets/egport4rt4rg/person_15429777_1.png"}'));
-  PublicProfileStruct get selfPublicProfile => _selfPublicProfile;
-  set selfPublicProfile(PublicProfileStruct value) {
-    _selfPublicProfile = value;
-  }
 
   void updateSelfPublicProfileStruct(Function(PublicProfileStruct) updateFn) {
-    updateFn(_selfPublicProfile);
+    updateFn(selfPublicProfile);
   }
 
-  ProSubscriptionSummaryStruct _selfProSubscription =
+  ProSubscriptionSummaryStruct selfProSubscription =
       ProSubscriptionSummaryStruct();
-  ProSubscriptionSummaryStruct get selfProSubscription => _selfProSubscription;
-  set selfProSubscription(ProSubscriptionSummaryStruct value) {
-    _selfProSubscription = value;
-  }
 
   void updateSelfProSubscriptionStruct(
       Function(ProSubscriptionSummaryStruct) updateFn) {
-    updateFn(_selfProSubscription);
+    updateFn(selfProSubscription);
   }
 
   DateTime? _userPrefsLastSyncedAt =
@@ -142,17 +130,9 @@ class FFAppState extends ChangeNotifier {
     }
   }
 
-  bool _isFirebaseMessagingInitialized = false;
-  bool get isFirebaseMessagingInitialized => _isFirebaseMessagingInitialized;
-  set isFirebaseMessagingInitialized(bool value) {
-    _isFirebaseMessagingInitialized = value;
-  }
+  bool isFirebaseMessagingInitialized = false;
 
-  bool _isListenerInitialized = false;
-  bool get isListenerInitialized => _isListenerInitialized;
-  set isListenerInitialized(bool value) {
-    _isListenerInitialized = value;
-  }
+  bool isListenerInitialized = false;
 }
 
 Future _safeInitAsync(Function() initializeField) async {

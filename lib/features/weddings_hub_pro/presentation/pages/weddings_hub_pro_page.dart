@@ -154,7 +154,7 @@ class _WeddingsHubProPageState extends State<WeddingsHubProPage> {
           children: [
             const Icon(Icons.error_outline, size: 48.0, color: LynewedColors.error),
             const SizedBox(height: 16.0),
-            Text('Something went wrong', style: LynewedTextStyles.headlineSmall),
+            const Text('Something went wrong', style: LynewedTextStyles.headlineSmall),
             const SizedBox(height: 8.0),
             Text(
               _error!,
@@ -209,7 +209,7 @@ class _WeddingsHubProPageState extends State<WeddingsHubProPage> {
         children: [
           const Icon(Icons.diamond_outlined, size: 64.0, color: LynewedColors.gray300),
           const SizedBox(height: 16.0),
-          Text('No Weddings Yet', style: LynewedTextStyles.headlineMedium),
+          const Text('No Weddings Yet', style: LynewedTextStyles.headlineMedium),
           const SizedBox(height: 8.0),
           Text(
             'When brides add you to their wedding team,\nthey will appear here.',
@@ -1301,7 +1301,7 @@ class _WeddingClientDetailPageState extends State<_WeddingClientDetailPage> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.event_outlined,
                       size: 14,
                       color: LynewedColors.textSecondary,
@@ -1315,7 +1315,7 @@ class _WeddingClientDetailPageState extends State<_WeddingClientDetailPage> {
                     ),
                     if (event.location != null && event.location!.isNotEmpty) ...[
                       const SizedBox(width: 12),
-                      Icon(
+                      const Icon(
                         Icons.location_on_outlined,
                         size: 14,
                         color: LynewedColors.textSecondary,
@@ -1384,7 +1384,7 @@ class _WeddingClientDetailPageState extends State<_WeddingClientDetailPage> {
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
                 child: Row(
                   children: [
-                    Expanded(
+                    const Expanded(
                       child: Text(
                         'All Events',
                         style: LynewedTextStyles.sheetTitle,

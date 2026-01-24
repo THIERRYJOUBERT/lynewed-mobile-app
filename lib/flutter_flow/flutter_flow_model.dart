@@ -43,17 +43,13 @@ abstract class FlutterFlowModel<W extends Widget> {
       initState(context);
       _isInitialized = true;
     }
-    if (context.widget is W) _widget = context.widget as W;
+    if (context.widget is W) widget = context.widget as W;
     _context = context;
   }
 
   // The widget associated with this model. This is useful for accessing the
   // parameters of the widget, for example.
-  W? _widget;
-  W? get widget => _widget;
-  set widget(W? newWidget) {
-    _widget = newWidget;
-  }
+  W? widget;
 
   // The context associated with this model.
   BuildContext? _context;
@@ -70,7 +66,7 @@ abstract class FlutterFlowModel<W extends Widget> {
       dispose();
     }
     // Remove reference to widget for garbage collection purposes.
-    _widget = null;
+    widget = null;
   }
 
   // Whether to update the containing page / component on updates.

@@ -17,18 +17,18 @@ void main() {
     });
 
     test('allMarkers should combine all marker lists', () {
-      final pro = MapMarker(
+      const pro = MapMarker(
         id: 'pro-1',
         type: MapMarkerType.proFixedLocation,
-        position: const gmaps.LatLng(48.8566, 2.3522),
+        position: gmaps.LatLng(48.8566, 2.3522),
       );
-      final alert = MapMarker(
+      const alert = MapMarker(
         id: 'alert-1',
         type: MapMarkerType.professionalAlert,
-        position: const gmaps.LatLng(48.8600, 2.3500),
+        position: gmaps.LatLng(48.8600, 2.3500),
       );
 
-      final result = MapSearchResult(
+      const result = MapSearchResult(
         professionals: [pro],
         alerts: [alert],
         totalCount: 2,
@@ -62,11 +62,11 @@ void main() {
 
   group('MapFilter with Repository', () {
     test('should create filter for repository query', () {
-      final filter = MapFilter(
+      const filter = MapFilter(
         professions: [Profession.photographer, Profession.filmmaker],
         budgetMin: 1000,
         budgetMax: 5000,
-        toggles: const LayerToggles(
+        toggles: LayerToggles(
           showPros: true,
           showAlerts: true,
           showWeddings: false,

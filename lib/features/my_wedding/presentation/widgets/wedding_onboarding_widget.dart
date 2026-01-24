@@ -1106,7 +1106,7 @@ class _WeddingOnboardingWidgetState extends State<WeddingOnboardingWidget> {
           ),
           const SizedBox(height: 24),
           // What's next section
-          Align(
+          const Align(
             alignment: Alignment.centerLeft,
             child: Text(
               'WHAT\'S NEXT',
@@ -1375,7 +1375,7 @@ class _WeddingOnboardingWidgetState extends State<WeddingOnboardingWidget> {
           );
         } else {
           debugPrint('Budget not set, skipping');
-          data = OnboardingData(onboardingStep: 5);
+          data = const OnboardingData(onboardingStep: 5);
         }
         break;
       case 6:

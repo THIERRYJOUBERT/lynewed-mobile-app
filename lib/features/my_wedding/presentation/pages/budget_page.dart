@@ -94,7 +94,7 @@ class _BudgetPageState extends State<BudgetPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Expense'),
-        content: Text('Are you sure you want to delete this expense?'),
+        content: const Text('Are you sure you want to delete this expense?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -355,7 +355,7 @@ class _BudgetPageState extends State<BudgetPage> {
           children: [
             const Icon(Icons.error_outline, size: 48, color: LynewedColors.error),
             const SizedBox(height: 16),
-            Text('Something went wrong', style: LynewedTextStyles.headlineSmall),
+            const Text('Something went wrong', style: LynewedTextStyles.headlineSmall),
             const SizedBox(height: 8),
             Text(
               _error!,
@@ -402,7 +402,7 @@ class _BudgetPageState extends State<BudgetPage> {
           children: [
             const Icon(Icons.account_balance_wallet_outlined, size: 64, color: LynewedColors.gray300),
             const SizedBox(height: 24),
-            Text(
+            const Text(
               'No expenses yet',
               style: LynewedTextStyles.headlineMedium,
               textAlign: TextAlign.center,
@@ -497,7 +497,7 @@ class _BudgetPageState extends State<BudgetPage> {
                       _buildStatusBadge(expense.status),
                       if (expense.dueDate != null) ...[
                         const SizedBox(width: 8),
-                        Icon(
+                        const Icon(
                           Icons.calendar_today_outlined,
                           size: 12,
                           color: LynewedColors.textSecondary,

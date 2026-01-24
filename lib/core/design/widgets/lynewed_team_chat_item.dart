@@ -57,7 +57,7 @@ class LynewedTeamChatItem extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
+                      const Text(
                         'Wedding Team',
                         style: LynewedTextStyles.titleSmall,
                       ),
@@ -128,7 +128,7 @@ class LynewedTeamChatItem extends StatelessWidget {
       return Container(
         width: avatarSize,
         height: avatarSize,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: LynewedColors.gray200,
           shape: BoxShape.circle,
         ),

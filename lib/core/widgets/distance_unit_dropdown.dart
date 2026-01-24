@@ -90,7 +90,7 @@ class DistanceUnitDropdown extends StatelessWidget {
               style: LynewedTextStyles.bodyMedium,
             ),
             const SizedBox(width: 4),
-            Icon(Icons.arrow_drop_down, size: 20, color: LynewedColors.textSecondary),
+            const Icon(Icons.arrow_drop_down, size: 20, color: LynewedColors.textSecondary),
           ],
         ),
       ),
@@ -124,7 +124,7 @@ class DistanceUnitDropdown extends StatelessWidget {
                     style: LynewedTextStyles.bodyMedium,
                   ),
                 ),
-                Icon(Icons.arrow_drop_down, color: LynewedColors.textSecondary),
+                const Icon(Icons.arrow_drop_down, color: LynewedColors.textSecondary),
               ],
             ),
           ),
@@ -173,7 +173,7 @@ class DistanceUnitDropdown extends StatelessWidget {
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
                           color: LynewedColors.gray200,

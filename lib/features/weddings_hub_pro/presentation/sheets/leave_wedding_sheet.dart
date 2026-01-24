@@ -98,7 +98,7 @@ class _LeaveWeddingSheetState extends State<LeaveWeddingSheet> {
             ),
           ),
           const SizedBox(height: 24),
-          Text(
+          const Text(
             'Reason for leaving *',
             style: LynewedTextStyles.sectionTitle,
           ),

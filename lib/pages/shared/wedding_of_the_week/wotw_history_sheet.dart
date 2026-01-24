@@ -79,7 +79,7 @@ class _WotwHistorySheetState extends State<WotwHistorySheet> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              const Icon(
                 Icons.error_outline,
                 size: 48,
                 color: LynewedColors.gray300,
@@ -111,7 +111,7 @@ class _WotwHistorySheetState extends State<WotwHistorySheet> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              const Icon(
                 Icons.history,
                 size: 48,
                 color: LynewedColors.gray300,
@@ -243,7 +243,7 @@ class _WotwHistoryItem extends StatelessWidget {
             
             // Chevron
             const SizedBox(width: 8),
-            Icon(
+            const Icon(
               Icons.chevron_right,
               color: LynewedColors.gray300,
               size: 20,

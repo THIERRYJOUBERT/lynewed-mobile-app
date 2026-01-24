@@ -160,7 +160,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
               color: LynewedColors.error,
             ),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               'Failed to load settings',
               style: LynewedTextStyles.bodyLarge,
             ),

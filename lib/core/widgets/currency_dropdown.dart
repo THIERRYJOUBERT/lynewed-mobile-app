@@ -63,7 +63,7 @@ class CurrencyDropdown extends StatelessWidget {
               style: LynewedTextStyles.bodyMedium,
             ),
             const SizedBox(width: 4),
-            Icon(Icons.arrow_drop_down, size: 20, color: LynewedColors.textSecondary),
+            const Icon(Icons.arrow_drop_down, size: 20, color: LynewedColors.textSecondary),
           ],
         ),
       ),
@@ -195,8 +195,8 @@ class _CurrencyPickerSheetState extends State<_CurrencyPickerSheet> {
           ),
           
           // Header
-          Padding(
-            padding: const EdgeInsets.all(16),
+          const Padding(
+            padding: EdgeInsets.all(16),
             child: Text(
               'Select Currency',
               style: LynewedTextStyles.titleMedium,
@@ -262,7 +262,7 @@ class _CurrencyPickerSheetState extends State<_CurrencyPickerSheet> {
                     ),
                   ),
                   trailing: isSelected
-                      ? Icon(Icons.check_circle, color: LynewedColors.primary)
+                      ? const Icon(Icons.check_circle, color: LynewedColors.primary)
                       : null,
                   onTap: () => widget.onSelected(currency.code),
                 );

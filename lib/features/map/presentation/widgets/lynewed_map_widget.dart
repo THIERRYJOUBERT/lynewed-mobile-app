@@ -328,7 +328,7 @@ class _LoadingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: LynewedSpacing.lg,
         vertical: LynewedSpacing.sm,
       ),
@@ -342,7 +342,7 @@ class _LoadingIndicator extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
+      child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
@@ -380,7 +380,7 @@ class _ErrorBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.error_outline,
             color: LynewedColors.error,
             size: 20,

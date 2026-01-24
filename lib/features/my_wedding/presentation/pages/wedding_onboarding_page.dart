@@ -777,7 +777,7 @@ class _WeddingOnboardingPageState extends State<WeddingOnboardingPage> {
           showBack: true,
           canContinue: true,
           onBack: () => _goToPage(7),
-          onContinue: () => _saveStepAndContinue(8, OnboardingData(onboardingStep: 8)),
+          onContinue: () => _saveStepAndContinue(8, const OnboardingData(onboardingStep: 8)),
           isLoading: _isLoading,
         ),
       ],

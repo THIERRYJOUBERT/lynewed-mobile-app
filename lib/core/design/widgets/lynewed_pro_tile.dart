@@ -56,7 +56,7 @@ class LynewedProTile extends StatelessWidget {
             Container(
               width: 48.0,
               height: 48.0,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 color: LynewedColors.surface,
               ),

@@ -244,7 +244,7 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
               color: LynewedColors.error,
             ),
             const SizedBox(height: 16.0),
-            Text(
+            const Text(
               'Something went wrong',
               style: LynewedTextStyles.headlineSmall,
             ),
@@ -730,7 +730,7 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
             ),
             // Public indicator
             if (event.isPublic)
-              Icon(
+              const Icon(
                 Icons.visibility_outlined,
                 size: 16,
                 color: LynewedColors.textSecondary,
@@ -1387,7 +1387,7 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
               color: LynewedColors.gray300,
             ),
             const SizedBox(height: 24.0),
-            Text(
+            const Text(
               'Wedding Cancelled',
               style: LynewedTextStyles.headlineMedium,
               textAlign: TextAlign.center,

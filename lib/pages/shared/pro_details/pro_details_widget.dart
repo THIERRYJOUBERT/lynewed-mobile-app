@@ -248,16 +248,16 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
         borderRadius: BorderRadius.circular(8),
       ),
       items: [
-        PopupMenuItem<String>(
+        const PopupMenuItem<String>(
           value: 'report',
           child: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.flag_outlined,
                 color: Color(0xFF757575),
                 size: 20,
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Text(
                 'Report',
                 style: LynewedTextStyles.bodyMedium,
@@ -535,7 +535,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                               ),
                             ],
                           ),
-                          Divider(
+                          const Divider(
                             thickness: 1.0,
                             color: LynewedColors.gray200,
                           ),
@@ -556,7 +556,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                               mainAxisSize: MainAxisSize.max,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   'Live Position',
                                   style: LynewedTextStyles.sectionTitle,
                                 ),
@@ -787,10 +787,10 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                               const SizedBox(width: 4),
                               
                               // Title - same style as MessagesPage
-                              Expanded(
+                              const Expanded(
                                 child: Text(
                                   'Profile',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontFamily: 'Haas Grot Text Trial',
                                     fontSize: 20,
                                     fontWeight: FontWeight.w500,

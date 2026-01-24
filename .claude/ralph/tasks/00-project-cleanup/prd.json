@@ -111,8 +111,9 @@
         "flutter analyze shows 0 unnecessary_type_check"
       ],
       "priority": 9,
-      "passes": false,
-      "notes": "Files: get_all_wed_articles.dart, chat_message_list.dart"
+      "passes": true,
+      "notes": "Fixed in batch commit f14e3a9.",
+      "completedAt": "2026-01-24T14:00:00Z"
     },
     {
       "id": "US-010",
@@ -122,8 +123,9 @@
         "flutter analyze shows 0 unreachable_switch_default"
       ],
       "priority": 10,
-      "passes": false,
-      "notes": "Files: check_and_request_permission.dart, marker_icon_generator.dart"
+      "passes": true,
+      "notes": "Fixed in batch commit f14e3a9.",
+      "completedAt": "2026-01-24T14:00:00Z"
     },
     {
       "id": "US-011",
@@ -135,8 +137,9 @@
         "flutter analyze shows 0 unused_* warnings"
       ],
       "priority": 11,
-      "passes": false,
-      "notes": "Files: get_wed_article_by_id.dart, refresh_unread_counts.dart, get_portfolio_feed_action.dart, feed_portfolio_grid.dart, wedding_create_sheet.dart"
+      "passes": true,
+      "notes": "Fixed in batch commit f14e3a9.",
+      "completedAt": "2026-01-24T14:00:00Z"
     },
     {
       "id": "US-012",
@@ -146,8 +149,9 @@
         "flutter analyze shows 0 unnecessary_import"
       ],
       "priority": 12,
-      "passes": false,
-      "notes": "Files: pro_details_struct.dart, report_message_sheet.dart, report_user_sheet.dart, map_actions_service.dart, upcoming_travels_sheet.dart"
+      "passes": true,
+      "notes": "Fixed in batch commit f14e3a9.",
+      "completedAt": "2026-01-24T14:00:00Z"
     },
     {
       "id": "US-013",
@@ -158,7 +162,7 @@
       ],
       "priority": 13,
       "passes": false,
-      "notes": "Files: lib/app_state.dart, lib/flutter_flow/ files"
+      "notes": "Still 6 occurrences in lib/app_state.dart and lib/flutter_flow/flutter_flow_model.dart"
     },
     {
       "id": "US-014",
@@ -168,8 +172,9 @@
         "flutter analyze shows 0 unnecessary_null_comparison"
       ],
       "priority": 14,
-      "passes": false,
-      "notes": "Files: wedding_create_sheet.dart"
+      "passes": true,
+      "notes": "Fixed in batch commit f14e3a9.",
+      "completedAt": "2026-01-24T14:00:00Z"
     },
     {
       "id": "US-015",
@@ -179,8 +184,9 @@
         "flutter analyze shows 0 override_on_non_overriding_member"
       ],
       "priority": 15,
-      "passes": false,
-      "notes": "Search for @override on methods that don't actually override"
+      "passes": true,
+      "notes": "Fixed in batch commit f14e3a9.",
+      "completedAt": "2026-01-24T14:00:00Z"
     },
     {
       "id": "US-016",
@@ -190,8 +196,9 @@
         "flutter analyze shows 0 library_private_types_in_public_api"
       ],
       "priority": 16,
-      "passes": false,
-      "notes": "Files: lynewed_design_system.dart, videoplayer_filmmaker.dart, main.dart"
+      "passes": true,
+      "notes": "Fixed in batch commit f14e3a9.",
+      "completedAt": "2026-01-24T14:00:00Z"
     },
     {
       "id": "US-017",
@@ -201,8 +208,9 @@
         "flutter analyze shows 0 prefer_typing_uninitialized_variables"
       ],
       "priority": 17,
-      "passes": false,
-      "notes": "Files: lib/backend/schema/util/schema_util.dart"
+      "passes": true,
+      "notes": "Fixed in batch commit f14e3a9.",
+      "completedAt": "2026-01-24T14:00:00Z"
     },
     {
       "id": "US-018",
@@ -212,8 +220,9 @@
         "flutter analyze shows 0 dangling_library_doc_comments"
       ],
       "priority": 18,
-      "passes": false,
-      "notes": "Files: lib/core/constants/currencies.dart"
+      "passes": true,
+      "notes": "Fixed in batch commit f14e3a9.",
+      "completedAt": "2026-01-24T14:00:00Z"
     },
     {
       "id": "US-019",
@@ -223,8 +232,9 @@
         "flutter analyze shows 0 type_literal_in_constant_pattern in lib/backend/"
       ],
       "priority": 19,
-      "passes": false,
-      "notes": "Files: lib/backend/schema/enums/enums.dart (~17), lib/backend/supabase/database/row.dart (~8)"
+      "passes": true,
+      "notes": "Fixed in commit e1c71b9.",
+      "completedAt": "2026-01-24T14:30:00Z"
     },
     {
       "id": "US-020",
@@ -234,8 +244,9 @@
         "flutter analyze shows 0 type_literal_in_constant_pattern in lib/flutter_flow/"
       ],
       "priority": 20,
-      "passes": false,
-      "notes": "Big batch! ~58 occurrences in serialization_util.dart and other flutter_flow files. Work in batches of 10."
+      "passes": true,
+      "notes": "Fixed in commit e1c71b9.",
+      "completedAt": "2026-01-24T14:30:00Z"
     },
     {
       "id": "US-021",
@@ -246,8 +257,9 @@
         "flutter analyze accepts the ignore directive"
       ],
       "priority": 21,
-      "passes": false,
-      "notes": "These are API-driven enum values (PHOTOGRAPHER, FILMMAKER, etc.) - should NOT be renamed. Add file-level ignore with documentation."
+      "passes": true,
+      "notes": "Added ignore directive in commit e1c71b9.",
+      "completedAt": "2026-01-24T14:30:00Z"
     },
     {
       "id": "US-022",
@@ -258,8 +270,9 @@
         "flutter analyze shows 0 constant_identifier_names in lib/flutter_flow/"
       ],
       "priority": 22,
-      "passes": false,
-      "notes": "FlutterFlow legacy code - evaluate if safe to rename or add ignore"
+      "passes": true,
+      "notes": "Added ignore directives in commit e1c71b9.",
+      "completedAt": "2026-01-24T14:30:00Z"
     },
     {
       "id": "US-023",

@@ -152,7 +152,7 @@ class _SaveToAlbumSheetState extends State<SaveToAlbumSheet> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Save to Album',
                   style: LynewedTextStyles.sheetTitle,
                 ),
@@ -287,7 +287,7 @@ class _SaveToAlbumSheetState extends State<SaveToAlbumSheet> {
 
           if (_albums.isNotEmpty) ...[
             const SizedBox(height: 20),
-            Text(
+            const Text(
               'Your Albums',
               style: LynewedTextStyles.sectionTitle,
             ),

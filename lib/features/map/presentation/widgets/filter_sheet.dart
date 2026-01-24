@@ -49,7 +49,7 @@ class _FilterSheetState extends State<FilterSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: LynewedColors.background,
         borderRadius: LynewedBorders.sheetBorderRadius,
       ),
@@ -89,7 +89,7 @@ class _FilterSheetState extends State<FilterSheet> {
                       ),
                     ],
 
-                    SizedBox(height: 80), // Space for button
+                    const SizedBox(height: 80), // Space for button
                   ],
                 ),
               ),
@@ -105,10 +105,10 @@ class _FilterSheetState extends State<FilterSheet> {
 
   Widget _buildHandle() {
     return Container(
-      margin: EdgeInsets.only(top: LynewedSpacing.md),
+      margin: const EdgeInsets.only(top: LynewedSpacing.md),
       width: 40,
       height: 4,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: LynewedColors.gray200,
         borderRadius: LynewedBorders.borderRadiusSm,
       ),
@@ -121,7 +121,7 @@ class _FilterSheetState extends State<FilterSheet> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
+          const Text(
             'Filters',
             style: LynewedTextStyles.titleLarge,
           ),

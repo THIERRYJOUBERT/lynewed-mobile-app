@@ -15,7 +15,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '/core/design/design.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/custom_code/actions/index.dart' as actions;
@@ -89,7 +88,7 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: Text(
+              child: const Text(
                 'Delete my account',
                 style: TextStyle(color: LynewedColors.error),
               ),
@@ -176,7 +175,7 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Device Permissions Section
-                            Text('Device Permissions', style: LynewedTextStyles.sectionTitle),
+                            const Text('Device Permissions', style: LynewedTextStyles.sectionTitle),
                             const SizedBox(height: 16),
                             _buildPermissionItem(
                               title: 'Location Access',
@@ -226,7 +225,7 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
                             
                             // Account Section
                             const SizedBox(height: 30),
-                            Text('Account', style: LynewedTextStyles.sectionTitle),
+                            const Text('Account', style: LynewedTextStyles.sectionTitle),
                             const SizedBox(height: 16),
                             _buildDeleteAccountItem(isPro),
                           ],

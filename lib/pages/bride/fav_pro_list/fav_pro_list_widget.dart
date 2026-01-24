@@ -355,8 +355,8 @@ class _FavoriteTile extends StatelessWidget {
             // Favorite button (always filled, tap to remove)
             GestureDetector(
               onTap: onRemove,
-              child: Padding(
-                padding: const EdgeInsets.all(8),
+              child: const Padding(
+                padding: EdgeInsets.all(8),
                 child: Icon(
                   Icons.favorite,
                   color: LynewedColors.textPrimary,
