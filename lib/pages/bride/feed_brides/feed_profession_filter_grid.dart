@@ -73,12 +73,10 @@ class FeedProfessionFilterGrid extends StatelessWidget {
               }
               onSetState();
             },
-            side: (FlutterFlowTheme.of(context).secondaryText != null)
-                ? BorderSide(
-                    width: 2,
-                    color: FlutterFlowTheme.of(context).secondaryText,
-                  )
-                : null,
+            side: BorderSide(
+              width: 2,
+              color: FlutterFlowTheme.of(context).secondaryText,
+            ),
             activeColor: FlutterFlowTheme.of(context).primary,
             checkColor: FlutterFlowTheme.of(context).info,
           ),

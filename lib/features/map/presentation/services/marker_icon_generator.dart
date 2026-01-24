@@ -62,7 +62,6 @@ class MarkerIconGenerator {
         icon = await _createWeddingIcon(marker, actualSize);
         break;
       case MapMarkerType.proFixedLocation:
-      default:
         icon = await _createProIcon(marker, actualSize);
         break;
     }

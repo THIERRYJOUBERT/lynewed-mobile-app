@@ -2,7 +2,6 @@
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 
 /// Fetches a specific WOTW article by ID.
 /// IMPORTANT: Must return the same payload shape as getLatestWedArticle

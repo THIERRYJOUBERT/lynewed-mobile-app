@@ -421,9 +421,7 @@ class _WeddingCreateSheetState extends State<WeddingCreateSheet> {
                     _venueLng = details.coords!.longitude;
                   }
                   // Extract country code from address if available
-                  if (details.countryCode != null) {
-                    _locationCountryCode = details.countryCode;
-                  }
+                  _locationCountryCode = details.countryCode;
                 });
               },
               onAddressCleared: () {
@@ -577,8 +575,6 @@ class _WeddingCreateSheetState extends State<WeddingCreateSheet> {
       ),
     );
   }
-
-  static const _allowedRadii = [5, 10, 20, 50, 100];
 
   Widget _buildSectionTitle(String title) {
     return Padding(

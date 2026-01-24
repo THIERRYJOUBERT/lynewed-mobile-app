@@ -123,7 +123,7 @@ Future<FeedPageResultStruct?> getPortfolioFeedAction(
       nextCursor: responseMap['nextCursor'] as String?,
       newSeed: responseMap['newSeed'] as String?,
     );
-  } catch (e, st) {
+  } catch (e) {
     return null;
   }
 }

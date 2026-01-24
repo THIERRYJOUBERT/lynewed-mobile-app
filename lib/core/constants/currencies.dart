@@ -1,7 +1,7 @@
 /// Centralized currency definitions for the entire app
-/// Use CurrencyData.all for dropdown lists
-/// Use CurrencyData.getSymbol(code) for display
-
+///
+/// Use [CurrencyData.all] for dropdown lists
+/// Use [CurrencyData.getSymbol] for display
 class CurrencyData {
   final String code;
   final String symbol;

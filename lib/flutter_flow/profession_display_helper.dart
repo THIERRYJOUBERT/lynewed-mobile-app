@@ -46,8 +46,6 @@ String getProfessionDisplayName(Profession profession) {
       return 'Jeweller';
     case Profession.CONTENTCREATOR:
       return 'Content Creator';
-    default:
-      return profession.name;
   }
 }
 
@@ -64,8 +62,5 @@ String getMapMarkerTypeDisplayName(MapMarkerType markerType) {
       return 'Wedding Pin';
     case MapMarkerType.poiPrivate:
       return 'Private POI';
-    // searchTarget supprimé dans la refactorisation map
-    default:
-      return markerType.name;
   }
 }

@@ -11,8 +11,9 @@
         "flutter analyze shows 0 use_build_context_synchronously in lib/auth/"
       ],
       "priority": 1,
-      "passes": false,
-      "notes": "~10 occurrences in supabase_auth_manager.dart. CRITICAL - can cause crashes."
+      "passes": true,
+      "notes": "Fixed 13 occurrences in supabase_auth_manager.dart. 370→357 warnings. Commit 43b6677.",
+      "completedAt": "2026-01-24T12:00:00Z"
     },
     {
       "id": "US-002",
@@ -22,8 +23,9 @@
         "flutter analyze shows 0 use_build_context_synchronously in lib/custom_code/"
       ],
       "priority": 2,
-      "passes": false,
-      "notes": "Files: init_push_notifications.dart, setup_deeplink_listener.dart"
+      "passes": true,
+      "notes": "Fixed 5 occurrences. Removed unused context params and used appNavigatorKey. Commit 1d772c1.",
+      "completedAt": "2026-01-24T12:15:00Z"
     },
     {
       "id": "US-003",
@@ -33,8 +35,9 @@
         "flutter analyze shows 0 use_build_context_synchronously in lib/features/"
       ],
       "priority": 3,
-      "passes": false,
-      "notes": "Files: conversation_actions_sheet, map_page.dart"
+      "passes": true,
+      "notes": "Already resolved. flutter analyze shows 0 use_build_context_synchronously in lib/features/.",
+      "completedAt": "2026-01-24T12:20:00Z"
     },
     {
       "id": "US-004",
@@ -45,8 +48,9 @@
         "flutter analyze shows 0 deprecated_member_use for MaterialState"
       ],
       "priority": 4,
-      "passes": false,
-      "notes": "Files: lib/core/design/lynewed_app_theme.dart (6 occurrences)"
+      "passes": true,
+      "notes": "Fixed 9 occurrences in lynewed_app_theme.dart. Commit c1592ed.",
+      "completedAt": "2026-01-24T12:25:00Z"
     },
     {
       "id": "US-005",
@@ -56,8 +60,9 @@
         "flutter analyze shows 0 deprecated_member_use for withOpacity"
       ],
       "priority": 5,
-      "passes": false,
-      "notes": "Files: currency_dropdown.dart, audio_player_widget.dart, audio_recorder_widget.dart, chat_message_list.dart"
+      "passes": true,
+      "notes": "Fixed 18 occurrences in 7 files. Commit 1b539ed.",
+      "completedAt": "2026-01-24T12:35:00Z"
     },
     {
       "id": "US-006",
@@ -70,8 +75,9 @@
         "flutter analyze shows 0 remaining deprecated_member_use"
       ],
       "priority": 6,
-      "passes": false,
-      "notes": "Files: lynewed_mini_map.dart, lynewed_map_widget.dart, chat_composer_widget.dart"
+      "passes": true,
+      "notes": "Fixed 6 occurrences across 4 files. Commit d261083.",
+      "completedAt": "2026-01-24T12:45:00Z"
     },
     {
       "id": "US-007",
@@ -81,8 +87,9 @@
         "flutter analyze shows 0 empty_catches"
       ],
       "priority": 7,
-      "passes": false,
-      "notes": "16 files: app_state, address_search_widget, get_place_details, get_place_predictions, mark_all/notification_as_read, refresh_notification_badge, push_background, chat_room_notifier, map_page, marker_icon_generator, lynewed_map_widget, message_composer, message_list"
+      "passes": true,
+      "notes": "Fixed 16 occurrences in 15 files. Commit d4ca566.",
+      "completedAt": "2026-01-24T12:55:00Z"
     },
     {
       "id": "US-008",
@@ -92,8 +99,9 @@
         "flutter analyze shows 0 dead_null_aware_expression"
       ],
       "priority": 8,
-      "passes": false,
-      "notes": "Files: actions.dart, get_place_predictions.dart, refresh_unread_counts.dart, chat_composer_widget.dart, supabase_map_repository.dart"
+      "passes": true,
+      "notes": "Fixed 9 occurrences in 6 files. Commit d821655.",
+      "completedAt": "2026-01-24T13:05:00Z"
     },
     {
       "id": "US-009",

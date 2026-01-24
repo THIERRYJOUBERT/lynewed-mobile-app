@@ -207,7 +207,7 @@ class _FeedPortfolioGridState extends State<FeedPortfolioGrid> {
           }
         });
       }
-    } catch (e, st) {
+    } catch (e) {
       if (mounted) {
         setState(() {
           _hasMore = false;

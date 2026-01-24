@@ -78,7 +78,6 @@ class _MessagesBridesWidgetState extends State<MessagesBridesWidget> {
     super.dispose();
   }
 
-  @override
   void didPopNext() {
     // Rafraîchir la liste quand on revient sur cette page
     SchedulerBinding.instance.addPostFrameCallback((_) async {

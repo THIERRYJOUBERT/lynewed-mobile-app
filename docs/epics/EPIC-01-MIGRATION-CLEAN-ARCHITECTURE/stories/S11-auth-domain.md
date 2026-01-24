@@ -1,0 +1,208 @@
+# Story S11: Auth - Domain Layer
+
+## Description
+
+En tant que developpeur, je veux creer la couche domain pour le module Auth afin d'avoir une abstraction claire de l'authentification independante de Supabase.
+
+## Criteres d'Acceptance (Gherkin)
+
+- [ ] Given le module Auth When je cree `lib/features/auth/domain/` Then la structure Clean Architecture est en place
+
+- [ ] Given l'entite `AuthUser` When je la cree Then elle contient toutes les informations utilisateur necessaires
+
+- [ ] Given l'entite `UserProfile` When je la cree Then elle contient les infos profil (bride/pro)
+
+- [ ] Given `AuthRepository` When je definis l'interface Then toutes les operations auth sont couvertes
+
+- [ ] Given les entites When j'ecris les tests Then 100% passent
+
+## Fichiers Concernes
+
+### Existants (a analyser)
+- `lib/auth/supabase_auth/auth_util.dart`
+- `lib/auth/supabase_auth/email_auth.dart`
+- `lib/auth/supabase_auth/supabase_user_provider.dart`
+- `lib/auth/auth_manager.dart`
+- `lib/auth/base_auth_user_provider.dart`
+
+### A Creer
+- `lib/features/auth/auth.dart` - Barrel export
+- `lib/features/auth/domain/entities/auth_user.dart`
+- `lib/features/auth/domain/entities/user_profile.dart`
+- `lib/features/auth/domain/entities/user_role.dart`
+- `lib/features/auth/domain/entities/entities.dart` - Barrel
+- `lib/features/auth/domain/repositories/auth_repository.dart`
+
+### Tests
+- `test/features/auth/domain/entities/auth_user_test.dart`
+- `test/features/auth/domain/entities/user_profile_test.dart`
+
+## Notes Techniques
+
+### Entity AuthUser
+```dart
+/// Authenticated user from Supabase Auth
+class AuthUser {
+  final String id;
+  final String email;
+  final String? phone;
+  final bool emailConfirmed;
+  final DateTime? lastSignInAt;
+  final DateTime createdAt;
+  final Map<String, dynamic>? userMetadata;
+
+  const AuthUser({
+    required this.id,
+    required this.email,
+    this.phone,
+    this.emailConfirmed = false,
+    this.lastSignInAt,
+    required this.createdAt,
+    this.userMetadata,
+  });
+
+  AuthUser copyWith({...});
+}
+```
+
+### Entity UserProfile
+```dart
+/// User profile from profiles table
+class UserProfile {
+  final String id;
+  final String authUserId;
+  final String? displayName;
+  final String? avatarUrl;
+  final UserRole role;
+  final String? profession; // For professionals
+  final String? companyName; // For professionals
+  final String? bio;
+  final bool isOnboardingComplete;
+  final int? onboardingStep;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+
+  const UserProfile({
+    required this.id,
+    required this.authUserId,
+    this.displayName,
+    this.avatarUrl,
+    required this.role,
+    this.profession,
+    this.companyName,
+    this.bio,
+    this.isOnboardingComplete = false,
+    this.onboardingStep,
+    required this.createdAt,
+    this.updatedAt,
+  });
+
+  bool get isBride => role == UserRole.bride;
+  bool get isProfessional => role == UserRole.professional;
+
+  UserProfile copyWith({...});
+}
+```
+
+### Enum UserRole
+```dart
+enum UserRole {
+  bride,
+  professional,
+  admin,
+}
+
+extension UserRoleX on UserRole {
+  String get value {
+    switch (this) {
+      case UserRole.bride:
+        return 'bride';
+      case UserRole.professional:
+        return 'professional';
+      case UserRole.admin:
+        return 'admin';
+    }
+  }
+
+  static UserRole fromString(String value) {
+    switch (value.toLowerCase()) {
+      case 'bride':
+        return UserRole.bride;
+      case 'professional':
+        return UserRole.professional;
+      case 'admin':
+        return UserRole.admin;
+      default:
+        return UserRole.bride;
+    }
+  }
+}
+```
+
+### Repository Interface
+```dart
+abstract class AuthRepository {
+  // Authentication
+  Future<Result<AuthUser>> signInWithEmail(String email, String password);
+  Future<Result<AuthUser>> signUpBride({
+    required String email,
+    required String password,
+    String? displayName,
+  });
+  Future<Result<void>> signOut();
+  Future<Result<void>> sendPasswordResetEmail(String email);
+  Future<Result<void>> updatePassword(String newPassword);
+
+  // Session
+  Future<Result<AuthUser?>> getCurrentUser();
+  Stream<AuthUser?> watchAuthState();
+  bool get isAuthenticated;
+
+  // Profile
+  Future<Result<UserProfile?>> getCurrentProfile();
+  Future<Result<UserProfile>> updateProfile(UpdateProfileParams params);
+  Future<Result<String>> uploadAvatar(Uint8List imageBytes, String fileName);
+  Future<Result<void>> deleteAccount();
+
+  // Terms & Legal
+  Future<Result<bool>> hasAcceptedTerms();
+  Future<Result<void>> acceptTerms();
+}
+```
+
+### Params Classes
+```dart
+class UpdateProfileParams {
+  final String? displayName;
+  final String? avatarUrl;
+  final String? bio;
+  final String? phone;
+  // ... autres champs
+
+  const UpdateProfileParams({...});
+}
+```
+
+## Definition of Done
+
+- [ ] Structure `lib/features/auth/domain/` creee
+- [ ] Entites AuthUser, UserProfile, UserRole
+- [ ] AuthRepository interface complete
+- [ ] Tests unitaires
+- [ ] Documentation barrel export
+- [ ] `flutter analyze --fatal-infos` passe
+
+## Estimation
+
+**Points** : 3
+**Complexite** : Faible
+**Risque** : Faible
+
+## Dependances
+
+- S01 : Setup infrastructure
+
+## Stories Dependantes
+
+- S12 : Auth - Data layer
+- S13 : Auth - Presentation

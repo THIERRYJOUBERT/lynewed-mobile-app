@@ -30,9 +30,6 @@ Future<String> checkAndRequestPermission(
     case PermissionType.NOTIFICATIONS:
       permission = Permission.notification;
       break;
-    default:
-      // Retourne une erreur si un type non supporté est passé.
-      return 'unsupported';
   }
 
   // 2. Logique corrigée : demande AVANT de vérifier permanentlyDenied

@@ -6,7 +6,6 @@ library;
 
 import 'package:flutter/material.dart';
 import '/core/design/design.dart';
-import '/core/design/widgets/widgets.dart';
 import '../../domain/entities/entities.dart';
 
 /// Callback for report action

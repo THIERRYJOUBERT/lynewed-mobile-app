@@ -14,7 +14,6 @@ import 'package:intl/intl.dart';
 
 import '/backend/supabase/supabase.dart';
 import '/core/design/design.dart';
-import '/core/design/widgets/widgets.dart';
 
 /// Travel data model
 class _TravelData {
