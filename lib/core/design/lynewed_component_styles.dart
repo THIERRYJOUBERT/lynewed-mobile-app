@@ -21,7 +21,7 @@ class LynewedComponentStyles {
       foregroundColor: foregroundColor ?? LynewedColors.textOnPrimary,
       elevation: 0,
       shadowColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: LynewedBorders.borderRadiusNone,
       ),
       minimumSize: Size(0, height ?? LynewedSpacing.buttonHeight),
@@ -40,7 +40,7 @@ class LynewedComponentStyles {
       side: const BorderSide(color: LynewedColors.primary, width: 1.0),
       elevation: 0,
       shadowColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: LynewedBorders.borderRadiusNone,
       ),
       minimumSize: Size(0, height ?? LynewedSpacing.buttonHeight),
@@ -56,7 +56,7 @@ class LynewedComponentStyles {
       foregroundColor: foregroundColor ?? LynewedColors.primary,
       elevation: 0,
       shadowColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: LynewedBorders.borderRadiusNone,
       ),
       minimumSize: Size(0, height ?? LynewedSpacing.buttonHeight),

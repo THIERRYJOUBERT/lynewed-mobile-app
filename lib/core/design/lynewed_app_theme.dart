@@ -96,14 +96,14 @@ class LynewedAppTheme {
       ),
 
       // Card Theme
-      cardTheme: CardThemeData(
+      cardTheme: const CardThemeData(
         color: LynewedColors.background,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: LynewedBorders.borderRadiusNone,
-          side: const BorderSide(color: LynewedColors.border, width: 1.0),
+          side: BorderSide(color: LynewedColors.border, width: 1.0),
         ),
-        margin: const EdgeInsets.all(0),
+        margin: EdgeInsets.all(0),
       ),
 
       // Bottom Navigation Bar Theme
@@ -143,9 +143,9 @@ class LynewedAppTheme {
       ),
 
       // Bottom Sheet Theme
-      bottomSheetTheme: BottomSheetThemeData(
+      bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: LynewedColors.background,
-        shape: const RoundedRectangleBorder(
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(LynewedBorders.xl),
             topRight: Radius.circular(LynewedBorders.xl),

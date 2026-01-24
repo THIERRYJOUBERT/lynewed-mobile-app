@@ -15,7 +15,6 @@ library;
 
 import 'package:flutter/material.dart';
 import '/core/design/design.dart';
-import '/core/design/widgets/widgets.dart';
 import '/backend/supabase/supabase.dart';
 import '/backend/schema/enums/enums.dart';
 import '/auth/supabase_auth/auth_util.dart';

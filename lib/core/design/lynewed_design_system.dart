@@ -1,3 +1,6 @@
+// ignore_for_file: library_private_types_in_public_api
+// Internal typography helper class exposed via public getter (FlutterFlow pattern)
+
 import 'package:flutter/material.dart';
 import 'lynewed_colors.dart';
 import 'lynewed_text_styles.dart';

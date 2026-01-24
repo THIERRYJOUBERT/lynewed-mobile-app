@@ -1,3 +1,6 @@
+// ignore_for_file: library_private_types_in_public_api
+// FlutterFlow widget pattern: createState returns private State class
+
 // Automatic FlutterFlow imports
 // Imports other custom widgets
 // Imports custom actions

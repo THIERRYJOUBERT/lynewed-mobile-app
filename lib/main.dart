@@ -1,3 +1,6 @@
+// ignore_for_file: library_private_types_in_public_api
+// MyApp.of() returns private _MyAppState (standard Flutter pattern like Theme.of())
+
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
