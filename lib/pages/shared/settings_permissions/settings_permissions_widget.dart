@@ -135,7 +135,6 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
         );
       }
     }
-    }
   }
 
   void _showSnackBar(String message, Color backgroundColor) {

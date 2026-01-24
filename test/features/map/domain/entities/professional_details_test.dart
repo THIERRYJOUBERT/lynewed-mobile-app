@@ -38,7 +38,7 @@ void main() {
     });
 
     test('displayName should return businessName if available', () {
-      final details = ProfessionalDetails(
+      const details = ProfessionalDetails(
         id: 'test',
         fullName: 'John Doe',
         businessName: 'John Photography',
@@ -49,7 +49,7 @@ void main() {
     });
 
     test('displayName should return fullName if no businessName', () {
-      final details = ProfessionalDetails(
+      const details = ProfessionalDetails(
         id: 'test',
         fullName: 'John Doe',
         profession: Profession.photographer,
@@ -59,7 +59,7 @@ void main() {
     });
 
     test('budgetRange should format correctly', () {
-      final details = ProfessionalDetails(
+      const details = ProfessionalDetails(
         id: 'test',
         fullName: 'John Doe',
         profession: Profession.photographer,
@@ -72,7 +72,7 @@ void main() {
     });
 
     test('distanceFormatted should format km correctly', () {
-      final details = ProfessionalDetails(
+      const details = ProfessionalDetails(
         id: 'test',
         fullName: 'John Doe',
         profession: Profession.photographer,
@@ -83,7 +83,7 @@ void main() {
     });
 
     test('distanceFormatted should format meters for < 1km', () {
-      final details = ProfessionalDetails(
+      const details = ProfessionalDetails(
         id: 'test',
         fullName: 'John Doe',
         profession: Profession.photographer,

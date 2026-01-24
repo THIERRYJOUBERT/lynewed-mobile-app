@@ -41,7 +41,7 @@ void main() {
     });
 
     test('budgetRange should format correctly', () {
-      final details = WeddingDetails(
+      const details = WeddingDetails(
         id: 'test',
         brideId: 'bride',
         budgetMin: 5000,
@@ -53,21 +53,21 @@ void main() {
     });
 
     test('budgetRange should handle partial values', () {
-      final detailsMin = WeddingDetails(
+      const detailsMin = WeddingDetails(
         id: 'test',
         brideId: 'bride',
         budgetMin: 5000,
       );
       expect(detailsMin.budgetRange, 'From 5000 EUR');
 
-      final detailsMax = WeddingDetails(
+      const detailsMax = WeddingDetails(
         id: 'test',
         brideId: 'bride',
         budgetMax: 15000,
       );
       expect(detailsMax.budgetRange, 'Up to 15000 EUR');
 
-      final detailsNone = WeddingDetails(
+      const detailsNone = WeddingDetails(
         id: 'test',
         brideId: 'bride',
       );
@@ -101,7 +101,7 @@ void main() {
     });
 
     test('professionsNeededFormatted should format correctly', () {
-      final details = WeddingDetails(
+      const details = WeddingDetails(
         id: 'test',
         brideId: 'bride',
         professionsNeeded: [Profession.photographer, Profession.filmmaker],
@@ -111,7 +111,7 @@ void main() {
     });
 
     test('professionsNeededFormatted should handle empty list', () {
-      final details = WeddingDetails(
+      const details = WeddingDetails(
         id: 'test',
         brideId: 'bride',
       );
@@ -120,7 +120,7 @@ void main() {
     });
 
     test('radiusFormatted should format correctly', () {
-      final details = WeddingDetails(
+      const details = WeddingDetails(
         id: 'test',
         brideId: 'bride',
         searchRadiusKm: 50,

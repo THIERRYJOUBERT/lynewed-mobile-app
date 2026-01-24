@@ -34,7 +34,7 @@ void main() {
     });
 
     test('displayTitle should return motifLabel if available', () {
-      final details = AlertDetails(
+      const details = AlertDetails(
         id: 'test',
         alertType: AlertType.backupNeeded,
         motifLabel: 'Custom Label',
@@ -45,7 +45,7 @@ void main() {
     });
 
     test('displayTitle should return alertType displayName if no motifLabel', () {
-      final details = AlertDetails(
+      const details = AlertDetails(
         id: 'test',
         alertType: AlertType.gearEmergency,
         authorId: 'author',

@@ -1,6 +1,7 @@
 // Fichier : custom_code/push_background.dart
 
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '/custom_code/firebase_options.dart';
