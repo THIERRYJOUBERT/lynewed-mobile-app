@@ -333,6 +333,7 @@ class _AddressSearchWidgetState extends State<AddressSearchWidget> {
         widget.onSearchTextChanged?.call(suggestion.primaryText);
       }
     } catch (e) {
+      debugPrint('[AddressSearchWidget._selectSuggestion] Error: $e');
     } finally {
       _setLoading(false);
     }

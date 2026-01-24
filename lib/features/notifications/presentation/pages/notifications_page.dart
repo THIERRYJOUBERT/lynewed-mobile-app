@@ -107,6 +107,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           await actions.handleNotificationRedirection(context, dataForRedirection);
         }
       } catch (e) {
+        debugPrint('[NotificationsPage._handleNotificationTap] Error: $e');
       }
     }
   }

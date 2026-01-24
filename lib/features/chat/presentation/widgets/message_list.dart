@@ -119,9 +119,10 @@ class _MessageListState extends State<MessageList> {
           });
         }
       } catch (e) {
+        debugPrint('[MessageList._loadSignedUrl] Error: $e');
       }
     }
-    
+
     _loadingUrls.remove(path);
   }
 

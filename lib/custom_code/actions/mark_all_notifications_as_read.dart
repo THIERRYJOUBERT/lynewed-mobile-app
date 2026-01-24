@@ -18,5 +18,6 @@ Future<void> markAllNotificationsAsRead() async {
       FFAppState().hasUnreadNotifications = false;
     });
   } catch (e) {
+    debugPrint('[markAllNotificationsAsRead] Error: $e');
   }
 }

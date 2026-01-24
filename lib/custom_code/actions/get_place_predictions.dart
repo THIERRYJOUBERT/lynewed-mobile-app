@@ -46,8 +46,9 @@ Future<PlacePredictionsResultStruct> getPlacePredictions(
       ));
     }
   } catch (e) {
+    debugPrint('[getPlacePredictions] Error: $e');
   }
-  
+
   // Note: Le SDK 0.4.x gère automatiquement les session tokens
   return PlacePredictionsResultStruct(
       suggestions: suggestions, newSessionToken: sessionToken);

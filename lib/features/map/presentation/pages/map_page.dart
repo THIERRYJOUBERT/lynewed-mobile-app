@@ -736,6 +736,7 @@ class _MapPageState extends State<MapPage> {
         ),
       );
     } catch (e) {
+      debugPrint('[MapPage._goToCurrentLocation] Error: $e');
     } finally {
       if (_mounted) {
         setState(() => _isLocating = false);

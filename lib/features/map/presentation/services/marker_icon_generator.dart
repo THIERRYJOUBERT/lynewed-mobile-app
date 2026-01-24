@@ -218,6 +218,7 @@ class MarkerIconGenerator {
         return frame.image;
       }
     } catch (e) {
+      debugPrint('[MarkerIconGenerator._loadImage] Error: $e');
     }
     return null;
   }

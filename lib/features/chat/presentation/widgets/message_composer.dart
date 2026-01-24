@@ -282,6 +282,7 @@ class _MessageComposerState extends State<MessageComposer> {
         });
       }
     } catch (e) {
+      debugPrint('[MessageComposer._pickImages] Error: $e');
     }
   }
 

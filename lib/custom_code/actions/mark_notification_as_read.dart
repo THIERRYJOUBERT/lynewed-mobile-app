@@ -22,5 +22,6 @@ Future<void> markNotificationAsRead(String notificationId) async {
       FFAppState().hasUnreadNotifications = notifCount > 0;
     });
   } catch (e) {
+    debugPrint('[markNotificationAsRead] Error: $e');
   }
 }

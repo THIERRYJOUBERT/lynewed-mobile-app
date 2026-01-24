@@ -37,6 +37,7 @@ Future<LatLng?> getPlaceDetails(
       return LatLng(placesLatLng.lat, placesLatLng.lng);
     }
   } catch (e) {
+    debugPrint('[getPlaceDetails] Error: $e');
   }
   return null;
 }

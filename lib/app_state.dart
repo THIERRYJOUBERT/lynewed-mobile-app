@@ -30,6 +30,7 @@ class FFAppState extends ChangeNotifier {
           _currentUserPreferences = UserPreferencesStruct.fromSerializableMap(
               jsonDecode(serializedData));
         } catch (e) {
+          debugPrint('[FFAppState.initializePersistedState] Error loading preferences: $e');
         }
       }
     });

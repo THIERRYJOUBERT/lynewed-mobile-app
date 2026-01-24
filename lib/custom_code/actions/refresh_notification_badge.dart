@@ -12,5 +12,6 @@ Future<void> refreshNotificationBadge() async {
     final count = resp as int? ?? 0;
     FFAppState().update(() => FFAppState().hasUnreadNotifications = count > 0);
   } catch (e) {
+    debugPrint('[refreshNotificationBadge] Error: $e');
   }
 }

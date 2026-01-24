@@ -227,6 +227,7 @@ class ChatRoomNotifier extends ChangeNotifier {
         _emit(updatedState.copyWith(authors: newAuthors));
       }
     } catch (e) {
+      debugPrint('[ChatRoomNotifier._loadAuthors] Error: $e');
     }
   }
 
@@ -555,11 +556,12 @@ class ChatRoomNotifier extends ChangeNotifier {
         
         // Mark room as read
         await _chatRepository.markRoomAsRead(roomId);
-        
+
         // Setup realtime subscription for new messages
         _setupRealtimeMessages();
       }
     } catch (e) {
+      debugPrint('[ChatRoomNotifier.acceptContactRequest] Error: $e');
     }
   }
 

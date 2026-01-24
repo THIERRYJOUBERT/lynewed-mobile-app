@@ -21,5 +21,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     // Pour le débogage, vous pouvez décommenter la ligne suivante pour voir
     // les messages dans la console de votre appareil.
   } catch (e) {
+    debugPrint('[firebaseMessagingBackgroundHandler] Error: $e');
   }
 }
