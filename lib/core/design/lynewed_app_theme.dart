@@ -206,13 +206,13 @@ class LynewedAppTheme {
 
       // Checkbox Theme
       checkboxTheme: CheckboxThemeData(
-        fillColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return LynewedColors.primary;
           }
           return Colors.transparent;
         }),
-        checkColor: MaterialStateProperty.all(LynewedColors.textOnPrimary),
+        checkColor: WidgetStateProperty.all(LynewedColors.textOnPrimary),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(LynewedBorders.sm),
         ),
@@ -220,8 +220,8 @@ class LynewedAppTheme {
 
       // Radio Theme
       radioTheme: RadioThemeData(
-        fillColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        fillColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return LynewedColors.primary;
           }
           return LynewedColors.gray300;
@@ -230,14 +230,14 @@ class LynewedAppTheme {
 
       // Switch Theme
       switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return LynewedColors.primary;
           }
           return LynewedColors.gray300;
         }),
-        trackColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return LynewedColors.primary.withValues(alpha: 0.5);
           }
           return LynewedColors.gray200;
