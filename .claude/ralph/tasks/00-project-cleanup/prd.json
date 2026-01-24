@@ -282,8 +282,9 @@
         "flutter analyze shows 0 prefer_const_constructors in lib/core/"
       ],
       "priority": 23,
-      "passes": false,
-      "notes": "Files: design/*.dart, widgets/*.dart"
+      "passes": true,
+      "notes": "Fixed in commit 75f45f8.",
+      "completedAt": "2026-01-24T16:00:00Z"
     },
     {
       "id": "US-024",
@@ -293,8 +294,9 @@
         "flutter analyze shows 0 prefer_const_constructors in lib/features/chat/"
       ],
       "priority": 24,
-      "passes": false,
-      "notes": "Files: messages_page.dart"
+      "passes": true,
+      "notes": "Fixed in commit 75f45f8.",
+      "completedAt": "2026-01-24T16:00:00Z"
     },
     {
       "id": "US-025",
@@ -304,8 +306,9 @@
         "flutter analyze shows 0 prefer_const_constructors in lib/features/map/"
       ],
       "priority": 25,
-      "passes": false,
-      "notes": "Files: filter_sheet.dart, lynewed_map_widget.dart"
+      "passes": true,
+      "notes": "Fixed in commit 75f45f8.",
+      "completedAt": "2026-01-24T16:00:00Z"
     },
     {
       "id": "US-026",
@@ -315,8 +318,9 @@
         "flutter analyze shows 0 prefer_const_constructors in lib/features/my_wedding/"
       ],
       "priority": 26,
-      "passes": false,
-      "notes": "Files: agenda_page.dart, album_detail_page.dart, budget_page.dart, guests_page.dart, inspirations_page.dart, my_wedding_page.dart, wedding_onboarding_page.dart"
+      "passes": true,
+      "notes": "Fixed in commit 75f45f8.",
+      "completedAt": "2026-01-24T16:00:00Z"
     },
     {
       "id": "US-027",
@@ -326,8 +330,9 @@
         "flutter analyze shows reduced prefer_const_constructors in lib/pages/"
       ],
       "priority": 27,
-      "passes": false,
-      "notes": "FlutterFlow legacy pages. Work file by file."
+      "passes": true,
+      "notes": "Fixed in commit 75f45f8.",
+      "completedAt": "2026-01-24T16:00:00Z"
     },
     {
       "id": "US-028",
@@ -337,8 +342,9 @@
         "flutter analyze shows 0 prefer_const_constructors in lib/custom_code/"
       ],
       "priority": 28,
-      "passes": false,
-      "notes": "Custom widgets and actions"
+      "passes": true,
+      "notes": "Already clean - no issues in this directory.",
+      "completedAt": "2026-01-24T16:00:00Z"
     },
     {
       "id": "US-029",
@@ -348,8 +354,9 @@
         "flutter analyze shows 0 prefer_const_declarations"
       ],
       "priority": 29,
-      "passes": false,
-      "notes": "Search for 'final X = [constant]' and change to 'const X = [constant]'"
+      "passes": true,
+      "notes": "Fixed in earlier commits.",
+      "completedAt": "2026-01-24T16:00:00Z"
     },
     {
       "id": "US-030",
@@ -359,8 +366,9 @@
         "flutter analyze shows 0 prefer_const_literals_to_create_immutables"
       ],
       "priority": 30,
-      "passes": false,
-      "notes": "Change [] to const [] and {} to const {} where appropriate"
+      "passes": true,
+      "notes": "Fixed in commit 75f45f8.",
+      "completedAt": "2026-01-24T16:00:00Z"
     },
     {
       "id": "US-031",
@@ -370,8 +378,9 @@
         "flutter analyze shows 0 prefer_const_constructors in test/"
       ],
       "priority": 31,
-      "passes": false,
-      "notes": "Files: test/features/map/**/*.dart"
+      "passes": true,
+      "notes": "Fixed in commit 75f45f8.",
+      "completedAt": "2026-01-24T16:00:00Z"
     },
     {
       "id": "US-032",
@@ -381,8 +390,9 @@
         "flutter analyze shows minimal warnings in lib/flutter_flow/"
       ],
       "priority": 32,
-      "passes": false,
-      "notes": "Catch-all for flutter_flow legacy code. May need ignore directives for unfixable issues."
+      "passes": true,
+      "notes": "Fixed unnecessary_getters_setters in flutter_flow_model.dart. Commit 75f45f8.",
+      "completedAt": "2026-01-24T16:00:00Z"
     },
     {
       "id": "US-033",
@@ -394,8 +404,9 @@
         "Update CLAUDE.md with new project state"
       ],
       "priority": 33,
-      "passes": false,
-      "notes": "Final pass. Document any warnings that cannot/should not be fixed with reasons."
+      "passes": true,
+      "notes": "COMPLETE! flutter analyze: 0 issues found. 370 warnings → 0 warnings. Commit 75f45f8.",
+      "completedAt": "2026-01-24T16:10:00Z"
     }
   ]
 }
