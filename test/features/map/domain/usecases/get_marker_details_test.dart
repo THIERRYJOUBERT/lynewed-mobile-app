@@ -68,11 +68,11 @@ void main() {
   group('MapMarkerType routing', () {
     test('should route proFixedLocation to professional details', () {
       const type = MapMarkerType.proFixedLocation;
-      
+
       // Simule la logique de routing
-      final shouldFetchPro = type == MapMarkerType.proFixedLocation;
-      final shouldFetchAlert = type == MapMarkerType.professionalAlert;
-      final shouldFetchWedding = type == MapMarkerType.wedding;
+      const shouldFetchPro = type == MapMarkerType.proFixedLocation;
+      const shouldFetchAlert = type == MapMarkerType.professionalAlert;
+      const shouldFetchWedding = type == MapMarkerType.wedding;
       
       expect(shouldFetchPro, true);
       expect(shouldFetchAlert, false);
@@ -81,10 +81,10 @@ void main() {
 
     test('should route professionalAlert to alert details', () {
       const type = MapMarkerType.professionalAlert;
-      
-      final shouldFetchPro = type == MapMarkerType.proFixedLocation;
-      final shouldFetchAlert = type == MapMarkerType.professionalAlert;
-      final shouldFetchWedding = type == MapMarkerType.wedding;
+
+      const shouldFetchPro = type == MapMarkerType.proFixedLocation;
+      const shouldFetchAlert = type == MapMarkerType.professionalAlert;
+      const shouldFetchWedding = type == MapMarkerType.wedding;
       
       expect(shouldFetchPro, false);
       expect(shouldFetchAlert, true);
@@ -93,10 +93,10 @@ void main() {
 
     test('should route wedding to wedding details', () {
       const type = MapMarkerType.wedding;
-      
-      final shouldFetchPro = type == MapMarkerType.proFixedLocation;
-      final shouldFetchAlert = type == MapMarkerType.professionalAlert;
-      final shouldFetchWedding = type == MapMarkerType.wedding;
+
+      const shouldFetchPro = type == MapMarkerType.proFixedLocation;
+      const shouldFetchAlert = type == MapMarkerType.professionalAlert;
+      const shouldFetchWedding = type == MapMarkerType.wedding;
       
       expect(shouldFetchPro, false);
       expect(shouldFetchAlert, false);

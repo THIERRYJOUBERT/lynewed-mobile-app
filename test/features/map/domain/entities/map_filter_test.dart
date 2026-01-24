@@ -4,7 +4,7 @@ import 'package:lynewed_beta/features/map/domain/entities/entities.dart';
 void main() {
   group('MapFilter', () {
     test('defaults should create filter with default values', () {
-      final filter = MapFilter.defaults;
+      const filter = MapFilter.defaults;
 
       expect(filter.professions, isEmpty);
       expect(filter.budgetMin, isNull);
@@ -15,7 +15,7 @@ void main() {
     });
 
     test('hasProfessionFilter should return true when professions set', () {
-      final filter = MapFilter(
+      const filter = MapFilter(
         professions: [Profession.photographer],
       );
 
@@ -23,15 +23,15 @@ void main() {
     });
 
     test('hasProfessionFilter should return false when professions empty', () {
-      final filter = MapFilter.defaults;
+      const filter = MapFilter.defaults;
 
       expect(filter.hasProfessionFilter, false);
     });
 
     test('hasBudgetFilter should return true when budget set', () {
-      final filterMin = MapFilter(budgetMin: 1000);
-      final filterMax = MapFilter(budgetMax: 5000);
-      final filterBoth = MapFilter(budgetMin: 1000, budgetMax: 5000);
+      const filterMin = MapFilter(budgetMin: 1000);
+      const filterMax = MapFilter(budgetMax: 5000);
+      const filterBoth = MapFilter(budgetMin: 1000, budgetMax: 5000);
 
       expect(filterMin.hasBudgetFilter, true);
       expect(filterMax.hasBudgetFilter, true);
@@ -39,13 +39,13 @@ void main() {
     });
 
     test('hasBudgetFilter should return false when no budget set', () {
-      final filter = MapFilter.defaults;
+      const filter = MapFilter.defaults;
 
       expect(filter.hasBudgetFilter, false);
     });
 
     test('copyWith should create new instance with updated values', () {
-      final original = MapFilter(
+      const original = MapFilter(
         professions: [Profession.photographer],
         budgetMin: 1000,
       );
@@ -60,7 +60,7 @@ void main() {
     });
 
     test('copyWith should allow clearing values', () {
-      final original = MapFilter(
+      const original = MapFilter(
         professions: [Profession.photographer],
         budgetMin: 1000,
       );
