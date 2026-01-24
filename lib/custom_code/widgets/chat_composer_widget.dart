@@ -241,7 +241,7 @@ class _ChatComposerWidgetState extends State<ChatComposerWidget> {
                 .openOrPrepareContactAction(widget.targetProfileId!);
             // Si le statut est bien passé à `requestPending`...
             if (ctx.status == ChatEntryStatus.requestPending &&
-                (ctx.requestId.isNotEmpty ?? false)) {
+                ctx.requestId.isNotEmpty) {
               // ...on notifie la page `ChatDetails` pour qu'elle se mette à jour.
               if (widget.onRoomCreated != null) {
                 await widget.onRoomCreated!(widget.roomId, ctx.requestId);

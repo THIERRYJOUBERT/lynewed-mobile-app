@@ -34,7 +34,7 @@ Future contactChatRoom(
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => ChatDetailsPage(
-          roomId: contactContext!.roomId ?? '',
+          roomId: contactContext!.roomId,
           isPublicRoom: contactContext.isPublic,
           pendingRequestId: null,
           otherProfileId: contactContext.otherProfileId,
@@ -75,7 +75,7 @@ Future contactChatRoom(
     await ContactRequestSheet.show(
       context: context,
       targetProfileId: targetProfileID,
-      targetName: contactContext.otherFullName ?? '',
+      targetName: contactContext.otherFullName,
       source: source,
       targetAvatarUrl: contactContext.otherAvatarUrl,
     );
@@ -180,7 +180,7 @@ Future contactRoomChatMessagerie(
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => ChatDetailsPage(
-          roomId: contactContextMessagerie!.roomId ?? '',
+          roomId: contactContextMessagerie!.roomId,
           isPublicRoom: contactContextMessagerie.isPublic,
           pendingRequestId: isActuallyPending ? contactContextMessagerie.requestId : null,
           otherProfileId: contactContextMessagerie.otherProfileId,

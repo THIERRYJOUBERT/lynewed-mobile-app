@@ -284,7 +284,7 @@ List<String> mapProfessionsToSupabaseTokens(List<Profession>? items) {
 }
 
 Profession? professionFromSupabaseToken(String s) {
-  final t = (s ?? '').toUpperCase();
+  final t = s.toUpperCase();
   switch (t) {
     case 'PHOTO/MOVIE':
     case 'PHOTOMOVIE':

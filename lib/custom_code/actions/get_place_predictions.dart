@@ -42,7 +42,7 @@ Future<PlacePredictionsResultStruct> getPlacePredictions(
       suggestions.add(PlaceSuggestionStruct(
         placeId: prediction.placeId,
         primaryText: prediction.primaryText,
-        secondaryText: prediction.secondaryText ?? '',
+        secondaryText: prediction.secondaryText,
       ));
     }
   } catch (e) {

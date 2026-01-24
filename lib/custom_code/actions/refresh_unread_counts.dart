@@ -12,8 +12,8 @@ Future<void> refreshUnreadCounts() async {
   try {
     // Rafraîchir le compteur de notifications
     final notifCount = await getUnreadNotificationsCount();
-    FFAppState().unreadNotificationsCount = notifCount ?? 0;
-    FFAppState().hasUnreadNotifications = (notifCount ?? 0) > 0;
+    FFAppState().unreadNotificationsCount = notifCount;
+    FFAppState().hasUnreadNotifications = notifCount > 0;
 
     // Rafraîchir le compteur de messages
     final msgCount = await getUnreadMessagesCountAction();

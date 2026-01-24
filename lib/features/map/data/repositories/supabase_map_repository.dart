@@ -125,8 +125,7 @@ class SupabaseMapRepository implements MapRepository {
     return ProfessionalAlert(
       id: data['id'] as String,
       professionalId: data['professional_id'] as String,
-      type: AlertType.fromString(data['alert_type'] ?? data['motif_code']) ??
-          AlertType.emergencyHelp,
+      type: AlertType.fromString(data['alert_type'] ?? data['motif_code']),
       position: coords ?? const gmaps.LatLng(0, 0),
       eventDate: DateTime.tryParse(data['event_date'] ?? '') ?? DateTime.now(),
       title: data['title'] as String?,
