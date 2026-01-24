@@ -87,6 +87,22 @@ async function sendFcmV1(token, title, body, data, isHighPriority = false, ttlSe
   }
   const accessToken = await getAccessToken();
   const url = `https://fcm.googleapis.com/v1/projects/${FCM_PROJECT_ID}/messages:send`;
+  
+  // Build APNS payload - content-available only for high priority (video calls)
+  // For normal notifications, we want a standard alert notification
+  const apsPayload = isHighPriority 
+    ? {
+        "content-available": 1,
+        alert: { title, body },
+        sound: "default",
+        "mutable-content": 1
+      }
+    : {
+        alert: { title, body },
+        sound: "default",
+        "mutable-content": 1
+      };
+  
   const message = {
     message: {
       token,
@@ -105,28 +121,11 @@ async function sendFcmV1(token, title, body, data, isHighPriority = false, ttlSe
       apns: {
         headers: {
           "apns-push-type": "alert",
-          "apns-priority": isHighPriority ? "10" : "10",
+          "apns-priority": "10",
           "apns-expiration": `${Math.floor(Date.now() / 1000) + ttlSeconds}`
         },
         payload: {
-          aps: {
-            "content-available": 1,
-            alert: isHighPriority ? {
-              title,
-              body
-            } : {
-              title,
-              body
-            },
-            sound: "default",
-            "mutable-content": 1
-          },
-          fcm_options: {
-            image: "AppIcon"
-          }
-        },
-        fcm_options: {
-          image: "AppIcon"
+          aps: apsPayload
         }
       }
     }
