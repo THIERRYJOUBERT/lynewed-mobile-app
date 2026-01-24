@@ -16,50 +16,44 @@ Future<List<WedArticleSummaryStruct>> getAllWedArticles(String? lang) async {
         .eq('is_published', true)
         .order('published_at', ascending: false);
 
-    if (response is! List) {
-      return [];
-    }
-
     final List<WedArticleSummaryStruct> articles = [];
 
     for (final row in response) {
-      if (row is Map<String, dynamic>) {
-        // Parse title based on locale
-        String title = 'Untitled';
-        final titleData = row['title'];
-        if (titleData is Map<String, dynamic>) {
-          title = titleData[locale]?.toString() ?? 
-                  titleData['en']?.toString() ?? 
-                  'Untitled';
-        } else if (titleData is String) {
-          title = titleData;
-        }
+      // Parse title based on locale
+      String title = 'Untitled';
+      final titleData = row['title'];
+      if (titleData is Map<String, dynamic>) {
+        title = titleData[locale]?.toString() ??
+            titleData['en']?.toString() ??
+            'Untitled';
+      } else if (titleData is String) {
+        title = titleData;
+      }
 
-        // Parse cover images
-        final List<String> coverImages = [];
-        final coverData = row['cover_images'];
-        if (coverData is List) {
-          for (final img in coverData) {
-            if (img is String) {
-              coverImages.add(img);
-            }
+      // Parse cover images
+      final List<String> coverImages = [];
+      final coverData = row['cover_images'];
+      if (coverData is List) {
+        for (final img in coverData) {
+          if (img is String) {
+            coverImages.add(img);
           }
         }
-
-        // Parse published_at
-        DateTime? publishedAt;
-        final pubData = row['published_at'];
-        if (pubData is String) {
-          publishedAt = DateTime.tryParse(pubData);
-        }
-
-        articles.add(WedArticleSummaryStruct(
-          id: row['id']?.toString() ?? '',
-          title: title,
-          coverImages: coverImages,
-          publishedAt: publishedAt,
-        ));
       }
+
+      // Parse published_at
+      DateTime? publishedAt;
+      final pubData = row['published_at'];
+      if (pubData is String) {
+        publishedAt = DateTime.tryParse(pubData);
+      }
+
+      articles.add(WedArticleSummaryStruct(
+        id: row['id']?.toString() ?? '',
+        title: title,
+        coverImages: coverImages,
+        publishedAt: publishedAt,
+      ));
     }
 
     return articles;

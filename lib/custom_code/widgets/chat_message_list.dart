@@ -439,7 +439,7 @@ class _ChatMessageListState extends State<ChatMessageList>
         ..clear()
         ..addAll(msgsDesc);
       _oldestAt = _messages.isNotEmpty ? _messages.last.createdAt : null;
-      _hasMore = (res is List) ? (res.length == _pageSize) : false;
+      _hasMore = res.length == _pageSize;
       _hasInitialLoaded = true;
       _isLoading = false;
       if (mounted) setState(() {});
@@ -519,7 +519,7 @@ class _ChatMessageListState extends State<ChatMessageList>
       if (olderDesc.isNotEmpty) {
         _messages.addAll(olderDesc);
         _oldestAt = _messages.last.createdAt;
-        _hasMore = (res is List) ? (res.length == _pageSize) : false;
+        _hasMore = res.length == _pageSize;
         if (mounted) setState(() => _isLoadingOlder = false);
         _InMemoryChatCache.update(_roomId, (e) {
           e.messages = List<_ChatMsg>.from(_messages);
