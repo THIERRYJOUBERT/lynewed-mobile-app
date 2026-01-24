@@ -761,7 +761,7 @@ class _ProDetailsWidgetState extends State<ProDetailsWidget> {
                         : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
                     child: Container(
                       color: _showBlur 
-                          ? Colors.white.withOpacity(0.4)
+                          ? Colors.white.withValues(alpha: 0.4)
                           : Colors.white,
                       child: SafeArea(
                         bottom: false,

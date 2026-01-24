@@ -843,7 +843,7 @@ class _ChatMessageListState extends State<ChatMessageList>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: theme.alternate.withOpacity(0.15),
+                        color: theme.alternate.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(pendingText,
@@ -885,7 +885,7 @@ class _ChatMessageListState extends State<ChatMessageList>
             if (_loadingRequestMeta)
               Positioned.fill(
                 child: Container(
-                  color: theme.primaryBackground.withOpacity(0.9),
+                  color: theme.primaryBackground.withValues(alpha: 0.9),
                   child: const Center(child: CircularProgressIndicator()),
                 ),
               ),
@@ -1065,7 +1065,7 @@ class _ChatMessageListState extends State<ChatMessageList>
           if (!_hasInitialLoaded && _isLoading)
             Positioned.fill(
               child: Container(
-                color: theme.primaryBackground.withOpacity(0.9),
+                color: theme.primaryBackground.withValues(alpha: 0.9),
                 child: const Center(child: CircularProgressIndicator()),
               ),
             ),

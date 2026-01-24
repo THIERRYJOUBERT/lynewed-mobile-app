@@ -155,7 +155,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                               await _player.seek(newPosition);
                             },
                             activeColor: textColor,
-                            inactiveColor: textColor.withOpacity(0.3),
+                            inactiveColor: textColor.withValues(alpha: 0.3),
                           ),
                         );
                       },

@@ -290,7 +290,7 @@ class _AudioRecorderWidgetState extends State<AudioRecorderWidget> {
           width: 2.5,
           height: height,
           decoration: BoxDecoration(
-            color: theme.primary.withOpacity(0.6),
+            color: theme.primary.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(2),
           ),
         );

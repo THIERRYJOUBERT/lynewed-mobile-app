@@ -130,7 +130,7 @@ class _OnboardingBridesWizardWidgetState
                   'Discover the best wedding professionals worldwide and plan your perfect day.',
                   textAlign: TextAlign.center,
                   style: LynewedTextStyles.bodyMedium.copyWith(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha:0.9),
                     fontSize: 16,
                     height: 1.4,
                   ),
@@ -368,7 +368,7 @@ class _OnboardingBridesWizardWidgetState
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: Colors.white.withValues(alpha:0.15),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -393,7 +393,7 @@ class _OnboardingBridesWizardWidgetState
                   'Enable location to discover the best wedding vendors in your area and get personalized recommendations.',
                   textAlign: TextAlign.center,
                   style: LynewedTextStyles.bodyMedium.copyWith(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha:0.9),
                     fontSize: 16,
                     height: 1.4,
                   ),
@@ -415,7 +415,7 @@ class _OnboardingBridesWizardWidgetState
                   child: Text(
                     'Skip for now',
                     style: LynewedTextStyles.bodyMedium.copyWith(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha:0.8),
                       decoration: TextDecoration.underline,
                     ),
                   ),
@@ -466,7 +466,7 @@ class _OnboardingBridesWizardWidgetState
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: Colors.white.withValues(alpha:0.15),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -491,7 +491,7 @@ class _OnboardingBridesWizardWidgetState
                   'Get notified when vendors respond to your requests, new features arrive, and important updates about your wedding planning.',
                   textAlign: TextAlign.center,
                   style: LynewedTextStyles.bodyMedium.copyWith(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha:0.9),
                     fontSize: 16,
                     height: 1.4,
                   ),
@@ -513,7 +513,7 @@ class _OnboardingBridesWizardWidgetState
                   child: Text(
                     'Maybe later',
                     style: LynewedTextStyles.bodySmall.copyWith(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha:0.5),
                       fontSize: 13,
                     ),
                   ),
@@ -572,7 +572,7 @@ class _OnboardingBridesWizardWidgetState
   /// Progress indicator (page X of Y)
   Widget _buildProgressIndicator(int currentPage, {bool onDark = false}) {
     final progress = currentPage / _totalPages;
-    final bgColor = onDark ? Colors.white.withOpacity(0.3) : LynewedColors.gray200;
+    final bgColor = onDark ? Colors.white.withValues(alpha:0.3) : LynewedColors.gray200;
     final fgColor = onDark ? Colors.white : LynewedColors.primary;
     final textColor = onDark ? Colors.white : LynewedColors.primary;
 
@@ -739,7 +739,7 @@ class _OnboardingBridesWizardWidgetState
         color: LynewedColors.background,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha:0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),

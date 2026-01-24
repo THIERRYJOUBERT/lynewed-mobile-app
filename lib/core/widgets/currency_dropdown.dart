@@ -236,8 +236,8 @@ class _CurrencyPickerSheetState extends State<_CurrencyPickerSheet> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: isSelected 
-                          ? LynewedColors.primary.withOpacity(0.1)
+                      color: isSelected
+                          ? LynewedColors.primary.withValues(alpha: 0.1)
                           : LynewedColors.surface,
                       borderRadius: BorderRadius.circular(8),
                     ),
