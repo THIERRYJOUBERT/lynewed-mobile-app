@@ -1,0 +1,36 @@
+name: sync-project
+version: 2.0.0
+description: Synchronise automatiquement les fichiers de reference du projet (INDEX, README, CLAUDE.md). Detecte les changements et met a jour les references. Appelable par d'autres workflows ou directement.
+
+invocation:
+  - user  # Utilisateur peut appeler /sync-project
+  - model # Autres workflows peuvent appeler en interne
+
+arguments:
+  - name: --silent
+    description: Mode silencieux sans interaction
+    required: false
+  - name: --dry-run
+    description: Afficher sans executer
+    required: false
+  - name: --scope
+    description: Limiter le scope (skills|docs|all)
+    required: false
+    default: all
+
+changelog:
+  - version: 2.0.0
+    date: 2026-01-24
+    changes:
+      - "Refonte complete : utilitaire autonome appelable par autres workflows"
+      - "Detection automatique des changements (git diff + status)"
+      - "Mode --silent pour appels automatiques"
+      - "Mode --dry-run pour preview"
+      - "Argument --scope pour limiter la synchronisation"
+      - "Suppression archivage workspace (responsabilite separee)"
+      - "Nouvelles references : detection-rules.md, file-templates.md"
+  - version: 1.0.0
+    date: 2026-01-22
+    changes:
+      - "Version initiale avec archivage workspace"
+      - "Mise a jour CLAUDE.md et INDEX.md"

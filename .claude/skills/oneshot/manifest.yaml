@@ -1,0 +1,234 @@
+name: oneshot
+version: 2.1.0
+created_at: 2026-01-23
+created_by: /create-workflow v2
+migrated_from: SKILL.md monolithique (v1)
+description: "Dev rapide APEX sans structure Epic/Story. Pour features < 1 jour."
+model: opus
+
+patterns_applied:
+  - pattern: 1
+    name: "Multi-File Architecture"
+    applied: true
+    implementation: "SKILL.md (<155 lignes) + 6 steps/ files"
+
+  - pattern: 2
+    name: "Model Strategy"
+    applied: true
+    implementation: "opus orchestration, sonnet for exploration agents (step-01)"
+
+  - pattern: 3
+    name: "APEX Self-Validation"
+    applied: true
+    implementation: "AUTO-VALIDATION section in all 6 steps"
+
+  - pattern: 4
+    name: "Completeness Challenge"
+    applied: true
+    implementation: "In step-02-plan before implementation"
+
+  - pattern: 5
+    name: "Template Vivant"
+    applied: false
+    reason: "Output is code, not structured documents"
+
+  - pattern: 6
+    name: "Parallel Agent Execution"
+    applied: true
+    implementation: "3 sonnet agents in step-01-explore (single message)"
+
+  - pattern: 7
+    name: "Single User Interaction"
+    applied: true
+    implementation: "step-00 only; step-02 checkpoint only if SUPERVISED mode"
+
+  - pattern: 8
+    name: "Fallback Strategies"
+    applied: true
+    implementation: "Self-healing max 5 attempts in step-03, step-04"
+
+  - pattern: 9
+    name: "Gap Documentation"
+    applied: true
+    implementation: "Document gaps in summary if any"
+
+  - pattern: 10
+    name: "Progressive Step Loading"
+    applied: true
+    implementation: "SKILL.md loads step-00, sequential thereafter"
+
+  - pattern: 11
+    name: "State Variable Management"
+    applied: true
+    implementation: "CONTEXT BOUNDARIES section in all steps"
+
+  - pattern: 12
+    name: "Universal Step Structure"
+    applied: true
+    implementation: "All 6 steps have 9 sections"
+
+  - pattern: 13
+    name: "Sandwich Structure"
+    applied: true
+    implementation: "MANDATORY RULES at start, <critical> at end of each step"
+
+  - pattern: 14
+    name: "Injection Contextuelle"
+    applied: true
+    implementation: "Automatic with multi-file (step loaded last = max attention)"
+
+steps:
+  - number: "00"
+    name: prerequis
+    file: steps/step-00-prerequis.md
+    description: "Clarify request + detect mode (auto/supervised)"
+
+  - number: "01"
+    name: explore
+    file: steps/step-01-explore.md
+    description: "3 Sonnet agents parallel exploration"
+
+  - number: "02"
+    name: plan
+    file: steps/step-02-plan.md
+    description: "Generate implementation plan + checkpoint if supervised"
+
+  - number: "03"
+    name: execute
+    file: steps/step-03-execute.md
+    description: "APEX Engine: TDD + Review Adversariale"
+
+  - number: "04"
+    name: verify
+    file: steps/step-04-verify.md
+    description: "Final validation (tests + analyze)"
+
+  - number: "05"
+    name: commit
+    file: steps/step-05-commit.md
+    description: "Finalization via /commit skill"
+
+state_variables:
+  from_step_00:
+    - name: "{description}"
+      type: string
+      description: "What to implement"
+
+    - name: "{mode}"
+      type: "enum[auto, supervised]"
+      description: "Execution mode (default: supervised)"
+
+    - name: "{complexity}"
+      type: "enum[S, M, L]"
+      description: "Estimated complexity"
+
+    - name: "{session_file}"
+      type: string
+      description: "Path to session documentation file in workspace/current/"
+
+  from_step_01:
+    - name: "{patterns_found}"
+      type: array
+      description: "Existing patterns in codebase"
+
+    - name: "{files_impacted}"
+      type: array
+      description: "Files to create/modify"
+
+    - name: "{docs_relevant}"
+      type: array
+      description: "Relevant documentation found"
+
+    - name: "{exploration_synthesis}"
+      type: object
+      description: "Consolidated exploration results"
+
+  from_step_02:
+    - name: "{implementation_plan}"
+      type: object
+      description: "Detailed implementation plan"
+
+    - name: "{risks}"
+      type: array
+      description: "Identified risks with mitigations"
+
+  from_step_03:
+    - name: "{code_written}"
+      type: array
+      description: "Files created/modified"
+
+    - name: "{tests_written}"
+      type: array
+      description: "Test files created"
+
+    - name: "{review_results}"
+      type: object
+      description: "Review Adversariale outcome"
+
+  from_step_04:
+    - name: "{validation_status}"
+      type: "enum[PASS, FAIL]"
+      description: "Final validation status"
+
+  from_step_05:
+    - name: "{commit_hash}"
+      type: string
+      description: "Hash of final commit"
+
+    - name: "{summary}"
+      type: object
+      description: "Final summary for user"
+
+modes:
+  supervised:
+    description: "Default mode with plan checkpoint"
+    user_interactions: 2  # step-00 + step-02 checkpoint
+    checkpoint_at: step-02-plan
+
+  auto:
+    description: "Fully autonomous after step-00"
+    user_interactions: 1  # step-00 only
+    checkpoint_at: null
+
+integrations:
+  - skill: "/commit"
+    usage: "Invoked in step-05 for finalization"
+    required: true
+
+  - skill: "/dev-story"
+    relationship: "Complementary (oneshot = no story, dev-story = with story)"
+    required: false
+
+  - skill: "/debug"
+    relationship: "Alternative (use debug for bugs, oneshot for features)"
+    required: false
+
+gaps:
+  # None identified during migration
+
+changelog:
+  - version: 2.1.0
+    date: 2026-01-23
+    changes:
+      - "Added session documentation pattern"
+      - "Session file created in workspace/current/ONESHOT-{timestamp}-{slug}.md"
+      - "Progressive updates through all 6 steps"
+      - "Tracks: Context, Exploration, Plan, Execution, Problems, Result"
+      - "Non-blocking: workflow continues if Write fails"
+      - "Added {session_file} state variable"
+
+  - version: 2.0.0
+    date: 2026-01-23
+    changes:
+      - "Migrated from monolithic SKILL.md to multi-file architecture"
+      - "Added 6 step files with Universal Step Structure (9 sections)"
+      - "Changed exploration agents from haiku to sonnet"
+      - "Added explicit --auto flag support for fully autonomous mode"
+      - "Added SUPERVISED mode checkpoint at step-02"
+      - "Applied 13/14 validated patterns from /create-workflow v2"
+      - "Added manifest.yaml for version tracking"
+
+  - version: 1.0.0
+    date: 2026-01-22
+    changes:
+      - "Initial monolithic implementation based on AUDIT APEX"

@@ -1,0 +1,248 @@
+name: dev-story
+version: 2.0.0
+created_at: 2026-01-24
+created_by: /create-workflow v3
+migrated_from: SKILL.md monolithique (v1)
+description: "Implementer une story avec TDD strict et qualite APEX. Story-driven development."
+model: opus
+
+patterns_applied:
+  - pattern: 1
+    name: "Multi-File Architecture"
+    applied: true
+    implementation: "SKILL.md (<150 lignes) + 6 steps/ files"
+
+  - pattern: 2
+    name: "Model Strategy"
+    applied: true
+    implementation: "opus orchestration, sonnet for exploration agents (step-01)"
+
+  - pattern: 3
+    name: "APEX Self-Validation"
+    applied: true
+    implementation: "AUTO-VALIDATION section in all 6 steps"
+
+  - pattern: 4
+    name: "Completeness Challenge"
+    applied: true
+    implementation: "In step-02-plan before implementation"
+
+  - pattern: 5
+    name: "Template Vivant"
+    applied: false
+    reason: "Output is code, not structured documents"
+
+  - pattern: 6
+    name: "Parallel Agent Execution"
+    applied: true
+    implementation: "3 sonnet agents in step-01-explore (single message)"
+
+  - pattern: 7
+    name: "Single User Interaction"
+    applied: true
+    implementation: "step-00 only; step-02 checkpoint only if SUPERVISED mode"
+
+  - pattern: 8
+    name: "Fallback Strategies"
+    applied: true
+    implementation: "Self-healing max 5 attempts in step-03, step-04"
+
+  - pattern: 9
+    name: "Gap Documentation"
+    applied: true
+    implementation: "Document gaps in exploration synthesis"
+
+  - pattern: 10
+    name: "Progressive Step Loading"
+    applied: true
+    implementation: "SKILL.md loads step-00, sequential thereafter"
+
+  - pattern: 11
+    name: "State Variable Management"
+    applied: true
+    implementation: "CONTEXT BOUNDARIES section in all steps"
+
+  - pattern: 12
+    name: "Universal Step Structure"
+    applied: true
+    implementation: "All 6 steps have 9 sections"
+
+  - pattern: 13
+    name: "Sandwich Structure"
+    applied: true
+    implementation: "MANDATORY RULES at start, <critical> at end of each step"
+
+  - pattern: 14
+    name: "Injection Contextuelle"
+    applied: true
+    implementation: "Automatic with multi-file (step loaded last = max attention)"
+
+steps:
+  - number: "00"
+    name: load
+    file: steps/step-00-load.md
+    description: "Load story file + validate prerequisites"
+
+  - number: "01"
+    name: explore
+    file: steps/step-01-explore.md
+    description: "3 Sonnet agents parallel exploration"
+
+  - number: "02"
+    name: plan
+    file: steps/step-02-plan.md
+    description: "Generate TDD plan + checkpoint if supervised"
+
+  - number: "03"
+    name: execute
+    file: steps/step-03-execute.md
+    description: "APEX Engine: TDD + Review Adversariale"
+
+  - number: "04"
+    name: verify
+    file: steps/step-04-verify.md
+    description: "Final validation (tests + analyze)"
+
+  - number: "05"
+    name: commit
+    file: steps/step-05-commit.md
+    description: "Finalization + story status update + TRACKING.md"
+
+state_variables:
+  from_step_00:
+    - name: "{story_id}"
+      type: string
+      description: "Story identifier (e.g., STORY-01-01)"
+
+    - name: "{mode}"
+      type: "enum[auto, supervised]"
+      description: "Execution mode (default: supervised)"
+
+    - name: "{story_path}"
+      type: string
+      description: "Full path to story file"
+
+    - name: "{story_content}"
+      type: object
+      description: "Parsed story with criteria, files, tests"
+
+    - name: "{epic_path}"
+      type: string
+      description: "Path to parent Epic folder"
+
+  from_step_01:
+    - name: "{patterns_found}"
+      type: array
+      description: "Existing patterns in codebase"
+
+    - name: "{files_impacted}"
+      type: array
+      description: "Files to create/modify"
+
+    - name: "{exploration_synthesis}"
+      type: object
+      description: "Consolidated exploration results"
+
+  from_step_02:
+    - name: "{implementation_plan}"
+      type: object
+      description: "Detailed TDD plan by acceptance criterion"
+
+    - name: "{risks}"
+      type: array
+      description: "Identified risks with mitigations"
+
+  from_step_03:
+    - name: "{code_written}"
+      type: array
+      description: "Files created/modified"
+
+    - name: "{tests_written}"
+      type: array
+      description: "Test files created"
+
+    - name: "{review_results}"
+      type: object
+      description: "Review Adversariale outcome"
+
+  from_step_04:
+    - name: "{validation_status}"
+      type: "enum[PASS, FAIL]"
+      description: "Final validation status"
+
+  from_step_05:
+    - name: "{commit_hash}"
+      type: string
+      description: "Hash of final commit"
+
+    - name: "{summary}"
+      type: object
+      description: "Final summary for user"
+
+modes:
+  supervised:
+    description: "Default mode with plan checkpoint"
+    user_interactions: 2  # step-00 + step-02 checkpoint
+    checkpoint_at: step-02-plan
+
+  auto:
+    description: "Fully autonomous after step-00"
+    user_interactions: 1  # step-00 only
+    checkpoint_at: null
+
+integrations:
+  - skill: "/commit"
+    usage: "Invoked in step-05 for finalization"
+    required: true
+
+  - skill: "/oneshot"
+    relationship: "Complementary (dev-story = with story, oneshot = without)"
+    required: false
+
+  - skill: "/debug"
+    relationship: "Alternative (use debug for bugs, dev-story for features)"
+    required: false
+
+differences_from_oneshot:
+  - aspect: "Entry point"
+    dev_story: "Story ID obligatoire"
+    oneshot: "Description libre"
+
+  - aspect: "step-00"
+    dev_story: "LOAD story file"
+    oneshot: "PREREQUIS (clarifier demande)"
+
+  - aspect: "Source of truth"
+    dev_story: "Story file with Gherkin criteria"
+    oneshot: "User description"
+
+  - aspect: "Session tracking"
+    dev_story: "Uses Epic TRACKING.md"
+    oneshot: "Creates workspace/current/ file"
+
+  - aspect: "Output"
+    dev_story: "Update story status + TRACKING.md"
+    oneshot: "Commit only"
+
+gaps:
+  # None identified during migration
+
+changelog:
+  - version: 2.0.0
+    date: 2026-01-24
+    changes:
+      - "Migrated from monolithic SKILL.md (350 lines) to multi-file architecture"
+      - "Added 6 step files with Universal Step Structure (9 sections)"
+      - "Added 3 parallel exploration agents (sonnet) in step-01"
+      - "Added SUPERVISED mode with checkpoint at step-02"
+      - "Added explicit --auto flag support for fully autonomous mode"
+      - "Applied 13/14 validated patterns from /create-workflow v3"
+      - "Added manifest.yaml for version tracking"
+      - "Preserved story-driven specificity (load story, update status)"
+
+  - version: 1.0.0
+    date: 2026-01-22
+    changes:
+      - "Initial monolithic implementation"
+      - "8-step APEX workflow"
+      - "TDD + Review Adversariale"

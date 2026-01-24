@@ -1,0 +1,60 @@
+name: "create-workflow"
+description: "Meta-workflow for creating and updating Claude Code workflows"
+version: "3.0.0"
+created: "2026-01-24"
+type: "task-workflow"
+
+modes:
+  - CREATE  # Create new workflow from scratch
+  - UPDATE  # Improve existing workflow
+
+cc_features:
+  context_fork: false  # CRITICAL: Meta-workflow needs conversation history
+  subagents: true      # Uses Explore agents in step-02
+  hooks: false
+  model: "opus"
+  user_invocable: true
+  disable_model_invocation: true  # User must explicitly invoke
+
+files:
+  skill: "SKILL.md"
+  references:
+    - "references/decision-matrix.md"
+    - "references/features-guide.md"
+    - "references/patterns-unified.md"
+    - "references/quality-criteria.md"
+  templates:
+    - "templates/skill-reference.md"
+    - "templates/skill-task-simple.md"
+    - "templates/skill-task-workflow.md"
+    - "templates/step-universal.md"
+    - "templates/agent.md"
+    - "templates/manifest.yaml"
+  steps_create:
+    - "steps/step-01-interview.md"
+    - "steps/step-02-explore.md"
+    - "steps/step-03-design.md"
+    - "steps/step-04-checkpoint.md"
+    - "steps/step-05-generate.md"
+    - "steps/step-06-critique.md"
+    - "steps/step-07-validate.md"
+    - "steps/step-08-register.md"
+  steps_update:
+    - "steps/step-U1-analyze.md"
+    - "steps/step-U2-assess.md"
+    - "steps/step-U3-propose.md"
+    - "steps/step-U4-improve.md"
+    - "steps/step-06-critique.md"
+    - "steps/step-07-validate.md"
+    - "steps/step-08-register.md"
+
+dependencies: []
+
+notes: |
+  /create-workflow v3 - Complete refactor
+  - Intelligent CC feature decisions via decision-matrix
+  - Unified patterns from official docs + {{PROJECT_NAME}} best practices
+  - Quality criteria for systematic critique
+  - Both CREATE and UPDATE modes supported
+  - JIT loading of references in specific steps
+  - AskUserQuestion checkpoints at step-01, step-04, step-U3

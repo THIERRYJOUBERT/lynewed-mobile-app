@@ -1,0 +1,86 @@
+# Ralph Progress Log
+Started: 2026-01-24
+Feature: 00-project-cleanup (Flutter Warning Fixes)
+
+## Codebase Patterns
+
+### Flutter Project Structure
+- **Type**: Flutter app with Supabase backend
+- **Architecture**: Hybrid (FlutterFlow legacy + Clean Architecture)
+- **Design System**: lib/core/design/ (use LynewedDesignSystem)
+
+### Key Directories
+- lib/auth/ - Authentication (Supabase)
+- lib/backend/ - Supabase integration
+- lib/core/ - Core utilities and design system
+- lib/features/ - Clean Architecture modules (map, chat, notifications)
+- lib/flutter_flow/ - FlutterFlow utilities (legacy)
+- lib/pages/ - FlutterFlow pages (legacy)
+- lib/custom_code/ - Custom widgets/actions
+
+### Verification Commands
+```bash
+# Check warnings
+flutter analyze --no-fatal-infos
+
+# Count warnings
+flutter analyze 2>&1 | tail -5
+
+# Run tests
+flutter test
+```
+
+### Fix Patterns
+
+**use_build_context_synchronously:**
+```dart
+await asyncOperation();
+if (!context.mounted) return;
+Navigator.of(context).pop();
+```
+
+**deprecated MaterialState:**
+```dart
+// MaterialStateProperty → WidgetStateProperty
+// MaterialState → WidgetState
+```
+
+**deprecated withOpacity:**
+```dart
+// color.withOpacity(0.5) → color.withValues(alpha: 0.5)
+```
+
+**empty_catches:**
+```dart
+} catch (e) {
+  debugPrint('Error in [function_name]: $e');
+}
+```
+
+---
+
+## Initial State (2026-01-24)
+- **Total warnings**: 370
+- **Total stories**: 33
+- **Critical (async context)**: ~25
+- **Deprecated APIs**: ~50
+- **Empty catches**: ~16
+- **Type literal patterns**: ~83
+- **Const constructors**: ~125
+- **Other style**: ~71
+
+### Coverage by Directory
+| Directory | Warnings | Stories |
+|-----------|----------|---------|
+| lib/auth/ | ~10 | US-001 |
+| lib/custom_code/ | ~15 | US-002, US-028 |
+| lib/features/ | ~60 | US-003, US-024, US-025, US-026 |
+| lib/core/ | ~25 | US-004, US-023 |
+| lib/backend/ | ~45 | US-019, US-021 |
+| lib/flutter_flow/ | ~70 | US-020, US-022, US-032 |
+| lib/pages/ | ~47 | US-027 |
+| test/ | ~20 | US-031 |
+| Scattered | ~78 | US-005 to US-018, US-029, US-030 |
+
+---
+

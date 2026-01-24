@@ -1,0 +1,48 @@
+# Workflow Manifest
+name: create-epic
+version: "6.1.0"
+description: "Create Epic from PRD-MASTER with autonomous quality validation"
+
+# Metadata
+created: "2024-12-01"
+updated: "2026-01-24"
+author: "{{PROJECT_NAME}} Team"
+
+# Configuration
+model: opus
+type: task-workflow
+
+# Structure
+entry_point: "steps/step-00-prerequis.md"
+steps:
+  - step-00-prerequis.md
+  - step-01-select.md
+  - step-02-discovery.md
+  - step-03-explore.md
+  - step-04-synthesize.md
+  - step-05-generate.md
+  - step-06-confirm.md
+
+templates:
+  - templates/epic.md
+  - templates/tracking.md
+  - templates/sources.yaml
+
+# Changelog
+changelog:
+  - version: "6.1.0"
+    date: "2026-01-24"
+    changes:
+      - "Fixed autonomy contradiction in step-03 (removed AskUserQuestion)"
+      - "Corrected terminology Haiku → Sonnet in SKILL.md"
+      - "Added template interpretation guide in step-05"
+      - "Removed legacy reference files"
+      - "Added manifest.yaml for versioning"
+
+  - version: "6.0.0"
+    date: "2024-12-01"
+    changes:
+      - "Initial v6 release with APEX self-validation"
+      - "3 parallel Sonnet agents for exploration"
+      - "Story Completeness Challenge"
+      - "Adaptive sections in templates"

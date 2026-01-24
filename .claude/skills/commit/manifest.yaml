@@ -1,0 +1,21 @@
+# Workflow Manifest
+name: commit
+version: "1.1.0"
+description: "Commit integre avec verifications {{PROJECT_NAME}} obligatoires. Bloque si tests fail ou warnings."
+updated: "2026-01-24"
+
+# Changelog
+changelog:
+  - version: "1.1.0"
+    date: "2026-01-24"
+    changes:
+      - "Support multi-projet (Flutter, Node, Rust, Go, generic)"
+      - "Retry automatique si git push echoue (max 3 tentatives)"
+      - "Documentation interaction avec hooks git pre-commit"
+      - "Section AUTO-VALIDATION ajoutee"
+  - version: "1.0.0"
+    date: "2025-01-01"
+    changes:
+      - "Version initiale"
+      - "Workflow 5 etapes: VERIFY, CHECK, STAGE, COMMIT, PUSH"
+      - "Push automatique vers dev"

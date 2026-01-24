@@ -1,0 +1,380 @@
+{
+  "branchName": "fix/project-cleanup",
+  "totalWarningsInitial": 370,
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Fix use_build_context_synchronously in lib/auth/",
+      "acceptanceCriteria": [
+        "All use_build_context_synchronously warnings fixed in lib/auth/",
+        "Added 'if (!context.mounted) return;' before async context usage",
+        "flutter analyze shows 0 use_build_context_synchronously in lib/auth/"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "~10 occurrences in supabase_auth_manager.dart. CRITICAL - can cause crashes."
+    },
+    {
+      "id": "US-002",
+      "title": "Fix use_build_context_synchronously in lib/custom_code/",
+      "acceptanceCriteria": [
+        "All use_build_context_synchronously warnings fixed in lib/custom_code/",
+        "flutter analyze shows 0 use_build_context_synchronously in lib/custom_code/"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Files: init_push_notifications.dart, setup_deeplink_listener.dart"
+    },
+    {
+      "id": "US-003",
+      "title": "Fix use_build_context_synchronously in lib/features/",
+      "acceptanceCriteria": [
+        "All use_build_context_synchronously warnings fixed in lib/features/",
+        "flutter analyze shows 0 use_build_context_synchronously in lib/features/"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "Files: conversation_actions_sheet, map_page.dart"
+    },
+    {
+      "id": "US-004",
+      "title": "Fix deprecated MaterialState/WidgetState warnings",
+      "acceptanceCriteria": [
+        "All MaterialStateProperty replaced with WidgetStateProperty",
+        "All MaterialState replaced with WidgetState",
+        "flutter analyze shows 0 deprecated_member_use for MaterialState"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "Files: lib/core/design/lynewed_app_theme.dart (6 occurrences)"
+    },
+    {
+      "id": "US-005",
+      "title": "Fix deprecated withOpacity warnings",
+      "acceptanceCriteria": [
+        "All color.withOpacity() replaced with color.withValues(alpha: X)",
+        "flutter analyze shows 0 deprecated_member_use for withOpacity"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "Files: currency_dropdown.dart, audio_player_widget.dart, audio_recorder_widget.dart, chat_message_list.dart"
+    },
+    {
+      "id": "US-006",
+      "title": "Fix other deprecated API warnings (zIndex, fromBytes, setMapStyle, icons)",
+      "acceptanceCriteria": [
+        "Fix deprecated zIndex (use zIndexInt)",
+        "Fix deprecated fromBytes (use BitmapDescriptor.bytes)",
+        "Fix deprecated setMapStyle (use GoogleMap.style)",
+        "Fix deprecated arrowCircleUp icon",
+        "flutter analyze shows 0 remaining deprecated_member_use"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Files: lynewed_mini_map.dart, lynewed_map_widget.dart, chat_composer_widget.dart"
+    },
+    {
+      "id": "US-007",
+      "title": "Fix empty_catches warnings (16 occurrences)",
+      "acceptanceCriteria": [
+        "All empty catch blocks have debugPrint('[Context] Error: $e')",
+        "flutter analyze shows 0 empty_catches"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "16 files: app_state, address_search_widget, get_place_details, get_place_predictions, mark_all/notification_as_read, refresh_notification_badge, push_background, chat_room_notifier, map_page, marker_icon_generator, lynewed_map_widget, message_composer, message_list"
+    },
+    {
+      "id": "US-008",
+      "title": "Fix dead_null_aware_expression warnings (9 occurrences)",
+      "acceptanceCriteria": [
+        "Remove unnecessary ?? operators where left operand cannot be null",
+        "flutter analyze shows 0 dead_null_aware_expression"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "Files: actions.dart, get_place_predictions.dart, refresh_unread_counts.dart, chat_composer_widget.dart, supabase_map_repository.dart"
+    },
+    {
+      "id": "US-009",
+      "title": "Fix unnecessary_type_check warnings (4 occurrences)",
+      "acceptanceCriteria": [
+        "Remove unnecessary 'is Type' checks",
+        "flutter analyze shows 0 unnecessary_type_check"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": "Files: get_all_wed_articles.dart, chat_message_list.dart"
+    },
+    {
+      "id": "US-010",
+      "title": "Fix unreachable_switch_default warnings (4 occurrences)",
+      "acceptanceCriteria": [
+        "Remove unreachable default clauses in switch statements",
+        "flutter analyze shows 0 unreachable_switch_default"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": "Files: check_and_request_permission.dart, marker_icon_generator.dart"
+    },
+    {
+      "id": "US-011",
+      "title": "Fix unused_import, unused_field, unused_catch_stack (6 occurrences)",
+      "acceptanceCriteria": [
+        "Remove all unused imports",
+        "Remove all unused fields",
+        "Remove unused catch stack traces",
+        "flutter analyze shows 0 unused_* warnings"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": "Files: get_wed_article_by_id.dart, refresh_unread_counts.dart, get_portfolio_feed_action.dart, feed_portfolio_grid.dart, wedding_create_sheet.dart"
+    },
+    {
+      "id": "US-012",
+      "title": "Fix unnecessary_import warnings (8 occurrences)",
+      "acceptanceCriteria": [
+        "Remove redundant imports",
+        "flutter analyze shows 0 unnecessary_import"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": "Files: pro_details_struct.dart, report_message_sheet.dart, report_user_sheet.dart, map_actions_service.dart, upcoming_travels_sheet.dart"
+    },
+    {
+      "id": "US-013",
+      "title": "Fix unnecessary_getters_setters (6 occurrences)",
+      "acceptanceCriteria": [
+        "Replace unnecessary getter/setter pairs with direct field access",
+        "flutter analyze shows 0 unnecessary_getters_setters"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": "Files: lib/app_state.dart, lib/flutter_flow/ files"
+    },
+    {
+      "id": "US-014",
+      "title": "Fix unnecessary_null_comparison (2 occurrences)",
+      "acceptanceCriteria": [
+        "Remove unnecessary null checks where operand cannot be null",
+        "flutter analyze shows 0 unnecessary_null_comparison"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": "Files: wedding_create_sheet.dart"
+    },
+    {
+      "id": "US-015",
+      "title": "Fix override_on_non_overriding_member (2 occurrences)",
+      "acceptanceCriteria": [
+        "Remove incorrect @override annotations or fix inheritance",
+        "flutter analyze shows 0 override_on_non_overriding_member"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": "Search for @override on methods that don't actually override"
+    },
+    {
+      "id": "US-016",
+      "title": "Fix library_private_types_in_public_api (3 occurrences)",
+      "acceptanceCriteria": [
+        "Make private types public or change public API",
+        "flutter analyze shows 0 library_private_types_in_public_api"
+      ],
+      "priority": 16,
+      "passes": false,
+      "notes": "Files: lynewed_design_system.dart, videoplayer_filmmaker.dart, main.dart"
+    },
+    {
+      "id": "US-017",
+      "title": "Fix prefer_typing_uninitialized_variables (1 occurrence)",
+      "acceptanceCriteria": [
+        "Add explicit type annotations to uninitialized variables",
+        "flutter analyze shows 0 prefer_typing_uninitialized_variables"
+      ],
+      "priority": 17,
+      "passes": false,
+      "notes": "Files: lib/backend/schema/util/schema_util.dart"
+    },
+    {
+      "id": "US-018",
+      "title": "Fix dangling_library_doc_comments (1 occurrence)",
+      "acceptanceCriteria": [
+        "Move or remove dangling doc comments",
+        "flutter analyze shows 0 dangling_library_doc_comments"
+      ],
+      "priority": 18,
+      "passes": false,
+      "notes": "Files: lib/core/constants/currencies.dart"
+    },
+    {
+      "id": "US-019",
+      "title": "Fix type_literal_in_constant_pattern in lib/backend/ (17 occurrences)",
+      "acceptanceCriteria": [
+        "Replace 'case Type:' with 'case Type _:' pattern",
+        "flutter analyze shows 0 type_literal_in_constant_pattern in lib/backend/"
+      ],
+      "priority": 19,
+      "passes": false,
+      "notes": "Files: lib/backend/schema/enums/enums.dart (~17), lib/backend/supabase/database/row.dart (~8)"
+    },
+    {
+      "id": "US-020",
+      "title": "Fix type_literal_in_constant_pattern in lib/flutter_flow/ (58 occurrences)",
+      "acceptanceCriteria": [
+        "Replace 'case Type:' with 'case Type _:' pattern in all flutter_flow files",
+        "flutter analyze shows 0 type_literal_in_constant_pattern in lib/flutter_flow/"
+      ],
+      "priority": 20,
+      "passes": false,
+      "notes": "Big batch! ~58 occurrences in serialization_util.dart and other flutter_flow files. Work in batches of 10."
+    },
+    {
+      "id": "US-021",
+      "title": "Fix constant_identifier_names in lib/backend/schema/enums/ (~25 occurrences)",
+      "acceptanceCriteria": [
+        "Add // ignore_for_file: constant_identifier_names at top of enums.dart",
+        "Document reason: enum values match Supabase API naming",
+        "flutter analyze accepts the ignore directive"
+      ],
+      "priority": 21,
+      "passes": false,
+      "notes": "These are API-driven enum values (PHOTOGRAPHER, FILMMAKER, etc.) - should NOT be renamed. Add file-level ignore with documentation."
+    },
+    {
+      "id": "US-022",
+      "title": "Fix constant_identifier_names in lib/flutter_flow/ (~13 occurrences)",
+      "acceptanceCriteria": [
+        "Add // ignore_for_file: constant_identifier_names where appropriate",
+        "Or rename constants to lowerCamelCase if safe",
+        "flutter analyze shows 0 constant_identifier_names in lib/flutter_flow/"
+      ],
+      "priority": 22,
+      "passes": false,
+      "notes": "FlutterFlow legacy code - evaluate if safe to rename or add ignore"
+    },
+    {
+      "id": "US-023",
+      "title": "Fix prefer_const_constructors in lib/core/ (~15 occurrences)",
+      "acceptanceCriteria": [
+        "Add const keyword to all constant constructors in lib/core/",
+        "flutter analyze shows 0 prefer_const_constructors in lib/core/"
+      ],
+      "priority": 23,
+      "passes": false,
+      "notes": "Files: design/*.dart, widgets/*.dart"
+    },
+    {
+      "id": "US-024",
+      "title": "Fix prefer_const_constructors in lib/features/chat/ (~5 occurrences)",
+      "acceptanceCriteria": [
+        "Add const keyword to constant constructors",
+        "flutter analyze shows 0 prefer_const_constructors in lib/features/chat/"
+      ],
+      "priority": 24,
+      "passes": false,
+      "notes": "Files: messages_page.dart"
+    },
+    {
+      "id": "US-025",
+      "title": "Fix prefer_const_constructors in lib/features/map/ (~15 occurrences)",
+      "acceptanceCriteria": [
+        "Add const keyword to constant constructors",
+        "flutter analyze shows 0 prefer_const_constructors in lib/features/map/"
+      ],
+      "priority": 25,
+      "passes": false,
+      "notes": "Files: filter_sheet.dart, lynewed_map_widget.dart"
+    },
+    {
+      "id": "US-026",
+      "title": "Fix prefer_const_constructors in lib/features/my_wedding/ (~30 occurrences)",
+      "acceptanceCriteria": [
+        "Add const keyword to constant constructors",
+        "flutter analyze shows 0 prefer_const_constructors in lib/features/my_wedding/"
+      ],
+      "priority": 26,
+      "passes": false,
+      "notes": "Files: agenda_page.dart, album_detail_page.dart, budget_page.dart, guests_page.dart, inspirations_page.dart, my_wedding_page.dart, wedding_onboarding_page.dart"
+    },
+    {
+      "id": "US-027",
+      "title": "Fix prefer_const_constructors in lib/pages/ (~30 occurrences)",
+      "acceptanceCriteria": [
+        "Add const keyword to constant constructors in lib/pages/",
+        "flutter analyze shows reduced prefer_const_constructors in lib/pages/"
+      ],
+      "priority": 27,
+      "passes": false,
+      "notes": "FlutterFlow legacy pages. Work file by file."
+    },
+    {
+      "id": "US-028",
+      "title": "Fix prefer_const_constructors in lib/custom_code/ (~10 occurrences)",
+      "acceptanceCriteria": [
+        "Add const keyword to constant constructors",
+        "flutter analyze shows 0 prefer_const_constructors in lib/custom_code/"
+      ],
+      "priority": 28,
+      "passes": false,
+      "notes": "Custom widgets and actions"
+    },
+    {
+      "id": "US-029",
+      "title": "Fix prefer_const_declarations (12 occurrences)",
+      "acceptanceCriteria": [
+        "Add const to final variables initialized with constant values",
+        "flutter analyze shows 0 prefer_const_declarations"
+      ],
+      "priority": 29,
+      "passes": false,
+      "notes": "Search for 'final X = [constant]' and change to 'const X = [constant]'"
+    },
+    {
+      "id": "US-030",
+      "title": "Fix prefer_const_literals_to_create_immutables (7 occurrences)",
+      "acceptanceCriteria": [
+        "Use const literals for immutable collections",
+        "flutter analyze shows 0 prefer_const_literals_to_create_immutables"
+      ],
+      "priority": 30,
+      "passes": false,
+      "notes": "Change [] to const [] and {} to const {} where appropriate"
+    },
+    {
+      "id": "US-031",
+      "title": "Fix prefer_const_constructors in test/ files (~20 occurrences)",
+      "acceptanceCriteria": [
+        "Add const keyword to constant constructors in test/ files",
+        "flutter analyze shows 0 prefer_const_constructors in test/"
+      ],
+      "priority": 31,
+      "passes": false,
+      "notes": "Files: test/features/map/**/*.dart"
+    },
+    {
+      "id": "US-032",
+      "title": "Clean remaining warnings in lib/flutter_flow/ (if any)",
+      "acceptanceCriteria": [
+        "Fix any remaining warnings in lib/flutter_flow/",
+        "flutter analyze shows minimal warnings in lib/flutter_flow/"
+      ],
+      "priority": 32,
+      "passes": false,
+      "notes": "Catch-all for flutter_flow legacy code. May need ignore directives for unfixable issues."
+    },
+    {
+      "id": "US-033",
+      "title": "Final verification and documentation",
+      "acceptanceCriteria": [
+        "Run flutter analyze --fatal-infos",
+        "Warning count is 0 OR all remaining warnings documented with justification",
+        "Create CLEANUP_REPORT.md with summary",
+        "Update CLAUDE.md with new project state"
+      ],
+      "priority": 33,
+      "passes": false,
+      "notes": "Final pass. Document any warnings that cannot/should not be fixed with reasons."
+    }
+  ]
+}

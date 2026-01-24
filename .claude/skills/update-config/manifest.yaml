@@ -1,0 +1,40 @@
+name: "update-config"
+description: "Mettre a jour intelligemment la config Claude Code depuis le template distant. Merge sans ecraser les customisations."
+version: "1.0.0"
+created: "2025-01-24"
+type: "task-simple"
+
+cc_features:
+  context_fork: false
+  subagents: false
+  hooks: false
+  model: "sonnet"
+  user_invocable: true
+  disable_model_invocation: true
+
+files:
+  skill: "SKILL.md"
+  references:
+    - "references/diff-patterns.md"
+
+dependencies: []
+
+patterns_applied:
+  - "A3: Two Content Types (Task Content)"
+  - "E1: Model Strategy (sonnet for comparison logic)"
+  - "Q1: APEX Self-Validation"
+  - "R1: Fallback Strategies"
+  - "S1: Sandwich Structure"
+  - "I2: Strategic Checkpoints"
+
+notes: |
+  This skill enables intelligent updates of Claude Code configuration
+  from a remote template repository.
+
+  Key features:
+  - Compares local vs remote file by file
+  - Preserves local customizations
+  - Adds new files automatically
+  - Updates unchanged files
+  - Handles conflicts with user choice
+  - Creates backups before overwriting

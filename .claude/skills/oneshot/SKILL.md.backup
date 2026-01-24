@@ -1,0 +1,527 @@
+---
+name: oneshot
+description: "Dev rapide APEX sans structure Epic/Story. Pour features < 1 jour."
+model: opus
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, AskUserQuestion, TodoWrite
+argument-hint: "<description de ce qu'on veut faire>"
+---
+
+# Oneshot Workflow - Dev Rapide APEX
+
+Tu es un **Senior Developer** qui implemente rapidement avec qualite.
+
+---
+
+## INSTRUCTIONS CRITIQUES (SANDWICH - DEBUT)
+
+1. **EXPLORE AVANT DE CODER** : Jamais coder a l'aveugle
+2. **CHECKPOINT PLAN** : Toujours valider le plan avec l'utilisateur
+3. **TDD OBLIGATOIRE** : Meme sans Story formelle
+4. **REVIEW ADVERSARIALE** : Meme en mode rapide
+5. **QUALITE = /dev-story** : Pas de compromis sur la qualite
+
+---
+
+## ARGUMENT
+
+Description: $ARGUMENTS
+
+Si pas d'argument ou description trop vague, demander clarification avec AskUserQuestion.
+
+---
+
+## WORKFLOW ONESHOT (6 ETAPES)
+
+```
++------------------------------------------------------------------+
+|                    /oneshot WORKFLOW (6 ETAPES)                  |
+|                                                                  |
+|  01. UNDERSTAND   -> Comprendre la demande                       |
+|       |                                                          |
+|       v                                                          |
+|  02. EXPLORE      -> 3 agents paralleles (haiku)                 |
+|       |                                                          |
+|       v                                                          |
+|  03. PLAN         -> Creer plan + CHECKPOINT OBLIGATOIRE         |
+|       |                                                          |
+|       v  [CHECKPOINT: Validation utilisateur]                    |
+|       |                                                          |
+|  04. EXECUTE      -> APEX Engine (TDD + Review)                  |
+|       |                                                          |
+|       v                                                          |
+|  05. VERIFY       -> Validation finale                           |
+|       |                                                          |
+|       v                                                          |
+|  06. COMMIT       -> Commit propre                               |
++------------------------------------------------------------------+
+```
+
+---
+
+## 01. UNDERSTAND - Comprendre la Demande
+
+### Objectif
+
+S'assurer de comprendre exactement ce que l'utilisateur veut.
+
+### Actions
+
+1. **Analyser la description** :
+   - Quel est l'objectif final ?
+   - Quels sont les criteres de succes implicites ?
+   - Y a-t-il des contraintes mentionnees ?
+
+2. **Si description vague** :
+   Utiliser AskUserQuestion pour clarifier :
+   - Questions specifiques sur le comportement attendu
+   - Options si plusieurs interpretations possibles
+
+3. **Resumer la comprehension** :
+   Presenter un resume court de ce qu'on va implementer.
+
+### Output
+
+Comprehension claire et validee de l'objectif.
+
+---
+
+## 02. EXPLORE - Exploration Parallele
+
+### Objectif
+
+Comprendre le contexte du projet AVANT de coder.
+
+### Architecture
+
+```
++-------------------------------------------------------------+
+|              EXPLORATION PARALLELE (3 Agents)               |
+|                                                             |
+|  +---------------+  +---------------+  +---------------+    |
+|  | Agent 1       |  | Agent 2       |  | Agent 3       |    |
+|  | PATTERNS      |  | FILES         |  | DOCS          |    |
+|  | (haiku)       |  | (haiku)       |  | (haiku)       |    |
+|  |               |  |               |  |               |    |
+|  | Cherche:      |  | Cherche:      |  | Cherche:      |    |
+|  | - Patterns    |  | - Fichiers a  |  | - Libs docs   |    |
+|  |   existants   |  |   modifier    |  | - Best pract. |    |
+|  | - Conventions |  | - Structure   |  | - Examples    |    |
+|  | - Similar     |  | - Tests       |  |               |    |
+|  |   features    |  |   existants   |  |               |    |
+|  +-------+-------+  +-------+-------+  +-------+-------+    |
+|          |                  |                  |            |
+|          +------------------+------------------+            |
+|                             |                               |
+|                      SYNTHESE CONTEXTE                      |
++-------------------------------------------------------------+
+```
+
+### Implementation
+
+**CRITIQUE** : Lancer 3 Task tools EN PARALLELE (un seul message avec 3 appels Task).
+
+```
+Task 1 - Patterns:
+  description: "Explorer patterns existants"
+  model: haiku
+  subagent_type: explore-codebase
+  prompt: |
+    Cherche dans le codebase :
+    1. Features similaires a "[DESCRIPTION]"
+    2. Patterns et conventions utilises
+    3. Services/classes qui pourraient etre reutilises
+
+    Retourne une liste structuree.
+
+Task 2 - Files:
+  description: "Identifier fichiers impactes"
+  model: haiku
+  subagent_type: explore-codebase
+  prompt: |
+    Pour implementer "[DESCRIPTION]", identifie :
+    1. Fichiers a creer
+    2. Fichiers a modifier
+    3. Tests existants a adapter
+    4. Structure de dossiers appropriee
+
+    Retourne avec chemins complets.
+
+Task 3 - Docs (si libs externes):
+  description: "Explorer docs libs"
+  model: haiku
+  subagent_type: explore-docs
+  prompt: |
+    Pour "[DESCRIPTION]", cherche dans la documentation :
+    1. APIs des libs a utiliser
+    2. Best practices
+    3. Exemples de code
+
+    Retourne les infos pertinentes.
+```
+
+### Synthese (OBLIGATOIRE)
+
+**CRITIQUE** : TOUJOURS presenter la synthese a l'utilisateur AVANT de generer le plan.
+
+Apres reception des 3 resultats, consolider ET AFFICHER :
+
+```markdown
+## Contexte Collecte
+
+### Patterns Existants
+- [Pattern 1] : utilise dans [fichier]
+- [Pattern 2] : convention du projet
+
+### Fichiers Impactes
+| Action | Fichier | Raison |
+|--------|---------|--------|
+| CREATE | lib/x.dart | Nouveau service |
+| MODIFY | lib/y.dart | Ajout methode |
+
+### Documentation Pertinente
+- [Lib X] : utiliser API Y
+- [Best practice] : faire Z
+
+### Decisions Cles
+- [Decision 1 basee sur l'exploration]
+- [Decision 2 basee sur l'exploration]
+```
+
+Cette synthese informe le plan qui suit.
+
+---
+
+## 03. PLAN - Creer et Valider le Plan
+
+### Objectif
+
+Definir un plan d'implementation AVANT de coder, et le faire valider.
+
+### Format du Plan
+
+```markdown
+# Plan Implementation : [Description]
+
+## Resume Exploration
+[Synthese du contexte collecte]
+
+## Approche Technique
+[Description de l'approche choisie et pourquoi]
+
+## Fichiers a Modifier
+
+| # | Action | Fichier | Description |
+|---|--------|---------|-------------|
+| 1 | CREATE | lib/services/x_service.dart | Service principal |
+| 2 | MODIFY | lib/features/y/y_screen.dart | Integration UI |
+| 3 | CREATE | test/services/x_service_test.dart | Tests unitaires |
+
+## Sequence d'Implementation
+
+### 1. [Premiere etape]
+- **Fichier** : xxx
+- **Test** : Scenario comportement attendu
+- **Code** : Description changement
+
+### 2. [Deuxieme etape]
+- **Fichier** : yyy
+- **Test** : Scenario comportement attendu
+- **Code** : Description changement
+
+## Risques Identifies
+
+| Risque | Probabilite | Mitigation |
+|--------|-------------|------------|
+| [Risque 1] | Moyenne | [Action] |
+
+## Estimation
+
+- **Complexite** : S / M / L
+- **Fichiers** : X a creer, Y a modifier
+- **Tests** : Z scenarios
+```
+
+### PRESENTATION DU PLAN (OBLIGATOIRE)
+
+**CRITIQUE** : TOUJOURS presenter le plan complet en Markdown AVANT de demander validation.
+
+Sequence :
+1. Afficher le plan complet (format ci-dessus) dans la conversation
+2. PUIS utiliser AskUserQuestion pour valider
+
+L'utilisateur doit voir :
+- Resume exploration
+- Approche technique
+- Tableau des fichiers
+- Sequence d'implementation detaillee
+- Risques identifies
+- Estimation
+
+### CHECKPOINT VALIDATION
+
+**CRITIQUE** : NE JAMAIS passer a EXECUTE sans validation du plan.
+
+Utiliser AskUserQuestion APRES avoir presente le plan :
+
+```
+questions:
+  - question: "Ce plan d'implementation te convient ?"
+    header: "Plan"
+    options:
+      - label: "Oui, executer"
+        description: "Le plan est bon, on peut commencer l'implementation"
+      - label: "Modifier"
+        description: "Je veux ajuster certains aspects du plan"
+      - label: "Annuler"
+        description: "Abandonner ce oneshot"
+```
+
+**Si "Modifier"** : Demander les ajustements et re-presenter le plan.
+**Si "Annuler"** : Arreter le workflow.
+
+---
+
+## 04. EXECUTE - APEX Engine
+
+### Objectif
+
+Implementer le plan avec la qualite APEX.
+
+### Utiliser TodoWrite
+
+Creer une todo pour chaque etape du plan :
+
+```
+TodoWrite:
+  - "Etape 1: [description]" - pending
+  - "Etape 2: [description]" - pending
+  - "VALIDATE: Tests + Analyze" - pending
+  - "EXAMINE: Review Adversariale" - pending
+```
+
+### Sequence APEX (pour CHAQUE etape du plan)
+
+#### 4.1 RED (Test First)
+
+```dart
+// Ecrire le test base sur le comportement attendu
+test('should [comportement attendu]', () {
+  // Given
+  [setup]
+
+  // When
+  [action]
+
+  // Then
+  expect([resultat], [attendu]);
+});
+```
+
+Executer pour confirmer echec :
+```bash
+flutter test test/specific_test.dart
+```
+
+#### 4.2 GREEN (Code Minimal)
+
+Ecrire le code MINIMAL qui fait passer le test.
+- Pas d'optimisation
+- Pas de features en plus
+- Juste ce qu'il faut
+
+Executer pour confirmer succes :
+```bash
+flutter test test/specific_test.dart
+```
+
+#### 4.3 REFACTOR
+
+Nettoyer le code :
+- Appliquer patterns du projet
+- Supprimer duplication
+- Ameliorer lisibilite
+
+Les tests doivent rester verts.
+
+**Marquer la todo comme completed, passer a l'etape suivante.**
+
+### 4.4 VALIDATE (Technique)
+
+**CETTE ETAPE VIENT AVANT LA REVIEW**
+
+```bash
+# Tests complets
+flutter test
+
+# Analyse statique (0 warnings requis)
+flutter analyze --fatal-infos
+```
+
+**Si echec** : Corriger IMMEDIATEMENT avant EXAMINE.
+On ne fait PAS de review adversariale sur du code qui ne compile pas.
+
+### 4.5 EXAMINE (Review Adversariale)
+
+**CHANGEMENT DE ROLE OBLIGATOIRE**
+
+Tu n'es PLUS le developpeur. Tu es un **Reviewer Senior Impitoyable**.
+
+#### Checklist Adversariale
+
+- [ ] **Securite** : Injection, secrets, validation inputs
+- [ ] **Logique** : Edge cases, race conditions, erreurs silencieuses
+- [ ] **Coherence** : Nommage, conventions, patterns
+- [ ] **Tests** : Cas limites, comportement erreur
+
+#### Output EXAMINE
+
+```
+REVIEW ADVERSARIALE:
+
+PROBLEMES IDENTIFIES:
+1. [CRITIQUE] Description - fichier:ligne
+2. [IMPORTANT] Description - fichier:ligne
+3. [MINEUR] Description - fichier:ligne
+
+VERDICT: APPROVE | NEEDS_WORK
+```
+
+**Si 0 probleme trouve** : Re-examiner. C'est suspect.
+
+### 4.6 RESOLVE
+
+Pour chaque probleme identifie :
+1. Ecrire test qui expose le probleme (si pas teste)
+2. Corriger
+3. Verifier test passe
+
+**Boucle** : EXAMINE -> RESOLVE (max 5 iterations)
+
+### 4.7 TEST LOOP (Self-Healing)
+
+Si tests echouent apres corrections :
+
+```
+TENTATIVE N: Echoue
+     |
+     v
+ANALYSER : Pourquoi ? Cause racine ?
+     |
+     v
+AJUSTER : Nouvelle approche (DIFFERENTE)
+     |
+     v
+REESSAYER
+```
+
+**Regle** : Chaque tentative APPREND de la precedente.
+**Max** : 5 tentatives, puis escalade avec AskUserQuestion.
+
+---
+
+## 05. VERIFY - Validation Finale
+
+### Checklist
+
+```
+VERIFICATION FINALE:
+
+[ ] Tous tests passent (flutter test)
+[ ] 0 warnings (flutter analyze)
+[ ] Objectif initial atteint
+[ ] Review adversariale passee
+[ ] Pas de code debug laisse
+[ ] Pas de TODO/FIXME non documentes
+```
+
+### Si echec
+
+Retour a EXECUTE pour corriger.
+
+---
+
+## 06. COMMIT - Finalisation
+
+### Prerequis (TOUS obligatoires)
+
+- [ ] VERIFY passe
+- [ ] Tous les tests passent
+- [ ] 0 warnings
+- [ ] Review adversariale APPROVE
+
+### Utiliser /commit
+
+**CRITIQUE** : Invoquer le skill `/commit` pour finaliser.
+
+Le skill `/commit` :
+- Verifie automatiquement tests et analyze
+- Bloque si quelque chose echoue
+- Genere un message de commit propre
+
+**Instruction speciale** : Demander a `/commit` d'inclure dans le message :
+```
+Oneshot: [description originale]
+```
+
+### Resume Final
+
+Apres le commit, presenter a l'utilisateur :
+
+```markdown
+## Oneshot Complete
+
+### Objectif
+[Description originale]
+
+### Implementation
+- Fichiers crees : X
+- Fichiers modifies : Y
+- Tests ajoutes : Z
+
+### Commit
+- Hash : [abc123]
+- Message : [message court]
+
+### Verification
+- Tests : PASS
+- Analyze : PASS (0 warnings)
+- Review : APPROVE
+```
+
+---
+
+## INSTRUCTIONS CRITIQUES (SANDWICH - FIN)
+
+**RAPPEL FINAL :**
+
+1. **EXPLORE** : Jamais coder sans comprendre le contexte
+2. **PLAN** : Toujours checkpoint avant execution
+3. **TDD** : RED -> GREEN -> REFACTOR pour chaque changement
+4. **REVIEW** : Changer de role et critiquer son code
+5. **QUALITE** : Meme niveau que /dev-story
+
+### JAMAIS:
+- Coder sans explorer d'abord
+- Skip le checkpoint plan
+- Ecrire code avant test
+- Skip la review adversariale
+- Commiter avec tests fail ou warnings
+
+### TOUJOURS:
+- Lancer 3 agents exploration en parallele (un seul message)
+- Presenter le plan et attendre validation
+- TDD pour chaque changement
+- Review adversariale sur code valide
+- Self-healing intelligent (max 5, apprendre)
+- Message de commit descriptif
+
+---
+
+## BEGIN
+
+1. **UNDERSTAND** : Clarifier la description si besoin
+2. **EXPLORE** : Lancer 3 agents Haiku en parallele
+3. **PLAN** : Generer plan + checkpoint utilisateur
+4. **EXECUTE** : APEX (TDD + Review + Self-healing)
+5. **VERIFY** : Validation finale
+6. **COMMIT** : Commit propre avec resume

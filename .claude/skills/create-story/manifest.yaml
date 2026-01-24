@@ -1,0 +1,30 @@
+name: create-story
+version: 2.0.0
+description: Decompose Epic en user stories INVEST avec criteres Gherkin
+author: {{PROJECT_NAME}} Team
+
+# Changelog
+# v2.0.0 - Full refactor: multi-file architecture, validation APEX, fallbacks
+# v1.0.0 - Initial monolithic version
+
+structure:
+  type: task-workflow
+  steps: 5
+  has_templates: true
+  has_references: false
+
+dependencies:
+  requires_epic: true
+  output_location: docs/epics/{epic_id}/stories/
+  updates_tracking: true
+
+quality:
+  patterns_applied:
+    - A1: Multi-File Architecture
+    - A2: Progressive Step Loading
+    - Q1: APEX Self-Validation
+    - Q2: Adversarial Review (in propose step)
+    - R1: Fallback Strategies
+    - S1: Sandwich Structure
+    - S2: State Variable Management
+    - I2: Strategic Checkpoints

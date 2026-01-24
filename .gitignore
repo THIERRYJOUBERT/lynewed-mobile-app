@@ -1,6 +1,7 @@
-# Claude Code (local config)
-.claude/
-CLAUDE.md
+# Claude Code (local config only)
+.claude/settings.json
+.claude/settings.local.json
+.claude/.cache/
 workspace/
 
 # Miscellaneous

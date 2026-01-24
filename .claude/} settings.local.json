@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "*",
+      "Bash(claude skill list:*)"
+    ]
+  },
+  "allowDangerouslySkipPermissions": true
+}

@@ -1,0 +1,60 @@
+# /debug v2 - Scientific Debugging Workflow
+# Constrained ReAct methodology for root cause analysis
+
+version: "2.0.0"
+created: "2025-01-24"
+updated: "2025-01-24"
+
+metadata:
+  name: debug
+  description: "Debugging scientifique avec Constrained ReAct"
+  category: development
+  model: opus
+  author: {{PROJECT_NAME}} Team
+
+architecture:
+  type: multi-step
+  entry_point: SKILL.md
+  steps_count: 6
+
+files:
+  skill:
+    - SKILL.md
+  steps:
+    - steps/step-00-capture.md
+    - steps/step-01-observe.md
+    - steps/step-02-hypothesize.md
+    - steps/step-03-strategize.md
+    - steps/step-04-fix.md
+    - steps/step-05-verify.md
+  references:
+    - references/instrumentation.md
+
+patterns_applied:
+  - A1: Multi-File Architecture
+  - A2: Progressive Step Loading
+  - E1: Model Strategy (opus for complex reasoning)
+  - Q1: APEX Self-Validation
+  - Q2: Adversarial Review (via hypothesis proof)
+  - R3: Self-Healing Loop (max 5 iterations)
+  - S1: Sandwich Structure
+  - S2: State Variable Management
+  - I1: Intelligent Interview (mode detection)
+  - I3: Minimal User Interaction (--auto mode)
+
+changelog:
+  - version: "2.0.0"
+    date: "2025-01-24"
+    changes:
+      - "Migrated to multi-file architecture"
+      - "Added mode detection (--auto vs interactive)"
+      - "Added step-00-capture for context gathering"
+      - "Added solution scoring (Effort × Risk × Impact)"
+      - "Added instrumentation guide reference"
+      - "Improved output formatting"
+      - "Added state variable tracking"
+
+  - version: "1.0.0"
+    date: "2024-xx-xx"
+    changes:
+      - "Initial monolithic implementation"

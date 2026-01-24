@@ -1,0 +1,36 @@
+# Workflow Manifest
+name: launch-epic
+version: "2.0.0"
+description: "Lancer un Epic complet avec coordination chef. Modes supervised (interactif) et autonomous (automatique)."
+updated: "2026-01-24"
+
+# Architecture
+type: task-workflow
+entry_point: SKILL.md
+
+# Steps
+steps:
+  - step-00-init.md      # Initialisation + validation + error handling
+  - step-01-supervised.md # Workflow interactif avec utilisateur
+  - step-02-autonomous.md # Workflow automatique avec subagents
+  - step-03-review.md     # Review adversariale (commun)
+  - step-04-finalize.md   # Finalisation Epic et rapport
+
+# Dependencies
+dependencies:
+  agents:
+    - story-executor  # Agent pour exécuter stories en autonomous
+
+# Changelog
+changelog:
+  - version: "2.0.0"
+    date: "2026-01-24"
+    changes:
+      - "Migration vers architecture multi-file"
+      - "Ajout sections AUTO-VALIDATION dans chaque step"
+      - "Ajout ERROR HANDLING avec messages explicites"
+      - "Documentation syntaxe Task tool pour story-executor"
+  - version: "1.0.0"
+    date: "2025-xx-xx"
+    changes:
+      - "Version initiale monolithique"
