@@ -115,11 +115,11 @@ Future<void> initPushNotifications(BuildContext context) async {
     }
 
     // Configurer les callbacks du service d'appel entrant
-    _setupIncomingCallService(context);
+    _setupIncomingCallService();
 
     // ✅ REALTIME: Écouter les nouvelles video_sessions pour afficher l'overlay
     // Ceci fonctionne même sur simulateur (pas besoin de FCM push)
-    _setupVideoSessionsRealtimeListener(context);
+    _setupVideoSessionsRealtimeListener();
 
     // Écouteur pour les messages reçus quand l'app est OUVERTE (Foreground)
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
@@ -216,7 +216,7 @@ Future<void> initPushNotifications(BuildContext context) async {
 }
 
 /// Configure les callbacks du service d'appel entrant
-void _setupIncomingCallService(BuildContext context) {
+void _setupIncomingCallService() {
   final callService = IncomingCallService.instance;
 
   // Callback quand l'utilisateur accepte l'appel
@@ -283,7 +283,7 @@ void _showIncomingCallOverlay(Map<String, dynamic> data) {
 
 /// Configure le listener Supabase Realtime pour les appels vidéo entrants
 /// Ceci permet d'afficher l'overlay même sur simulateur (sans FCM push)
-void _setupVideoSessionsRealtimeListener(BuildContext context) {
+void _setupVideoSessionsRealtimeListener() {
   // Annuler l'ancien channel si existant
   _videoSessionsChannel?.unsubscribe();
   

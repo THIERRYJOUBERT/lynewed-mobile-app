@@ -28,14 +28,17 @@ Future<void> setupDeeplinkListener(BuildContext context) async {
   _authStateSubscription = SupaFlow.client.auth.onAuthStateChange.listen(
     (AuthState authState) {
       SecureLogger.debug('Auth state changed: ${authState.event}');
-      
+
       // Si c'est un événement de récupération de mot de passe
       if (authState.event == AuthChangeEvent.passwordRecovery) {
         SecureLogger.debug('Password recovery event detected, redirecting to reset page');
-        
+
         // Naviguer vers la page de reset password
         Future.delayed(const Duration(milliseconds: 100), () {
-          context.goNamed(ResetPasswordNewPageWidget.routeName);
+          final navContext = appNavigatorKey.currentContext;
+          if (navContext != null && navContext.mounted) {
+            navContext.goNamed(ResetPasswordNewPageWidget.routeName);
+          }
         });
       }
     },
@@ -57,7 +60,10 @@ Future<void> setupDeeplinkListener(BuildContext context) async {
 
           // Naviguer vers la page de reset password
           Future.delayed(const Duration(milliseconds: 100), () {
-            context.goNamed(ResetPasswordNewPageWidget.routeName);
+            final navContext = appNavigatorKey.currentContext;
+            if (navContext != null && navContext.mounted) {
+              navContext.goNamed(ResetPasswordNewPageWidget.routeName);
+            }
           });
           return;
         }
@@ -68,7 +74,10 @@ Future<void> setupDeeplinkListener(BuildContext context) async {
 
           // Naviguer vers la page de reset password
           Future.delayed(const Duration(milliseconds: 100), () {
-            context.goNamed(ResetPasswordNewPageWidget.routeName);
+            final navContext = appNavigatorKey.currentContext;
+            if (navContext != null && navContext.mounted) {
+              navContext.goNamed(ResetPasswordNewPageWidget.routeName);
+            }
           });
         }
       }
