@@ -252,12 +252,7 @@ class _LynewedMapWidgetState extends State<LynewedMapWidget> {
 
   void _onMapCreated(gmaps.GoogleMapController controller) {
     _mapController = controller;
-    
-    // Apply custom style if provided
-    if (widget.config.mapStyle != null) {
-      controller.setMapStyle(widget.config.mapStyle);
-    }
-    
+    // Note: Map style is now applied via GoogleMap.style property (line 222)
     // Notify parent that controller is ready
     widget.onMapControllerReady?.call(controller);
   }
@@ -297,7 +292,7 @@ class _LynewedMapWidgetState extends State<LynewedMapWidget> {
         position: marker.position,
         onTap: () => _onMarkerTap(marker),
         icon: _markerIcons[_generateIconKey(marker)]!,
-        zIndex: _zIndexForMarkerType(marker.type),
+        zIndexInt: _zIndexForMarkerType(marker.type),
       );
     }).toSet();
   }
@@ -312,7 +307,7 @@ class _LynewedMapWidgetState extends State<LynewedMapWidget> {
     widget.onMarkerTap?.call(marker);
   }
 
-  double _zIndexForMarkerType(MapMarkerType type) {
+  int _zIndexForMarkerType(MapMarkerType type) {
     switch (type) {
       case MapMarkerType.professionalAlert:
         return 5;

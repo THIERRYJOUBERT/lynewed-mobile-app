@@ -255,7 +255,7 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                                                 UserRole.professional)
                                               FaIcon(
                                                 FontAwesomeIcons
-                                                    .externalLinkAlt,
+                                                    .upRightFromSquare,
                                                 color:
                                                     FlutterFlowTheme.of(context)
                                                         .secondaryText,

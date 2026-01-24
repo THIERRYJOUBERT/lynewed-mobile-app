@@ -542,7 +542,7 @@ class _ChatComposerWidgetState extends State<ChatComposerWidget> {
                                             child: !_isSending
                                                 ? FaIcon(
                                                     FontAwesomeIcons
-                                                        .arrowCircleUp,
+                                                        .circleArrowUp,
                                                     color: theme.primaryText,
                                                     size: 24,
                                                   )

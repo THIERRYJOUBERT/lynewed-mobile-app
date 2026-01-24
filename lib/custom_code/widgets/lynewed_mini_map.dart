@@ -131,7 +131,7 @@ class _LynewedMiniMapState extends State<LynewedMiniMap> {
         markerId: const gmaps.MarkerId('mini-map-marker'),
         position: gmaps.LatLng(widget.center.latitude, widget.center.longitude),
         icon: icon,
-        zIndex: 2.0,
+        zIndexInt: 2,
       );
       if (mounted) setState(() {});
     });
@@ -223,7 +223,7 @@ class _LynewedMiniMapState extends State<LynewedMiniMap> {
       final picture = recorder.endRecording();
       final img = await picture.toImage(size.toInt(), size.toInt());
       final png = await img.toByteData(format: ui.ImageByteFormat.png);
-      return gmaps.BitmapDescriptor.fromBytes(png!.buffer.asUint8List());
+      return gmaps.BitmapDescriptor.bytes(png!.buffer.asUint8List());
     } catch (_) {
       return gmaps.BitmapDescriptor.defaultMarker;
     }
