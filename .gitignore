@@ -22,6 +22,8 @@ migrate_working_dir/
 .env
 .env.local
 .env.*.local
+secrets.json
+secrets.*.json
 
 # IntelliJ related
 *.iml

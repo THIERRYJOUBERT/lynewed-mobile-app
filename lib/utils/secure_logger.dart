@@ -23,11 +23,21 @@ class SecureLogger {
     if (kDebugMode) {
       String sanitized = message;
       
-      // Clés sensibles par défaut
+      // Cles sensibles par defaut - Liste complete pour protection PII
+      // Voir docs/epics/EPIC-05-SECURITY-CLEANUP/stories/S-04-data-exposure.md
       final defaultSensitiveKeys = [
-        'token', 'password', 'secret', 'apikey', 'api_key',
-        'session_id', 'user_id', 'profile_id', 'channel',
-        'uid', 'agora_token', 'fcm_token'
+        // Authentication tokens
+        'token', 'password', 'secret', 'apikey', 'api_key', 'jwt',
+        // Session identifiers
+        'session_id', 'user_id', 'profile_id', 'uid',
+        // Communication tokens
+        'channel', 'agora_token', 'fcm_token',
+        // PII - Personal Identifiable Information
+        'email', 'phone', 'full_name', 'first_name', 'last_name',
+        // Financial data
+        'budget', 'budget_min', 'budget_max',
+        // Location/Resource identifiers
+        'wedding_id', 'room_id', 'venue_coords',
       ];
       
       final keysToSanitize = [...defaultSensitiveKeys, ...(sensitiveKeys ?? [])];
@@ -121,8 +131,23 @@ class SecureLogger {
   /// Sanitization utilitaire pour les objets complexes
   static String _sanitizeMap(Map<String, dynamic> map) {
     final sanitized = <String, dynamic>{};
-    final sensitiveKeys = ['token', 'password', 'secret', 'apikey', 'api_key', 'session_id', 'user_id'];
-    
+    // Liste complete des cles sensibles pour sanitization des Maps
+    // Doit etre synchronisee avec defaultSensitiveKeys dans debugSanitized
+    const sensitiveKeys = [
+      // Authentication
+      'token', 'password', 'secret', 'apikey', 'api_key', 'jwt',
+      // Session/User IDs
+      'session_id', 'user_id', 'profile_id', 'uid',
+      // Communication tokens
+      'agora_token', 'fcm_token', 'channel',
+      // PII
+      'email', 'phone', 'full_name', 'first_name', 'last_name',
+      // Financial
+      'budget', 'budget_min', 'budget_max',
+      // Location
+      'wedding_id', 'room_id', 'venue_coords',
+    ];
+
     map.forEach((key, value) {
       if (sensitiveKeys.any((sensitive) => key.toLowerCase().contains(sensitive))) {
         sanitized[key] = '***REDACTED***';
@@ -130,7 +155,7 @@ class SecureLogger {
         sanitized[key] = value;
       }
     });
-    
+
     return sanitized.toString();
   }
   

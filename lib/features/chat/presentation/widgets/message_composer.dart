@@ -11,6 +11,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import '/core/design/design.dart';
+import '/core/utils/input_validators.dart';
 import 'audio_player_widget.dart';
 
 /// Callback types for message sending
@@ -161,6 +162,20 @@ class _MessageComposerState extends State<MessageComposer> {
     // Then send text if any
     final text = _textController.text.trim();
     if (text.isNotEmpty) {
+      // Validate message before sending
+      final validationError = InputValidators.validateMessage(text, maxLength: widget.maxLength);
+      if (validationError != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(validationError),
+              backgroundColor: LynewedColors.error,
+            ),
+          );
+        }
+        return;
+      }
+
       final success = await widget.onSendText(text);
       if (success) {
         _textController.clear();

@@ -7,7 +7,7 @@
 | **Epic** | EPIC-05-SECURITY-CLEANUP |
 | **Priorite** | P1 - HAUTE |
 | **Estimation** | 3h |
-| **Statut** | NOT_STARTED |
+| **Statut** | COMPLETE |
 
 ---
 
@@ -40,11 +40,11 @@ L'application collecte des inputs utilisateur a plusieurs endroits:
 
 ## Criteres d'Acceptance
 
-- [ ] Audit de tous les TextEditingController et inputs
-- [ ] Rapport des inputs non valides/non sanitizes
-- [ ] Implementation validation pour tous les inputs critiques
-- [ ] Tests pour cas limites (XSS, SQL-like, unicode malicieux)
-- [ ] Documentation des patterns de validation
+- [x] Audit de tous les TextEditingController et inputs
+- [x] Rapport des inputs non valides/non sanitizes
+- [x] Implementation validation pour tous les inputs critiques
+- [x] Tests pour cas limites (XSS, SQL-like, unicode malicieux)
+- [x] Documentation des patterns de validation
 
 ---
 
@@ -131,8 +131,48 @@ class InputValidators {
 
 ## Definition of Done
 
-- [ ] Tous les inputs audites
-- [ ] Validation implementee sur inputs critiques
-- [ ] Tests de regression passent
-- [ ] Documentation des validators creee
+- [x] Tous les inputs audites
+- [x] Validation implementee sur inputs critiques
+- [x] Tests de regression passent
+- [x] Documentation des validators creee
 - [ ] PR reviewee et mergee
+
+---
+
+## Implementation Notes (2026-01-24)
+
+### Files Created
+- `lib/core/utils/input_validators.dart` - Centralized input validation class
+- `test/core/utils/input_validators_test.dart` - 74 unit tests
+
+### Files Modified
+- `lib/pages/auth/sign_up_email_page/sign_up_email_page_model.dart` - Added validators
+- `lib/pages/auth/sign_in_email_page/sign_in_email_page_model.dart` - Added validators
+- `lib/pages/bride/edit_profile_brides/edit_profile_brides_model.dart` - Added validators
+- `lib/features/chat/presentation/widgets/message_composer.dart` - Added validation before send
+- `lib/features/my_wedding/presentation/sheets/add_guest_sheet.dart` - Added validators
+- `lib/features/my_wedding/presentation/sheets/add_event_sheet.dart` - Added validators
+- `lib/features/my_wedding/presentation/sheets/wedding_edit_sheet.dart` - Added validators
+
+### Validation Implemented
+| Input Type | Max Length | Checks |
+|------------|------------|--------|
+| Email | 254 | RFC 5321 format |
+| Password | 8-128 | Uppercase, lowercase, digit |
+| Name | 100 | Unicode letters, spaces, hyphens, apostrophes; XSS/SQL/Unicode checks |
+| Bio | 500 | HTML tag detection |
+| Message | 2000 | Length only |
+| Phone | 20 | Digits, +, -, (), spaces |
+| Search | 200 | Length only |
+
+### Security Features
+- XSS prevention via HTML tag detection and sanitization
+- SQL injection pattern detection
+- Malicious unicode character detection (invisible formatting characters)
+- DoS prevention via length limits on all inputs
+- Performance: All validators complete <100ms even for 10000+ char inputs
+
+### Design Decisions
+- Zero-width joiner (U+200D) is allowed for emoji sequences
+- Message validation does NOT check HTML/SQL (Flutter Text widgets don't execute)
+- Phone validation is lenient to support international formats

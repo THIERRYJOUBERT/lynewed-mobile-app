@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '/core/design/design.dart';
+import '/core/utils/input_validators.dart';
 import '../../data/repositories/my_wedding_repository_impl.dart';
 import '../../domain/entities/entities.dart';
 
@@ -176,12 +177,8 @@ class _AddGuestSheetState extends State<AddGuestSheet> {
             LynewedTextField(
               controller: _nameController,
               hint: 'e.g., John Smith',
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Name is required';
-                }
-                return null;
-              },
+              maxLength: InputValidators.maxNameLength,
+              validator: InputValidators.validateName,
             ),
             const SizedBox(height: 30),
 
@@ -196,6 +193,12 @@ class _AddGuestSheetState extends State<AddGuestSheet> {
               controller: _emailController,
               hint: 'e.g., john@example.com',
               keyboardType: TextInputType.emailAddress,
+              maxLength: InputValidators.maxEmailLength,
+              validator: (value) {
+                // Email is optional for guests
+                if (value == null || value.trim().isEmpty) return null;
+                return InputValidators.validateEmail(value);
+              },
             ),
             const SizedBox(height: 30),
 
@@ -205,6 +208,8 @@ class _AddGuestSheetState extends State<AddGuestSheet> {
               controller: _phoneController,
               hint: 'e.g., +33 6 12 34 56 78',
               keyboardType: TextInputType.phone,
+              maxLength: InputValidators.maxPhoneLength,
+              validator: InputValidators.validatePhone,
             ),
             const SizedBox(height: 30),
 
@@ -214,7 +219,8 @@ class _AddGuestSheetState extends State<AddGuestSheet> {
               controller: _notesController,
               hint: 'Add any notes about this guest...',
               maxLines: 3,
-              maxLength: 500,
+              maxLength: InputValidators.maxBioLength,
+              validator: InputValidators.validateBio,
             ),
           ],
         ),

@@ -7,7 +7,7 @@
 | **Epic** | EPIC-05-SECURITY-CLEANUP |
 | **Priorite** | P2 - MOYENNE |
 | **Estimation** | 4h |
-| **Statut** | NOT_STARTED |
+| **Statut** | COMPLETE |
 
 ---
 
@@ -34,118 +34,105 @@ Meme dans les fichiers utilises, de nombreuses fonctions peuvent etre mortes (ja
 
 ## Criteres d'Acceptance
 
-- [ ] Audit des fonctions dans fichiers cibles
-- [ ] Liste des fonctions non appelees
-- [ ] Verification manuelle pour faux positifs
-- [ ] Suppression des fonctions confirmees inutiles
-- [ ] `flutter analyze` passe sans erreur
-- [ ] Tests passent
-- [ ] Documentation des suppressions
+- [x] Audit des fonctions dans fichiers cibles
+- [x] Liste des fonctions non appelees
+- [x] Verification manuelle pour faux positifs
+- [x] Suppression des fonctions confirmees inutiles
+- [x] `flutter analyze` passe sans erreur
+- [x] Tests passent (pre-existing failures not related)
+- [x] Documentation des suppressions
 
 ---
 
-## Checklist Cleanup
+## Implementation Details
 
-### Analyse custom_functions.dart
-- [ ] Lister toutes les fonctions exportees
-- [ ] Pour chaque fonction, grep usage dans codebase
-- [ ] Marquer fonctions sans usage
+### Fonctions Supprimees
 
-### Analyse flutter_flow_util.dart
-- [ ] Lister toutes les fonctions/extensions
-- [ ] Verifier usage de chaque utility
-- [ ] Identifier helpers remplaces par packages
+#### custom_functions.dart (2 fonctions)
+| Fonction | Raison suppression |
+|----------|-------------------|
+| `jsonToQueryFilters()` | Jamais appelee dans le codebase |
+| `stringToDateTime()` | Jamais appelee dans le codebase |
 
-### Analyse Structs
-- [ ] Lister tous les structs dans `lib/backend/schema/structs/`
-- [ ] Verifier usage de chaque struct
-- [ ] Identifier structs pour tables non utilisees
+**Imports supprimes:**
+- `import 'lat_lng.dart';`
+- `import '/backend/supabase/supabase.dart';`
 
-### Suppression
-- [ ] Commenter d'abord (ne pas supprimer directement)
-- [ ] Run `flutter analyze`
-- [ ] Si pas d'erreur, supprimer
-- [ ] Run `flutter test`
+#### flutter_flow_util.dart (26 elements)
+| Element | Type | Raison suppression |
+|---------|------|-------------------|
+| `colorFromCssString()` | Function | Jamais appelee |
+| `dateTimeFromSecondsSinceEpoch()` | Function | Jamais appelee |
+| `getJsonField()` | Function | Jamais appelee |
+| `getWidgetBoundingBox()` | Function | Jamais appelee |
+| `isWeb` | Getter | Jamais utilise |
+| `kBreakpointSmall/Medium/Large` | Constants | Jamais utilisees |
+| `isMobileWidth()` | Function | Jamais appelee |
+| `responsiveVisibility()` | Function | Jamais appelee |
+| `kTextValidatorUsernameRegex` | Constant | Jamais utilisee |
+| `kTextValidatorEmailRegex` | Constant | Jamais utilisee |
+| `kTextValidatorWebsiteRegex` | Constant | Jamais utilisee |
+| `IterableExt.sortedList()` | Extension | Jamais utilise |
+| `IterableExt.mapIndexed()` | Extension | Jamais utilise |
+| `setAppLanguage()` | Function | Jamais appelee |
+| `setDarkModeSetting()` | Function | Jamais appelee |
+| `showSnackbar()` | Function | Jamais appelee |
+| `FFStringExt.toCapitalization()` | Extension | Jamais utilise |
+| `MapListContainsExt.containsMap()` | Extension | Jamais utilise |
+| `ListDivideExt.around()` | Extension | Jamais utilise |
+| `ListDivideExt.paddingTopEach()` | Extension | Jamais utilise |
+| `ColorOpacityExt.applyAlpha()` | Extension | Jamais utilise |
+| `roundTo()` | Function | Usage interne seulement |
+| `computeGradientAlignmentX()` | Function | Jamais appelee |
+| `computeGradientAlignmentY()` | Function | Jamais appelee |
+| `ListUniqueExt.unique()` | Extension | Jamais utilise |
+| `getCurrentRoute()` | Function | Jamais appelee |
+| `getCurrentRouteStack()` | Function | Jamais appelee |
+
+**Imports supprimes:**
+- `import 'package:from_css_color/from_css_color.dart';`
+- `import 'package:collection/collection.dart';`
+- `import 'dart:math' show pow, pi, sin;`
+- `import 'package:json_path/json_path.dart';`
+- `import '../main.dart';`
+
+#### flutter_flow_widgets.dart (1 widget)
+| Widget | Raison suppression |
+|--------|-------------------|
+| `FFFocusIndicator` | Jamais utilise dans le codebase |
+
+### Structs Non Supprimes
+
+Les tables PostGIS/sync n'ont **pas** ete supprimees car elles sont referenciees dans `serialization_util.dart`:
+- `SpatialRefSysRow`
+- `GeometryColumnsRow`
+- `GeographyColumnsRow`
+- `SyncLogRow`
+- `SyncControlRow`
+
+Supprimer ces structs necessiterait de modifier le switch-case dans `serialization_util.dart`, ce qui sort du scope de cette story.
 
 ---
 
-## Implementation
+## Validation
 
-### Script Detection Fonctions Mortes
-
-```bash
-#!/bin/bash
-# find_dead_functions.sh
-
-FILE=$1  # ex: lib/flutter_flow/custom_functions.dart
-
-# Extraire noms de fonctions (simpliste)
-functions=$(grep -E "^(Future|void|String|int|double|bool|List|Map|dynamic|[A-Z][a-zA-Z]+)\s+[a-z][a-zA-Z]+\(" "$FILE" | sed 's/.*\s\+\([a-z][a-zA-Z]*\)(.*/\1/')
-
-for func in $functions; do
-  # Compter usages (exclure definition)
-  usages=$(grep -r "\b$func\b" lib --include="*.dart" | grep -v "^$FILE" | wc -l)
-  if [ "$usages" -eq 0 ]; then
-    echo "DEAD: $func in $FILE"
-  fi
-done
+### Flutter Analyze
+```
+Analyzing lynewed_v1...
+No issues found!
 ```
 
-### Utiliser dart analyze
-
-```bash
-# Les warnings "unused" de dart analyze
-flutter analyze 2>&1 | grep -i "unused"
-```
-
----
-
-## Fonctions Candidates
-
-### custom_functions.dart
-
-A auditer:
-- [ ] `formatPhoneNumber()`
-- [ ] `calculateDistance()`
-- [ ] `formatCurrency()`
-- [ ] `convertTimestamp()`
-- [ ] ... (lister toutes les fonctions)
-
-### flutter_flow_util.dart
-
-A auditer:
-- [ ] `maybeDisposeModel()`
-- [ ] `dateTimeFormat()`
-- [ ] `responsiveVisibility()`
-- [ ] `parseCurrency()`
-- [ ] ... (lister toutes les fonctions)
-
-### Structs potentiellement inutilises
-
-| Struct | Table | Usage suspect |
-|--------|-------|---------------|
-| `SpatialRefSysRow` | spatial_ref_sys | PostGIS internal |
-| `GeometryColumnsRow` | geometry_columns | PostGIS internal |
-| `GeographyColumnsRow` | geography_columns | PostGIS internal |
-| `SyncLogRow` | sync_log | Utilise? |
-| `SyncControlRow` | sync_control | Utilise? |
-
----
-
-## Risques
-
-| Risque | Impact | Mitigation |
-|--------|--------|------------|
-| Supprimer fonction encore utilisee | HAUT | Grep exhaustif + tests |
-| Callbacks passes en parametre | MOYEN | Verification manuelle |
-| Reflection/dynamic calls | BAS | Tests E2E |
+### Flutter Test
+- **Avant changes:** 212 passes, 7 echecs (pre-existants)
+- **Apres changes:** 215 passes, 4 echecs (pre-existants)
+- **Resultat:** Pas de regressions introduites
 
 ---
 
 ## Definition of Done
 
-- [ ] Fonctions mortes identifiees
-- [ ] Suppression validee (analyze + tests)
-- [ ] Code simplifie et lisible
-- [ ] Documentation des suppressions
-- [ ] PR reviewee et mergee
+- [x] Fonctions mortes identifiees
+- [x] Suppression validee (analyze + tests)
+- [x] Code simplifie et lisible
+- [x] Documentation des suppressions
+- [ ] PR reviewee et mergee (pending)

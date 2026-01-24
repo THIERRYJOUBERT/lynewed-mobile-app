@@ -1,4 +1,5 @@
 import '/components/nav/header_bar/header_bar_widget.dart';
+import '/core/utils/input_validators.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'edit_profile_brides_widget.dart' show EditProfileBridesWidget;
 import 'package:flutter/material.dart';
@@ -28,6 +29,13 @@ class EditProfileBridesModel extends FlutterFlowModel<EditProfileBridesWidget> {
   @override
   void initState(BuildContext context) {
     headerBarModel = createModel(context, () => HeaderBarModel());
+
+    // Initialize validators using centralized InputValidators
+    fullNameTextControllerValidator = (_, value) =>
+        InputValidators.validateName(value);
+    // Email is read-only in this screen, but validate for safety
+    emailAddressTextControllerValidator = (_, value) =>
+        InputValidators.validateEmail(value);
   }
 
   @override

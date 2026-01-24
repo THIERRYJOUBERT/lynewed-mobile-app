@@ -3,16 +3,10 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:collection/collection.dart';
-import 'package:from_css_color/from_css_color.dart';
-import 'dart:math' show pow, pi, sin;
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
-import 'package:json_path/json_path.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
-
-import '../main.dart';
 
 import 'lat_lng.dart';
 
@@ -56,13 +50,6 @@ Future launchURL(String url) async {
   } catch (e) {
     throw 'Could not launch $uri: $e';
   }
-}
-
-Color colorFromCssString(String color, {Color? defaultColor}) {
-  try {
-    return fromCssColor(color);
-  } catch (_) {}
-  return defaultColor ?? Colors.black;
 }
 
 enum FormatType {
@@ -151,9 +138,6 @@ String formatNumber(
 }
 
 DateTime get getCurrentTimestamp => DateTime.now();
-DateTime dateTimeFromSecondsSinceEpoch(int seconds) {
-  return DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
-}
 
 extension DateTimeConversionExtension on DateTime {
   int get secondsSinceEpoch => (millisecondsSinceEpoch / 1000).round();
@@ -187,70 +171,8 @@ T? castToType<T>(dynamic value) {
   return value as T;
 }
 
-dynamic getJsonField(
-  dynamic response,
-  String jsonPath, [
-  bool isForList = false,
-]) {
-  final field = JsonPath(jsonPath).read(response);
-  if (field.isEmpty) {
-    return null;
-  }
-  if (field.length > 1) {
-    return field.map((f) => f.value).toList();
-  }
-  final value = field.first.value;
-  if (isForList) {
-    return value is! Iterable
-        ? [value]
-        : (value is List ? value : value.toList());
-  }
-  return value;
-}
-
-Rect? getWidgetBoundingBox(BuildContext context) {
-  try {
-    final renderBox = context.findRenderObject() as RenderBox?;
-    return renderBox!.localToGlobal(Offset.zero) & renderBox.size;
-  } catch (_) {
-    return null;
-  }
-}
-
 bool get isAndroid => !kIsWeb && Platform.isAndroid;
 bool get isiOS => !kIsWeb && Platform.isIOS;
-bool get isWeb => kIsWeb;
-
-const kBreakpointSmall = 479.0;
-const kBreakpointMedium = 767.0;
-const kBreakpointLarge = 991.0;
-bool isMobileWidth(BuildContext context) =>
-    MediaQuery.sizeOf(context).width < kBreakpointSmall;
-bool responsiveVisibility({
-  required BuildContext context,
-  bool phone = true,
-  bool tablet = true,
-  bool tabletLandscape = true,
-  bool desktop = true,
-}) {
-  final width = MediaQuery.sizeOf(context).width;
-  if (width < kBreakpointSmall) {
-    return phone;
-  } else if (width < kBreakpointMedium) {
-    return tablet;
-  } else if (width < kBreakpointLarge) {
-    return tabletLandscape;
-  } else {
-    return desktop;
-  }
-}
-
-const kTextValidatorUsernameRegex = r'^[a-zA-Z][a-zA-Z0-9_-]{2,16}$';
-// https://stackoverflow.com/a/201378
-const kTextValidatorEmailRegex =
-    "^(?:[a-zA-Z0-9!#\$%&'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#\$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|\\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-zA-Z0-9-]*[a-zA-Z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])\$";
-const kTextValidatorWebsiteRegex =
-    r'(https?:\/\/)?(www\.)[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,10}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)|(https?:\/\/)?(www\.)?(?!ww)[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,10}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)';
 
 LatLng? cachedUserLocation;
 Future<LatLng> getCurrentUserLocation(
@@ -298,78 +220,11 @@ extension FFTextEditingControllerExt on TextEditingController? {
   set text(String newText) => this?.text = newText;
 }
 
-extension IterableExt<T> on Iterable<T> {
-  List<T> sortedList<S extends Comparable>(
-      {S Function(T)? keyOf, bool desc = false}) {
-    final sortedAscending = toList()
-      ..sort(keyOf == null ? null : ((a, b) => keyOf(a).compareTo(keyOf(b))));
-    if (desc) {
-      return sortedAscending.reversed.toList();
-    }
-    return sortedAscending;
-  }
-
-  List<S> mapIndexed<S>(S Function(int, T) func) => toList()
-      .asMap()
-      .map((index, value) => MapEntry(index, func(index, value)))
-      .values
-      .toList();
-}
-
-void setAppLanguage(BuildContext context, String language) =>
-    MyApp.of(context).setLocale(language);
-
-void setDarkModeSetting(BuildContext context, ThemeMode themeMode) =>
-    MyApp.of(context).setThemeMode(themeMode);
-
-void showSnackbar(
-  BuildContext context,
-  String message, {
-  bool loading = false,
-  int duration = 4,
-}) {
-  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Row(
-        children: [
-          if (loading)
-            const Padding(
-              padding: EdgeInsetsDirectional.only(end: 10.0),
-              child: SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          Text(message),
-        ],
-      ),
-      duration: Duration(seconds: duration),
-    ),
-  );
-}
-
 extension FFStringExt on String {
   String maybeHandleOverflow({int? maxChars, String replacement = ''}) =>
       maxChars != null && length > maxChars
           ? replaceRange(maxChars, null, replacement)
           : this;
-
-  String toCapitalization(TextCapitalization textCapitalization) {
-    switch (textCapitalization) {
-      case TextCapitalization.none:
-        return this;
-      case TextCapitalization.words:
-        return split(' ').map(toBeginningOfSentenceCase).join(' ');
-      case TextCapitalization.sentences:
-        return toBeginningOfSentenceCase(this);
-      case TextCapitalization.characters:
-        return toUpperCase();
-    }
-  }
 }
 
 extension ListFilterExt<T> on Iterable<T?> {
@@ -384,12 +239,6 @@ extension MapFilterExtensions<T> on Map<String, T?> {
       );
 }
 
-extension MapListContainsExt on List<dynamic> {
-  bool containsMap(dynamic map) => map is Map
-      ? any((e) => e is Map && const DeepCollectionEquality().equals(e, map))
-      : contains(map);
-}
-
 extension ListDivideExt<T extends Widget> on Iterable<T> {
   Iterable<MapEntry<int, Widget>> get enumerate => toList().asMap().entries;
 
@@ -401,17 +250,11 @@ extension ListDivideExt<T extends Widget> on Iterable<T> {
           .toList()
         ..removeLast());
 
-  List<Widget> around(Widget t) => addToStart(t).addToEnd(t);
-
   List<Widget> addToStart(Widget t) =>
       enumerate.map((e) => e.value).toList()..insert(0, t);
 
   List<Widget> addToEnd(Widget t) =>
       enumerate.map((e) => e.value).toList()..add(t);
-
-  List<Padding> paddingTopEach(double val) =>
-      map((w) => Padding(padding: EdgeInsets.only(top: val), child: w))
-          .toList();
 }
 
 extension StatefulWidgetExtensions on State<StatefulWidget> {
@@ -443,61 +286,3 @@ void fixStatusBarOniOS16AndBelow(BuildContext context) {
   }
 }
 
-extension ColorOpacityExt on Color {
-  Color applyAlpha(double val) => withValues(alpha: val);
-}
-
-String roundTo(double value, int decimalPoints) {
-  final power = pow(10, decimalPoints);
-  return ((value * power).round() / power).toString();
-}
-
-double computeGradientAlignmentX(double evaluatedAngle) {
-  evaluatedAngle %= 360;
-  final rads = evaluatedAngle * pi / 180;
-  double x;
-  if (evaluatedAngle < 45 || evaluatedAngle > 315) {
-    x = sin(2 * rads);
-  } else if (45 <= evaluatedAngle && evaluatedAngle <= 135) {
-    x = 1;
-  } else if (135 <= evaluatedAngle && evaluatedAngle <= 225) {
-    x = sin(-2 * rads);
-  } else {
-    x = -1;
-  }
-  return double.parse(roundTo(x, 2));
-}
-
-double computeGradientAlignmentY(double evaluatedAngle) {
-  evaluatedAngle %= 360;
-  final rads = evaluatedAngle * pi / 180;
-  double y;
-  if (evaluatedAngle < 45 || evaluatedAngle > 315) {
-    y = -1;
-  } else if (45 <= evaluatedAngle && evaluatedAngle <= 135) {
-    y = sin(-2 * rads);
-  } else if (135 <= evaluatedAngle && evaluatedAngle <= 225) {
-    y = 1;
-  } else {
-    y = sin(2 * rads);
-  }
-  return double.parse(roundTo(y, 2));
-}
-
-extension ListUniqueExt<T> on Iterable<T> {
-  List<T> unique(dynamic Function(T) getKey) {
-    var distinctSet = <dynamic>{};
-    var distinctList = <T>[];
-    for (var item in this) {
-      if (distinctSet.add(getKey(item))) {
-        distinctList.add(item);
-      }
-    }
-    return distinctList;
-  }
-}
-
-String getCurrentRoute(BuildContext context) =>
-    context.mounted ? MyApp.of(context).getRoute() : '';
-List<String> getCurrentRouteStack(BuildContext context) =>
-    context.mounted ? MyApp.of(context).getRouteStack() : [];

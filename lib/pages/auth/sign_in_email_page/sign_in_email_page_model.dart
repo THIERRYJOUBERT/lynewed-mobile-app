@@ -1,3 +1,4 @@
+import '/core/utils/input_validators.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'sign_in_email_page_widget.dart' show SignInEmailPageWidget;
@@ -19,6 +20,22 @@ class SignInEmailPageModel extends FlutterFlowModel<SignInEmailPageWidget> {
   @override
   void initState(BuildContext context) {
     passwordVisibility = false;
+
+    // Initialize validators using centralized InputValidators
+    // Note: For sign-in, we use less strict validation (just email format)
+    // because users may have accounts with older password requirements
+    emailAddressTextControllerValidator = (_, value) =>
+        InputValidators.validateEmail(value);
+    // For sign-in, we just check password is not empty (no strength requirements)
+    passwordTextControllerValidator = (_, value) {
+      if (value == null || value.isEmpty) {
+        return 'Password is required';
+      }
+      if (value.length > InputValidators.maxPasswordLength) {
+        return 'Password is too long';
+      }
+      return null;
+    };
   }
 
   @override

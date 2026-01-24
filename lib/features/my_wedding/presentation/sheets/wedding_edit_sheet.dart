@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '/core/design/design.dart';
+import '/core/utils/input_validators.dart';
 import '/core/widgets/currency_dropdown.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/backend/schema/structs/index.dart';
@@ -240,6 +241,12 @@ class _WeddingEditSheetState extends State<WeddingEditSheet> {
             LynewedTextField(
               controller: _nameController,
               hint: 'e.g., Sophie & Thomas Wedding',
+              maxLength: InputValidators.maxNameLength,
+              validator: (value) {
+                // Wedding name is optional but should be validated if provided
+                if (value == null || value.trim().isEmpty) return null;
+                return InputValidators.validateName(value);
+              },
             ),
             const SizedBox(height: 30),
             

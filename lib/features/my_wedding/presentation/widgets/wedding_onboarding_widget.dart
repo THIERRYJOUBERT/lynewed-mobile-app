@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '/core/design/design.dart';
+import '/utils/secure_logger.dart';
 import '/core/design/widgets/lynewed_slider.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/compo_finaux/address_search/address_search_widget.dart';
@@ -1367,14 +1368,15 @@ class _WeddingOnboardingWidgetState extends State<WeddingOnboardingWidget> {
       case 5:
         // Save budget range (both min and max) - values stored in selected currency
         if (_budgetMin != null && _budgetMax != null) {
-          debugPrint('Saving budget: min=$_budgetMin, max=$_budgetMax');
+          // S-04: Use SecureLogger to avoid exposing financial data in logs
+          SecureLogger.info('Saving budget range (values redacted for security)');
           data = OnboardingData(
             budgetMin: _budgetMin!.toDouble(),
             budgetMax: _budgetMax!.toDouble(),
             onboardingStep: 5,
           );
         } else {
-          debugPrint('Budget not set, skipping');
+          SecureLogger.info('Budget not set, skipping');
           data = const OnboardingData(onboardingStep: 5);
         }
         break;
@@ -1445,22 +1447,24 @@ class _WeddingOnboardingWidgetState extends State<WeddingOnboardingWidget> {
       final supabase = Supabase.instance.client;
       final userId = supabase.auth.currentUser?.id;
       if (userId == null) {
-        debugPrint('Failed to upload cover image: user not authenticated');
+        // S-04: Use SecureLogger - no sensitive data exposed
+        SecureLogger.warning('_uploadCoverImage: user not authenticated');
         return null;
       }
       // Path format: userId/weddingId_timestamp.jpg (required for DELETE policy)
       final filePath = '$userId/${_weddingId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      
+
       await supabase.storage.from('wedding-covers').upload(
         filePath,
         file,
         fileOptions: const FileOptions(contentType: 'image/jpeg'),
       );
-      
+
       final publicUrl = supabase.storage.from('wedding-covers').getPublicUrl(filePath);
       return publicUrl;
     } catch (e) {
-      debugPrint('Failed to upload cover image: $e');
+      // S-04: Use SecureLogger.error - properly handles errors without exposing paths
+      SecureLogger.error('_uploadCoverImage failed', error: e);
       return null;
     }
   }

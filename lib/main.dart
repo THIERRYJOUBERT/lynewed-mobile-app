@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
 import 'auth/supabase_auth/supabase_user_provider.dart';
 import 'auth/supabase_auth/auth_util.dart';
@@ -22,8 +21,8 @@ void main() async {
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
 
-  // Load environment variables (SECURITY: API keys)
-  await dotenv.load(fileName: ".env");
+  // NOTE: Secrets now loaded via --dart-define-from-file at compile time
+  // No runtime .env loading needed (more secure)
 
   // Initialize Firebase
   await Firebase.initializeApp(

@@ -1,10 +1,8 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
-import 'lat_lng.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
 
 String? professionToStyle(Profession? p) {
   /// Retourne le code couleur HEX associé à une profession.
@@ -39,119 +37,6 @@ String stringToImagePath(String imageUrl) {
   // Retourne directement l'URL - FlutterFlow gère automatiquement
   // la conversion String vers ImagePath dans les widgets Image
   return imageUrl;
-}
-
-QueryFiltersStruct jsonToQueryFilters(String? jsonString) {
-  // Defaults robustes
-  final defaultFilters = QueryFiltersStruct(
-    showPros: true,
-    showProRecent: true,
-    showFixedLocations: true,
-    showBridePrivatePoi: true,
-    showWeddingPins: true,
-    showProAlerts: true,
-    showOnlyMyProfessionPins: false,
-    professions: [],
-  );
-
-  if (jsonString == null || jsonString.isEmpty) {
-    return defaultFilters;
-  }
-
-  try {
-    final data = json.decode(jsonString) as Map<String, dynamic>;
-
-    // Professions (tokens supabase -> enums FF)
-    final rawProfessions = data['professions'] as List?;
-    final tokens = rawProfessions?.map((p) => p.toString()).toList() ?? [];
-    final professionsEnumList = tokens
-        .map((s) => professionFromSupabaseToken(s))
-        .whereType<Profession>()
-        .toList();
-
-    // Center
-    LatLng? center;
-    if (data['center'] is Map<String, dynamic>) {
-      final m = data['center'] as Map<String, dynamic>;
-      final lat = (m['latitude'] as num?)?.toDouble();
-      final lng = (m['longitude'] as num?)?.toDouble();
-      if (lat != null && lng != null) {
-        center = LatLng(lat, lng);
-      }
-    }
-
-    return QueryFiltersStruct(
-      showPros: data['showPros'] as bool? ?? defaultFilters.showPros,
-      showProRecent:
-          data['showProRecent'] as bool? ?? defaultFilters.showProRecent,
-      showFixedLocations: data['showFixedLocations'] as bool? ??
-          defaultFilters.showFixedLocations,
-      showBridePrivatePoi: data['showBridePrivatePoi'] as bool? ??
-          defaultFilters.showBridePrivatePoi,
-      showWeddingPins:
-          data['showWeddingPins'] as bool? ?? defaultFilters.showWeddingPins,
-      showProAlerts:
-          data['showProAlerts'] as bool? ?? defaultFilters.showProAlerts,
-      showOnlyMyProfessionPins: data['showOnlyMyProfessionPins'] as bool? ??
-          defaultFilters.showOnlyMyProfessionPins,
-      professions: professionsEnumList,
-      budgetMin: (data['budgetMin'] as num?)?.toDouble(),
-      budgetMax: (data['budgetMax'] as num?)?.toDouble(),
-      currency: data['currency'] as String?,
-      center: center,
-      radiusKm: (data['radiusKm'] as num?)?.toDouble(),
-    );
-  } catch (e) {
-    return defaultFilters;
-  }
-}
-
-DateTime? stringToDateTime(String? dateString) {
-  // Vérifier si la chaîne est null ou vide
-  if (dateString == null || dateString.isEmpty) {
-    return null;
-  }
-
-  try {
-    // Supprimer les espaces
-    dateString = dateString.trim();
-
-    // Vérifier le format DD/MM/YYYY avec regex
-    final regex = RegExp(r'^(\d{2})/(\d{2})/(\d{4})$');
-    final match = regex.firstMatch(dateString);
-
-    if (match == null) {
-      return null;
-    }
-
-    // Extraire jour, mois et année
-    final day = int.parse(match.group(1)!);
-    final month = int.parse(match.group(2)!);
-    final year = int.parse(match.group(3)!);
-
-    // Vérifier la validité des valeurs
-    if (month < 1 || month > 12) {
-      return null;
-    }
-
-    if (day < 1 || day > 31) {
-      return null;
-    }
-
-    // Créer le DateTime
-    final date = DateTime(year, month, day);
-
-    // Vérifier que la date créée correspond bien aux valeurs entrées
-    // (protège contre des dates comme 31/02/2028)
-    if (date.day != day || date.month != month || date.year != year) {
-      return null;
-    }
-
-    return date;
-  } catch (e) {
-    // En cas d'erreur de parsing
-    return null;
-  }
 }
 
 QueryFiltersStruct deepCopyQueryFilters(QueryFiltersStruct? filtersToCopy) {

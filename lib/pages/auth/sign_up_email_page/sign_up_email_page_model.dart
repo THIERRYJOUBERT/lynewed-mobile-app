@@ -1,3 +1,4 @@
+import '/core/utils/input_validators.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'sign_up_email_page_widget.dart' show SignUpEmailPageWidget;
@@ -30,6 +31,22 @@ class SignUpEmailPageModel extends FlutterFlowModel<SignUpEmailPageWidget> {
   void initState(BuildContext context) {
     passwordVisibility = false;
     confirmPasswordVisibility = false;
+
+    // Initialize validators using centralized InputValidators
+    emailAddressTextControllerValidator = (_, value) =>
+        InputValidators.validateEmail(value);
+    passwordTextControllerValidator = (_, value) =>
+        InputValidators.validatePassword(value);
+    confirmPasswordTextControllerValidator = (_, value) {
+      // First validate password format
+      final formatError = InputValidators.validatePassword(value);
+      if (formatError != null) return formatError;
+      // Then check if passwords match
+      if (value != passwordTextController?.text) {
+        return 'Passwords do not match';
+      }
+      return null;
+    };
   }
 
   @override

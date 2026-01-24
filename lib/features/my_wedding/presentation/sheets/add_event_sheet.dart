@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '/core/design/design.dart';
+import '/core/utils/input_validators.dart';
 import '../../data/repositories/my_wedding_repository_impl.dart';
 import '../../domain/entities/entities.dart';
 
@@ -230,9 +231,17 @@ class _AddEventSheetState extends State<AddEventSheet> {
             LynewedTextField(
               controller: _titleController,
               hint: 'e.g., Venue visit, Dress fitting...',
+              maxLength: InputValidators.maxNameLength,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Title is required';
+                }
+                if (value.length > InputValidators.maxNameLength) {
+                  return 'Title is too long';
+                }
+                // Check for malicious content
+                if (InputValidators.containsHtmlTags(value)) {
+                  return 'Title contains invalid characters';
                 }
                 return null;
               },
@@ -267,6 +276,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
             LynewedTextField(
               controller: _locationController,
               hint: 'e.g., Wedding venue, Boutique name...',
+              maxLength: InputValidators.maxSearchLength,
             ),
             const SizedBox(height: 30),
 
@@ -276,7 +286,8 @@ class _AddEventSheetState extends State<AddEventSheet> {
               controller: _descriptionController,
               hint: 'Add notes or details...',
               maxLines: 3,
-              maxLength: 500,
+              maxLength: InputValidators.maxBioLength,
+              validator: InputValidators.validateBio,
             ),
             const SizedBox(height: 30),
 

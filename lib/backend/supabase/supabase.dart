@@ -1,27 +1,41 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
+
+import '../../config/app_secrets.dart';
 
 export 'database/database.dart';
 
-// ✅ SECURITY: Secrets loaded from .env instead of hardcoded
-// ✅ ROBUSTNESS: Validation added to ensure required env vars are present
+// SECURITY: Secrets loaded via --dart-define-from-file (compile-time constants)
+// ROBUSTNESS: Validation added to ensure required env vars are present
 String get _kSupabaseUrl {
-  final url = dotenv.env['SUPABASE_URL'] ?? '';
+  const url = AppSecrets.supabaseUrl;
   if (url.isEmpty) {
+    if (kDebugMode) {
+      debugPrint(
+        '[Supabase] ERROR: SUPABASE_URL is not set. '
+        'Run with --dart-define-from-file=secrets.json',
+      );
+    }
     throw StateError(
-      '❌ SUPABASE_URL is not set in .env file. '
-      'Please add SUPABASE_URL=https://your-project.supabase.co to your .env file.',
+      'SUPABASE_URL is not configured. '
+      'Please run with --dart-define-from-file=secrets.json',
     );
   }
   return url;
 }
 
 String get _kSupabaseAnonKey {
-  final key = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+  const key = AppSecrets.supabaseAnonKey;
   if (key.isEmpty) {
+    if (kDebugMode) {
+      debugPrint(
+        '[Supabase] ERROR: SUPABASE_ANON_KEY is not set. '
+        'Run with --dart-define-from-file=secrets.json',
+      );
+    }
     throw StateError(
-      '❌ SUPABASE_ANON_KEY is not set in .env file. '
-      'Please add your Supabase anonymous key to your .env file.',
+      'SUPABASE_ANON_KEY is not configured. '
+      'Please run with --dart-define-from-file=secrets.json',
     );
   }
   return key;
@@ -36,7 +50,7 @@ class SupaFlow {
   final _supabase = Supabase.instance.client;
   static SupabaseClient get client => instance._supabase;
 
-  static Future initialize() => Supabase.initialize(
+  static Future<void> initialize() => Supabase.initialize(
         url: _kSupabaseUrl,
         headers: {
           'X-Client-Info': 'flutterflow',

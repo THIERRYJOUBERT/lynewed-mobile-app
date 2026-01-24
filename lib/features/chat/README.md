@@ -62,7 +62,6 @@ lib/features/chat/
 │       ├── message_actions_sheet.dart       # Delete/report/block
 │       ├── report_user_sheet.dart           # Report user
 │       └── sheets.dart                      # Barrel export
-├── chat.dart                        # Module barrel export
 └── README.md                        # This file
 ```
 
@@ -123,7 +122,9 @@ lib/features/chat/
 ## Usage
 
 ```dart
-import 'package:lynewed/features/chat/chat.dart';
+// Import domain entities and repositories
+import 'package:lynewed/features/chat/domain/entities/entities.dart';
+import 'package:lynewed/features/chat/data/repositories/repositories.dart';
 
 // Prepare contact context
 final contactRepo = ContactRepositoryImpl();
