@@ -1,3 +1,6 @@
+// ignore_for_file: constant_identifier_names
+// FlutterFlow legacy: ParamType enum values match type names (PascalCase)
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -222,93 +225,93 @@ dynamic deserializeParam<T>(
       case ParamType.SupabaseRow:
         final data = json.decode(param) as Map<String, dynamic>;
         switch (T) {
-          case ProfessionalAlertsRow:
+          case const (ProfessionalAlertsRow):
             return ProfessionalAlertsRow(data);
-          case SpatialRefSysRow:
+          case const (SpatialRefSysRow):
             return SpatialRefSysRow(data);
-          case VideoSessionsRow:
+          case const (VideoSessionsRow):
             return VideoSessionsRow(data);
-          case WeddingPinsHistoryRow:
+          case const (WeddingPinsHistoryRow):
             return WeddingPinsHistoryRow(data);
-          case ProRecentLocationsRow:
+          case const (ProRecentLocationsRow):
             return ProRecentLocationsRow(data);
-          case NotificationSettingsRow:
+          case const (NotificationSettingsRow):
             return NotificationSettingsRow(data);
-          case ConnectionRequestsRow:
+          case const (ConnectionRequestsRow):
             return ConnectionRequestsRow(data);
-          case ChatRoomsRow:
+          case const (ChatRoomsRow):
             return ChatRoomsRow(data);
-          case ChatMessagesRow:
+          case const (ChatMessagesRow):
             return ChatMessagesRow(data);
-          case PublicProfessionalsRow:
+          case const (PublicProfessionalsRow):
             return PublicProfessionalsRow(data);
-          case SyncLogRow:
+          case const (SyncLogRow):
             return SyncLogRow(data);
-          case UserPreferencesRow:
+          case const (UserPreferencesRow):
             return UserPreferencesRow(data);
-          case GeometryColumnsRow:
+          case const (GeometryColumnsRow):
             return GeometryColumnsRow(data);
-          case BrideDetailsRow:
+          case const (BrideDetailsRow):
             return BrideDetailsRow(data);
-          case UserPoisHistoryRow:
+          case const (UserPoisHistoryRow):
             return UserPoisHistoryRow(data);
-          case AlertMotifsRow:
+          case const (AlertMotifsRow):
             return AlertMotifsRow(data);
-          case StripeEventsLogRow:
+          case const (StripeEventsLogRow):
             return StripeEventsLogRow(data);
-          case ProfilesRow:
+          case const (ProfilesRow):
             return ProfilesRow(data);
-          case ProfessionalDetailsRow:
+          case const (ProfessionalDetailsRow):
             return ProfessionalDetailsRow(data);
-          case WishlistItemsRow:
+          case const (WishlistItemsRow):
             return WishlistItemsRow(data);
-          case ChatRoomParticipantsRow:
+          case const (ChatRoomParticipantsRow):
             return ChatRoomParticipantsRow(data);
-          case SyncControlRow:
+          case const (SyncControlRow):
             return SyncControlRow(data);
-          case ReplayGuestsRow:
+          case const (ReplayGuestsRow):
             return ReplayGuestsRow(data);
-          case ReportsRow:
+          case const (ReportsRow):
             return ReportsRow(data);
-          case NotificationsOutboxRow:
+          case const (NotificationsOutboxRow):
             return NotificationsOutboxRow(data);
-          case CountriesRow:
+          case const (CountriesRow):
             return CountriesRow(data);
-          case ReplaysRow:
+          case const (ReplaysRow):
             return ReplaysRow(data);
-          case FxRatesRow:
+          case const (FxRatesRow):
             return FxRatesRow(data);
-          case ReplayGuestAssignmentsRow:
+          case const (ReplayGuestAssignmentsRow):
             return ReplayGuestAssignmentsRow(data);
-          case ProfessionalSubscriptionsRow:
+          case const (ProfessionalSubscriptionsRow):
             return ProfessionalSubscriptionsRow(data);
-          case PublicProfilesRow:
+          case const (PublicProfilesRow):
             return PublicProfilesRow(data);
-          case GeographyColumnsRow:
+          case const (GeographyColumnsRow):
             return GeographyColumnsRow(data);
-          case ContentRow:
+          case const (ContentRow):
             return ContentRow(data);
-          case PublicChatRoomsRow:
+          case const (PublicChatRoomsRow):
             return PublicChatRoomsRow(data);
-          case PublicWeddingPinsRow:
+          case const (PublicWeddingPinsRow):
             return PublicWeddingPinsRow(data);
-          case DeviceTokensRow:
+          case const (DeviceTokensRow):
             return DeviceTokensRow(data);
-          case DeletedUsersLogRow:
+          case const (DeletedUsersLogRow):
             return DeletedUsersLogRow(data);
-          case UserBlocksRow:
+          case const (UserBlocksRow):
             return UserBlocksRow(data);
-          case ProfessionalFixedLocationsRow:
+          case const (ProfessionalFixedLocationsRow):
             return ProfessionalFixedLocationsRow(data);
-          case UserPoisRow:
+          case const (UserPoisRow):
             return UserPoisRow(data);
-          case UserLegalAcceptancesRow:
+          case const (UserLegalAcceptancesRow):
             return UserLegalAcceptancesRow(data);
-          case WedArticlesRow:
+          case const (WedArticlesRow):
             return WedArticlesRow(data);
-          case NotificationsRow:
+          case const (NotificationsRow):
             return NotificationsRow(data);
-          case WeddingPinsRow:
+          case const (WeddingPinsRow):
             return WeddingPinsRow(data);
           default:
             return null;

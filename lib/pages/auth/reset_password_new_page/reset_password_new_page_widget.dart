@@ -417,6 +417,7 @@ class _ResetPasswordNewPageWidgetState
                                   context: context,
                                 );
                                 safeSetState(() {});
+                                if (!context.mounted) return;
 
                                 context.goNamedAuth(StartupGateWidget.routeName,
                                     context.mounted);

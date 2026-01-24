@@ -699,6 +699,7 @@ class _ProfileBridesAndProWidgetState extends State<ProfileBridesAndProWidget> {
                             onTap: () async {
                               GoRouter.of(context).prepareAuthEvent();
                               await authManager.signOut();
+                              if (!context.mounted) return;
                               GoRouter.of(context).clearRedirectLocation();
 
                               context.goNamedAuth(

@@ -1,3 +1,6 @@
+// ignore_for_file: constant_identifier_names
+// Supabase enum values must match database column values (UPPER_CASE)
+
 import 'package:collection/collection.dart';
 
 enum UserRole {
@@ -231,39 +234,39 @@ extension FFEnumListExtensions<T extends Enum> on Iterable<T> {
 
 T? deserializeEnum<T>(String? value) {
   switch (T) {
-    case (UserRole):
+    case const (UserRole):
       return UserRole.values.deserialize(value) as T?;
-    case (SubscriptionTierType):
+    case const (SubscriptionTierType):
       return SubscriptionTierType.values.deserialize(value) as T?;
-    case (Profession):
+    case const (Profession):
       return Profession.values.deserialize(value) as T?;
-    case (MapMarkerType):
+    case const (MapMarkerType):
       return MapMarkerType.values.deserialize(value) as T?;
-    case (MapActionType):
+    case const (MapActionType):
       return MapActionType.values.deserialize(value) as T?;
-    case (DistanceUnit):
+    case const (DistanceUnit):
       return DistanceUnit.values.deserialize(value) as T?;
-    case (MessageType):
+    case const (MessageType):
       return MessageType.values.deserialize(value) as T?;
-    case (ConnectionRequestSource):
+    case const (ConnectionRequestSource):
       return ConnectionRequestSource.values.deserialize(value) as T?;
-    case (ConnectionRequestStatus):
+    case const (ConnectionRequestStatus):
       return ConnectionRequestStatus.values.deserialize(value) as T?;
-    case (ConversationStatus):
+    case const (ConversationStatus):
       return ConversationStatus.values.deserialize(value) as T?;
-    case (AlertStatus):
+    case const (AlertStatus):
       return AlertStatus.values.deserialize(value) as T?;
-    case (VideoSessionStatus):
+    case const (VideoSessionStatus):
       return VideoSessionStatus.values.deserialize(value) as T?;
-    case (NotificationType):
+    case const (NotificationType):
       return NotificationType.values.deserialize(value) as T?;
-    case (RoomType):
+    case const (RoomType):
       return RoomType.values.deserialize(value) as T?;
-    case (PermissionType):
+    case const (PermissionType):
       return PermissionType.values.deserialize(value) as T?;
-    case (MapStyleType):
+    case const (MapStyleType):
       return MapStyleType.values.deserialize(value) as T?;
-    case (ChatEntryStatus):
+    case const (ChatEntryStatus):
       return ChatEntryStatus.values.deserialize(value) as T?;
     default:
       return null;

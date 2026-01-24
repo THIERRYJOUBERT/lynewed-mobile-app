@@ -318,6 +318,7 @@ class _ForgotPasswordPageWidgetState extends State<ForgotPasswordPageWidget> {
                               context: context,
                               redirectTo: 'https://lynewed.com/reset-password-app',
                             );
+                            if (!context.mounted) return;
 
                             context.goNamed(
                               AuthWelcomePageWidget.routeName,

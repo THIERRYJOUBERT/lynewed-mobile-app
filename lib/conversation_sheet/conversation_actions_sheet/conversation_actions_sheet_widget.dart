@@ -80,6 +80,7 @@ class _ConversationActionsSheetWidgetState
                         currentUserUid,
                       ),
                 );
+                if (!context.mounted) return;
                 Navigator.pop(context);
                 await widget.onActionCompleted?.call();
 

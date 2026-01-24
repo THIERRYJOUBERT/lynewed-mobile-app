@@ -98,36 +98,43 @@ class _SettingsPermissionsWidgetState extends State<SettingsPermissionsWidget> {
         ),
       );
 
-      if (confirmed == true && mounted) {
-        setState(() => _isDeleting = true);
-        
-        final success = await actions.callDeleteAccountEdgeFunction();
-        
-        if (success && mounted) {
-          GoRouter.of(context).prepareAuthEvent();
-          await authManager.signOut();
-          GoRouter.of(context).clearRedirectLocation();
-          context.goNamedAuth(AuthWelcomePageWidget.routeName, context.mounted);
-        } else if (mounted) {
-          setState(() => _isDeleting = false);
-          await showDialog(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              title: const Text('An error has occurred'),
-              content: const Text(
-                'We are unable to delete your account. '
-                'Please try again later or contact support.'
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Ok'),
-                ),
-              ],
+      if (confirmed != true || !mounted) return;
+
+      setState(() => _isDeleting = true);
+
+      final success = await actions.callDeleteAccountEdgeFunction();
+
+      if (!context.mounted) return;
+      final currentContext = context;
+
+      if (success) {
+        GoRouter.of(currentContext).prepareAuthEvent();
+        await authManager.signOut();
+        if (!currentContext.mounted) return;
+        GoRouter.of(currentContext).clearRedirectLocation();
+        currentContext.goNamedAuth(AuthWelcomePageWidget.routeName, currentContext.mounted);
+      } else {
+        if (!currentContext.mounted) return;
+        setState(() => _isDeleting = false);
+        final dialogContext = context;
+        await showDialog(
+          context: dialogContext,
+          builder: (ctx) => AlertDialog(
+            title: const Text('An error has occurred'),
+            content: const Text(
+              'We are unable to delete your account. '
+              'Please try again later or contact support.'
             ),
-          );
-        }
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Ok'),
+              ),
+            ],
+          ),
+        );
       }
+    }
     }
   }
 
