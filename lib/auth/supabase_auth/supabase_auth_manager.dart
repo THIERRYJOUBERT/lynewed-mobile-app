@@ -34,6 +34,7 @@ class SupabaseAuthManager extends AuthManager with EmailSignInManager {
       }
       await currentUser?.delete();
     } on AuthException catch (e) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.message}')),
@@ -52,12 +53,14 @@ class SupabaseAuthManager extends AuthManager with EmailSignInManager {
       }
       await currentUser?.updateEmail(email);
     } on AuthException catch (e) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.message}')),
       );
       return;
     }
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Email change confirmation email sent')),
     );
@@ -73,12 +76,14 @@ class SupabaseAuthManager extends AuthManager with EmailSignInManager {
       }
       await currentUser?.updatePassword(newPassword);
     } on AuthException catch (e) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.message}')),
       );
       return;
     }
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Password updated successfully')),
     );
@@ -94,12 +99,14 @@ class SupabaseAuthManager extends AuthManager with EmailSignInManager {
       await SupaFlow.client.auth
           .resetPasswordForEmail(email, redirectTo: redirectTo);
     } on AuthException catch (e) {
+      if (!context.mounted) return null;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.message}')),
       );
       return null;
     }
+    if (!context.mounted) return null;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Password reset email sent')),
     );
@@ -147,6 +154,7 @@ class SupabaseAuthManager extends AuthManager with EmailSignInManager {
       }
       return authUser;
     } on AuthException catch (e) {
+      if (!context.mounted) return null;
       final errorMsg = e.message.contains('User already registered')
           ? 'Error: The email is already in use by a different account'
           : 'Error: ${e.message}';
