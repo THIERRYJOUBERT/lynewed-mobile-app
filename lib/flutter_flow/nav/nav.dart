@@ -11,6 +11,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 
 import '/index.dart';
 import '/features/chat/presentation/pages/chat_details_page.dart';
+import '/features/notifications/presentation/bloc/notifications_cubit.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -309,7 +310,10 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: NotificationsPage.routeName,
           path: NotificationsPage.routePath,
-          builder: (context, params) => const NotificationsPage(),
+          builder: (context, params) => ChangeNotifierProvider(
+            create: (_) => NotificationsNotifier()..loadNotifications(),
+            child: const NotificationsPage(),
+          ),
         ),
         FFRoute(
           name: PublicProProfileViewWidget.routeName,

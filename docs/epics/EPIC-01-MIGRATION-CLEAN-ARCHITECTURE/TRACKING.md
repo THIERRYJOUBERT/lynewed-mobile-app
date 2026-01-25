@@ -106,7 +106,7 @@
 
 | ID | Description | Story Impactee | Date Identifie | Responsable |
 |----|-------------|----------------|----------------|-------------|
-| - | Aucun blocker | - | - | - |
+| ~~BUG-01~~ | ~~Page Notifications: Provider NotificationsNotifier not found~~ | ~~S10~~ | ~~2026-01-25~~ | RESOLVED |
 
 ---
 
@@ -117,6 +117,8 @@
 | 2026-01-24 | Utiliser ChangeNotifier pour state simple, Cubit pour complexe | Coherence avec module Map existant | Toutes |
 | 2026-01-24 | Maintenir wrappers legacy pour navigation | Eviter big bang migration | S04, Pages |
 | 2026-01-24 | Ne pas toucher lib/backend/supabase/ | Backend stable, focus sur architecture | Toutes |
+| 2026-01-25 | Restaurer flutter_dotenv pour secrets runtime | EPIC-05 dart-define incompatible avec build scripts existants, stabilite prod prioritaire | Toutes |
+| 2026-01-25 | iOS minimum 15.0 (etait 14.0) | Firebase 12.8.0 requiert iOS 15.0 | iOS build |
 
 ---
 
@@ -165,6 +167,7 @@
 | 2026-01-25 | S27 DONE: Content module (190 tests) | autonomous |
 | 2026-01-25 | S28 DONE: Home Brides module (55 tests) | autonomous |
 | 2026-01-25 | S29 DONE: Feed module (177 tests) | autonomous |
+| 2026-01-25 | iOS BUILD FIX: Restaure flutter_dotenv, ajoute GoogleService-Info.plist, iOS 14→15 | debug session |
 
 ---
 

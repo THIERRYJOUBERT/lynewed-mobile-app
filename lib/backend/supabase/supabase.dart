@@ -1,41 +1,27 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
-
-import '../../config/app_secrets.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 export 'database/database.dart';
 
-// SECURITY: Secrets loaded via --dart-define-from-file (compile-time constants)
+// SECURITY: Secrets loaded from .env instead of hardcoded
 // ROBUSTNESS: Validation added to ensure required env vars are present
 String get _kSupabaseUrl {
-  const url = AppSecrets.supabaseUrl;
+  final url = dotenv.env['SUPABASE_URL'] ?? '';
   if (url.isEmpty) {
-    if (kDebugMode) {
-      debugPrint(
-        '[Supabase] ERROR: SUPABASE_URL is not set. '
-        'Run with --dart-define-from-file=secrets.json',
-      );
-    }
     throw StateError(
-      'SUPABASE_URL is not configured. '
-      'Please run with --dart-define-from-file=secrets.json',
+      'SUPABASE_URL is not set in .env file. '
+      'Please add SUPABASE_URL=https://your-project.supabase.co to your .env file.',
     );
   }
   return url;
 }
 
 String get _kSupabaseAnonKey {
-  const key = AppSecrets.supabaseAnonKey;
+  final key = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
   if (key.isEmpty) {
-    if (kDebugMode) {
-      debugPrint(
-        '[Supabase] ERROR: SUPABASE_ANON_KEY is not set. '
-        'Run with --dart-define-from-file=secrets.json',
-      );
-    }
     throw StateError(
-      'SUPABASE_ANON_KEY is not configured. '
-      'Please run with --dart-define-from-file=secrets.json',
+      'SUPABASE_ANON_KEY is not set in .env file. '
+      'Please add your Supabase anonymous key to your .env file.',
     );
   }
   return key;

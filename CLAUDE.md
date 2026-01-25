@@ -116,6 +116,7 @@ flutter run                        # Run
 | `/oneshot` | Dev rapide sans Epic/Story |
 | `/debug` | Investigation scientifique de bugs |
 | `/commit` | Commit avec verifications |
+| `/build-ios` | Build et lance l'app iOS sur simulateur |
 
 ### Creer
 

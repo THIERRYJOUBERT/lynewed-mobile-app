@@ -1,6 +1,6 @@
 import 'dart:io' show Platform;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
-import 'config/app_secrets.dart';
 
 abstract class FFAppConstants {
   /// Platform-specific Google Places API key.
@@ -8,18 +8,18 @@ abstract class FFAppConstants {
   static String get googlePlacesApiKey {
     String key;
     if (Platform.isIOS) {
-      key = AppSecrets.googlePlacesApiKeyIos;
+      key = dotenv.env['GOOGLE_PLACES_API_KEY_IOS'] ?? '';
       if (key.isEmpty && kDebugMode) {
         debugPrint('[FFAppConstants] WARNING: GOOGLE_PLACES_API_KEY_IOS is empty');
       }
     } else if (Platform.isAndroid) {
-      key = AppSecrets.googlePlacesApiKeyAndroid;
+      key = dotenv.env['GOOGLE_PLACES_API_KEY_ANDROID'] ?? '';
       if (key.isEmpty && kDebugMode) {
         debugPrint('[FFAppConstants] WARNING: GOOGLE_PLACES_API_KEY_ANDROID is empty');
       }
     } else {
-      // Fallback for web or other platforms - use iOS key
-      key = AppSecrets.googlePlacesApiKeyIos;
+      // Fallback for web or other platforms
+      key = dotenv.env['GOOGLE_PLACES_API_KEY'] ?? '';
       if (key.isEmpty && kDebugMode) {
         debugPrint('[FFAppConstants] WARNING: GOOGLE_PLACES_API_KEY is empty');
       }
@@ -32,7 +32,7 @@ abstract class FFAppConstants {
 
   /// Agora App ID for video calls.
   static String get agoraAppId {
-    const appId = AppSecrets.agoraAppId;
+    final appId = dotenv.env['AGORA_APP_ID'] ?? '';
     if (appId.isEmpty && kDebugMode) {
       debugPrint('[FFAppConstants] WARNING: AGORA_APP_ID is empty');
     }

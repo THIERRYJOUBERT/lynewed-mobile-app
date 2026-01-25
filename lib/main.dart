@@ -2,6 +2,7 @@
 // MyApp.of() returns private _MyAppState (standard Flutter pattern like Theme.of())
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -24,8 +25,8 @@ void main() async {
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
 
-  // NOTE: Secrets now loaded via --dart-define-from-file at compile time
-  // No runtime .env loading needed (more secure)
+  // Load environment variables (SECURITY: API keys)
+  await dotenv.load(fileName: ".env");
 
   // Initialize dependency injection
   await initDependencies();
