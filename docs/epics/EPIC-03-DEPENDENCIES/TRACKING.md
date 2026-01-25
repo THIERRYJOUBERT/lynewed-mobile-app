@@ -5,10 +5,10 @@
 | Metrique | Valeur |
 |----------|--------|
 | Stories Total | 14 |
-| Completees | 8 |
+| Completees | 9 |
 | En cours | 0 |
-| Bloquees | 0 |
-| Progression | 57% |
+| Bloquees | 1 |
+| Progression | 64% |
 
 ---
 
@@ -28,7 +28,7 @@
 | STORY-10 | UI breaking | DEFERRED | - | - | - |
 | STORY-11 | Utilities breaking | DEFERRED | - | - | - |
 | STORY-12 | Agora RTC | DEFERRED | - | - | - |
-| STORY-13 | Dev dependencies | DEFERRED | - | - | - |
+| STORY-13 | Dev dependencies | DONE | autonomous | 2026-01-25 | 2026-01-25 |
 | STORY-14 | Cleanup overrides | DEFERRED | - | - | - |
 
 ---
@@ -53,7 +53,14 @@ _Aucun blocker actuellement_
 ## Changelog
 
 ### 2026-01-25
-- **STORY-09 to STORY-14 DEFERRED**: Major breaking changes stories reportées
+- **STORY-13 DONE**: Dev dependencies update
+  - flutter_launcher_icons 0.13.1→0.14.4
+  - flutter_lints 4.0.0→5.0.0 (version 6.0.0 disponible mais saut progressif)
+  - lints 4.0.0→5.0.0
+  - image 4.2.0→4.7.2
+  - 2 warnings `unnecessary_library_name` corrigés (nouvelles règles lint)
+  - Build Android validé
+- **STORY-09 to STORY-12, STORY-14 DEFERRED**: Major breaking changes stories reportées
   - go_router 12→17 (migration significative requise)
   - UI breaking (google_fonts, smooth_page_indicator)
   - Utilities breaking (device_info_plus, file_picker, geolocator)

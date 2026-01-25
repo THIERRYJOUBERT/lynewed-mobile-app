@@ -48,7 +48,7 @@
 ///     ├── pages/        # MapPage (unified bride/pro)
 ///     └── theme/        # MapTheme, colors, sizes
 /// ```
-library map;
+library;
 
 // Domain - Entities
 export 'domain/entities/entities.dart';

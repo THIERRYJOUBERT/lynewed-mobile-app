@@ -29,7 +29,7 @@
 ///     └── widgets/
 ///         └── notification_tile.dart
 /// ```
-library notifications;
+library;
 
 // Domain
 export 'domain/entities/notification_setting.dart';

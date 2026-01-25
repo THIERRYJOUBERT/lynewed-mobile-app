@@ -124,10 +124,10 @@ dependency_overrides:
   flutter_google_places_sdk_ios: 0.2.0
 
 dev_dependencies:
-  flutter_launcher_icons: 0.13.1
-  flutter_lints: 4.0.0
-  image: 4.2.0
-  lints: 4.0.0
+  flutter_launcher_icons: 0.14.4
+  flutter_lints: 5.0.0
+  image: 4.7.2
+  lints: 5.0.0
   flutter_test:
     sdk: flutter
 
