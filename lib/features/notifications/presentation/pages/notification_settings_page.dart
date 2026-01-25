@@ -1,21 +1,29 @@
+/// NotificationSettingsPage - Clean Architecture
+///
+/// Page for managing notification preferences.
+/// Uses NotificationRepository for data operations.
+library;
+
 import 'package:flutter/material.dart';
-
-import '/auth/supabase_auth/auth_util.dart';
-import '/backend/schema/enums/enums.dart';
-import '/backend/supabase/supabase.dart';
 import '/core/design/design.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/custom_code/actions/index.dart' as actions;
-import '../../domain/entities/notification_type_config.dart';
+import '../../domain/entities/notification_setting.dart';
+import '../../domain/repositories/notification_repository.dart';
+import '../../data/repositories/notification_repository_impl.dart';
 
-/// Page de paramètres des notifications - Design System v3.
-/// 
-/// Affiche les options de notifications selon le rôle de l'utilisateur
-/// et son niveau d'abonnement.
+/// Page for managing notification settings.
+///
+/// Displays notification preferences and allows toggling each setting.
+/// Uses Clean Architecture with [NotificationRepository].
 class NotificationSettingsPage extends StatefulWidget {
-  const NotificationSettingsPage({super.key});
+  const NotificationSettingsPage({
+    this.repository,
+    super.key,
+  });
 
-  // Constantes de route (compatibilité avec l'ancienne page FlutterFlow)
+  /// Optional repository for testing.
+  final NotificationRepository? repository;
+
+  // Route constants for compatibility
   static const String routeName = 'NotificationSettings';
   static const String routePath = '/notificationSettings';
 
@@ -24,84 +32,85 @@ class NotificationSettingsPage extends StatefulWidget {
 }
 
 class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
-  final Map<String, bool> _settings = {};
+  late final NotificationRepository _repository;
+
+  List<NotificationSetting>? _settings;
   bool _isLoading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
+    _repository = widget.repository ?? NotificationRepositoryImpl();
     _loadSettings();
   }
 
   Future<void> _loadSettings() async {
-    try {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
-
-      final response = await SupaFlow.client
-          .from('notification_settings')
-          .select('notification_type, in_app_enabled')
-          .eq('profile_id', currentUserUid);
-
-      final settings = response as List<dynamic>;
-      
-      for (final setting in settings) {
-        final type = setting['notification_type'] as String?;
-        final enabled = setting['in_app_enabled'] as bool? ?? true;
-        if (type != null) {
-          _settings[type] = enabled;
-        }
-      }
-
-      setState(() {
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _error = e.toString();
-      });
-    }
-  }
-
-  Future<void> _updateSetting(String type, bool enabled) async {
-    // Mise à jour optimiste
     setState(() {
-      _settings[type] = enabled;
+      _isLoading = true;
+      _error = null;
     });
 
-    try {
-      await actions.upsertNotificationSetting(type, enabled, enabled);
-    } catch (e) {
-      // Rollback en cas d'erreur
-      setState(() {
-        _settings[type] = !enabled;
-      });
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to update setting: $e'),
-            backgroundColor: LynewedColors.error,
-          ),
-        );
+    final result = await _repository.getSettings();
+
+    result.fold(
+      onSuccess: (settings) {
+        setState(() {
+          _settings = settings;
+          _isLoading = false;
+        });
+      },
+      onFailure: (failure) {
+        setState(() {
+          _error = failure.message;
+          _isLoading = false;
+        });
+      },
+    );
+  }
+
+  Future<void> _toggleSetting(NotificationSetting setting) async {
+    final newSetting = setting.copyWith(inAppEnabled: !setting.inAppEnabled);
+
+    // Optimistic update
+    setState(() {
+      final index = _settings?.indexWhere((s) => s.id == setting.id);
+      if (index != null && index >= 0 && _settings != null) {
+        _settings![index] = newSetting;
       }
-    }
+    });
+
+    // Persist to backend
+    final result = await _repository.updateSetting(newSetting);
+
+    // Rollback on failure
+    result.fold(
+      onSuccess: (_) {
+        // Success - already updated optimistically
+      },
+      onFailure: (failure) {
+        // Rollback
+        setState(() {
+          final index = _settings?.indexWhere((s) => s.id == setting.id);
+          if (index != null && index >= 0 && _settings != null) {
+            _settings![index] = setting;
+          }
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to update setting: ${failure.message}'),
+              backgroundColor: LynewedColors.error,
+            ),
+          );
+        }
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final userRole = FFAppState().currentUserRole;
-    final subscriptionTier = FFAppState().selfProSubscription.subscriptionTier;
-    
-    final visibleTypes = NotificationTypesConfig.getVisibleTypes(
-      role: userRole,
-      subscriptionTier: subscriptionTier,
-    );
-
     return Scaffold(
       backgroundColor: LynewedColors.background,
       body: SafeArea(
@@ -109,13 +118,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           children: [
             _buildHeader(),
             const Divider(height: 1, color: LynewedColors.gray200),
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _error != null
-                      ? _buildError()
-                      : _buildSettingsList(visibleTypes, userRole ?? UserRole.bride),
-            ),
+            Expanded(child: _buildBody()),
           ],
         ),
       ),
@@ -147,6 +150,23 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     );
   }
 
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_error != null) {
+      return _buildError();
+    }
+
+    final settings = _settings;
+    if (settings == null || settings.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return _buildSettingsList(settings);
+  }
+
   Widget _buildError() {
     return Center(
       child: Padding(
@@ -175,10 +195,35 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     );
   }
 
-  Widget _buildSettingsList(List<NotificationTypeConfig> types, UserRole? userRole) {
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.settings_outlined,
+              size: 64,
+              color: LynewedColors.gray200,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No settings available.',
+              style: LynewedTextStyles.bodyLarge.copyWith(
+                color: LynewedColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsList(List<NotificationSetting> settings) {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: 16),
-      itemCount: types.length,
+      itemCount: settings.length,
       separatorBuilder: (_, __) => const Divider(
         height: 1,
         indent: 20,
@@ -186,15 +231,16 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         color: LynewedColors.gray200,
       ),
       itemBuilder: (context, index) {
-        final config = types[index];
-        return _buildSettingTile(config, userRole);
+        final setting = settings[index];
+        return _buildSettingTile(setting);
       },
     );
   }
 
-  Widget _buildSettingTile(NotificationTypeConfig config, UserRole? userRole) {
-    final isEnabled = _settings[config.type] ?? true;
-    
+  Widget _buildSettingTile(NotificationSetting setting) {
+    final title = _getTitleForType(setting.notificationType);
+    final description = _getDescriptionForType(setting.notificationType);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       child: Row(
@@ -205,14 +251,14 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  config.titleKey,
+                  title,
                   style: LynewedTextStyles.bodyMedium.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  config.getDescription(userRole ?? UserRole.bride),
+                  description,
                   style: LynewedTextStyles.bodySmall.copyWith(
                     color: LynewedColors.textSecondary,
                   ),
@@ -222,8 +268,8 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           ),
           const SizedBox(width: 14),
           Switch.adaptive(
-            value: isEnabled,
-            onChanged: (value) => _updateSetting(config.type, value),
+            value: setting.inAppEnabled,
+            onChanged: (_) => _toggleSetting(setting),
             activeColor: LynewedColors.primary,
             activeTrackColor: LynewedColors.primary,
             inactiveTrackColor: LynewedColors.gray200,
@@ -233,4 +279,50 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       ),
     );
   }
+
+  String _getTitleForType(String type) {
+    switch (type) {
+      case 'chatMessage':
+        return 'Messages';
+      case 'connectionRequest':
+        return 'Contact Requests';
+      case 'connectionRequestAccepted':
+        return 'Accepted Requests';
+      case 'wishlistAdd':
+        return 'Wishlist Updates';
+      case 'videoIncoming':
+        return 'Video Calls';
+      case 'wedPublished':
+        return 'Wedding of the Week';
+      case 'replayPublished':
+        return 'Replays';
+      default:
+        return type;
+    }
+  }
+
+  String _getDescriptionForType(String type) {
+    switch (type) {
+      case 'chatMessage':
+        return 'Receive notifications for new messages';
+      case 'connectionRequest':
+        return 'Receive notifications for new contact requests';
+      case 'connectionRequestAccepted':
+        return 'Receive notifications when your requests are accepted';
+      case 'wishlistAdd':
+        return 'Receive notifications when added to a wishlist';
+      case 'videoIncoming':
+        return 'Receive notifications for incoming video calls';
+      case 'wedPublished':
+        return 'Receive notifications for new Wedding of the Week';
+      case 'replayPublished':
+        return 'Receive notifications for new replays';
+      default:
+        return 'Notification preferences for $type';
+    }
+  }
 }
+
+/// Alias for testing - NotificationSettingsPageRefactored
+/// This is the same as NotificationSettingsPage but with explicit repository param
+typedef NotificationSettingsPageRefactored = NotificationSettingsPage;

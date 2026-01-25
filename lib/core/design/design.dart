@@ -29,6 +29,7 @@ export 'lynewed_app_theme.dart';
 
 // Core Widgets (most commonly used)
 export 'widgets/lynewed_button.dart';
+export 'widgets/lynewed_icon_button.dart';
 export 'widgets/lynewed_sheet.dart';
 export 'widgets/lynewed_text_field.dart';
 export 'widgets/lynewed_chip.dart';

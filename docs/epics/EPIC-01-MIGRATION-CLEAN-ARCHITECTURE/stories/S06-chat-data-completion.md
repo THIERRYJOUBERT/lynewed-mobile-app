@@ -6,15 +6,15 @@ En tant que developpeur, je veux completer la couche data du module Chat afin d'
 
 ## Criteres d'Acceptance (Gherkin)
 
-- [ ] Given `ChatRemoteDatasource` When j'analyse l'implementation Then je liste les methodes manquantes
+- [x] Given `ChatRemoteDatasource` When j'analyse l'implementation Then je liste les methodes manquantes
 
-- [ ] Given les methodes manquantes When je les implemente Then toutes les operations Supabase sont couvertes
+- [x] Given les methodes manquantes When je les implemente Then toutes les operations Supabase sont couvertes
 
-- [ ] Given `ChatRepositoryImpl` When je complete l'implementation Then il implemente entierement `ChatRepository`
+- [x] Given `ChatRepositoryImpl` When je complete l'implementation Then il implemente entierement `ChatRepository`
 
-- [ ] Given `ContactRepositoryImpl` When je verifie Then il implemente entierement `ContactRepository`
+- [x] Given `ContactRepositoryImpl` When je verifie Then il implemente entierement `ContactRepository`
 
-- [ ] Given les implementations When j'ecris les tests Then les tests passent avec des mocks
+- [x] Given les implementations When j'ecris les tests Then les tests passent avec des mocks
 
 ## Fichiers Concernes
 
@@ -112,13 +112,13 @@ class ChatRepositoryImpl implements ChatRepository {
 
 ## Definition of Done
 
-- [ ] Audit des implementations existantes
-- [ ] Actions custom code integrees
-- [ ] Datasource complet et teste
-- [ ] Repository complet et teste
-- [ ] Models/DTOs avec mapping
-- [ ] Tests avec mocks (mocktail)
-- [ ] `flutter analyze --fatal-infos` passe
+- [x] Audit des implementations existantes
+- [x] Actions custom code integrees
+- [x] Datasource complet et teste
+- [x] Repository complet et teste
+- [x] Models/DTOs avec mapping (entities used directly)
+- [x] Tests avec mocks (mocktail)
+- [x] `flutter analyze --fatal-infos` passe
 
 ## Estimation
 

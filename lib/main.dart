@@ -1,6 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api
 // MyApp.of() returns private _MyAppState (standard Flutter pattern like Theme.of())
 
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -15,6 +16,8 @@ import 'flutter_flow/internationalization.dart';
 import 'services/agora_engine_manager.dart';
 import 'core/services/unread_counter_service.dart';
 import 'core/widgets/incoming_call_wrapper.dart';
+import 'core/di/injection_container.dart';
+import 'features/auth/auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,12 +27,18 @@ void main() async {
   // NOTE: Secrets now loaded via --dart-define-from-file at compile time
   // No runtime .env loading needed (more secure)
 
+  // Initialize dependency injection
+  await initDependencies();
+
   // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
   await SupaFlow.initialize();
+
+  // Initialize Supabase-dependent dependencies (after SupaFlow.initialize())
+  await initSupabaseDependencies();
 
   final appState = FFAppState(); // Initialize FFAppState
   await appState.initializePersistedState();
@@ -45,10 +54,21 @@ void main() async {
     // Engine will be initialized on-demand if startup fails
   }
 
-  runApp(ChangeNotifierProvider(
-    create: (context) => appState,
-    child: const MyApp(),
-  ));
+  runApp(
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => AuthCubit(
+            repository: sl<AuthRepository>(),
+          )..checkAuthStatus(),
+        ),
+      ],
+      child: ChangeNotifierProvider(
+        create: (context) => appState,
+        child: const MyApp(),
+      ),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {

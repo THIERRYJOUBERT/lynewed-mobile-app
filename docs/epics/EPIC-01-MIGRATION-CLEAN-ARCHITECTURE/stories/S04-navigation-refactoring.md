@@ -6,15 +6,20 @@ En tant que developpeur, je veux refactorer le systeme de navigation FlutterFlow
 
 ## Criteres d'Acceptance (Gherkin)
 
-- [ ] Given `lib/flutter_flow/nav/` When j'analyse la navigation Then je comprends tous les patterns utilises (go_router)
+- [x] Given `lib/flutter_flow/nav/` When j'analyse la navigation Then je comprends tous les patterns utilises (go_router)
+  - **COMPLETE** : NavigationPatterns docummente FFRoute, FFParameters, TransitionInfo, et auth redirect patterns
 
-- [ ] Given le systeme de navigation When je cree des wrappers Then les nouvelles pages Clean peuvent coexister avec les pages FlutterFlow
+- [x] Given le systeme de navigation When je cree des wrappers Then les nouvelles pages Clean peuvent coexister avec les pages FlutterFlow
+  - **COMPLETE** : CleanPageWrapper, PageWrapperMixin, WrapperConfig crees dans page_wrapper.dart
 
-- [ ] Given une page migree en Clean Architecture When je navigue vers elle Then la navigation fonctionne identiquement
+- [x] Given une page migree en Clean Architecture When je navigue vers elle Then la navigation fonctionne identiquement
+  - **COMPLETE** : Tests d'integration verifient la compatibilite, barrel export permet import unique
 
-- [ ] Given les routes existantes When je cree un index des routes Then `lib/core/navigation/routes.dart` liste toutes les routes
+- [x] Given les routes existantes When je cree un index des routes Then `lib/core/navigation/routes.dart` liste toutes les routes
+  - **COMPLETE** : AppRoutes (43 routes) et RouteNames (43 noms) couvrent toutes les pages
 
-- [ ] Given le deep linking When je teste les liens Then ils fonctionnent toujours correctement
+- [x] Given le deep linking When je teste les liens Then ils fonctionnent toujours correctement
+  - **COMPLETE** : DeepLinkSchemes avec buildDeepLink, parseDeepLink, toAppRoute - 24 tests
 
 ## Fichiers Concernes
 
@@ -96,13 +101,13 @@ Verifier que les deep links suivants fonctionnent :
 
 ## Definition of Done
 
-- [ ] Audit complet de la navigation realise
-- [ ] Index des routes cree
-- [ ] Pattern wrapper documente
-- [ ] Au moins 1 page migree avec wrapper fonctionnel
-- [ ] Deep links testes
-- [ ] Documentation des routes
-- [ ] `flutter analyze --fatal-infos` passe
+- [x] Audit complet de la navigation realise
+- [x] Index des routes cree
+- [x] Pattern wrapper documente
+- [x] Au moins 1 page migree avec wrapper fonctionnel (ChatDetailsPage deja migre utilise le pattern)
+- [x] Deep links testes (24 tests)
+- [x] Documentation des routes (routes.dart, route_guards.dart)
+- [x] `flutter analyze --fatal-infos` passe (0 issues)
 
 ## Estimation
 

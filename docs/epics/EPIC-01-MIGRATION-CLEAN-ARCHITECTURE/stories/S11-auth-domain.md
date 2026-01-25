@@ -6,15 +6,15 @@ En tant que developpeur, je veux creer la couche domain pour le module Auth afin
 
 ## Criteres d'Acceptance (Gherkin)
 
-- [ ] Given le module Auth When je cree `lib/features/auth/domain/` Then la structure Clean Architecture est en place
+- [x] Given le module Auth When je cree `lib/features/auth/domain/` Then la structure Clean Architecture est en place
 
-- [ ] Given l'entite `AuthUser` When je la cree Then elle contient toutes les informations utilisateur necessaires
+- [x] Given l'entite `AuthUser` When je la cree Then elle contient toutes les informations utilisateur necessaires
 
-- [ ] Given l'entite `UserProfile` When je la cree Then elle contient les infos profil (bride/pro)
+- [x] Given l'entite `UserProfile` When je la cree Then elle contient les infos profil (bride/pro)
 
-- [ ] Given `AuthRepository` When je definis l'interface Then toutes les operations auth sont couvertes
+- [x] Given `AuthRepository` When je definis l'interface Then toutes les operations auth sont couvertes
 
-- [ ] Given les entites When j'ecris les tests Then 100% passent
+- [x] Given les entites When j'ecris les tests Then 100% passent
 
 ## Fichiers Concernes
 
@@ -185,12 +185,45 @@ class UpdateProfileParams {
 
 ## Definition of Done
 
-- [ ] Structure `lib/features/auth/domain/` creee
-- [ ] Entites AuthUser, UserProfile, UserRole
-- [ ] AuthRepository interface complete
-- [ ] Tests unitaires
-- [ ] Documentation barrel export
-- [ ] `flutter analyze --fatal-infos` passe
+- [x] Structure `lib/features/auth/domain/` creee
+- [x] Entites AuthUser, UserProfile, UserRole
+- [x] AuthRepository interface complete
+- [x] Tests unitaires (37 tests)
+- [x] Documentation barrel export
+- [x] `flutter analyze --fatal-infos` passe (0 warnings)
+
+## Implementation (2025-01-25)
+
+### Fichiers Crees
+
+| Fichier | Description |
+|---------|-------------|
+| `lib/features/auth/auth.dart` | Barrel export du module |
+| `lib/features/auth/domain/entities/auth_user.dart` | Entite utilisateur authentifie |
+| `lib/features/auth/domain/entities/user_profile.dart` | Entite profil utilisateur |
+| `lib/features/auth/domain/entities/user_role.dart` | Enum des roles |
+| `lib/features/auth/domain/entities/entities.dart` | Barrel entities |
+| `lib/features/auth/domain/repositories/auth_repository.dart` | Interface repository + UpdateProfileParams |
+
+### Tests Crees
+
+| Fichier | Tests |
+|---------|-------|
+| `test/features/auth/domain/entities/auth_user_test.dart` | 11 tests |
+| `test/features/auth/domain/entities/user_role_test.dart` | 12 tests |
+| `test/features/auth/domain/entities/user_profile_test.dart` | 14 tests |
+
+### Validation
+
+- **flutter test**: 1721 tests passent (dont 37 nouveaux)
+- **flutter analyze --fatal-infos**: 0 warnings
+
+### Self-Critique
+
+3 problemes mineurs documentes (tous acceptables):
+1. userMetadata Map mutable (copie defensive dans data layer)
+2. copyWith ne peut pas setter null explicitement (pattern standard)
+3. UpdateProfileParams sans equals/hashCode (params object)
 
 ## Estimation
 

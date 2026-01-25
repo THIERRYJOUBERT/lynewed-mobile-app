@@ -6,15 +6,15 @@ En tant que developpeur, je veux mettre en place l'infrastructure de base et les
 
 ## Criteres d'Acceptance (Gherkin)
 
-- [ ] Given le projet actuel When je cree le dossier `lib/core/` Then il contient les sous-dossiers `error/`, `utils/`, `di/`
+- [x] Given le projet actuel When je cree le dossier `lib/core/` Then il contient les sous-dossiers `error/`, `utils/`, `di/`
 
-- [ ] Given le dossier `lib/core/error/` When je cree les classes d'erreur Then `Failure` et `Exception` custom sont disponibles pour tous les modules
+- [x] Given le dossier `lib/core/error/` When je cree les classes d'erreur Then `Failure` et `Exception` custom sont disponibles pour tous les modules
 
-- [ ] Given le dossier `lib/core/utils/` When je cree les utilitaires Then `Result<T>` (Either pattern simplifie) est disponible
+- [x] Given le dossier `lib/core/utils/` When je cree les utilitaires Then `Result<T>` (Either pattern simplifie) est disponible
 
-- [ ] Given le dossier `lib/core/di/` When je configure l'injection de dependances Then les repositories peuvent etre injectes dans toute l'app
+- [x] Given le dossier `lib/core/di/` When je configure l'injection de dependances Then les repositories peuvent etre injectes dans toute l'app
 
-- [ ] Given la configuration When je lance `flutter analyze --fatal-infos` Then 0 warnings sont reportes
+- [x] Given la configuration When je lance `flutter analyze --fatal-infos` Then 0 warnings sont reportes
 
 ## Fichiers Concernes
 
@@ -79,13 +79,13 @@ Future<void> init() async {
 
 ## Definition of Done
 
-- [ ] Structure `lib/core/` creee et documentee
-- [ ] Classes Failure et Exception implementees
-- [ ] Pattern Result disponible
-- [ ] DI configure et fonctionnel
-- [ ] Tests unitaires pour Result
-- [ ] `flutter analyze --fatal-infos` passe
-- [ ] Documentation dans le barrel export
+- [x] Structure `lib/core/` creee et documentee
+- [x] Classes Failure et Exception implementees
+- [x] Pattern Result disponible
+- [x] DI configure et fonctionnel
+- [x] Tests unitaires pour Result
+- [x] `flutter analyze --fatal-infos` passe
+- [x] Documentation dans le barrel export
 
 ## Estimation
 

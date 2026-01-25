@@ -44,6 +44,13 @@ abstract class ChatRepository {
   Future<ChatResult<List<Map<String, dynamic>>>> getProfilesInfo(List<String> profileIds);
 
   // ============================================================
+  // PARTICIPANTS
+  // ============================================================
+
+  /// Get all participants for a room with their profile info
+  Future<ChatResult<List<ChatParticipant>>> getRoomParticipants(String roomId);
+
+  // ============================================================
   // MESSAGES
   // ============================================================
 

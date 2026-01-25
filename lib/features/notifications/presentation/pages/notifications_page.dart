@@ -1,116 +1,30 @@
+/// NotificationsPage - Clean Architecture
+///
+/// Displays the list of notifications for the current user.
+/// Uses NotificationsNotifier for state management via ChangeNotifier pattern.
+library;
+
 import 'package:flutter/material.dart';
-
-import '/backend/schema/enums/enums.dart';
-import '/backend/schema/structs/index.dart';
-import '/backend/supabase/supabase.dart';
+import 'package:provider/provider.dart';
 import '/core/design/design.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/custom_code/actions/index.dart' as actions;
+import '../bloc/notifications_cubit.dart';
+import '../bloc/notifications_state.dart';
+import '../widgets/notification_tile.dart';
+import '../../domain/entities/app_notification.dart';
 
-/// Page de notifications refactorisée - Design System v3.
-/// 
-/// Affiche la liste des notifications de l'utilisateur avec:
-/// - Header avec bouton retour et action "Mark all read"
-/// - Liste des notifications avec icône, titre, message et timestamp
-/// - Tap sur notification → redirection appropriée
-class NotificationsPage extends StatefulWidget {
+/// Page displaying the list of notifications.
+///
+/// Uses [NotificationsNotifier] for reactive state management.
+/// Displays notifications with:
+/// - Header with back button and "Mark all read" action
+/// - List of notifications with icons, titles, messages, and timestamps
+/// - Tap on notification to navigate and mark as read
+class NotificationsPage extends StatelessWidget {
   const NotificationsPage({super.key});
 
-  // Constantes de route (compatibilité avec l'ancienne page FlutterFlow)
+  // Route constants for compatibility with existing navigation
   static const String routeName = 'NotificationsPage';
   static const String routePath = '/notificationsPage';
-
-  @override
-  State<NotificationsPage> createState() => _NotificationsPageState();
-}
-
-class _NotificationsPageState extends State<NotificationsPage> {
-  List<AppNotificationStruct> _notifications = [];
-  bool _isLoading = true;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadNotifications();
-  }
-
-  Future<void> _loadNotifications() async {
-    try {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
-
-      final notifications = await actions.getNotificationsAction();
-      
-      setState(() {
-        // RPC retourne déjà trié par created_at DESC (plus récent en premier)
-        _notifications = notifications;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _error = e.toString();
-      });
-    }
-  }
-
-  Future<void> _markAllAsRead() async {
-    await actions.markAllNotificationsAsRead();
-    await _loadNotifications();
-  }
-
-  Future<void> _handleNotificationTap(AppNotificationStruct notification) async {
-    // Marquer comme lu immédiatement dans l'UI
-    if (notification.notificationId.isNotEmpty) {
-      // Mise à jour optimiste de l'UI
-      setState(() {
-        final index = _notifications.indexWhere(
-          (n) => n.notificationId == notification.notificationId,
-        );
-        if (index != -1) {
-          _notifications[index] = AppNotificationStruct(
-            notificationId: notification.notificationId,
-            notificationType: notification.notificationType,
-            title: notification.title,
-            message: notification.message,
-            isRead: true, // Marquer comme lu
-            createdAt: notification.createdAt,
-          );
-        }
-      });
-      
-      // Marquer comme lu en backend
-      await actions.markNotificationAsRead(notification.notificationId);
-    }
-
-    // Récupérer le payload et rediriger
-    if (notification.notificationType != null) {
-      try {
-        final response = await SupaFlow.client
-            .from('notifications')
-            .select('payload')
-            .eq('id', notification.notificationId)
-            .single();
-
-        final payload = response['payload'] as Map<String, dynamic>?;
-
-        // Créer les données pour la redirection (même si payload est null/vide)
-        final dataForRedirection = <String, dynamic>{
-          'type': notification.notificationType!.name,
-          ...?payload, // Spread le payload s'il existe
-        };
-
-        if (mounted) {
-          await actions.handleNotificationRedirection(context, dataForRedirection);
-        }
-      } catch (e) {
-        debugPrint('[NotificationsPage._handleNotificationTap] Error: $e');
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,17 +33,33 @@ class _NotificationsPageState extends State<NotificationsPage> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
+            _buildHeader(context),
             const Divider(height: 1, color: LynewedColors.gray200),
-            _buildSubheader(),
+            _buildSubheader(context),
             Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _error != null
-                      ? _buildError()
-                      : _notifications.isEmpty
-                          ? _buildEmptyState()
-                          : _buildNotificationsList(),
+              child: Consumer<NotificationsNotifier>(
+                builder: (context, notifier, _) {
+                  final state = notifier.state;
+
+                  if (state is NotificationsLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (state is NotificationsError) {
+                    return _buildError(context, state.message, notifier);
+                  }
+
+                  if (state is NotificationsLoaded) {
+                    if (state.notifications.isEmpty) {
+                      return _buildEmptyState();
+                    }
+                    return _buildNotificationsList(context, state, notifier);
+                  }
+
+                  // Initial state - show loading
+                  return const Center(child: CircularProgressIndicator());
+                },
+              ),
             ),
           ],
         ),
@@ -137,7 +67,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       child: Row(
@@ -162,36 +92,45 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 
-  Widget _buildSubheader() {
-    final hasUnread = _notifications.any((n) => !n.isRead);
-    
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Below are some recent alerts for you.',
-            style: LynewedTextStyles.bodySmall.copyWith(
-              color: LynewedColors.textSecondary,
-            ),
-          ),
-          if (hasUnread)
-            GestureDetector(
-              onTap: _markAllAsRead,
-              child: Text(
-                'Mark read',
+  Widget _buildSubheader(BuildContext context) {
+    return Consumer<NotificationsNotifier>(
+      builder: (context, notifier, _) {
+        final state = notifier.state;
+        final hasUnread = state is NotificationsLoaded && state.hasUnread;
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Below are some recent alerts for you.',
                 style: LynewedTextStyles.bodySmall.copyWith(
-                  decoration: TextDecoration.underline,
+                  color: LynewedColors.textSecondary,
                 ),
               ),
-            ),
-        ],
-      ),
+              if (hasUnread)
+                GestureDetector(
+                  onTap: () => notifier.markAllAsRead(),
+                  child: Text(
+                    'Mark read',
+                    style: LynewedTextStyles.bodySmall.copyWith(
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildError() {
+  Widget _buildError(
+    BuildContext context,
+    String message,
+    NotificationsNotifier notifier,
+  ) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -210,7 +149,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
             ),
             const SizedBox(height: 8),
             TextButton(
-              onPressed: _loadNotifications,
+              onPressed: () => notifier.loadNotifications(),
               child: const Text('Retry'),
             ),
           ],
@@ -244,254 +183,96 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 
-  Widget _buildNotificationsList() {
+  Widget _buildNotificationsList(
+    BuildContext context,
+    NotificationsLoaded state,
+    NotificationsNotifier notifier,
+  ) {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      itemCount: _notifications.length,
+      itemCount: state.notifications.length,
       separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
-        final notification = _notifications[index];
-        return _NotificationTile(
+        final notification = state.notifications[index];
+        return NotificationTile(
           notification: notification,
-          onTap: () => _handleNotificationTap(notification),
-          onMarkAsRead: () => _markSingleAsRead(notification),
+          onTap: () => _handleNotificationTap(context, notification, notifier),
+          onMarkAsRead: notification.isRead
+              ? null
+              : () => notifier.markAsRead(notification.id),
         );
       },
     );
   }
 
-  /// Marquer une seule notification comme lue (sans navigation)
-  Future<void> _markSingleAsRead(AppNotificationStruct notification) async {
-    if (notification.isRead || notification.notificationId.isEmpty) return;
-    
-    // Mise à jour optimiste de l'UI
-    setState(() {
-      final index = _notifications.indexWhere(
-        (n) => n.notificationId == notification.notificationId,
-      );
-      if (index != -1) {
-        _notifications[index] = AppNotificationStruct(
-          notificationId: notification.notificationId,
-          notificationType: notification.notificationType,
-          title: notification.title,
-          message: notification.message,
-          isRead: true,
-          createdAt: notification.createdAt,
-        );
-      }
-    });
-    
-    // Marquer comme lu en backend
-    await actions.markNotificationAsRead(notification.notificationId);
-  }
-}
-
-/// Tile pour afficher une notification individuelle.
-/// 
-/// - Tap sur la tile → navigation + marquer comme lu
-/// - Tap sur le badge "New" → marquer comme lu uniquement (sans navigation)
-class _NotificationTile extends StatelessWidget {
-  final AppNotificationStruct notification;
-  final VoidCallback onTap;
-  final VoidCallback onMarkAsRead;
-
-  const _NotificationTile({
-    required this.notification,
-    required this.onTap,
-    required this.onMarkAsRead,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: LynewedColors.surface,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildIcon(),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          notification.title.isNotEmpty 
-                              ? notification.title 
-                              : _getDefaultTitle(),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: LynewedTextStyles.bodyMedium.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      _buildReadBadge(),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    notification.message.isNotEmpty 
-                        ? notification.message 
-                        : 'Tap to view details',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: LynewedTextStyles.bodySmall.copyWith(
-                      color: LynewedColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  if (notification.createdAt != null)
-                    Text(
-                      _formatTimestamp(notification.createdAt!),
-                      style: LynewedTextStyles.labelSmall.copyWith(
-                        color: LynewedColors.gray100,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildIcon() {
-    final iconData = _getIconForType();
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: notification.isRead 
-            ? LynewedColors.gray200 
-            : LynewedColors.primary,
-        shape: BoxShape.circle,
-      ),
-      child: Icon(
-        iconData,
-        size: 18,
-        color: notification.isRead 
-            ? LynewedColors.textSecondary 
-            : LynewedColors.textOnPrimary,
-      ),
-    );
-  }
-
-  Widget _buildReadBadge() {
-    final badge = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: notification.isRead 
-            ? LynewedColors.gray200 
-            : LynewedColors.primary,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        notification.isRead ? 'Read' : 'New',
-        style: LynewedTextStyles.labelSmall.copyWith(
-          color: notification.isRead 
-              ? LynewedColors.textSecondary 
-              : LynewedColors.textOnPrimary,
-        ),
-      ),
-    );
-    
-    // Si non lu, rendre le badge cliquable pour marquer comme lu sans naviguer
+  void _handleNotificationTap(
+    BuildContext context,
+    AppNotification notification,
+    NotificationsNotifier notifier,
+  ) {
+    // Mark as read
     if (!notification.isRead) {
-      return GestureDetector(
-        onTap: onMarkAsRead,
-        behavior: HitTestBehavior.opaque,
-        child: badge,
-      );
+      notifier.markAsRead(notification.id);
     }
-    
-    return badge;
-  }
 
-  IconData _getIconForType() {
-    switch (notification.notificationType) {
-      case NotificationType.chatMessage:
-        return Icons.chat_bubble_outline;
-      case NotificationType.connectionRequest:
-        return Icons.person_add_outlined;
-      case NotificationType.connectionRequestAccepted:
-        return Icons.check_circle_outline;
-      case NotificationType.wishlistAdd:
-        return Icons.favorite_outline;
-      case NotificationType.videoIncoming:
-        return Icons.videocam_outlined;
-      case NotificationType.wedPublished:
-        return Icons.celebration_outlined;
-      case NotificationType.replayPublished:
-        return Icons.play_circle_outline;
-      // Wedding events
-      case NotificationType.weddingProAdded:
-        return Icons.group_add_outlined;
-      case NotificationType.weddingProExcluded:
-        return Icons.person_remove_outlined;
-      case NotificationType.weddingProLeft:
-        return Icons.exit_to_app_outlined;
-      case NotificationType.weddingCancelled:
-        return Icons.event_busy_outlined;
-      default:
-        return Icons.notifications_outlined;
+    // Navigate based on notification type
+    final nav = notification.navigation;
+    if (nav != null) {
+      _navigateToDestination(context, nav);
     }
   }
 
-  String _getDefaultTitle() {
-    switch (notification.notificationType) {
-      case NotificationType.chatMessage:
-        return 'New message';
-      case NotificationType.connectionRequest:
-        return 'Contact request';
-      case NotificationType.connectionRequestAccepted:
-        return 'Request accepted';
-      case NotificationType.wishlistAdd:
-        return 'Added to wishlist';
-      case NotificationType.videoIncoming:
-        return 'Video call';
-      case NotificationType.wedPublished:
-        return 'Wedding of the Week';
-      case NotificationType.replayPublished:
-        return 'New Replay';
-      // Wedding events
-      case NotificationType.weddingProAdded:
-        return 'Added to a wedding';
-      case NotificationType.weddingProExcluded:
-        return 'Removed from wedding';
-      case NotificationType.weddingProLeft:
-        return 'Professional left';
-      case NotificationType.weddingCancelled:
-        return 'Wedding cancelled';
-      default:
-        return 'Notification';
-    }
-  }
+  void _navigateToDestination(
+    BuildContext context,
+    NotificationNavigation nav,
+  ) {
+    // Navigate based on route type
+    switch (nav.route) {
+      case NotificationRoute.chat:
+        final roomId = nav.params['roomId'] as String?;
+        if (roomId != null) {
+          Navigator.of(context).pushNamed(
+            '/chatRoom',
+            arguments: {'roomId': roomId},
+          );
+        }
+        break;
 
-  String _formatTimestamp(DateTime timestamp) {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
+      case NotificationRoute.profile:
+        final profileId = nav.params['profileId'] as String?;
+        if (profileId != null) {
+          Navigator.of(context).pushNamed(
+            '/profile',
+            arguments: {'profileId': profileId},
+          );
+        }
+        break;
 
-    if (difference.inMinutes < 1) {
-      return 'Just now';
-    } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}m ago';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours}h ago';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}d ago';
-    } else {
-      return dateTimeFormat('MMMd', timestamp);
+      case NotificationRoute.videoCall:
+        final sessionId = nav.params['sessionId'] as String?;
+        final channelName = nav.params['channelName'] as String?;
+        if (sessionId != null) {
+          Navigator.of(context).pushNamed(
+            '/videoCall',
+            arguments: {
+              'sessionId': sessionId,
+              if (channelName != null) 'channelName': channelName,
+            },
+          );
+        }
+        break;
+
+      case NotificationRoute.weddingOfTheWeek:
+        Navigator.of(context).pushNamed('/weddingOfTheWeek');
+        break;
+
+      case NotificationRoute.replays:
+        Navigator.of(context).pushNamed('/replays');
+        break;
+
+      case NotificationRoute.notificationsList:
+        // Already on notifications page, do nothing
+        break;
     }
   }
 }

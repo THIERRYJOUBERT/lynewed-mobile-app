@@ -317,6 +317,49 @@ class ChatRemoteDatasource {
   }
 
   // ============================================================
+  // PARTICIPANTS
+  // ============================================================
+
+  /// Get all participants for a room with their profile info
+  Future<List<ChatParticipant>> getRoomParticipants(String roomId) async {
+    final response = await _client
+        .from('chat_room_participants')
+        .select('''
+          profile_id,
+          room_id,
+          conversation_status,
+          joined_at,
+          last_read_at,
+          profiles (
+            full_name,
+            avatar_url,
+            role
+          )
+        ''')
+        .eq('room_id', roomId)
+        .order('joined_at', ascending: true);
+
+    return (response as List<dynamic>).map((item) {
+      final map = item as Map<String, dynamic>;
+      final profile = map['profiles'] as Map<String, dynamic>?;
+      return ChatParticipant(
+        profileId: map['profile_id'] as String,
+        roomId: map['room_id'] as String,
+        status: ConversationStatus.fromString(
+                map['conversation_status'] as String?) ??
+            ConversationStatus.active,
+        joinedAt: DateTime.parse(map['joined_at'] as String),
+        lastReadAt: map['last_read_at'] != null
+            ? DateTime.parse(map['last_read_at'] as String)
+            : null,
+        fullName: profile?['full_name'] as String?,
+        avatarUrl: profile?['avatar_url'] as String?,
+        role: UserRole.fromString(profile?['role'] as String?),
+      );
+    }).toList();
+  }
+
+  // ============================================================
   // CONTACT CONTEXT
   // ============================================================
 

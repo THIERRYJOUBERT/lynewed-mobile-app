@@ -79,6 +79,20 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   // ============================================================
+  // PARTICIPANTS
+  // ============================================================
+
+  @override
+  Future<ChatResult<List<ChatParticipant>>> getRoomParticipants(String roomId) async {
+    try {
+      final participants = await _datasource.getRoomParticipants(roomId);
+      return ChatResult.success(participants);
+    } catch (e) {
+      return ChatResult.failure('Failed to get room participants: $e');
+    }
+  }
+
+  // ============================================================
   // MESSAGES
   // ============================================================
 
