@@ -1,6 +1,26 @@
-# lynewed_beta
+# LYNEWED V1 - Application Mobile
 
-A flutter project
+Application Flutter de mise en relation mariées/professionnels du mariage.
+
+## ⚠️ ENVIRONNEMENT PRODUCTION
+
+**CE PROJET EST EN PRODUCTION** avec des utilisateurs actifs sur iOS et Android.
+
+| Élément | Valeur |
+|---------|--------|
+| **Statut** | 🔴 PRODUCTION |
+| **Projet Supabase** | `LYNEWED-V1-APP` |
+| **Project ID** | `hekyovgnovhfhmkpfrna` |
+| **Région** | `eu-central-2` |
+| **MCP Connecté** | ✅ Oui (plugin Supabase) |
+
+### Règles de Sécurité Production
+
+1. **JAMAIS** modifier le schéma DB sans migration testée
+2. **JAMAIS** exécuter de DELETE/UPDATE sans WHERE précis
+3. **TOUJOURS** tester sur une branche Supabase avant merge en prod
+4. **TOUJOURS** vérifier l'impact sur les 248 utilisateurs actifs
+5. **PRÉFÉRER** les migrations réversibles (avec rollback plan)
 
 ## Contexte de Travail
 
@@ -33,14 +53,32 @@ Ce projet utilise une **methodologie structuree** avec des workflows, des agents
 
 ## Tech Stack
 
-- **Langage** : Dart
-- **Type** : flutter
+| Élément | Technologie |
+|---------|-------------|
+| **Langage** | Dart |
+| **Framework** | Flutter |
+| **Backend** | Supabase (PostgreSQL + Auth + Storage + Realtime + Edge Functions) |
+| **Video Calls** | Agora |
+| **Notifications** | Firebase Cloud Messaging |
+| **Géolocalisation** | PostGIS |
+| **Paiements** | Stripe |
+
+## Supabase - Tables Principales
+
+| Table | Rows | Description |
+|-------|------|-------------|
+| `profiles` | 248 | Utilisateurs (bride/professional) |
+| `professional_details` | 49 | Détails pros (portfolio, tarifs) |
+| `weddings` | 8 | Mariages avec lieu, budget, équipe |
+| `chat_rooms` / `chat_messages` | 80/199 | Chat temps réel |
+| `notifications_outbox` | 245 | Queue push notifications |
+| `video_sessions` | 59 | Sessions vidéo Agora |
 
 ## Commandes
 
 ```bash
 flutter test                       # Tests
-flutter analyze --fatal-infos                       # Linting
+flutter analyze --fatal-infos      # Linting (0 warnings obligatoire)
 flutter build                      # Build
 flutter run                        # Run
 ```
@@ -105,9 +143,33 @@ flutter run                        # Run
 
 ## Index Rapide
 
-| Besoin | Ou chercher |
+| Besoin | Où chercher |
 |--------|-------------|
 | Vision produit | `docs/specs/PRD-MASTER.md` |
 | Architecture workflows | `.claude/context/SYSTEM.md` |
-| Regles techniques | `.claude/rules/` |
+| Règles techniques | `.claude/rules/` |
 | Stories en cours | `docs/epics/` |
+
+---
+
+## MCP Supabase - Outils Disponibles
+
+Le MCP Supabase est connecté et permet :
+
+| Outil | Usage |
+|-------|-------|
+| `list_tables` | Voir le schéma de la base |
+| `execute_sql` | Requêtes SELECT (lecture) |
+| `apply_migration` | DDL avec versioning |
+| `get_logs` | Debug (auth, postgres, edge-function) |
+| `get_advisors` | Audit sécurité/performance |
+| `list_edge_functions` | Voir les Edge Functions |
+| `deploy_edge_function` | Déployer une Edge Function |
+
+### Autres Projets Supabase (même organisation)
+
+| Projet | ID | Usage |
+|--------|-----|-------|
+| LYNEWED-V1-CRM | `pjcorrkwafjskmzmimon` | Back-office admin |
+| Tom Leo App Lynewed | `odzkhcplevcqbuhzqsmq` | Dev/Test |
+| WEBSITE LYNEWED | `ojnyblbxrndhirjqdhro` | Site web |

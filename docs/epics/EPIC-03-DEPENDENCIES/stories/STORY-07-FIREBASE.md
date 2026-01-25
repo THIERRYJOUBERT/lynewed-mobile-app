@@ -4,6 +4,10 @@
 
 Mettre a jour les packages Firebase vers leurs versions majeures. **ATTENTION**: Version majeure = breaking changes probables.
 
+> **IMPORTANT**: Firebase est utilise UNIQUEMENT pour FCM (Firebase Cloud Messaging) - les notifications push.
+> La base de donnees du projet est **Supabase** (PostgreSQL), pas Firebase/Firestore.
+> Cette story ne concerne donc que `firebase_core` (requis par FCM) et `firebase_messaging`.
+
 | Package | Actuel | Cible | Changelog |
 |---------|--------|-------|-----------|
 | firebase_core | 3.15.2 | 4.4.0 | [pub.dev](https://pub.dev/packages/firebase_core/changelog) |
@@ -213,6 +217,17 @@ cd ios && pod install && cd ..
 - **Risque**: Haut (notifications critiques pour l'app)
 
 ## Notes
+
+### Scope Firebase dans ce projet
+
+| Service | Utilise | Package |
+|---------|---------|---------|
+| **FCM (Push Notifications)** | ✅ Oui | `firebase_messaging` |
+| Firestore (Database) | ❌ Non | Supabase utilise |
+| Firebase Auth | ❌ Non | Supabase Auth utilise |
+| Firebase Storage | ❌ Non | Supabase Storage utilise |
+| Firebase Analytics | ❌ Non | - |
+| Crashlytics | ❌ Non | - |
 
 ### Points Critiques
 
