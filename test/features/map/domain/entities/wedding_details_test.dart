@@ -40,7 +40,7 @@ void main() {
       expect(details.brideFullName, 'Marie Dupont');
     });
 
-    test('budgetRange should format correctly', () {
+    test('budgetRangeOriginal should format correctly', () {
       const details = WeddingDetails(
         id: 'test',
         brideId: 'bride',
@@ -49,29 +49,29 @@ void main() {
         currency: 'EUR',
       );
 
-      expect(details.budgetRange, '5000 - 15000 EUR');
+      expect(details.budgetRangeOriginal, '5000 - 15000 EUR');
     });
 
-    test('budgetRange should handle partial values', () {
+    test('budgetRangeOriginal should handle partial values', () {
       const detailsMin = WeddingDetails(
         id: 'test',
         brideId: 'bride',
         budgetMin: 5000,
       );
-      expect(detailsMin.budgetRange, 'From 5000 EUR');
+      expect(detailsMin.budgetRangeOriginal, 'From 5000 EUR');
 
       const detailsMax = WeddingDetails(
         id: 'test',
         brideId: 'bride',
         budgetMax: 15000,
       );
-      expect(detailsMax.budgetRange, 'Up to 15000 EUR');
+      expect(detailsMax.budgetRangeOriginal, 'Up to 15000 EUR');
 
       const detailsNone = WeddingDetails(
         id: 'test',
         brideId: 'bride',
       );
-      expect(detailsNone.budgetRange, 'Not specified');
+      expect(detailsNone.budgetRangeOriginal, 'Not specified');
     });
 
     test('daysUntilWedding should calculate correctly', () {
@@ -119,14 +119,14 @@ void main() {
       expect(details.professionsNeededFormatted, 'Not specified');
     });
 
-    test('radiusFormatted should format correctly', () {
+    test('radiusFormattedKm should format correctly', () {
       const details = WeddingDetails(
         id: 'test',
         brideId: 'bride',
         searchRadiusKm: 50,
       );
 
-      expect(details.radiusFormatted, '50 km');
+      expect(details.radiusFormattedKm, '50 km');
     });
   });
 }

@@ -128,6 +128,7 @@ dev_dependencies:
   flutter_lints: 5.0.0
   image: 4.7.2
   lints: 5.0.0
+  mocktail: ^1.0.4
   flutter_test:
     sdk: flutter
 

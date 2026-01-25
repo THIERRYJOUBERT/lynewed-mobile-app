@@ -58,7 +58,7 @@ void main() {
       expect(details.displayName, 'John Doe');
     });
 
-    test('budgetRange should format correctly', () {
+    test('budgetRangeOriginal should format correctly', () {
       const details = ProfessionalDetails(
         id: 'test',
         fullName: 'John Doe',
@@ -68,10 +68,10 @@ void main() {
         currency: 'EUR',
       );
 
-      expect(details.budgetRange, '1000 - 5000 EUR');
+      expect(details.budgetRangeOriginal, '1000 - 5000 EUR');
     });
 
-    test('distanceFormatted should format km correctly', () {
+    test('distanceFormattedKm should format km correctly', () {
       const details = ProfessionalDetails(
         id: 'test',
         fullName: 'John Doe',
@@ -79,10 +79,10 @@ void main() {
         distanceKm: 15.5,
       );
 
-      expect(details.distanceFormatted, '15.5 km');
+      expect(details.distanceFormattedKm, '15.5 km');
     });
 
-    test('distanceFormatted should format meters for < 1km', () {
+    test('distanceFormattedKm should format meters for < 1km', () {
       const details = ProfessionalDetails(
         id: 'test',
         fullName: 'John Doe',
@@ -90,7 +90,7 @@ void main() {
         distanceKm: 0.5,
       );
 
-      expect(details.distanceFormatted, '500 m');
+      expect(details.distanceFormattedKm, '500 m');
     });
   });
 
