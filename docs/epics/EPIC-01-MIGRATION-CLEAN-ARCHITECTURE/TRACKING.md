@@ -5,85 +5,85 @@
 | Metrique | Valeur |
 |----------|--------|
 | **Total Stories** | 42 |
-| **Completees** | 0 |
-| **En Cours** | 0 |
-| **En Attente** | 42 |
-| **Progression** | 0% |
+| **Completees** | 29 |
+| **En Cours** | 1 |
+| **En Attente** | 12 |
+| **Progression** | 69% |
 
 ## Progression par Phase
 
 ### Phase 1 : Fondations (Stories S01-S04)
 | Story | Titre | Statut | Assignee | Date Debut | Date Fin |
 |-------|-------|--------|----------|------------|----------|
-| S01 | Setup infrastructure et conventions | TODO | - | - | - |
-| S02 | Migration FlutterFlow utilities | TODO | - | - | - |
-| S03 | Core design system extraction | TODO | - | - | - |
-| S04 | Navigation system refactoring | TODO | - | - | - |
+| S01 | Setup infrastructure et conventions | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S02 | Migration FlutterFlow utilities | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S03 | Core design system extraction | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S04 | Navigation system refactoring | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
 
-**Progression Phase 1** : 0/4 (0%)
+**Progression Phase 1** : 4/4 (100%) ✅
 
 ---
 
 ### Phase 2 : Chat & Notifications (Stories S05-S10)
 | Story | Titre | Statut | Assignee | Date Debut | Date Fin |
 |-------|-------|--------|----------|------------|----------|
-| S05 | Chat - Domain layer completion | TODO | - | - | - |
-| S06 | Chat - Data layer completion | TODO | - | - | - |
-| S07 | Chat - Presentation layer completion | TODO | - | - | - |
-| S08 | Notifications - Domain layer | TODO | - | - | - |
-| S09 | Notifications - Data layer | TODO | - | - | - |
-| S10 | Notifications - Presentation completion | TODO | - | - | - |
+| S05 | Chat - Domain layer completion | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S06 | Chat - Data layer completion | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S07 | Chat - Presentation layer completion | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S08 | Notifications - Domain layer | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S09 | Notifications - Data layer | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S10 | Notifications - Presentation completion | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
 
-**Progression Phase 2** : 0/6 (0%)
+**Progression Phase 2** : 6/6 (100%) ✅
 
 ---
 
 ### Phase 3 : Auth (Stories S11-S16)
 | Story | Titre | Statut | Assignee | Date Debut | Date Fin |
 |-------|-------|--------|----------|------------|----------|
-| S11 | Auth - Domain layer | TODO | - | - | - |
-| S12 | Auth - Data layer | TODO | - | - | - |
-| S13 | Auth - Presentation layer | TODO | - | - | - |
-| S14 | Auth - Login/Signup pages | TODO | - | - | - |
-| S15 | Auth - Password reset flow | TODO | - | - | - |
-| S16 | Auth - Startup gate refactoring | TODO | - | - | - |
+| S11 | Auth - Domain layer | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S12 | Auth - Data layer | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S13 | Auth - Presentation layer | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S14 | Auth - Login/Signup pages | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S15 | Auth - Password reset flow | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S16 | Auth - Startup gate refactoring | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
 
-**Progression Phase 3** : 0/6 (0%)
+**Progression Phase 3** : 6/6 (100%) ✅
 
 ---
 
 ### Phase 4 : My Wedding (Stories S17-S22)
 | Story | Titre | Statut | Assignee | Date Debut | Date Fin |
 |-------|-------|--------|----------|------------|----------|
-| S17 | My Wedding - Domain layer completion | TODO | - | - | - |
-| S18 | My Wedding - Data layer completion | TODO | - | - | - |
-| S19 | My Wedding - Onboarding flow | TODO | - | - | - |
-| S20 | My Wedding - Team management | TODO | - | - | - |
-| S21 | My Wedding - Inspirations/Albums | TODO | - | - | - |
-| S22 | My Wedding - Agenda/Budget/Guests | TODO | - | - | - |
+| S17 | My Wedding - Domain layer completion | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S18 | My Wedding - Data layer completion | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S19 | My Wedding - Onboarding flow | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S20 | My Wedding - Team management | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S21 | My Wedding - Inspirations/Albums | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S22 | My Wedding - Agenda/Budget/Guests | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
 
-**Progression Phase 4** : 0/6 (0%)
+**Progression Phase 4** : 6/6 (100%) ✅
 
 ---
 
 ### Phase 5 : Pages Legacy (Stories S23-S35)
 | Story | Titre | Statut | Assignee | Date Debut | Date Fin |
 |-------|-------|--------|----------|------------|----------|
-| S23 | Shared - Profile pages | TODO | - | - | - |
-| S24 | Shared - Settings pages | TODO | - | - | - |
-| S25 | Shared - Support page | TODO | - | - | - |
-| S26 | Shared - Video call page | TODO | - | - | - |
-| S27 | Shared - Content/Replay pages | TODO | - | - | - |
-| S28 | Bride - Home page | TODO | - | - | - |
-| S29 | Bride - Feed pages | TODO | - | - | - |
-| S30 | Bride - Messages page wrapper | TODO | - | - | - |
+| S23 | Shared - Profile pages | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S24 | Shared - Settings pages | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S25 | Shared - Support page | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S26 | Shared - Video call page | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S27 | Shared - Content/Replay pages | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S28 | Bride - Home page | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S29 | Bride - Feed pages | ✅ DONE | autonomous | 2026-01-25 | 2026-01-25 |
+| S30 | Bride - Messages page wrapper | IN_PROGRESS | autonomous | 2026-01-25 | - |
 | S31 | Bride - Edit profile | TODO | - | - | - |
 | S32 | Pro - Dashboard page | TODO | - | - | - |
 | S33 | Pro - Messages page wrapper | TODO | - | - | - |
 | S34 | Pro - Wishlist page | TODO | - | - | - |
 | S35 | Pro - Public profile view | TODO | - | - | - |
 
-**Progression Phase 5** : 0/13 (0%)
+**Progression Phase 5** : 7/13 (54%)
 
 ---
 
@@ -143,6 +143,28 @@
 | Date | Mise a Jour | Auteur |
 |------|-------------|--------|
 | 2026-01-24 | Creation de l'Epic et structure initiale | PM |
+| 2026-01-25 | S01 DONE: lib/core/ infrastructure (55 tests) | autonomous |
+| 2026-01-25 | S02 DONE: FlutterFlow utilities migrés (96 tests) | autonomous |
+| 2026-01-25 | S03 DONE: Design system extrait (17 tests) | autonomous |
+| 2026-01-25 | S04 DONE: Navigation refactoré (130 tests) | autonomous |
+| 2026-01-25 | S05-S10 DONE: Chat & Notifications modules complets | autonomous |
+| 2026-01-25 | S11-S13 DONE: Auth domain/data/presentation (132 tests) | autonomous |
+| 2026-01-25 | S14 DONE: Auth Login/Signup pages (50 tests) | autonomous |
+| 2026-01-25 | S15 DONE: Auth Password reset flow (45 tests) | autonomous |
+| 2026-01-25 | S16 DONE: Auth Startup Gate refactoring (28 tests) | autonomous |
+| 2026-01-25 | S17 DONE: My Wedding Domain completion (41 tests) | autonomous |
+| 2026-01-25 | S18 DONE: My Wedding Data completion (90 tests) | autonomous |
+| 2026-01-25 | S19 DONE: My Wedding Onboarding Cubit | autonomous |
+| 2026-01-25 | S20 DONE: My Wedding Team Cubit (23 tests) | autonomous |
+| 2026-01-25 | S21 DONE: My Wedding Inspirations Cubit (49 tests) | autonomous |
+| 2026-01-25 | S22 DONE: Agenda/Budget/Guests Cubits (111 tests) | autonomous |
+| 2026-01-25 | S23 DONE: Profile module (53 tests) | autonomous |
+| 2026-01-25 | S24 DONE: Settings module (67 tests) | autonomous |
+| 2026-01-25 | S25 DONE: Support module (78 tests) | autonomous |
+| 2026-01-25 | S26 DONE: Video Call module (123 tests) | autonomous |
+| 2026-01-25 | S27 DONE: Content module (190 tests) | autonomous |
+| 2026-01-25 | S28 DONE: Home Brides module (55 tests) | autonomous |
+| 2026-01-25 | S29 DONE: Feed module (177 tests) | autonomous |
 
 ---
 
