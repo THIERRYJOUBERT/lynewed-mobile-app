@@ -125,6 +125,9 @@ flutter run                        # Run
 | `/create-epic` | Creer un Epic depuis PRD |
 | `/create-story` | Decomposer Epic en Stories |
 | `/create-workflow` | Creer un nouveau workflow |
+| `/create-slash-commands` | Creer des slash commands personnalisees |
+| `/create-subagents` | Creer des agents specialises |
+| `/claude-memory` | Gerer CLAUDE.md et .claude/rules/ |
 | `/mission` | Brief client → Mission + Epics + Stories (cascade adaptative) |
 
 ### Maintenance
@@ -147,7 +150,10 @@ flutter run                        # Run
 | `/learn` | Comprendre une feature/concept |
 | `/documentation` | Documenter session de travail |
 | `/sync-project` | Synchroniser references |
+| `/sync-template` | Synchroniser depuis template distant |
 | `/update-config` | Mettre a jour config depuis template distant |
+| `/launch-epic` | Lancer execution d'un Epic (supervised/autonomous) |
+| `/setup-ralph` | Configurer boucle autonome Ralph (features pendant la nuit) |
 
 ---
 
@@ -188,14 +194,14 @@ auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, prof
 
 | Besoin | Où chercher |
 |--------|-------------|
-| Vision produit | `docs/specs/PRD-MASTER.md` |
 | Architecture technique | `ARCHITECTURE.md` |
 | Guide contribution | `CONTRIBUTING.md` |
 | Documentation API | `docs/api/INDEX.md` |
 | Décisions architecture | `docs/decisions/INDEX.md` |
 | Architecture workflows | `.claude/context/SYSTEM.md` |
 | Règles techniques | `.claude/rules/` |
-| Stories en cours | `docs/epics/` |
+| Epics et Stories | `docs/epics/` |
+| Design System | `docs/App/DESIGN_SYSTEM.md` |
 
 ---
 
