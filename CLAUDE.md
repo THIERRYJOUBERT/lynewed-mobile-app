@@ -77,7 +77,7 @@ Ce projet utilise une **methodologie structuree** avec des workflows, des agents
 ## Commandes
 
 ```bash
-flutter test                       # Tests
+flutter test                       # Tests (3069 tests)
 flutter analyze --fatal-infos      # Linting (0 warnings obligatoire)
 flutter build                      # Build
 flutter run                        # Run
@@ -151,6 +151,31 @@ flutter run                        # Run
 
 ---
 
+## État du Projet
+
+### EPIC-01: Migration Clean Architecture ✅ COMPLETE (2026-01-26)
+
+| Métrique | Valeur |
+|----------|--------|
+| Stories | 42/42 (100%) |
+| Tests | 3069 |
+| Warnings | 0 |
+| Features CA | 14 modules |
+
+**Modules Clean Architecture (`lib/features/`):**
+auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, profile, settings, support, video_call, wishlist
+
+### Epics En Attente
+
+| Epic | Description | Status |
+|------|-------------|--------|
+| EPIC-02 | Tests additionnels | TODO |
+| EPIC-03 | Dependencies update | TODO |
+| EPIC-04 | Documentation | TODO |
+| EPIC-05 | Security cleanup | TODO |
+
+---
+
 ## Index Rapide
 
 | Besoin | Où chercher |
@@ -159,6 +184,7 @@ flutter run                        # Run
 | Architecture workflows | `.claude/context/SYSTEM.md` |
 | Règles techniques | `.claude/rules/` |
 | Stories en cours | `docs/epics/` |
+| EPIC-01 tracking | `docs/epics/EPIC-01-MIGRATION-CLEAN-ARCHITECTURE/TRACKING.md` |
 
 ---
 
