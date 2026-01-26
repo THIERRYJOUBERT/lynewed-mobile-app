@@ -5,8 +5,14 @@ import '/backend/supabase/supabase.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-/// Set your action name, define your arguments and return parameter, and then
-/// add the boilerplate code using the green button on the right!
+/// Toggles the wishlist status for a professional.
+///
+/// Returns true if now favorited, false if unfavorited, null on error.
+///
+/// Note: Feed module has FeedRepository.toggleFavorite() but it's not fully
+/// connected to Supabase yet. This action is kept for legacy FlutterFlow pages.
+///
+/// See also: lib/features/feed/data/repositories/feed_repository_impl.dart
 Future<bool?> toggleWishlistAction(String proProfileId) async {
   if (proProfileId.isEmpty) {
     return null;

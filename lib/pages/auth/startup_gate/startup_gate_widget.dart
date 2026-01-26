@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use_from_same_package
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/schema/enums/enums.dart';
 import '/flutter_flow/flutter_flow_theme.dart';

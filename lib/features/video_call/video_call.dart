@@ -4,6 +4,29 @@
 /// - Video session management
 /// - Call controls (mute, camera, switch camera)
 /// - Real-time video streaming
+///
+/// ## Architecture Notes (EPIC-01 S40)
+///
+/// This module provides Clean Architecture abstractions for video calls:
+/// - [VideoCallRepository] - Interface for session CRUD
+/// - [VideoCallRepositoryImpl] - Supabase implementation
+/// - [VideoCallCubit] - State management for calls
+///
+/// ### Legacy Integration
+///
+/// The actual Agora SDK integration remains in `custom_code/widgets/agora_video_view.dart`
+/// due to its tight coupling with FlutterFlow-generated pages. The legacy actions in
+/// `custom_code/actions/` (agoraToggleMute, agoraToggleCamera, etc.) are thin wrappers
+/// that delegate to AgoraVideoViewWidget static methods.
+///
+/// Session creation still uses `custom_code/actions/start_video_session_action.dart`
+/// which handles:
+/// - Creating DB record via Supabase
+/// - Triggering push notification drain
+/// - Setting up timeout handler
+///
+/// Token generation uses `custom_code/actions/get_agora_token_action.dart` which
+/// calls the `agora_token_issue` Edge Function with retry logic.
 library;
 
 // Domain layer

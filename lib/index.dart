@@ -11,8 +11,9 @@ export '/pages/shared/pro_details/pro_details_widget.dart'
     show ProDetailsWidget;
 export '/pages/bride/home_brides/home_brides_widget.dart' show HomeBridesWidget;
 export '/pages/bride/feed_brides/feed_brides_widget.dart' show FeedBridesWidget;
-export '/pages/bride/messages_brides/messages_brides_widget.dart'
-    show MessagesBridesWidget;
+// Messages - Uses Clean Architecture Chat module wrappers
+export '/features/chat/presentation/pages/legacy_wrappers.dart'
+    show MessagesBridesPageWrapper, MessagesProPageWrapper;
 // Map Brides - Utilise nouveau module Clean Architecture
 export '/features/map/presentation/pages/map_brides_large_wrapper.dart'
     show MapBridesLargeWidget;
@@ -45,8 +46,6 @@ export '/pages/shared/portfolio_image_viewer/portfolio_image_viewer_widget.dart'
     show PortfolioImageViewerWidget;
 export '/pages/bride/feed_detail_viewer/feed_detail_viewer_widget.dart'
     show FeedDetailViewerWidget;
-export '/pages/pro/messages_pro/messages_pro_widget.dart'
-    show MessagesProWidget;
 export '/pages/auth/reset_password_new_page/reset_password_new_page_widget.dart'
     show ResetPasswordNewPageWidget;
 export '/pages/auth/sign_in_email_page_pro/sign_in_email_page_pro_widget.dart'

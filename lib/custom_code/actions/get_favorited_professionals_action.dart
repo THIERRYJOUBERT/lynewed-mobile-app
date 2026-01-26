@@ -7,9 +7,13 @@ import '/backend/supabase/supabase.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-// Set your action name, define your arguments and return parameter,
-// and then add the boilerplate code using the green button on the right!
-// --- Début des Helpers de parsing (à inclure dans le fichier) ---
+/// Gets the list of favorited professionals for the current user.
+///
+/// TODO: Migrate to Feed/Wishlist module in Clean Architecture.
+/// This function handles FlutterFlow [ProDetailsStruct] and should be
+/// migrated to the wishlist feature module.
+///
+/// Target migration: lib/features/wishlist/data/repositories/
 
 Profession _professionFromString(String? s) {
   if (s == null) return Profession.PHOTOGRAPHER; // Fallback

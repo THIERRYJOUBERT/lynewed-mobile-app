@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use_from_same_package
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';

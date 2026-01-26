@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
 // Begin custom action code
@@ -7,39 +6,46 @@ import '/backend/supabase/supabase.dart';
 
 import 'dart:io';
 import '/auth/supabase_auth/auth_util.dart';
+import '/core/di/injection_container.dart';
+import '/features/auth/auth.dart';
 
+/// Uploads an avatar image from a local file path.
+///
+/// @Deprecated: Use AuthRepository.uploadAvatar() from the Clean Architecture
+/// auth module instead. This function is kept for legacy FlutterFlow pages.
+///
+/// Note: The Clean Architecture version takes Uint8List bytes directly,
+/// while this legacy version takes a file path.
+///
+/// Migration path:
+/// ```dart
+/// // Old (deprecated):
+/// final url = await uploadAvatar(localPath);
+///
+/// // New (recommended):
+/// final file = File(localPath);
+/// final bytes = await file.readAsBytes();
+/// final fileName = localPath.split('/').last;
+/// final authRepository = sl<AuthRepository>();
+/// final result = await authRepository.uploadAvatar(bytes, fileName);
+/// final url = result.getOrNull();
+/// ```
+@Deprecated('Use AuthRepository.uploadAvatar() instead. See auth module.')
 Future<String?> uploadAvatar(String localPath) async {
-  // Vérifie si l'utilisateur est connecté et si le chemin n'est pas vide
   if (currentUserUid.isEmpty || localPath.isEmpty) {
     return null;
   }
 
   try {
-    // 1. Crée un objet Fichier à partir du chemin local
     final file = File(localPath);
-
-    // 2. Lit les données binaires (Bytes) du fichier
     final fileBytes = await file.readAsBytes();
+    final fileName = localPath.split('/').last;
 
-    // 3. Définit le chemin dans le bucket Supabase
-    // On ajoute un timestamp pour forcer le rafraîchissement du cache si nécessaire
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final serverPath = '$currentUserUid/profile_$timestamp.jpg';
+    final authRepository = sl<AuthRepository>();
+    final result = await authRepository.uploadAvatar(fileBytes, fileName);
 
-    // 4. Uploade les Bytes vers Supabase Storage
-    await SupaFlow.client.storage.from('avatars').uploadBinary(
-          serverPath,
-          fileBytes,
-        );
-
-    // 5. Récupère l'URL publique de l'image qui vient d'être uploadée
-    final publicUrl =
-        SupaFlow.client.storage.from('avatars').getPublicUrl(serverPath);
-
-    return publicUrl;
+    return result.getOrNull();
   } catch (e) {
     return null;
   }
 }
-// Set your action name, define your arguments and return parameter,
-// and then add the boilerplate code using the green button on the right!

@@ -1,29 +1,33 @@
 // Automatic FlutterFlow imports
-import '/backend/supabase/supabase.dart';
 // Imports other custom actions
 // Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-// Set your action name, define your arguments and return parameter,
-// and then add the boilerplate code using the green button on the right!
-// N'oublie pas d'ajouter 'http: ^1.2.0' dans les dépendances pubspec !
+import '/core/di/injection_container.dart';
+import '/features/auth/auth.dart';
 
+/// Calls the account deletion edge function.
+///
+/// @Deprecated: Use AuthRepository.deleteAccount() from the Clean Architecture
+/// auth module instead. This function is kept for legacy FlutterFlow pages.
+///
+/// Migration path:
+/// ```dart
+/// // Old (deprecated):
+/// final success = await callDeleteAccountEdgeFunction();
+///
+/// // New (recommended):
+/// final authRepository = sl<AuthRepository>();
+/// final result = await authRepository.deleteAccount();
+/// final success = result.isSuccess;
+/// ```
+@Deprecated('Use AuthRepository.deleteAccount() instead. See auth module.')
 Future<bool> callDeleteAccountEdgeFunction() async {
   try {
-    // Utiliser directement l'API Supabase pour appeler l'Edge Function
-    final response = await SupaFlow.client.functions.invoke(
-      'account_delete',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.status == 200) {
-      return true;
-    } else {
-      return false;
-    }
+    final authRepository = sl<AuthRepository>();
+    final result = await authRepository.deleteAccount();
+    return result.isSuccess;
   } catch (e) {
     return false;
   }

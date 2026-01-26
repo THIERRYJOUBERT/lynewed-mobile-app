@@ -12,6 +12,7 @@ import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/features/chat/presentation/pages/messages_page.dart';
 import '/features/dashboard/presentation/widgets/alert_item_widget.dart';
+import '/features/wishlist/presentation/pages/wishlist_pro_page.dart';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -201,7 +202,7 @@ class _DashboardProWidgetState extends State<DashboardProWidget> with WidgetsBin
                       if (_isUltimate) ...[
                         _buildHeaderIcon(
                           icon: Icons.favorite_border,
-                          onTap: () => context.pushNamed(WishlistProWidget.routeName),
+                          onTap: () => context.pushNamed(WishlistProPage.routeName),
                         ),
                         const SizedBox(width: 14.0),
                       ],

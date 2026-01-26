@@ -1,13 +1,33 @@
 // Automatic FlutterFlow imports
-import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 // Imports other custom actions
 // Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-// Set your action name, define your arguments and return parameter,
-// and then add the boilerplate code using the green button on the right!
+import '/core/di/injection_container.dart';
+import '/features/auth/auth.dart';
+
+/// Signs up a new bride user with email and password.
+///
+/// @Deprecated: Use AuthRepository.signUpBride() from the Clean Architecture
+/// auth module instead. This function is kept for legacy FlutterFlow pages.
+///
+/// The Clean Architecture version automatically handles terms acceptance.
+///
+/// Migration path:
+/// ```dart
+/// // Old (deprecated):
+/// final success = await signUpBride(email, password);
+///
+/// // New (recommended):
+/// final authRepository = sl<AuthRepository>();
+/// final result = await authRepository.signUpBride(
+///   email: email,
+///   password: password,
+/// );
+/// final success = result.isSuccess;
+/// ```
+@Deprecated('Use AuthRepository.signUpBride() instead. See auth module.')
 Future<bool> signUpBride(
   String email,
   String password,
@@ -17,38 +37,13 @@ Future<bool> signUpBride(
   }
 
   try {
-    final client = SupaFlow.client;
-
-    // Inscription avec Supabase
-    final res = await client.auth.signUp(
+    final authRepository = sl<AuthRepository>();
+    final result = await authRepository.signUpBride(
       email: email,
       password: password,
-      data: {'role': 'bride'}, // Métadonnées pour le rôle
     );
-
-    // Vérifier si l'utilisateur a été créé avec succès
-    if (res.user != null) {
-      // L'utilisateur est créé et la session est active
-      final String userId = res.user!.id;
-      const String tosVersion = FFAppConstants.tosVersion;
-      const String privacyVersion = FFAppConstants.privacyVersion;
-
-      // Insérer l'acceptation des conditions légales
-      await client.from('user_legal_acceptances').insert({
-        'profile_id': userId,
-        'tos_version': tosVersion,
-        'privacy_version': privacyVersion,
-        'accepted_at': DateTime.now().toIso8601String(),
-      });
-
-      // Tout s'est bien passé
-      return true;
-    } else {
-      // Si l'utilisateur est null, il y a eu un problème lors de l'inscription
-      return false;
-    }
+    return result.isSuccess;
   } catch (e) {
-    // Gérer les erreurs (AuthException ou autres exceptions)
     return false;
   }
 }

@@ -7,10 +7,15 @@ import '/backend/supabase/supabase.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-// Set your action name, define your arguments and return parameter,
-// and then add the boilerplate code using the green button on the right!
 import 'dart:convert';
 
+/// Gets detailed information about a professional.
+///
+/// Note: Feed module has FeedRepository.getProfessionalById() but it returns
+/// a different entity type. This action is kept for legacy FlutterFlow pages
+/// that expect the FlutterFlow [ProDetailsStruct] return type.
+///
+/// See also: lib/features/feed/data/repositories/feed_repository_impl.dart
 Future<ProDetailsStruct?> getProItemDetailsAction(String proProfileId) async {
   // --- Start of Helper Functions ---
   LatLng? geoJsonToLatLng(dynamic geojson) {

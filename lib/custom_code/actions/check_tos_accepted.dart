@@ -1,34 +1,34 @@
 // Automatic FlutterFlow imports
-import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 // Imports other custom actions
 // Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-/// Set your action name, define your arguments and return parameter, and then
-/// add the boilerplate code using the green button on the right!
+import '/core/di/injection_container.dart';
+import '/features/auth/auth.dart';
+
+/// Checks if the current user has accepted the terms of service.
+///
+/// @Deprecated: Use AuthRepository.hasAcceptedTerms() from the Clean Architecture
+/// auth module instead. This function is kept for legacy FlutterFlow pages.
+///
+/// Migration path:
+/// ```dart
+/// // Old (deprecated):
+/// final accepted = await checkTosAccepted();
+///
+/// // New (recommended):
+/// final authRepository = sl<AuthRepository>();
+/// final result = await authRepository.hasAcceptedTerms();
+/// final accepted = result.getOrNull() ?? false;
+/// ```
+@Deprecated('Use AuthRepository.hasAcceptedTerms() instead. See auth module.')
 Future<bool> checkTosAccepted() async {
   try {
-    final client = SupaFlow.client;
-    final userId = client.auth.currentUser?.id;
-    if (userId == null) return false;
-
-    // Récupère les versions depuis les constantes de l'app
-    const String tosVersion = FFAppConstants.tosVersion;
-    const String privacyVersion = FFAppConstants.privacyVersion;
-
-    final rows = await client
-        .from('user_legal_acceptances')
-        .select('id')
-        .eq('profile_id', userId)
-        .eq('tos_version', tosVersion)
-        .eq('privacy_version', privacyVersion)
-        .limit(1);
-
-    // Si on a trouvé au moins une ligne, c'est que l'utilisateur a accepté
-    return (rows.isNotEmpty);
+    final authRepository = sl<AuthRepository>();
+    final result = await authRepository.hasAcceptedTerms();
+    return result.getOrNull() ?? false;
   } catch (e) {
-    return false; // En cas d'erreur, on considère que ce n'est pas accepté
+    return false;
   }
 }

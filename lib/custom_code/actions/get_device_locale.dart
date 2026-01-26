@@ -6,8 +6,12 @@ import 'package:flutter/material.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-/// Set your action name, define your arguments and return parameter, and then
-/// add the boilerplate code using the green button on the right!
+/// Gets the device's locale and normalizes it to 'fr' or 'en'.
+///
+/// TODO: Migrate to Core locale service in Clean Architecture.
+/// This function should be part of a locale/region service.
+///
+/// Target migration: lib/core/services/locale_service.dart
 Future<String> getDeviceLocale(BuildContext context) async {
   // This action gets the device's locale and normalizes it to either 'fr' or 'en'.
   // This ensures that we only store and use supported language codes throughout the app.

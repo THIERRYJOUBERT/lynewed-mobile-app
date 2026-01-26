@@ -7,22 +7,41 @@ import '/backend/supabase/supabase.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-// Set your action name, define your arguments and return parameter,
-// and then add the boilerplate code using the green button on the right!
+/// Saves profile fields (name, avatar, country) for the current user.
+///
+/// @Deprecated: Use AuthRepository.updateProfile() from the Clean Architecture
+/// auth module instead. This function is kept for legacy FlutterFlow pages
+/// that expect the FlutterFlow [PublicProfileStruct] return type.
+///
+/// Note: The Clean Architecture version returns [UserProfile] entity instead
+/// of FlutterFlow's [PublicProfileStruct].
+///
+/// Migration path:
+/// ```dart
+/// // Old (deprecated):
+/// final profile = await saveProfileFields(fullName, avatarUrl, country: country);
+///
+/// // New (recommended):
+/// final authRepository = sl<AuthRepository>();
+/// final params = UpdateProfileParams(
+///   displayName: fullName,
+///   avatarUrl: avatarUrl,
+/// );
+/// final result = await authRepository.updateProfile(params);
+/// final profile = result.getOrNull(); // Returns UserProfile entity
+/// ```
+@Deprecated('Use AuthRepository.updateProfile() instead. See auth module.')
 Future<PublicProfileStruct?> saveProfileFields(
   String fullName,
   String? avatarUrl, {
   String? country,
 }) async {
-  // CORRECTION : Le type de retour de la fonction est maintenant 'UserRole' (PascalCase).
   UserRole roleFromString(String? s) {
     switch (s) {
       case 'professional':
-        // CORRECTION : La valeur retournée utilise 'UserRole' (PascalCase) pour l'Enum.
         return UserRole.professional;
       case 'bride':
       default:
-        // CORRECTION : La valeur retournée utilise 'UserRole' (PascalCase) pour l'Enum.
         return UserRole.bride;
     }
   }
@@ -44,7 +63,6 @@ Future<PublicProfileStruct?> saveProfileFields(
 
     await client.from('profiles').update(updates).eq('id', userId);
 
-    // Relire le profil complet pour s'assurer que le rôle est inclus dans la réponse
     final refreshedProfile =
         await client.from('profiles').select().eq('id', userId).single();
 

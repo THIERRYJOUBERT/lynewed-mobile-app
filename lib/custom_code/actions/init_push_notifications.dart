@@ -296,7 +296,7 @@ void _setupVideoSessionsRealtimeListener() {
   SecureLogger.info('Setting up video_sessions realtime listener for user: $userId');
 
   // Écouter TOUS les INSERT sur video_sessions et filtrer côté client
-  // IMPORTANT: Utiliser la syntaxe cascade (..) comme dans chat_message_list.dart
+  // IMPORTANT: Utiliser la syntaxe cascade (..) pour le channel subscription
   _videoSessionsChannel = SupaFlow.client
       .channel('video_sessions_incoming_$userId')
       ..onPostgresChanges(

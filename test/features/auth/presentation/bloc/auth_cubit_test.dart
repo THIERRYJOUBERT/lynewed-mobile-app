@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +13,12 @@ import 'package:mocktail/mocktail.dart';
 class MockAuthRepository extends Mock implements AuthRepository {}
 
 void main() {
+  setUpAll(() {
+    // Register fallback values for mocktail
+    registerFallbackValue(Uint8List(0));
+    registerFallbackValue(const UpdateProfileParams());
+  });
+
   late MockAuthRepository mockRepository;
   late StreamController<AuthUser?> authStateController;
 
@@ -388,6 +395,184 @@ void main() {
         // Assert
         expect(result.isFailure, isTrue);
         expect(result.failureOrNull()?.message, 'Password too weak');
+
+        // Cleanup
+        await cubit.close();
+      });
+    });
+
+    group('updateProfile', () {
+      final updatedProfile = UserProfile(
+        id: 'test-profile-id',
+        authUserId: 'test-user-id',
+        role: UserRole.bride,
+        displayName: 'Updated Name',
+        isOnboardingComplete: true,
+        createdAt: DateTime(2024, 1, 1),
+      );
+
+      blocTest<AuthCubit, AuthState>(
+        'should emit Authenticated with updated profile on success',
+        setUp: () {
+          when(() => mockRepository.watchAuthState())
+              .thenAnswer((_) => Stream.value(testUser));
+          when(() => mockRepository.getCurrentProfile())
+              .thenAnswer((_) async => Success(testProfile));
+          when(() => mockRepository.updateProfile(any()))
+              .thenAnswer((_) async => Success(updatedProfile));
+        },
+        build: () => AuthCubit(repository: mockRepository),
+        wait: const Duration(milliseconds: 100),
+        act: (cubit) async {
+          // Wait for initial Authenticated state to be emitted
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          await cubit.updateProfile(
+            const UpdateProfileParams(displayName: 'Updated Name'),
+          );
+        },
+        skip: 1, // Skip initial Authenticated from stream
+        expect: () => [
+          Authenticated(user: testUser, profile: updatedProfile),
+        ],
+        verify: (_) {
+          verify(() => mockRepository.updateProfile(any())).called(1);
+        },
+      );
+
+      test('should return Success when profile is updated', () async {
+        // Arrange
+        when(() => mockRepository.updateProfile(any()))
+            .thenAnswer((_) async => Success(updatedProfile));
+        when(() => mockRepository.getCurrentUser())
+            .thenAnswer((_) async => Success(testUser));
+
+        final cubit = AuthCubit(repository: mockRepository);
+        // Wait for initial state
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+
+        // Act
+        final result = await cubit.updateProfile(
+          const UpdateProfileParams(displayName: 'Updated Name'),
+        );
+
+        // Assert
+        expect(result.isSuccess, isTrue);
+        expect(result.getOrNull()?.displayName, 'Updated Name');
+
+        // Cleanup
+        await cubit.close();
+      });
+
+      test('should return Failure when update fails', () async {
+        // Arrange
+        when(() => mockRepository.updateProfile(any())).thenAnswer(
+            (_) async => const Failure(AuthFailure('Update failed')));
+
+        final cubit = AuthCubit(repository: mockRepository);
+
+        // Act
+        final result = await cubit.updateProfile(
+          const UpdateProfileParams(displayName: 'Updated Name'),
+        );
+
+        // Assert
+        expect(result.isFailure, isTrue);
+        expect(result.failureOrNull()?.message, 'Update failed');
+
+        // Cleanup
+        await cubit.close();
+      });
+    });
+
+    group('refreshProfile', () {
+      blocTest<AuthCubit, AuthState>(
+        'should reload profile and emit Authenticated when user is logged in',
+        setUp: () {
+          when(() => mockRepository.getCurrentUser())
+              .thenAnswer((_) async => Success(testUser));
+          when(() => mockRepository.getCurrentProfile())
+              .thenAnswer((_) async => Success(testProfile));
+        },
+        build: () => AuthCubit(repository: mockRepository),
+        act: (cubit) => cubit.refreshProfile(),
+        wait: const Duration(milliseconds: 100),
+        expect: () => [
+          Authenticated(user: testUser, profile: testProfile),
+        ],
+        verify: (_) {
+          verify(() => mockRepository.getCurrentUser()).called(1);
+          verify(() => mockRepository.getCurrentProfile()).called(1);
+        },
+      );
+
+      blocTest<AuthCubit, AuthState>(
+        'should emit Unauthenticated when no user is logged in',
+        setUp: () {
+          when(() => mockRepository.getCurrentUser())
+              .thenAnswer((_) async => const Success(null));
+        },
+        build: () => AuthCubit(repository: mockRepository),
+        act: (cubit) => cubit.refreshProfile(),
+        expect: () => [
+          const Unauthenticated(),
+        ],
+      );
+
+      blocTest<AuthCubit, AuthState>(
+        'should emit Authenticated with null profile when profile fetch fails',
+        setUp: () {
+          when(() => mockRepository.getCurrentUser())
+              .thenAnswer((_) async => Success(testUser));
+          when(() => mockRepository.getCurrentProfile())
+              .thenAnswer((_) async => const Failure(UnknownFailure('Error')));
+        },
+        build: () => AuthCubit(repository: mockRepository),
+        act: (cubit) => cubit.refreshProfile(),
+        wait: const Duration(milliseconds: 100),
+        expect: () => [
+          Authenticated(user: testUser, profile: null),
+        ],
+      );
+    });
+
+    group('uploadAvatar', () {
+      test('should return url on successful upload', () async {
+        // Arrange
+        final imageBytes = Uint8List.fromList([1, 2, 3, 4]);
+        const fileName = 'avatar.jpg';
+        const expectedUrl = 'https://example.com/avatar.jpg';
+
+        when(() => mockRepository.uploadAvatar(any(), any()))
+            .thenAnswer((_) async => const Success(expectedUrl));
+
+        final cubit = AuthCubit(repository: mockRepository);
+
+        // Act
+        final result = await cubit.uploadAvatar(imageBytes, fileName);
+
+        // Assert
+        expect(result.isSuccess, isTrue);
+        expect(result.getOrNull(), expectedUrl);
+
+        // Cleanup
+        await cubit.close();
+      });
+
+      test('should return Failure when upload fails', () async {
+        // Arrange
+        final imageBytes = Uint8List.fromList([1, 2, 3, 4]);
+        const fileName = 'avatar.jpg';
+
+        when(() => mockRepository.uploadAvatar(any(), any())).thenAnswer(
+            (_) async => const Failure(UnknownFailure('Upload failed')));
+
+        final cubit = AuthCubit(repository: mockRepository);
+
+        // Act
+        final result = await cubit.uploadAvatar(imageBytes, fileName);
+
+        // Assert
+        expect(result.isFailure, isTrue);
 
         // Cleanup
         await cubit.close();

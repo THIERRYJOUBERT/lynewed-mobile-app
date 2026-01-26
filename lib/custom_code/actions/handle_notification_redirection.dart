@@ -271,9 +271,9 @@ Future<void> handleNotificationRedirection(
         } else {
           SecureLogger.warning('chatMessage: No room_id, falling back to Messages page');
           if (userRole == UserRole.professional) {
-            router.pushNamed('MessagesProWidget');
+            router.pushNamed('MessagesPro');
           } else {
-            router.pushNamed('MessagesBridesWidget');
+            router.pushNamed('MessagesBrides');
           }
         }
         break;
@@ -289,9 +289,9 @@ Future<void> handleNotificationRedirection(
         if (requestId.isEmpty) {
           SecureLogger.warning('connectionRequest: No request_id, falling back to Messages page');
           if (userRole == UserRole.professional) {
-            router.pushNamed('MessagesProWidget');
+            router.pushNamed('MessagesPro');
           } else {
-            router.pushNamed('MessagesBridesWidget');
+            router.pushNamed('MessagesBrides');
           }
           break;
         }
@@ -307,9 +307,9 @@ Future<void> handleNotificationRedirection(
           if (requestData == null || requestData['status'] != 'pending') {
             SecureLogger.warning('connectionRequest: Request not found or not pending');
             if (userRole == UserRole.professional) {
-              router.pushNamed('MessagesProWidget');
+              router.pushNamed('MessagesPro');
             } else {
-              router.pushNamed('MessagesBridesWidget');
+              router.pushNamed('MessagesBrides');
             }
             break;
           }
@@ -356,9 +356,9 @@ Future<void> handleNotificationRedirection(
         } catch (e) {
           SecureLogger.error('connectionRequest: Error fetching request details', error: e);
           if (userRole == UserRole.professional) {
-            router.pushNamed('MessagesProWidget');
+            router.pushNamed('MessagesPro');
           } else {
-            router.pushNamed('MessagesBridesWidget');
+            router.pushNamed('MessagesBrides');
           }
         }
         break;
@@ -417,9 +417,9 @@ Future<void> handleNotificationRedirection(
         } else {
           // Fallback vers la page Messages
           if (userRole == UserRole.professional) {
-            router.pushNamed('MessagesProWidget');
+            router.pushNamed('MessagesPro');
           } else {
-            router.pushNamed('MessagesBridesWidget');
+            router.pushNamed('MessagesBrides');
           }
         }
         break;
@@ -659,9 +659,9 @@ void _handleDeepLink(
       break;
     case 'chat':
       if (userRole == UserRole.professional) {
-        router.pushNamed('MessagesProWidget');
+        router.pushNamed('MessagesPro');
       } else {
-        router.pushNamed('MessagesBridesWidget');
+        router.pushNamed('MessagesBrides');
       }
       break;
     case 'notifications':

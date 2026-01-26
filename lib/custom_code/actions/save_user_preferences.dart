@@ -7,6 +7,13 @@ import '/backend/supabase/supabase.dart';
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
+/// Saves user preferences (distance unit, currency, locale, etc.).
+///
+/// TODO: Migrate to Settings module in Clean Architecture.
+/// This function handles FlutterFlow [UserPreferencesStruct] and should be
+/// migrated to a dedicated Settings feature module.
+///
+/// Target migration: lib/features/settings/data/repositories/
 Future<UserPreferencesStruct?> saveUserPreferences(
   UserPreferencesStruct prefs,
   String? lastFiltersJsonOverride,

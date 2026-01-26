@@ -1,33 +1,33 @@
 // Automatic FlutterFlow imports
-import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 // Imports other custom actions
 // Imports custom functions
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-/// Set your action name, define your arguments and return parameter, and then
-/// add the boilerplate code using the green button on the right!
+import '/core/di/injection_container.dart';
+import '/features/auth/auth.dart';
+
+/// Inserts a legal acceptance record for the current user.
+///
+/// @Deprecated: Use AuthRepository.acceptTerms() from the Clean Architecture
+/// auth module instead. This function is kept for legacy FlutterFlow pages.
+///
+/// Migration path:
+/// ```dart
+/// // Old (deprecated):
+/// final success = await insertLegalAcceptance();
+///
+/// // New (recommended):
+/// final authRepository = sl<AuthRepository>();
+/// final result = await authRepository.acceptTerms();
+/// final success = result.isSuccess;
+/// ```
+@Deprecated('Use AuthRepository.acceptTerms() instead. See auth module.')
 Future<bool> insertLegalAcceptance() async {
   try {
-    final client = SupaFlow.client;
-    final userId = client.auth.currentUser?.id;
-    if (userId == null) {
-      return false;
-    }
-
-    // Récupère les versions depuis les constantes de l'app
-    const String tosVersion = FFAppConstants.tosVersion;
-    const String privacyVersion = FFAppConstants.privacyVersion;
-
-    await client.from('user_legal_acceptances').insert({
-      'profile_id': userId,
-      'tos_version': tosVersion,
-      'privacy_version': privacyVersion,
-      'accepted_at': DateTime.now().toIso8601String(),
-    });
-
-    return true;
+    final authRepository = sl<AuthRepository>();
+    final result = await authRepository.acceptTerms();
+    return result.isSuccess;
   } catch (e) {
     return false;
   }

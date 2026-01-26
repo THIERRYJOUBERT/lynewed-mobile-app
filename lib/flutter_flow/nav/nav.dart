@@ -12,6 +12,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import '/features/chat/presentation/pages/chat_details_page.dart';
 import '/features/notifications/presentation/bloc/notifications_cubit.dart';
+import '/features/wishlist/presentation/pages/wishlist_pro_page.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -132,9 +133,9 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => const FeedBridesWidget(),
         ),
         FFRoute(
-          name: MessagesBridesWidget.routeName,
-          path: MessagesBridesWidget.routePath,
-          builder: (context, params) => const MessagesBridesWidget(),
+          name: MessagesBridesPageWrapper.routeName,
+          path: MessagesBridesPageWrapper.routePath,
+          builder: (context, params) => const MessagesBridesPageWrapper(),
         ),
         FFRoute(
           name: MapBridesLargeWidget.routeName,
@@ -251,9 +252,9 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           ),
         ),
         FFRoute(
-          name: MessagesProWidget.routeName,
-          path: MessagesProWidget.routePath,
-          builder: (context, params) => const MessagesProWidget(),
+          name: MessagesProPageWrapper.routeName,
+          path: MessagesProPageWrapper.routePath,
+          builder: (context, params) => const MessagesProPageWrapper(),
         ),
         FFRoute(
           name: ResetPasswordNewPageWidget.routeName,
@@ -303,9 +304,9 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => const FavProListWidget(),
         ),
         FFRoute(
-          name: WishlistProWidget.routeName,
-          path: WishlistProWidget.routePath,
-          builder: (context, params) => const WishlistProWidget(),
+          name: WishlistProPage.routeName,
+          path: WishlistProPage.routePath,
+          builder: (context, params) => const WishlistProPage(),
         ),
         FFRoute(
           name: NotificationsPage.routeName,

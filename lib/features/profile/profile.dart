@@ -3,7 +3,7 @@
 /// This barrel export provides access to all profile-related components:
 /// - Domain entities (ProfileMenuItemData)
 /// - Presentation widgets (ProfileHeader, ProfileMenuItemWidget)
-/// - Presentation pages (ProfilePage, ProDetailsPage)
+/// - Presentation pages (ProfilePage, ProDetailsPage, PublicProProfilePage)
 ///
 /// Usage:
 /// ```dart
@@ -15,6 +15,7 @@
 /// // - ProfileMenuItemWidget widget
 /// // - ProfilePage
 /// // - ProDetailsPage
+/// // - PublicProProfilePage
 /// ```
 library;
 
@@ -28,3 +29,4 @@ export 'presentation/widgets/profile_menu_item_widget.dart';
 // Presentation layer - pages
 export 'presentation/pages/profile_page.dart';
 export 'presentation/pages/pro_details_page.dart';
+export 'presentation/pages/public_pro_profile_page.dart';

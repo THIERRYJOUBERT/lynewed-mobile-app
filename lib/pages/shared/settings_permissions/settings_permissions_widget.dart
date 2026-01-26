@@ -1,8 +1,8 @@
 /// Settings & Permissions page - Clean Architecture
-/// 
+///
 /// Unified settings page for both Brides and Professionals.
 /// Handles device permissions, visibility preferences (Pro only), and account deletion.
-/// 
+///
 /// DESIGN SYSTEM v3 APPLIED:
 /// - Header: Back button (LynewedComponentStyles.backButton) + Title
 /// - Divider under header (LynewedColors.gray200)
@@ -11,6 +11,7 @@
 /// - List items with descriptions
 library;
 
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '/core/design/design.dart';

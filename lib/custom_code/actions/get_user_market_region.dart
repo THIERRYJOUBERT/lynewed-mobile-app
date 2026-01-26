@@ -1,8 +1,14 @@
 // Get user's market region from Supabase
 import '/backend/supabase/supabase.dart';
 
-/// Get the current user's market region
-/// Returns 'IN' for Indian users, 'GLOBAL' for everyone else
+/// Gets the current user's market region.
+///
+/// Returns 'IN' for Indian users, 'GLOBAL' for everyone else.
+///
+/// TODO: Migrate to Core locale service in Clean Architecture.
+/// This function should be part of a locale/region service.
+///
+/// Target migration: lib/core/services/locale_service.dart
 Future<String> getUserMarketRegion() async {
   try {
     final client = SupaFlow.client;

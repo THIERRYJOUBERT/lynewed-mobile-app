@@ -4,6 +4,7 @@
 library;
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -139,6 +140,52 @@ class AuthCubit extends Cubit<AuthState> {
   /// Does not change auth state.
   Future<Result<void>> updatePassword(String newPassword) async {
     return _repository.updatePassword(newPassword);
+  }
+
+  /// Updates the current user's profile.
+  ///
+  /// Returns the updated [UserProfile] on success.
+  /// Emits [Authenticated] with the updated profile.
+  Future<Result<UserProfile>> updateProfile(UpdateProfileParams params) async {
+    final result = await _repository.updateProfile(params);
+    switch (result) {
+      case Success(:final data):
+        final currentState = state;
+        if (currentState is Authenticated) {
+          emit(Authenticated(user: currentState.user, profile: data));
+        }
+        return Success(data);
+      case Failure(:final failure):
+        return Failure(failure);
+    }
+  }
+
+  /// Refreshes the current user's profile from the server.
+  ///
+  /// Emits [Authenticated] with the refreshed profile if user is logged in.
+  /// Emits [Unauthenticated] if no user is logged in.
+  Future<void> refreshProfile() async {
+    final userResult = await _repository.getCurrentUser();
+    switch (userResult) {
+      case Success(:final data):
+        if (data == null) {
+          emit(const Unauthenticated());
+        } else {
+          await _loadProfile(data);
+        }
+      case Failure():
+        emit(const Unauthenticated());
+    }
+  }
+
+  /// Uploads an avatar image.
+  ///
+  /// Returns the URL of the uploaded image.
+  Future<Result<String>> uploadAvatar(
+    Uint8List imageBytes,
+    String fileName,
+  ) async {
+    return _repository.uploadAvatar(imageBytes, fileName);
   }
 
   @override

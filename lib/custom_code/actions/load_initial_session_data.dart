@@ -9,6 +9,13 @@ import '/backend/supabase/supabase.dart';
 
 import 'dart:convert';
 
+/// Loads initial session data including profile, preferences, and subscription.
+///
+/// TODO: Migrate to Core session service in Clean Architecture.
+/// This function handles FlutterFlow [SessionDataBundleStruct] and should be
+/// migrated to a dedicated session management service.
+///
+/// Target migration: lib/core/services/session_service.dart
 Future<SessionDataBundleStruct?> loadInitialSessionData() async {
   // --- Fonctions Helper internes pour le parsing ---
   UserRole roleFromString(String? s) {
