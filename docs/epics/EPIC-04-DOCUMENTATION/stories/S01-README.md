@@ -18,13 +18,14 @@ afin de **pouvoir installer et lancer le projet en moins de 30 minutes**.
 
 ## Criteres d'Acceptance
 
-- [ ] Le README contient les prerequis systeme (Flutter, Xcode, Android Studio)
+- [ ] Le README contient les prerequis systeme (Flutter, Xcode, Android Studio, **iOS 15.0+**)
 - [ ] Instructions d'installation pas-a-pas (clone, deps, env)
-- [ ] Configuration des variables d'environnement (.env) documentee
+- [ ] **Fichier `.env.example` cree** avec toutes les variables requises
+- [ ] Configuration des variables d'environnement (.env) documentee avec **ou les obtenir**
 - [ ] Commandes principales documentees (run, test, build, analyze)
-- [ ] Section troubleshooting avec erreurs courantes
+- [ ] Section troubleshooting avec erreurs courantes **incluant Firebase/GoogleService-Info.plist**
 - [ ] Liens vers documentation complementaire
-- [ ] Badge de version et statut du projet
+- [ ] Badge de version et statut du projet (**v1.2.4+70** - synchronise avec pubspec.yaml)
 
 ---
 
@@ -36,11 +37,12 @@ afin de **pouvoir installer et lancer le projet en moins de 30 minutes**.
 
 ### 2. Prerequis
 ```markdown
-- Flutter 3.32.4+
+- Flutter 3.32.4+ (Dart 3.8.1+)
 - Dart SDK >=3.0.0 <4.0.0
-- Xcode 15+ (iOS)
+- Xcode 15+ (iOS) - **iOS 15.0 minimum deployment target**
 - Android Studio (Android)
 - Compte Supabase (backend)
+- Fichier .env configure (voir section Configuration)
 ```
 
 ### 3. Installation Rapide
@@ -64,12 +66,33 @@ flutter run
 ```
 
 ### 4. Variables d'Environnement
-| Variable | Description | Obligatoire |
-|----------|-------------|-------------|
-| `SUPABASE_URL` | URL projet Supabase | Oui |
-| `SUPABASE_ANON_KEY` | Cle anonyme | Oui |
-| `GOOGLE_PLACES_API_KEY` | API Google Places | Oui |
-| `AGORA_APP_ID` | ID app Agora | Oui |
+
+> **IMPORTANT**: Le projet utilise `flutter_dotenv` pour charger les secrets au runtime.
+> Un fichier `.env` est OBLIGATOIRE a la racine du projet.
+
+**Creer `.env.example` avec ce contenu:**
+```bash
+# Supabase (requis)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+
+# Google Places (requis)
+GOOGLE_PLACES_API_KEY_IOS=your-ios-key
+GOOGLE_PLACES_API_KEY_ANDROID=your-android-key
+
+# Agora Video (requis)
+AGORA_APP_ID=your-agora-app-id
+
+# Firebase (configure via google-services.json / GoogleService-Info.plist)
+```
+
+| Variable | Description | Obligatoire | Ou l'obtenir |
+|----------|-------------|-------------|--------------|
+| `SUPABASE_URL` | URL projet Supabase | Oui | Dashboard Supabase > Settings > API |
+| `SUPABASE_ANON_KEY` | Cle anonyme publique | Oui | Dashboard Supabase > Settings > API |
+| `GOOGLE_PLACES_API_KEY_IOS` | API Google Places iOS | Oui | Google Cloud Console (restreindre au bundle ID) |
+| `GOOGLE_PLACES_API_KEY_ANDROID` | API Google Places Android | Oui | Google Cloud Console (restreindre au package) |
+| `AGORA_APP_ID` | ID application Agora | Oui | Console Agora.io |
 
 ### 5. Commandes Utiles
 ```bash
@@ -90,9 +113,23 @@ lib/
 ```
 
 ### 7. Troubleshooting
-- Erreur CocoaPods: `cd ios && pod install --repo-update`
-- Erreur Google Places: Verifier restrictions API dans Google Cloud Console
-- Build iOS fail: `flutter clean && flutter pub get`
+
+#### Erreurs courantes
+
+| Erreur | Cause | Solution |
+|--------|-------|----------|
+| CocoaPods conflict | Versions incompatibles | `cd ios && rm Podfile.lock && pod install --repo-update` |
+| Google Places fail | Restrictions API | Verifier bundle ID/package dans Google Cloud Console |
+| Build iOS fail | Cache corrompu | `flutter clean && flutter pub get && cd ios && pod install` |
+| SIGABRT Firebase | GoogleService-Info.plist absent | Verifier que le fichier est dans Xcode (pas juste dans le dossier) |
+| Ecran blanc au lancement | .env manquant ou incomplet | Verifier que `.env` existe avec TOUTES les variables |
+| iOS deployment error | Version iOS trop basse | Appareil doit etre iOS 15.0+ (Firebase 12.x requirement) |
+
+#### Firebase iOS Setup
+Le fichier `GoogleService-Info.plist` doit etre:
+1. Present dans `ios/Runner/`
+2. **Reference dans le projet Xcode** (pas juste copie dans le dossier)
+   - Ouvrir Xcode > Runner > Add Files > Selectionner GoogleService-Info.plist
 
 ### 8. Liens
 - Architecture: [ARCHITECTURE.md](./ARCHITECTURE.md)
@@ -105,9 +142,13 @@ lib/
 
 ### Sources d'Information Existantes
 - `README.md` actuel (basique)
-- `pubspec.yaml` (dependances)
+- `pubspec.yaml` (dependances, version 1.2.4+70)
 - `docs/PROJECT.md` (etat projet)
-- `.env.example` a creer si inexistant
+- `docs/epics/EPIC-01-MIGRATION-CLEAN-ARCHITECTURE/stories/SESSION-2026-01-25-IOS-BUILD-FIX.md` (troubleshooting iOS)
+
+### Livrables Additionnels
+- **CREER** `.env.example` a la racine avec toutes les variables documentees
+- **VERIFIER** que la version README correspond a pubspec.yaml (v1.2.4+70)
 
 ### Fichier a Modifier
 - `/README.md` (racine du projet)

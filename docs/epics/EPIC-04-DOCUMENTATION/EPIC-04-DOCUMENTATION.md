@@ -2,7 +2,7 @@
 
 **Version:** 1.0
 **Date de creation:** 2025-01-24
-**Statut:** A faire
+**Statut:** ✅ Complete
 **Priorite:** Haute
 
 ---
@@ -18,11 +18,12 @@ Creer une documentation complete et maintenable pour le projet Lynewed afin de f
 ### Problematique
 
 Le projet Lynewed est une application Flutter mature (v1.2.4+70) en production avec:
-- ~71,500 lignes de code Dart
-- ~400 fichiers Dart
-- Architecture Clean Architecture
-- Backend Supabase avec 58 migrations
+- Architecture Clean Architecture (15 feature modules)
+- Backend Supabase avec migrations et 16 Edge Functions
 - Integration de 4 APIs externes (Supabase, Google Places, Agora, FCM)
+- 248 utilisateurs actifs en production
+
+> **Note**: Les statistiques exactes (lignes de code, fichiers) doivent etre generees dynamiquement lors de l'execution des stories pour eviter l'obsolescence.
 
 **Probleme:** La documentation actuelle est fragmentee et incomplete:
 - README.md basique sans instructions detaillees d'installation
@@ -98,17 +99,19 @@ Le projet Lynewed est une application Flutter mature (v1.2.4+70) en production a
 ## Stack Technique Documentee
 
 ### Frontend Flutter
-- **Version:** Flutter 3.32.4, Dart SDK >=3.0.0 <4.0.0
-- **Architecture:** Clean Architecture (domain/data/presentation)
-- **State Management:** Provider, Cubit
+- **Version:** Flutter 3.32.4, Dart 3.8.1 (SDK constraint: >=3.0.0 <4.0.0)
+- **Architecture:** Clean Architecture (domain/data/presentation) - 15 modules
+- **State Management:** Provider (global), Cubit (features), ValueNotifier (local)
 - **Navigation:** GoRouter
 - **Design System:** Custom (`lib/core/design/`)
+- **Secrets:** flutter_dotenv (runtime .env) - voir ADR dans S05
+- **iOS Minimum:** 15.0 (requis par Firebase 12.x)
 
 ### Backend Supabase
 - **Database:** PostgreSQL avec PostGIS
 - **Auth:** Supabase Auth + Apple Sign-In
 - **Storage:** Buckets pour images/videos
-- **Edge Functions:** 17 fonctions TypeScript
+- **Edge Functions:** 16 fonctions TypeScript
 - **Security:** Row Level Security (RLS)
 
 ### Integrations

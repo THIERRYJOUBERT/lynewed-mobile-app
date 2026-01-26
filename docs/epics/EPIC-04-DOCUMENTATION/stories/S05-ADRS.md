@@ -25,6 +25,7 @@ afin de **comprendre pourquoi certains choix ont ete faits et eviter de les reme
 - [ ] ADR-003: Choix Supabase comme backend
 - [ ] ADR-004: Design System unifie
 - [ ] ADR-005: Strategie de gestion d'etat (Provider/Cubit)
+- [ ] **ADR-006: Gestion des secrets (flutter_dotenv vs --dart-define)**
 - [ ] Index des ADRs avec statuts
 
 ---
@@ -202,6 +203,36 @@ Creer un Design System unifie dans `lib/core/design/` avec tokens et composants
 
 ---
 
+#### ADR-006: Gestion des Secrets (flutter_dotenv vs --dart-define)
+
+**Contexte:**
+- EPIC-05 (Security) avait migre les secrets vers `--dart-define-from-file` (compile-time)
+- Cette approche est plus securisee (secrets non dans le bundle)
+- Probleme: Scripts de build (`scripts/build_and_run.sh`) n'utilisent pas `--dart-define-from-file`
+- Resultat: App crashait avec ecran blanc car secrets vides au runtime
+
+**Decision (2026-01-25):**
+- **REVENIR** a `flutter_dotenv` (runtime .env)
+- Garder `AppSecrets` classe dans le code pour future migration
+- Documenter la decision pour reference future
+
+**Consequences positives:**
+- Compatibilite avec tous les scripts de build existants
+- Stabilite production (248 utilisateurs actifs)
+- Pas de modification CI/CD requise
+
+**Consequences negatives:**
+- Fichier `.env` present dans le bundle (securite moindre)
+- Secrets lisibles si bundle decompile
+
+**Risques:**
+- Mitigation: `.env` n'est pas commite (dans .gitignore)
+- Future: Migrer vers `--dart-define` quand CI/CD sera pret
+
+**Reference:** `docs/epics/EPIC-01-MIGRATION-CLEAN-ARCHITECTURE/stories/SESSION-2026-01-25-IOS-BUILD-FIX.md`
+
+---
+
 ### INDEX.md
 
 ```markdown
@@ -220,6 +251,7 @@ Un ADR documente une decision architecturale importante, son contexte, et ses co
 | [ADR-003](./ADR-003-supabase-backend.md) | Backend Supabase | Accepte | 2025-01 |
 | [ADR-004](./ADR-004-design-system.md) | Design System Unifie | Accepte | 2025-01 |
 | [ADR-005](./ADR-005-state-management.md) | State Management | Accepte | 2025-01 |
+| [ADR-006](./ADR-006-secrets-management.md) | Gestion Secrets (dotenv) | Accepte | 2026-01 |
 
 ## Creer un nouvel ADR
 
@@ -264,13 +296,16 @@ Un ADR documente une decision architecturale importante, son contexte, et ses co
 
 ## Estimation
 
-| Tache | Temps estime |
-|-------|--------------|
-| Template + INDEX | 30min |
-| ADR-001 (Clean Architecture) | 30min |
-| ADR-002 (FlutterFlow migration) | 30min |
-| ADR-003 (Supabase) | 30min |
-| ADR-004 (Design System) | 30min |
-| ADR-005 (State Management) | 30min |
-| Review | 30min |
-| **Total** | **3h30** |
+| Tache | Effort |
+|-------|--------|
+| Template + INDEX | Faible |
+| ADR-001 (Clean Architecture) | Faible |
+| ADR-002 (FlutterFlow migration) | Faible |
+| ADR-003 (Supabase) | Faible |
+| ADR-004 (Design System) | Faible |
+| ADR-005 (State Management) | Faible |
+| **ADR-006 (Secrets - flutter_dotenv)** | Faible |
+| Review | Faible |
+
+> **Note**: ADR-006 a ete ajoute suite au challenge du 2026-01-26.
+> Reference: SESSION-2026-01-25-IOS-BUILD-FIX.md

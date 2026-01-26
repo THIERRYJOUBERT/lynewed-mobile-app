@@ -158,7 +158,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    # NOTE: .env removed for security - secrets now via --dart-define-from-file
+    # NOTE: .env is loaded at runtime via flutter_dotenv (see ADR-006)
+    # Decision: flutter_dotenv preferred over --dart-define for script compatibility
     # NOTE: Removed unused asset directories (audios, videos, rive_animations, pdfs, jsons)
     - assets/fonts/
     - assets/images/

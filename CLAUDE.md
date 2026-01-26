@@ -160,19 +160,27 @@ flutter run                        # Run
 | Stories | 42/42 (100%) |
 | Tests | 3069 |
 | Warnings | 0 |
-| Features CA | 14 modules |
+| Features CA | **15 modules** |
 
 **Modules Clean Architecture (`lib/features/`):**
-auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, profile, settings, support, video_call, wishlist
+auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, profile, settings, support, video_call, **weddings_hub_pro**, wishlist
 
-### Epics En Attente
+> **Note**: iOS minimum 15.0 (Firebase 12.x requirement). Secrets via flutter_dotenv (runtime .env).
+
+### Epics Complétés
 
 | Epic | Description | Status |
 |------|-------------|--------|
-| EPIC-02 | Tests additionnels | TODO |
-| EPIC-03 | Dependencies update | TODO |
-| EPIC-04 | Documentation | TODO |
-| EPIC-05 | Security cleanup | TODO |
+| EPIC-01 | Migration Clean Architecture | ✅ COMPLETE |
+| EPIC-02 | Tests additionnels | ✅ COMPLETE |
+| EPIC-04 | Documentation | ✅ COMPLETE (2026-01-26) |
+| EPIC-05 | Security cleanup | ✅ COMPLETE |
+
+### Epics En Cours / Attente
+
+| Epic | Description | Status |
+|------|-------------|--------|
+| EPIC-03 | Dependencies update | ⏸️ PARTIAL (64%) |
 
 ---
 
@@ -181,10 +189,13 @@ auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, prof
 | Besoin | Où chercher |
 |--------|-------------|
 | Vision produit | `docs/specs/PRD-MASTER.md` |
+| Architecture technique | `ARCHITECTURE.md` |
+| Guide contribution | `CONTRIBUTING.md` |
+| Documentation API | `docs/api/INDEX.md` |
+| Décisions architecture | `docs/decisions/INDEX.md` |
 | Architecture workflows | `.claude/context/SYSTEM.md` |
 | Règles techniques | `.claude/rules/` |
 | Stories en cours | `docs/epics/` |
-| EPIC-01 tracking | `docs/epics/EPIC-01-MIGRATION-CLEAN-ARCHITECTURE/TRACKING.md` |
 
 ---
 

@@ -32,30 +32,41 @@ afin de **comprendre les conventions, le workflow de developpement et les standa
 
 ### 1. Workflow Git
 
+> **Note**: Ce workflow reflete les pratiques REELLES observees sur le projet.
+
 #### Branches
 ```
-main        → Production (releases)
-develop     → Developpement actif
-feature/*   → Nouvelles fonctionnalites
-fix/*       → Corrections de bugs
+main           → Production stable
+develop        → Integration (si utilise)
+feature/*      → Nouvelles fonctionnalites
+fix/*          → Corrections de bugs
+epic-XX/*      → Travail sur un Epic specifique
+phase-*        → Phases de migration/refactoring
 ```
 
-#### Workflow
+#### Workflow Actuel
 ```
-1. Creer branche depuis develop
-   git checkout develop
+1. Creer branche depuis main (ou develop si actif)
+   git checkout main
    git pull
    git checkout -b feature/ma-feature
+   # OU pour un fix: git checkout -b fix/description-courte
 
-2. Developper avec commits atomiques
+2. Developper avec commits structures (voir format ci-dessous)
 
-3. Pousser et creer PR vers develop
+3. Pousser et creer PR
    git push -u origin feature/ma-feature
 
-4. Review + Merge
+4. Review + CI checks (flutter analyze, flutter test)
 
-5. Release: develop → main (PR)
+5. Merge dans main (squash ou merge selon taille)
 ```
+
+#### Branches Actuelles du Projet
+- `main` - Production
+- `develop` - Integration
+- `fix/project-cleanup` - Maintenance en cours
+- `phase-1-enum-cleanup` - Migration historique
 
 ### 2. Conventions de Commit
 
@@ -71,13 +82,28 @@ Format: `type(scope): description`
 | `test` | Ajout/modification de tests |
 | `chore` | Maintenance, deps |
 
-Exemples:
+#### Exemples Reels du Projet
+```bash
+# Feature avec tracking Epic
+feat(epic-01): complete S30-S42 migration - dashboard, wishlist, profile, cleanup
+
+# Documentation Epic
+docs(epic-01): complete EPIC-01 migration with final documentation
+
+# Maintenance
+chore: update Claude Code config from template + add new workflows
+
+# Fix specifique
+fix(ios): restore flutter_dotenv, fix firebase & notifications provider
+
+# Build
+chore(build-ios): add cleanup step for duplicate files
 ```
-feat(map): add filter by wedding date
-fix(chat): resolve message duplication on reconnect
-refactor(notifications): migrate to Clean Architecture
-docs: update README installation steps
-```
+
+#### Bonnes Pratiques
+- Inclure le numero d'Epic/Story si applicable: `feat(epic-01):`
+- Description en anglais, concise mais descriptive
+- Corps du commit pour details si necessaire
 
 ### 3. Conventions de Code
 
@@ -111,8 +137,10 @@ import '../domain/entities/wedding_guest.dart';
 - Langue du code: **Anglais**
 - Langue des commentaires: **Anglais**
 - Max 80 caracteres par ligne (soft limit)
-- `flutter analyze --fatal-infos` doit passer
+- `flutter analyze --fatal-infos` doit passer (0 warnings obligatoire)
 - Pas de `print()` en production (utiliser `SecureLogger`)
+- **iOS minimum**: 15.0 (ne pas utiliser APIs iOS < 15)
+- **Secrets**: Utiliser `dotenv.env['KEY']` (voir ARCHITECTURE.md)
 
 ### 4. Creer un Nouveau Module
 

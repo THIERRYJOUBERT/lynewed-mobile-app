@@ -19,11 +19,13 @@ afin de **comprendre rapidement comment utiliser les APIs internes du projet san
 
 ## Criteres d'Acceptance
 
-- [ ] Documentation des repositories principaux (Map, Chat, MyWedding)
-- [ ] Documentation des services partages (`lib/core/services/`)
+- [ ] Documentation des **11 repositories** existants (voir liste complete ci-dessous)
+- [ ] Documentation des **5 services** partages (`lib/core/services/`)
 - [ ] Exemples d'utilisation pour chaque service/repository
-- [ ] Documentation des Edge Functions Supabase
+- [ ] Documentation des **16 Edge Functions** Supabase
 - [ ] Index navigable de toutes les APIs
+
+> **Note**: Le scope a ete elargi apres audit du codebase reel.
 
 ---
 
@@ -142,30 +144,60 @@ class MyCubit extends Cubit<MyState> {
 - [Notes importantes sur l'utilisation]
 ```
 
-### 3. Repositories a Documenter
+### 3. Repositories a Documenter (11 repositories)
 
-#### MapRepository
-- `getMarkersInBounds(bounds)` - Marqueurs dans une zone
-- `getMarkerDetails(id, type)` - Details d'un marqueur
-- `createWedding(data)` - Creer un mariage
-- `createAlert(data)` - Creer une alerte
+> **Localisation**: `lib/features/[module]/domain/repositories/` (interface)
+> **Implementation**: `lib/features/[module]/data/repositories/` (impl)
 
-#### ChatRepository (existant dans le code)
-- `getConversations()` - Liste des conversations
-- `getMessages(roomId)` - Messages d'une room
-- `sendMessage(roomId, content)` - Envoyer message
-- `markAsRead(roomId)` - Marquer comme lu
+#### Repositories Priorite 1 (Core Business)
 
-#### MyWeddingRepository
-- `getWeddingOverview()` - Vue d'ensemble mariage
-- `getEvents()` / `createEvent()` - Agenda
-- `getExpenses()` / `createExpense()` - Budget
-- `getGuests()` / `createGuest()` - Invites
-- `getAlbums()` / `createAlbum()` - Inspirations
+| Repository | Module | Description |
+|------------|--------|-------------|
+| `MapRepository` | map/ | Marqueurs, filtres, geolocalisation |
+| `ChatRepository` | chat/ | Conversations, messages, moderation |
+| `MyWeddingRepository` | my_wedding/ | Agenda, budget, invites, albums |
 
-### 4. Services a Documenter
+#### Repositories Priorite 2 (Features)
 
-#### CurrencyService (`lib/core/services/currency_service.dart`)
+| Repository | Module | Description |
+|------------|--------|-------------|
+| `AuthRepository` | auth/ | Login, signup, password reset |
+| `NotificationRepository` | notifications/ | Push, in-app notifications |
+| `VideoCallRepository` | video_call/ | Sessions Agora, tokens |
+| `WeddingsHubRepository` | weddings_hub_pro/ | Hub mariages (Pro) |
+| `DashboardRepository` | dashboard/ | Alertes, overview |
+
+#### Repositories Priorite 3 (Support)
+
+| Repository | Module | Description |
+|------------|--------|-------------|
+| `ContactRepository` | - | Gestion contacts |
+| `ContentRepository` | content/ | Articles, inspirations |
+| `FeedRepository` | feed/ | Fil d'actualite |
+
+#### Exemple MapRepository
+```dart
+abstract class MapRepository {
+  Future<List<MapMarker>> getMarkersInBounds(LatLngBounds bounds);
+  Future<MarkerDetails?> getMarkerDetails(String id, MarkerType type);
+  Future<void> createWedding(WeddingData data);
+  Future<void> createAlert(AlertData data);
+}
+```
+
+### 4. Services a Documenter (5 services)
+
+> **Localisation**: `lib/core/services/`
+
+| Service | Fichier | Description |
+|---------|---------|-------------|
+| `CurrencyService` | currency_service.dart | Conversion devises, symboles |
+| `DistanceService` | distance_service.dart | Calcul distances geographiques |
+| `UnreadCounterService` | unread_counter_service.dart | Compteur messages non lus |
+| `AppBadgeService` | app_badge_service.dart | Badge icone app (notifications) |
+| `IncomingCallService` | incoming_call_service.dart | Gestion appels entrants Agora |
+
+#### CurrencyService
 ```dart
 // Convertir un montant
 final eurAmount = CurrencyService.convert(
@@ -178,7 +210,7 @@ final eurAmount = CurrencyService.convert(
 final symbol = CurrencyService.getSymbol('EUR'); // "€"
 ```
 
-#### DistanceService (`lib/core/services/distance_service.dart`)
+#### DistanceService
 ```dart
 // Calculer distance entre deux points
 final distance = DistanceService.calculate(
@@ -188,7 +220,7 @@ final distance = DistanceService.calculate(
 // Returns: 391.5 (km)
 ```
 
-#### UnreadCounterService (`lib/core/services/unread_counter_service.dart`)
+#### UnreadCounterService
 ```dart
 // Ecouter les changements
 UnreadCounterService.stream.listen((count) {
@@ -199,16 +231,44 @@ UnreadCounterService.stream.listen((count) {
 final count = UnreadCounterService.currentCount;
 ```
 
-### 5. Edge Functions
+#### AppBadgeService
+```dart
+// Mettre a jour le badge de l'app
+await AppBadgeService.updateBadge(count: 5);
+await AppBadgeService.clearBadge();
+```
 
-#### Vue d'Ensemble
+#### IncomingCallService
+```dart
+// Gerer un appel entrant
+IncomingCallService.onIncomingCall.listen((call) {
+  // Afficher UI d'appel entrant
+});
+```
+
+### 5. Edge Functions (16 fonctions)
+
+> **Localisation**: `supabase/functions/`
+
+#### Vue d'Ensemble Complete
 | Fonction | Description | Trigger |
 |----------|-------------|---------|
+| `account_delete` | Suppression compte complet | HTTP POST |
 | `agora_token_issue` | Genere token video Agora | HTTP POST |
+| `alerts_housekeeping` | Nettoyage alertes expirees | Cron |
 | `create-or-sync-user` | Sync profil apres auth | Auth trigger |
-| `delete-user` | Suppression compte + donnees | HTTP POST |
+| `delete-user` | Suppression donnees utilisateur | HTTP POST |
 | `notifications_outbox_drain` | Envoie push FCM | Cron |
+| `recent_locations_cleanup` | Nettoyage localisations | Cron |
+| `send-broadcast-notification` | Notifications broadcast | HTTP POST |
+| `send-ticket-reply` | Reponses tickets support | HTTP POST |
 | `send-verification-email` | Email de verification | HTTP POST |
+| `sync-professional-profile` | Sync profils pros | HTTP POST |
+| `sync-professional-to-app` | Sync pros vers app | Webhook |
+| `sync-wed-articles-to-app` | Sync articles mariage | Webhook |
+| `sync-wedding-article` | Sync article individuel | HTTP POST |
+| `upload-professional-images` | Upload images pros | HTTP POST |
+| `video_sessions_cleanup` | Nettoyage sessions video | Cron |
 
 #### Appel depuis Flutter
 ```dart
@@ -243,23 +303,26 @@ final token = response.data['token'];
 ## Definition of Done
 
 - [ ] INDEX.md cree avec tous les liens
-- [ ] 3 repositories documentes (Map, Chat, MyWedding)
-- [ ] 3 services documentes
-- [ ] Edge Functions documentees (overview)
+- [ ] **11 repositories** documentes (priorite 1-3)
+- [ ] **5 services** documentes
+- [ ] **16 Edge Functions** documentees (overview + details)
 - [ ] Exemples de code fonctionnels
 - [ ] Review par developpeur utilisant ces APIs
+
+> **Note**: Scope elargi suite a audit codebase. Prioriser P1 si temps limite.
 
 ---
 
 ## Estimation
 
-| Tache | Temps estime |
-|-------|--------------|
-| INDEX.md + structure | 30min |
-| MapRepository | 1h |
-| ChatRepository | 1h |
-| MyWeddingRepository | 1h |
-| Services (3) | 1h |
-| Edge Functions overview | 30min |
-| Review | 30min |
-| **Total** | **5h30** |
+| Tache | Effort |
+|-------|--------|
+| INDEX.md + structure | Faible |
+| Repositories P1 (3) | Moyen |
+| Repositories P2 (5) | Moyen |
+| Repositories P3 (3) | Faible |
+| Services (5) | Moyen |
+| Edge Functions (16) | Moyen |
+| Review | Faible |
+
+> **Recommandation**: Implementer en 2 phases si necessaire (P1 d'abord, puis P2-P3)

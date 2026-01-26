@@ -20,11 +20,13 @@ afin de **comprendre la structure du projet, les patterns utilises et les decisi
 
 - [ ] Vue d'ensemble de l'architecture globale avec diagramme ASCII
 - [ ] Description de chaque couche Clean Architecture
-- [ ] Liste des modules (`lib/features/`) avec leur role
+- [ ] Liste des **15 modules** (`lib/features/`) avec leur role
 - [ ] Documentation du Design System (`lib/core/design/`)
-- [ ] Architecture backend Supabase (tables principales, RLS, Edge Functions)
+- [ ] Architecture backend Supabase (tables principales, RLS, **16 Edge Functions**)
 - [ ] Patterns utilises (Repository, Cubit, etc.)
+- [ ] **Section Gestion des Secrets** (flutter_dotenv, decision technique)
 - [ ] Flux de donnees documentes
+- [ ] **iOS 15.0 minimum** mentionne dans contraintes
 
 ---
 
@@ -106,15 +108,27 @@ features/[module]/
     └── theme/            # Styles specifiques au module
 ```
 
-### 4. Modules Principaux
+### 4. Modules Clean Architecture (15 modules)
 
-| Module | Description | Fichiers | Lignes |
-|--------|-------------|----------|--------|
-| `map/` | Carte interactive, marqueurs, filtres | ~37 | ~4,200 |
-| `chat/` | Messagerie, conversations, moderation | ~45 | ~8,500 |
-| `my_wedding/` | Suite mariage (agenda, budget, invites) | ~25 | ~5,000 |
-| `notifications/` | Parametres et liste notifications | ~5 | ~1,200 |
-| `dashboard/` | Dashboard et alertes | ~5 | ~800 |
+> **Note**: Les statistiques exactes doivent etre generees avec `find lib/features/[module] -name "*.dart" | wc -l`
+
+| Module | Description | Role |
+|--------|-------------|------|
+| `auth/` | Authentification | Login, signup, password reset |
+| `chat/` | Messagerie temps reel | Conversations, messages, moderation |
+| `content/` | Contenu editorial | Articles, inspirations |
+| `dashboard/` | Dashboard utilisateur | Vue d'ensemble, alertes |
+| `feed/` | Fil d'actualite | Publications, interactions |
+| `home/` | Page d'accueil | Navigation principale |
+| `map/` | Carte interactive | Marqueurs, filtres, geolocalisation |
+| `my_wedding/` | Suite mariage (Bride) | Agenda, budget, invites, albums |
+| `notifications/` | Notifications | Parametres, liste, push |
+| `profile/` | Profil utilisateur | Edition, preferences |
+| `settings/` | Parametres app | Configuration, compte |
+| `support/` | Support client | Tickets, FAQ |
+| `video_call/` | Appels video | Sessions Agora |
+| `weddings_hub_pro/` | Hub mariages (Pro) | Gestion mariages professionnels |
+| `wishlist/` | Liste de souhaits | Favoris, prestataires sauvegardes |
 
 ### 5. Design System
 
@@ -141,12 +155,25 @@ features/[module]/
 | `notifications` | Notifications in-app |
 | `connection_requests` | Demandes de contact |
 
-#### Edge Functions (17)
-- `agora_token_issue` - Generation tokens video
-- `create-or-sync-user` - Sync utilisateur
-- `delete-user` - Suppression compte
-- `notifications_outbox_drain` - Envoi push
-- `send-verification-email` - Emails verification
+#### Edge Functions (16)
+| Fonction | Description |
+|----------|-------------|
+| `account_delete` | Suppression compte complet |
+| `agora_token_issue` | Generation tokens video Agora |
+| `alerts_housekeeping` | Nettoyage alertes expirees |
+| `create-or-sync-user` | Sync profil apres auth |
+| `delete-user` | Suppression donnees utilisateur |
+| `notifications_outbox_drain` | Envoi push FCM (cron) |
+| `recent_locations_cleanup` | Nettoyage localisations |
+| `send-broadcast-notification` | Notifications broadcast |
+| `send-ticket-reply` | Reponses tickets support |
+| `send-verification-email` | Emails verification |
+| `sync-professional-profile` | Sync profils pros |
+| `sync-professional-to-app` | Sync pros vers app |
+| `sync-wed-articles-to-app` | Sync articles mariage |
+| `sync-wedding-article` | Sync article individuel |
+| `upload-professional-images` | Upload images pros |
+| `video_sessions_cleanup` | Nettoyage sessions video |
 
 #### Securite
 - **RLS (Row Level Security)** sur toutes les tables
@@ -158,10 +185,29 @@ features/[module]/
 | Pattern | Utilisation |
 |---------|-------------|
 | Repository | Abstraction acces donnees |
-| Cubit | State management (features/chat) |
+| Cubit | State management (features/chat, map, etc.) |
 | Provider | State global (FFAppState) |
 | Notifier | State local (ValueNotifier) |
 | Dependency Injection | Manuel via constructeurs |
+
+### 8. Gestion des Secrets
+
+> **Decision technique importante** (voir ADR-006 dans S05)
+
+| Approche | Status | Raison |
+|----------|--------|--------|
+| `flutter_dotenv` | **ACTIF** | Compatible avec scripts build existants |
+| `--dart-define-from-file` | Desactive | Necessite mise a jour CI/CD complete |
+
+**Configuration actuelle:**
+- Fichier `.env` a la racine (NON commite)
+- Charge au runtime via `dotenv.load()` dans `main.dart`
+- Variables: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `GOOGLE_PLACES_API_KEY_*`, `AGORA_APP_ID`
+
+**Historique:**
+- EPIC-05 avait migre vers `--dart-define-from-file` (compile-time)
+- Reverte car incompatible avec `scripts/build_and_run.sh`
+- Stabilite production (248 users) prioritaire sur securite theorique
 
 ### 8. Flux de Donnees
 
