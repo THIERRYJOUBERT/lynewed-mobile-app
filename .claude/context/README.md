@@ -50,6 +50,7 @@ docs/specs/      = QUOI construire (FDs, PRD-MASTER)
 
 | Workflow | Usage |
 |----------|-------|
+| `/mission` | Brief client → Mission + Epics + Stories (cascade adaptative) |
 | `/create-epic` | Creer Epic depuis PRD-MASTER |
 | `/create-story` | Decomposer Epic en Stories INVEST |
 | `/create-workflow` | Creer/mettre a jour workflows (14 patterns) |

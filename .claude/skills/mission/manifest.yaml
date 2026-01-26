@@ -1,0 +1,63 @@
+name: mission
+version: "1.0.0"
+description: "Transformer brief/devis client en Mission + Epics + Stories via exploration cascade adaptative"
+created: "2026-01-25"
+updated: "2026-01-25"
+author: "{{PROJECT_NAME}} Team"
+
+model: opus
+type: task-workflow
+
+cc_features:
+  context_fork: false
+  subagents: true
+  hooks: false
+  user_invocable: true
+  disable_model_invocation: true
+
+architecture:
+  type: cascade-adaptive
+  tiers:
+    - name: SCAN
+      model: haiku
+      count: "3-10 (adaptatif)"
+      purpose: "Exploration rapide brief + codebase"
+    - name: ANALYZE
+      model: sonnet
+      count: "3-5 (adaptatif)"
+      purpose: "Analyse profonde features, deps, risques"
+    - name: SYNTHESIZE
+      model: opus
+      count: 1
+      purpose: "Synthese MISSION.md avec Epics proposes"
+
+entry_point: steps/step-00-init.md
+
+steps:
+  - step-00-init.md
+  - step-01-scan.md
+  - step-02-analyze.md
+  - step-03-synthesize.md
+  - step-04-checkpoint.md
+  - step-05-generate-mission.md
+  - step-06-generate-epics.md
+  - step-07-generate-stories.md
+  - step-08-finalize.md
+
+templates:
+  - mission-template.md
+  - epic-template.md
+  - story-template.md
+
+references:
+  - cascade-architecture.md
+  - invest-criteria.md
+
+changelog:
+  - version: "1.0.0"
+    date: "2026-01-25"
+    changes:
+      - "Initial creation"
+      - "Cascade adaptive architecture (Haiku→Sonnet→Opus)"
+      - "9 steps workflow with checkpoint"
+      - "INVEST stories with Gherkin criteria"

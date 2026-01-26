@@ -21,7 +21,7 @@ argument-hint: "[--target=<path>] [--push] [--dry-run]"
 
 **IMPORTANT** : Ce workflow commit UNIQUEMENT dans le repo template cible, PAS dans le projet source.
 
-- Le projet source (TRAK) n'est PAS modifie
+- Le projet source ({{PROJECT_NAME}}) n'est PAS modifie
 - Les commits/push se font dans `{target_path}` (repo template)
 - Pour committer les changements dans le projet source, utiliser `/commit` separement
 
@@ -32,7 +32,7 @@ argument-hint: "[--target=<path>] [--push] [--dry-run]"
 - 🚫 JAMAIS copier de contenu specifique projet (PRD, stories, epics, FDs)
 - 🚫 JAMAIS ecraser des fichiers template sans nettoyer les refs projet
 - 🚫 JAMAIS committer dans le projet source - ce workflow ne touche QUE le repo template
-- ✅ TOUJOURS nettoyer les references specifiques (TRAK, Flutter, chemins absolus)
+- ✅ TOUJOURS nettoyer les references specifiques ({{PROJECT_NAME}}, Flutter, chemins absolus)
 - ✅ TOUJOURS generer un rapport de ce qui a ete synchronise
 - ⚠️ Utiliser --dry-run pour previsualiser avant d'executer
 
@@ -117,11 +117,11 @@ Lire le fichier `references/cleaning-rules.md` pour les patterns complets.
 
 **Resume des patterns:**
 ```
-TRAK|trak_app|trak-app → {{PROJECT_NAME}}
-/Users/.*/Desktop/trak_app → {{PROJECT_ROOT}}
-flutter test → {{TEST_CMD}}
-flutter analyze.* → {{LINT_CMD}}
-musculation|entrainement → {{PROJECT_DOMAIN}}
+{{PROJECT_NAME}}|{{PROJECT_NAME_SNAKE}}|{{PROJECT_NAME_KEBAB}} → {{PROJECT_NAME}}
+/Users/.*/Desktop/{{PROJECT_NAME_SNAKE}} → {{PROJECT_ROOT}}
+{{TEST_CMD}} → {{TEST_CMD}}
+{{LINT_CMD}}
+{{PROJECT_DOMAIN}}|{{PROJECT_DOMAIN}} → {{PROJECT_DOMAIN}}
 ```
 
 **Process pour chaque fichier:**

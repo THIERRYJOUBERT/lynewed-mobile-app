@@ -216,7 +216,7 @@ Après tous les critères:
 
 ```bash
 {{TEST_CMD}}
-{{LINT_CMD}}
+{{LINT_CMD}}nfos
 ```
 
 Présenter résultats:

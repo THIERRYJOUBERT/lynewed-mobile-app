@@ -133,28 +133,128 @@ final_report:
 
 ---
 
-### 3. Mettre à Jour TRACKING.md
+### 3. Mettre à Jour TRACKING.md (CRITICAL - FULL IMPLEMENTATION)
 
-```yaml
-tracking_update:
-  action: Edit docs/epics/{epic_id}/TRACKING.md
+**This is a critical step. Update ALL relevant sections with REAL data.**
 
-  content_to_add: |
-    ---
+#### 3.1 Read Current TRACKING.md
 
-    ## 🎉 Epic Complétée
-
-    **Date de completion:** {date}
-    **Mode d'exécution:** {mode}
-
-    ### Résumé Final
-
-    - Stories: {X}/{Y} complétées
-    - Durée totale: {estimate}
-    - Observations: {notes}
-
-    ### Status Final: DONE ✅
+```bash
+Read docs/epics/{epic_id}/TRACKING.md
 ```
+
+#### 3.2 Update Status Header
+
+Change the status line at the top:
+
+```markdown
+> Status : 🟢 Done
+> Stories : {completed_count}/{total_count} completees
+> Derniere MAJ : {current_date}
+```
+
+#### 3.3 Update Stories Progress Table
+
+For each story, update its row:
+
+```markdown
+## Progression Stories
+
+| Story | Status | Assignee | Date Start | Date Done | Points |
+|-------|--------|----------|------------|-----------|--------|
+| STORY-XX-01 | ✅ Done | Claude | {start} | {date} | 3 |
+| STORY-XX-02 | ✅ Done | Claude | {start} | {date} | 5 |
+| STORY-XX-03 | ❌ Failed | - | {start} | - | 8 |
+```
+
+**Use actual data from {completed_stories} and {failed_stories}.**
+
+#### 3.4 Add Timeline Entry
+
+Add completion event to Timeline:
+
+```markdown
+## Timeline
+
+| Date | Evenement |
+|------|-----------|
+| ... | ... |
+| {current_date} | Epic completee - {completed_count}/{total_count} stories |
+```
+
+#### 3.5 Update Metrics Section
+
+Update with actual metrics:
+
+```markdown
+## Metriques
+
+| Metrique | Valeur |
+|----------|--------|
+| Stories totales | {total_count} |
+| Stories completees | {completed_count} |
+| Stories echouees | {failed_count} |
+| Tests ajoutes | {test_count} |
+| Fichiers modifies | {file_count} |
+| Mode | {mode} |
+| Tentatives totales | {attempt_count} |
+```
+
+#### 3.6 Add Retrospective (if Complete)
+
+If epic_status == COMPLETE, fill retrospective:
+
+```markdown
+## Retrospective
+
+### Ce qui a bien marche
+
+- TDD workflow efficace
+- {observations from execution_log}
+
+### A ameliorer
+
+- {issues encountered}
+
+### Lecons apprises
+
+- {insights from the implementation}
+```
+
+#### 3.7 Add Epic Completion Section
+
+Add final section:
+
+```markdown
+---
+
+## 🎉 Epic Completee
+
+**Date de completion:** {current_date}
+**Mode d'execution:** {mode}
+**Status Final:** {COMPLETE | PARTIAL}
+
+### Resume Final
+
+- Stories: {completed_count}/{total_count} completees
+- Fichiers modifies: {file_count}
+- Tests ajoutes: {test_count}
+- Tentatives totales: {attempt_count}
+
+{If PARTIAL: list failed stories with reasons}
+```
+
+#### 3.8 Perform the Edit
+
+Use Edit tool to update TRACKING.md with ALL changes above.
+
+**Validation after edit:**
+- [ ] Status header shows 🟢 Done (or 🟡 if PARTIAL)
+- [ ] All stories have updated status
+- [ ] Timeline shows completion event
+- [ ] Metrics are actual numbers
+- [ ] Retrospective is filled (if COMPLETE)
+- [ ] Epic Completion section added
 
 ---
 

@@ -2,11 +2,24 @@
 name: create-epic
 description: "Create Epic from PRD-MASTER with autonomous quality validation"
 model: opus
+allowed-tools: Read, Write, Edit, Glob, Grep, Task, AskUserQuestion, TodoWrite
+argument-hint: "[epic-name] [--auto]"
 ---
 
 <objective>
 Transform a PRD-MASTER Epic into production-ready Epic documentation through autonomous exploration and APEX-style self-validation. Creates enriched stories with acceptance criteria extracted from FD sources.
 </objective>
+
+<modes>
+| Mode | Flag | Comportement |
+|------|------|--------------|
+| **INTERACTIVE** | default | AskUserQuestion pour sélectionner l'Epic |
+| **AUTO** | `--auto` | Sélectionne automatiquement le PREMIER Epic non-créé du PRD-MASTER |
+
+**Arguments:**
+- `[epic-name]` : Nom de l'Epic (ex: "Foundation", "Training") - skip la sélection
+- `--auto` : Mode 100% autonome, aucune question
+</modes>
 
 <critical_rule>
 🛑 NEVER create Epic without PRD-MASTER validation
@@ -14,7 +27,7 @@ Transform a PRD-MASTER Epic into production-ready Epic documentation through aut
 🛑 NEVER generate stories without technical criteria from FDs
 🛑 NEVER use "TBD", "...", or "a definir" in stories
 🛑 NEVER skip AUTO-VALIDATION sections in steps
-🛑 NEVER use AskUserQuestion after Epic selection (100% autonomous)
+🛑 NEVER use AskUserQuestion in --auto mode (100% autonomous)
 ✅ ALWAYS use autonomous APEX-style self-validation (no user checkpoints)
 ✅ ALWAYS launch 3 exploration agents in SINGLE message (parallel execution)
 ✅ ALWAYS enrich EVERY story with acceptance criteria from FDs
@@ -40,6 +53,8 @@ Transform a PRD-MASTER Epic into production-ready Epic documentation through aut
 <state_variables>
 | Variable | Type | Description |
 |----------|------|-------------|
+| {mode} | enum | interactive ou auto (default: interactive) |
+| {epic_arg} | string | Epic name from argument (optional) |
 | {epic_id} | string | e.g., EPIC-00-FOUNDATION |
 | {epic_name} | string | Full Epic name from PRD-MASTER |
 | {domain} | enum | INFRA, DATA, UI, API (detected or user-specified) |
@@ -58,8 +73,8 @@ Load `steps/step-00-prerequis.md`
 <step_files>
 | Step | File | Purpose | Auto-Validation |
 |------|------|---------|------------------|
-| 00 | step-00-prerequis.md | Verify PRD-MASTER exists + valid | File exists + status check |
-| 01 | step-01-select.md | Select Epic via AskUserQuestion | User selection required |
+| 00 | step-00-prerequis.md | Verify PRD-MASTER + parse args + detect mode | File exists + mode set |
+| 01 | step-01-select.md | Select Epic (AskUser OU auto-select si --auto) | Epic selected |
 | 02 | step-02-discovery.md | Scan PRD-MASTER for sources | ✓ Mapping completeness |
 | 03 | step-03-explore.md | 3 parallel Sonnet agents | ✓ Each agent output validated |
 | 04 | step-04-synthesize.md | Consolidate + enrich stories | ✓ All stories have criteria |
@@ -86,7 +101,9 @@ Load `steps/step-00-prerequis.md`
 7. **Gap Documentation**: Any missing info documented in sources.yaml and Epic.md
 8. **Story Challenge**: Validate ALL stories against PRD-MASTER scope before generation
 9. **Adaptive Template**: Add context-specific sections beyond base template
-10. **Single User Interaction**: Only ONE AskUserQuestion in step-01 for Epic selection, then 100% autonomous
+10. **Mode-Conditional Selection**:
+    - INTERACTIVE mode: AskUserQuestion in step-01 for Epic selection
+    - AUTO mode: Auto-select FIRST Epic without existing folder in docs/epics/
 11. **Intelligent Finalization**: After step-06, propose sync/doc based on work done (see workflow-finalization pattern)
 </execution_rules>
 

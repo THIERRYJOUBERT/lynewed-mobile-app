@@ -118,7 +118,7 @@ Templates use Handlebars-like syntax. As the executing agent, YOU are the templa
 **Criteres cles** :
 - Structure projet: lib/{core,features,shared}
 - pubspec.yaml avec packages: riverpod ^2.5.0, go_router ^13.0.0
-- {{LINT_CMD}} passe
+- {{LINT_CMD}}nfos passe
 
 **Source** : FD-09 §2.1
 

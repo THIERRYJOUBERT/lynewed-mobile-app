@@ -837,7 +837,7 @@ hooks:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "{{LINT_CMD}}"
+          command: "{{LINT_CMD}}nfos"
 
 # Security check before write
 hooks:

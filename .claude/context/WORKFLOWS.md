@@ -2,7 +2,7 @@
 
 ## Developper
 
-**`/dev-story`** — Implementer une story (TDD, 9 etapes)
+**`/dev-story`** — Implementer une story (TDD, 9 etapes + documentation)
 - `/dev-story STORY-01-01`
 - `/dev-story STORY-01-01 --mode=auto`
 
@@ -21,11 +21,17 @@
 
 ## Creer
 
-**`/create-epic`** — Creer Epic depuis PRD
-- `/create-epic authentication`
+**`/mission`** — Brief client → Mission + Epics + Stories (cascade adaptative Haiku→Sonnet→Opus)
+- `/mission docs/brief-client.md`
+- `/mission workspace/current/devis-2026.md`
 
-**`/create-story`** — Decomposer Epic en Stories
+**`/create-epic`** — Creer Epic depuis PRD (mode --auto disponible)
+- `/create-epic authentication`
+- `/create-epic --auto` *(selectionne premier Epic non-cree)*
+
+**`/create-story`** — Decomposer Epic en Stories (mode --auto disponible)
 - `/create-story EPIC-01`
+- `/create-story EPIC-01 --auto` *(generation 100% autonome)*
 
 **`/create-workflow`** — Creer/modifier workflow
 - `/create-workflow mon-workflow`
@@ -48,6 +54,14 @@
 
 ---
 
+## Securite
+
+**`/security-audit`** — Audit complet securite + qualite (OWASP, secrets, deps)
+- `/security-audit`
+- `/security-audit --scope=auth` *(audit cible)*
+
+---
+
 ## Utilitaires
 
 **`/documentation`** — Documenter session de travail
@@ -57,6 +71,14 @@
 **`/sync-project`** — Sync INDEX/README/CLAUDE.md
 - `/sync-project`
 - `/sync-project --silent`
+
+**`/sync-template`** — Exporter config vers repo template
+- `/sync-template --dry-run`
+- `/sync-template --push`
+
+**`/update-config`** — Importer config depuis template (avec CHANGELOG)
+- `/update-config --dry-run`
+- `/update-config --force`
 
 **`/prompt`** — Traduire prompt en anglais LLM
 - `/prompt Ajoute validation email`

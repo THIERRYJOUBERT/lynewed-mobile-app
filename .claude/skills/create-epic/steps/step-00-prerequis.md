@@ -1,14 +1,15 @@
 ---
 name: step-00-prerequis
-description: Verify PRD-MASTER exists and has VALIDE status
+description: Parse args, detect mode, verify PRD-MASTER exists and has VALIDE status
 prev_step: null
 next_step: steps/step-01-select.md
 ---
 
-# Step 00: Verify Prerequisites
+# Step 00: Parse Arguments & Verify Prerequisites
 
 ## MANDATORY EXECUTION RULES (READ FIRST):
 
+- ✅ ALWAYS parse arguments FIRST to detect mode
 - 🛑 NEVER proceed without PRD-MASTER existing
 - 🛑 NEVER proceed if PRD-MASTER status is not "VALIDE"
 - ✅ ALWAYS read PRD-MASTER completely before proceeding
@@ -20,6 +21,7 @@ next_step: steps/step-01-select.md
 
 ## EXECUTION PROTOCOLS:
 
+- 🎯 Parse arguments to detect mode and epic name
 - 🎯 Check file existence before reading
 - 💾 Store Epic list for next step
 - 📖 Complete validation fully before proceeding
@@ -27,16 +29,50 @@ next_step: steps/step-01-select.md
 
 ## CONTEXT BOUNDARIES:
 
-- No previous state exists (this is the first step)
+- Arguments may be passed: `$ARGUMENTS`
 - PRD-MASTER expected location: `docs/specs/PRD-MASTER.md`
 
 ## YOUR TASK:
 
-Verify that PRD-MASTER exists, has VALIDE status, and extract the list of available Epics.
+1. Parse arguments to detect mode (interactive/auto) and optional epic name
+2. Verify that PRD-MASTER exists and has VALIDE status
+3. Extract the list of available Epics
 
 ---
 
 ## EXECUTION SEQUENCE:
+
+### 0. Parse Arguments
+
+Parse `$ARGUMENTS` to extract mode and optional epic name:
+
+```yaml
+# Argument patterns:
+# ""                    → mode: interactive, epic_arg: null
+# "--auto"              → mode: auto, epic_arg: null
+# "Foundation"          → mode: interactive, epic_arg: "Foundation"
+# "Foundation --auto"   → mode: auto, epic_arg: "Foundation"
+# "EPIC-01"             → mode: interactive, epic_arg: "EPIC-01"
+
+parsing:
+  if "--auto" in $ARGUMENTS:
+    {mode}: "auto"
+  else:
+    {mode}: "interactive"
+
+  # Extract epic name (anything that's not a flag)
+  epic_name_pattern: "[A-Za-z0-9-]+" (not starting with --)
+  if match found:
+    {epic_arg}: matched_name
+  else:
+    {epic_arg}: null
+```
+
+**Store in state:**
+```yaml
+{mode}: "interactive" | "auto"
+{epic_arg}: null | "Foundation" | "EPIC-01" | etc.
+```
 
 ### 1. Check PRD-MASTER Existence
 
@@ -123,6 +159,9 @@ This helps identify which Epics are already created vs available.
 │  📋 Available Epics: {count}                                │
 │  📁 Already created: {existing_count}                       │
 │                                                             │
+│  🎯 Mode: {mode}                                            │
+│  📌 Epic Arg: {epic_arg | "none"}                           │
+│                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -132,6 +171,7 @@ This helps identify which Epics are already created vs available.
 
 **Before proceeding to next step, validate:**
 
+✅ {mode} is set to "interactive" or "auto"
 ✅ PRD-MASTER file exists at docs/specs/PRD-MASTER.md
 ✅ PRD-MASTER status is "✅ VALIDE"
 ✅ At least 1 Epic found in Section 7

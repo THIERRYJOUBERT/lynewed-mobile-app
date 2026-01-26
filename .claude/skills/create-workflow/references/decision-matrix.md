@@ -175,7 +175,7 @@ Runs scripts automatically at specific points in Claude's workflow. Hooks provid
 
 | Scenario | Decision | Example command |
 |----------|----------|-----------------|
-| Validate before file write | YES | `{{LINT_CMD}}` |
+| Validate before file write | YES | `{{LINT_CMD}}nfos` |
 | Block dangerous operations | YES | `./scripts/check-no-secrets.sh` |
 | Require confirmation for destructive actions | YES | `./scripts/confirm-delete.sh` |
 | Format code before save | CONSIDER | `dart format $FILE` |
@@ -213,7 +213,7 @@ hooks:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: "{{LINT_CMD}} && {{TEST_CMD}}"
+          command: "{{LINT_CMD}}nfos && {{TEST_CMD}}"
     - matcher: "Bash"
       hooks:
         - type: command

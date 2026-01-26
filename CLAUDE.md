@@ -125,12 +125,20 @@ flutter run                        # Run
 | `/create-epic` | Creer un Epic depuis PRD |
 | `/create-story` | Decomposer Epic en Stories |
 | `/create-workflow` | Creer un nouveau workflow |
+| `/mission` | Brief client → Mission + Epics + Stories (cascade adaptative) |
 
 ### Maintenance
 
 | Workflow | Usage |
 |----------|-------|
 | `/project-cleanup` | Nettoyer, optimiser, moderniser le projet (Ralph) |
+| `/security-audit` | Audit securite OWASP + proposition Epic remediation |
+
+### Qualite
+
+| Workflow | Usage |
+|----------|-------|
+| `/challenge` | Critique iterative de livrables avant commit |
 
 ### Utilitaires
 
@@ -139,6 +147,7 @@ flutter run                        # Run
 | `/learn` | Comprendre une feature/concept |
 | `/documentation` | Documenter session de travail |
 | `/sync-project` | Synchroniser references |
+| `/update-config` | Mettre a jour config depuis template distant |
 
 ---
 

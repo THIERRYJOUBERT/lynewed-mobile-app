@@ -76,7 +76,7 @@ fi
 **Flutter:**
 ```bash
 {{TEST_CMD}}
-{{LINT_CMD}}
+{{LINT_CMD}}nfos
 ```
 
 **Node.js:**

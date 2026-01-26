@@ -44,7 +44,7 @@
 
 - [ ] Tous les criteres d'acceptation passent
 - [ ] Tests unitaires ecrits et passants
-- [ ] Pas de warnings (`{{LINT_CMD}}`)
+- [ ] Pas de warnings (`{{LINT_CMD}}nfos`)
 - [ ] Code coherent avec FDs et PRD
 - [ ] Review Adversariale effectuee
 - [ ] Documentation a jour

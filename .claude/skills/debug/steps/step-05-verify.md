@@ -73,7 +73,7 @@ test_failure:
 ### 2. Run Static Analysis
 
 ```bash
-{{LINT_CMD}}
+{{LINT_CMD}}nfos
 ```
 
 **Criteres:**

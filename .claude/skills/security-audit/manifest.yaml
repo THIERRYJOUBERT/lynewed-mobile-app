@@ -1,0 +1,41 @@
+name: security-audit
+version: 1.0.0
+description: Full-stack security and quality audit with Epic/Stories generation
+author: {{PROJECT_NAME}} Team
+created: 2026-01-25
+
+type: task-workflow
+model: opus
+context: fork
+
+features:
+  parallel_agents: true
+  agent_count: 6
+  checkpoints: 1
+  epic_generation: true
+
+domains:
+  - code
+  - auth
+  - data
+  - api
+  - deps
+  - config
+
+outputs:
+  - type: report
+    path: workspace/current/SECURITY-AUDIT-{DATE}.md
+  - type: epic
+    path: docs/epics/EPIC-XX-SECURITY/
+    conditional: user_accepts
+
+dependencies:
+  workflows:
+    - /create-story  # Suggested after Epic creation
+
+tags:
+  - security
+  - audit
+  - owasp
+  - quality
+  - epic-generation

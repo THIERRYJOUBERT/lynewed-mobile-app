@@ -14,7 +14,7 @@ next_step: steps/step-05-commit.md
 - 🛑 NEVER skip verification even if step-03 passed
 - 🛑 NEVER repeat same fix approach without analysis (self-healing intelligent)
 - ✅ ALWAYS run full test suite (not just modified tests)
-- ✅ ALWAYS run {{LINT_CMD}}
+- ✅ ALWAYS run {{LINT_CMD}}nfos
 - ✅ ALWAYS verify no debug code remains
 - ✅ ALWAYS verify all acceptance criteria are satisfied
 - ✅ ALWAYS check git status for unexpected files
@@ -81,7 +81,7 @@ Self-healing loop:
 Execute {{LINT_CMD}}ngs.
 
 ```bash
-{{LINT_CMD}}
+{{LINT_CMD}}nfos
 ```
 
 **Expected**: 0 issues (no errors, warnings, or infos)
@@ -231,7 +231,7 @@ Max 5 tentatives, puis escalader.
 **Before proceeding to next step, validate:**
 
 ✅ `{{TEST_CMD}}` passes with 0 failures
-✅ `{{LINT_CMD}}` passes with 0 issues
+✅ `{{LINT_CMD}}nfos` passes with 0 issues
 ✅ No debug code (print, TODO, FIXME)
 ✅ ALL acceptance criteria satisfied
 ✅ Git status shows only expected changes

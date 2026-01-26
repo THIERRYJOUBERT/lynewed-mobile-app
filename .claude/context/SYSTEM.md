@@ -444,8 +444,9 @@ Pattern complet dans : `.claude/skills/sync-project/references/workflow-finaliza
 
 | Workflow | Usage | Mode |
 |----------|-------|------|
-| `/create-epic` | Créer Epic depuis PRD-MASTER | supervised |
-| `/create-story` | Décomposer Epic en Stories INVEST | supervised |
+| `/mission` | Brief client → Mission + Epics + Stories (cascade adaptative) | supervised |
+| `/create-epic` | Créer Epic depuis PRD-MASTER | supervised/auto |
+| `/create-story` | Décomposer Epic en Stories INVEST | supervised/auto |
 | `/create-workflow` | Créer/mettre à jour un workflow | supervised |
 
 ### Workflows d'Orchestration
@@ -462,10 +463,56 @@ Pattern complet dans : `.claude/skills/sync-project/references/workflow-finaliza
 | `/documentation` | Générer documentation de session | auto/interactive |
 | `/prompt` | Transformer prompt en anglais optimisé | - |
 | `/explore` | Exploration deep codebase/docs/web | - |
+| `/sync-template` | Exporter config vers repo template externe | silent |
+| `/update-config` | Importer config depuis template distant | interactive |
 
 ---
 
 ## 10. Détail des Workflows
+
+### /mission - Brief Client vers Mission + Epics + Stories
+
+Transformer un brief/devis client en Mission structurée avec Epics et Stories via exploration cascade adaptative de la codebase.
+
+**Architecture Cascade** :
+- Tier 1 (SCAN) : 3-10 agents Haiku en parallèle (adaptatif selon taille codebase)
+- Tier 2 (ANALYZE) : 3-5 agents Sonnet en parallèle (adaptatif selon complexité brief)
+- Tier 3 (SYNTHESIZE) : 1 agent Opus pour synthèse finale
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                    /mission WORKFLOW                              │
+│                                                                   │
+│  00. INIT       → Valider brief, scanner codebase, calculer      │
+│       ↓          agents adaptatifs                               │
+│                                                                   │
+│  01. SCAN       → Tier 1: 3-10 Haiku agents PARALLELES           │
+│       ↓          (brief + codebase scanning)                     │
+│                                                                   │
+│  02. ANALYZE    → Tier 2: 3-5 Sonnet agents PARALLELES           │
+│       ↓          (scope, arch, risks, integration, validation)   │
+│                                                                   │
+│  03. SYNTHESIZE → Tier 3: Opus synthèse finale                   │
+│       ↓          (mission_document consolidé)                    │
+│                                                                   │
+│  04. CHECKPOINT → Validation utilisateur                         │
+│       ↓          [AskUserQuestion: Approuver/Ajuster/Clarifier]  │
+│                                                                   │
+│  05. GENERATE MISSION → Écrire docs/specs/MISSION.md             │
+│       ↓                                                           │
+│  06. GENERATE EPICS   → Créer dossiers Epic + TRACKING.md        │
+│       ↓                                                           │
+│  07. GENERATE STORIES → Stories INVEST avec Gherkin              │
+│       ↓                                                           │
+│  08. FINALIZE   → Rapport + proposer sync/doc                    │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+**Invocation** :
+- `/mission docs/brief-client.md` - Avec fichier brief
+- `/mission workspace/current/devis-2026.md` - Avec devis
+
+---
 
 ### /dev-story - Story Development
 
@@ -498,7 +545,10 @@ Implémentation complète d'une story avec qualité APEX.
 │  05. COMMIT      → Finalisation via /commit                      │
 │       ↓           ✓ Story status "Done" + TRACKING.md updated    │
 │                                                                   │
-│  06. FINALIZE    → Intelligent (selon mode)                      │
+│  06. DOCUMENT    → Créer dossier story avec implementation.md    │
+│       ↓           ✓ docs/epics/EPIC-XX/stories/STORY-XX-YY/      │
+│                                                                   │
+│  07. FINALIZE    → Intelligent (selon mode)                      │
 │                    SUPERVISED: AskUserQuestion                   │
 │                    AUTO: Agent Sonnet sync/doc                   │
 └──────────────────────────────────────────────────────────────────┘
@@ -585,16 +635,21 @@ Debugging scientifique avec Constrained ReAct (PROUVER avant de FIXER).
 
 Créer un Epic depuis PRD-MASTER avec validation qualité.
 
+**Modes** :
+- `interactive` (défaut) : Dialogue pour sélectionner l'Epic
+- `--auto` : Sélectionne automatiquement le premier Epic non-créé du PRD-MASTER
+
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │                    /create-epic WORKFLOW                          │
 │                                                                   │
-│  00. INIT       → Parser arguments, vérifier PRD-MASTER           │
-│       ↓                                                           │
+│  00. INIT       → Parser arguments (--auto), vérifier PRD-MASTER  │
+│       ↓          Mode AUTO: sélection premier Epic non-créé       │
+│                                                                   │
 │  01. EXPLORE    → 3 agents parallèles : codebase, docs, patterns  │
 │       ↓                                                           │
 │  02. DESIGN     → Créer structure Epic                            │
-│       ↓          [CHECKPOINT: validation utilisateur]             │
+│       ↓          [CHECKPOINT si mode SUPERVISED]                  │
 │                                                                   │
 │  03. GENERATE   → Générer fichiers Epic                           │
 │       ↓                                                           │
@@ -604,7 +659,7 @@ Créer un Epic depuis PRD-MASTER avec validation qualité.
 │       ↓                                                           │
 │  06. COMMIT     → Commit initial Epic                             │
 │       ↓                                                           │
-│  07. FINALIZE   → Intelligent (AskUserQuestion: sync?)            │
+│  07. FINALIZE   → Intelligent (selon mode)                        │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -612,29 +667,39 @@ Créer un Epic depuis PRD-MASTER avec validation qualité.
 
 Décomposer un Epic en Stories INVEST.
 
+**Modes** :
+- `interactive` (défaut) : Validation utilisateur à chaque étape
+- `--auto` : Génération 100% autonome sans checkpoint
+
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │                    /create-story WORKFLOW                         │
 │                                                                   │
-│  00. INIT       → Vérifier Epic existe                            │
-│       ↓          ✓ Epic valide et accessible                     │
+│  00. INIT       → Parser args (--auto), vérifier Epic             │
+│       ↓          ✓ Mode détecté, Epic valide                     │
 │                                                                   │
 │  01. ANALYZE    → Lire Epic, extraire objectifs                   │
 │       ↓          ✓ Scope et features identifiés                  │
 │                                                                   │
 │  02. PROPOSE    → Proposer décomposition stories                  │
-│       ↓          [CHECKPOINT utilisateur]                        │
+│       ↓          [CHECKPOINT si mode SUPERVISED]                 │
 │       ↓          ✓ Stories INVEST validées                       │
 │                                                                   │
 │  03. GENERATE   → Créer fichiers story                            │
 │       ↓          ✓ Fichiers .md générés                          │
 │                                                                   │
-│  04. VALIDATE   → Vérifier conflits + update TRACKING             │
-│       ↓          ✓ Tout cohérent et documenté                    │
+│  04. VALIDATE   → Vérifier conflits + update TRACKING.md          │
+│       ↓          ✓ Stories table, deps graph, exec order, etc.   │
 │                                                                   │
-│  05. FINALIZE   → Intelligent (AskUserQuestion: sync?)            │
+│  05. FINALIZE   → Intelligent (selon mode)                        │
 └──────────────────────────────────────────────────────────────────┘
 ```
+
+**TRACKING.md Update** : Step-04 met à jour complètement le TRACKING.md avec :
+- Table des stories (ID, status, points)
+- Graphe de dépendances (mermaid)
+- Ordre d'exécution avec rationale
+- Détection conflits fichiers
 
 ### /launch-epic - Epic Orchestration
 

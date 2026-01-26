@@ -100,7 +100,7 @@ Load `steps/step-00-prerequis.md`
 <success_criteria>
 ✅ Feature implemented matching description
 ✅ All tests pass ({{TEST_CMD}})
-✅ 0 warnings ({{LINT_CMD}})
+✅ 0 warnings ({{LINT_CMD}}nfos)
 ✅ Review Adversariale completed with APPROVE verdict
 ✅ Commit created with proper message
 ✅ No debug code or TODOs left behind

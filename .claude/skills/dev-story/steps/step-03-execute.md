@@ -171,7 +171,7 @@ We don't review code that doesn't compile or has warnings.
 #### 2.2 Run Static Analysis
 
 ```bash
-{{LINT_CMD}}
+{{LINT_CMD}}nfos
 ```
 
 **Expected**: 0 issues
@@ -337,7 +337,7 @@ review_results:
 ✅ All acceptance criteria implemented (check each AC from story)
 ✅ All TDD cycles completed (RED-GREEN-REFACTOR for each AC)
 ✅ All tests pass ({{TEST_CMD}})
-✅ 0 warnings ({{LINT_CMD}})
+✅ 0 warnings ({{LINT_CMD}}nfos)
 ✅ Review Adversariale completed with per-criterion check
 ✅ Final verdict is APPROVE (or escalated with justification)
 ✅ No debug code left (print statements, TODO comments)

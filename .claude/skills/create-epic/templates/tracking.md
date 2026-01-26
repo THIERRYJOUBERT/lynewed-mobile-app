@@ -56,7 +56,7 @@
 
 - [ ] Tests unitaires pour chaque story
 - [ ] Tests integration
-- [ ] {{LINT_CMD}} passe
+- [ ] {{LINT_CMD}}nfos passe
 
 ---
 

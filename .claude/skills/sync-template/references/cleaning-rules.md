@@ -11,10 +11,10 @@
 
 | Pattern (Regex) | Replacement | Notes |
 |-----------------|-------------|-------|
-| `TRAK` | `{{PROJECT_NAME}}` | Keep case-sensitive |
-| `trak_app` | `{{PROJECT_NAME_SNAKE}}` | Snake case variant |
-| `trak-app` | `{{PROJECT_NAME_KEBAB}}` | Kebab case variant |
-| `app-trak` | `{{PROJECT_ORG}}` | GitHub org name |
+| `{{PROJECT_NAME}}` | `{{PROJECT_NAME}}` | Keep case-sensitive |
+| `{{PROJECT_NAME_SNAKE}}` | `{{PROJECT_NAME_SNAKE}}` | Snake case variant |
+| `{{PROJECT_NAME_KEBAB}}` | `{{PROJECT_NAME_KEBAB}}` | Kebab case variant |
+| `{{PROJECT_ORG}}` | `{{PROJECT_ORG}}` | GitHub org name |
 
 **Context-aware exceptions:**
 - In example code blocks: Replace with generic examples
@@ -26,9 +26,9 @@
 
 | Pattern (Regex) | Replacement | Notes |
 |-----------------|-------------|-------|
-| `/Users/[^/]+/Desktop/trak_app` | `{{PROJECT_ROOT}}` | macOS paths |
-| `/home/[^/]+/trak_app` | `{{PROJECT_ROOT}}` | Linux paths |
-| `C:\\Users\\[^\\]+\\trak_app` | `{{PROJECT_ROOT}}` | Windows paths |
+| `/Users/[^/]+/Desktop/{{PROJECT_NAME_SNAKE}}` | `{{PROJECT_ROOT}}` | macOS paths |
+| `/home/[^/]+/{{PROJECT_NAME_SNAKE}}` | `{{PROJECT_ROOT}}` | Linux paths |
+| `C:\\Users\\[^\\]+\\{{PROJECT_NAME_SNAKE}}` | `{{PROJECT_ROOT}}` | Windows paths |
 
 ---
 
@@ -36,11 +36,11 @@
 
 | Pattern (Regex) | Replacement | Notes |
 |-----------------|-------------|-------|
-| `flutter test` | `{{TEST_CMD}}` | Test command |
-| `flutter analyze[^\n]*` | `{{LINT_CMD}}` | Lint command with flags |
-| `flutter run` | `{{RUN_CMD}}` | Run command |
-| `flutter build` | `{{BUILD_CMD}}` | Build command |
-| `dart run build_runner[^\n]*` | `{{CODEGEN_CMD}}` | Code generation |
+| `{{TEST_CMD}}` | `{{TEST_CMD}}` | Test command |
+| `{{LINT_CMD}}\n]*` | `{{LINT_CMD}}` | Lint command with flags |
+| `{{RUN_CMD}}` | `{{RUN_CMD}}` | Run command |
+| `{{BUILD_CMD}}` | `{{BUILD_CMD}}` | Build command |
+| `{{CODEGEN_CMD}}\n]*` | `{{CODEGEN_CMD}}` | Code generation |
 | `pubspec\.yaml` | `{{PROJECT_CONFIG}}` | Project config file |
 | `Dart` | `{{LANGUAGE}}` | Language name |
 | `Flutter` | `{{FRAMEWORK}}` | Framework name |
@@ -55,8 +55,8 @@
 
 | Pattern (Regex) | Replacement | Notes |
 |-----------------|-------------|-------|
-| `musculation` | `{{PROJECT_DOMAIN}}` | Domain term |
-| `entrainement` | `{{PROJECT_DOMAIN}}` | Domain term |
+| `{{PROJECT_DOMAIN}}` | `{{PROJECT_DOMAIN}}` | Domain term |
+| `{{PROJECT_DOMAIN}}` | `{{PROJECT_DOMAIN}}` | Domain term |
 | `training app` | `{{PROJECT_DESCRIPTION}}` | Description |
 | `fitness` | `{{PROJECT_DOMAIN}}` | Domain term |
 | `workout` | `{{PROJECT_DOMAIN}}` | Domain term |
@@ -153,11 +153,11 @@ When implementing cleaning:
 ```javascript
 // Example implementation
 const cleaningRules = [
-  { pattern: /TRAK/g, replacement: '{{PROJECT_NAME}}' },
-  { pattern: /trak_app/g, replacement: '{{PROJECT_NAME_SNAKE}}' },
-  { pattern: /\/Users\/[^\/]+\/Desktop\/trak_app/g, replacement: '{{PROJECT_ROOT}}' },
-  { pattern: /flutter test/g, replacement: '{{TEST_CMD}}' },
-  { pattern: /flutter analyze[^\n]*/g, replacement: '{{LINT_CMD}}' },
+  { pattern: /{{PROJECT_NAME}}/g, replacement: '{{PROJECT_NAME}}' },
+  { pattern: /{{PROJECT_NAME_SNAKE}}/g, replacement: '{{PROJECT_NAME_SNAKE}}' },
+  { pattern: /\/Users\/[^\/]+\/Desktop\/{{PROJECT_NAME_SNAKE}}/g, replacement: '{{PROJECT_ROOT}}' },
+  { pattern: /{{TEST_CMD}}/g, replacement: '{{TEST_CMD}}' },
+  { pattern: /{{LINT_CMD}}\n]*/g, replacement: '{{LINT_CMD}}' },
   // ... etc
 ];
 
@@ -176,7 +176,7 @@ function cleanFile(content) {
 
 After cleaning, verify:
 - [ ] No absolute paths remain
-- [ ] No project name references remain (search for TRAK, trak)
+- [ ] No project name references remain (search for {{PROJECT_NAME}}, trak)
 - [ ] No domain-specific terms remain
 - [ ] Placeholders are properly formatted `{{PLACEHOLDER}}`
 - [ ] File structure is preserved

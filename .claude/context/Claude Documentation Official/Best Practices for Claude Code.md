@@ -593,4 +593,3 @@ Over time, you'll develop intuition that no guide can capture. You'll know when 
     Store project conventions and persistent context
   </Card>
 </CardGroup>
-

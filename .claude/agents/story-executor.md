@@ -122,7 +122,7 @@ Pour CHAQUE critere d'acceptation :
 {{TEST_CMD}}
 
 # Analyse statique (0 warnings requis)
-{{LINT_CMD}}
+{{LINT_CMD}}nfos
 ```
 
 ### Si echec
