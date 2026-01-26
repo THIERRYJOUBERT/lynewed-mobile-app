@@ -46,6 +46,23 @@ Builder l'app iOS et la lancer sur le simulateur actif en:
 
 ## Execution
 
+### 0. Nettoyer les fichiers parasites
+
+Avant de commencer, supprimer les fichiers dupliqués/logs qui polluent le projet :
+
+```bash
+# Supprimer les copies accidentelles de .flutter-plugins-dependencies
+rm -f ".flutter-plugins-dependencies 2" ".flutter-plugins-dependencies 3" 2>/dev/null
+
+# Supprimer les anciens logs Flutter
+rm -f flutter_*.log 2>/dev/null
+
+# Supprimer le cache Kotlin Android (si présent et non gitignored)
+# Note: devrait être dans .gitignore
+```
+
+---
+
 ### 1. Vérifier le simulateur
 
 ```bash
