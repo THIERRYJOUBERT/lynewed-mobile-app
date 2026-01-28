@@ -2,7 +2,7 @@
 
 ## Vue d'Ensemble
 
-### Phase 1 : Foundation (COMPLETE)
+### Phase 1 : Foundation (COMPLETE) ✅ → [Archive](#archive---phase-1--foundation)
 
 | Epic | Titre | Status | Progression |
 |------|-------|--------|-------------|
@@ -12,7 +12,7 @@
 | EPIC-04 | Documentation | ✅ COMPLETE | 5/5 (100%) |
 | EPIC-05 | Security cleanup | ✅ COMPLETE | 10/10 (100%) |
 
-### Phase 2 : Mission 2026 (NEW)
+### Phase 2 : Mission 2026 (ACTIVE)
 
 | Epic | PRD | Titre | Status | Stories | Est. |
 |------|-----|-------|--------|---------|------|
@@ -30,106 +30,7 @@
 
 ---
 
-## EPIC-01: Migration Clean Architecture ✅
-
-**Statut**: COMPLETE (2026-01-26)
-**Durée**: 2 jours
-
-### Résumé
-Migration complète du code FlutterFlow legacy vers Clean Architecture, avec le module Map comme référence.
-
-### Métriques Finales
-- 42/42 stories complétées
-- 3069 tests unitaires
-- 0 warnings flutter analyze
-- **15 modules features** (auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, profile, settings, support, video_call, weddings_hub_pro, wishlist)
-
-### Modules Créés
-| Module | Description |
-|--------|-------------|
-| auth | Authentification complète |
-| chat | Messagerie temps réel |
-| content | Articles/Replays/Vidéos |
-| dashboard | Dashboard pro |
-| feed | Feed de professionnels |
-| home | Page d'accueil mariées |
-| map | Carte (référence) |
-| my_wedding | Gestion du mariage |
-| notifications | Système de notifications |
-| profile | Profil utilisateur |
-| settings | Paramètres |
-| support | Support/FAQ |
-| video_call | Appels vidéo Agora |
-| wishlist | Liste de favoris pro |
-| weddings_hub_pro | Hub mariages côté pro |
-
-### Impact sur autres Epics
-- EPIC-02 (Tests): ✅ Complété - 3069 tests
-- EPIC-05 (Security): ✅ Complété - Secrets migrés, input validation
-
----
-
-## EPIC-02: Tests additionnels ✅
-
-**Statut**: COMPLETE
-**Dépendances**: EPIC-01 ✅
-
-### Résumé
-Tests additionnels couvrant tous les modules Clean Architecture.
-
-### Métriques
-- 7/7 stories complétées
-- 3069 tests totaux
-
----
-
-## EPIC-03: Dependencies update ⏸️
-
-**Statut**: PARTIAL (64%)
-**Dépendances**: EPIC-01 ✅
-
-### Progression
-- 9/14 stories complétées
-- 25+ packages mis à jour
-- Firebase 4.x, Supabase 2.12
-- En pause: certaines dépendances nécessitent migration majeure
-
----
-
-## EPIC-04: Documentation 🔜
-
-**Statut**: READY (challengé 2026-01-26)
-**Dépendances**: EPIC-01 ✅, EPIC-05 ✅
-
-### Stories (5)
-1. S01: README complet
-2. S02: Architecture (15 modules, 16 Edge Functions)
-3. S03: Contributing
-4. S04: API Documentation (11 repos, 5 services)
-5. S05: ADRs (6 ADRs incluant ADR-006 secrets)
-
-### Notes Post-Challenge
-- Statistiques corrigées (données réelles du codebase)
-- ADR-006 ajouté (flutter_dotenv vs --dart-define)
-- iOS 15.0 minimum documenté
-
----
-
-## EPIC-05: Security cleanup ✅
-
-**Statut**: COMPLETE
-**Dépendances**: EPIC-01 ✅
-
-### Résumé
-- Secrets migrés (flutter_dotenv - voir ADR-006)
-- Input validation
-- Auth flows sécurisés
-- OWASP compliance
-- Cleanup fichiers orphelins
-
----
-
-## Mission 2026 - Epics
+## Mission 2026 - Epics Actifs
 
 ### EPIC-06: Prerequisites Migration (APP-00) 🔵
 
@@ -307,3 +208,107 @@ ORDRE D'EXECUTION RECOMMANDE :
 | 2026-01-28 | EPIC-07 à EPIC-14 créés - Mission 2026 complète (9 Epics, 102 stories) |
 | 2026-01-28 | Challenge Deep /challenge --deep (EPIC-06 à EPIC-14) - Score 82→92/100 |
 | 2026-01-28 | Corrections appliquées : FFmpeg→Shotstack, TIMESTAMPTZ, RLS, Storage cleanup, FedEx docs |
+| 2026-01-28 | Reorganisation CROSS-EPIC : Phase 1 (EPIC-01 à 05) déplacée en archive |
+
+---
+
+## Archive - Phase 1 : Foundation
+
+> Epics complétés de la phase de refonte technique (2026-01-24 à 2026-01-26)
+
+### EPIC-01: Migration Clean Architecture ✅
+
+**Statut**: COMPLETE (2026-01-26)
+**Durée**: 2 jours
+
+#### Résumé
+Migration complète du code FlutterFlow legacy vers Clean Architecture, avec le module Map comme référence.
+
+#### Métriques Finales
+- 42/42 stories complétées
+- 3069 tests unitaires
+- 0 warnings flutter analyze
+- **15 modules features** (auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, profile, settings, support, video_call, weddings_hub_pro, wishlist)
+
+#### Modules Créés
+| Module | Description |
+|--------|-------------|
+| auth | Authentification complète |
+| chat | Messagerie temps réel |
+| content | Articles/Replays/Vidéos |
+| dashboard | Dashboard pro |
+| feed | Feed de professionnels |
+| home | Page d'accueil mariées |
+| map | Carte (référence) |
+| my_wedding | Gestion du mariage |
+| notifications | Système de notifications |
+| profile | Profil utilisateur |
+| settings | Paramètres |
+| support | Support/FAQ |
+| video_call | Appels vidéo Agora |
+| wishlist | Liste de favoris pro |
+| weddings_hub_pro | Hub mariages côté pro |
+
+#### Impact sur autres Epics
+- EPIC-02 (Tests): ✅ Complété - 3069 tests
+- EPIC-05 (Security): ✅ Complété - Secrets migrés, input validation
+
+---
+
+### EPIC-02: Tests additionnels ✅
+
+**Statut**: COMPLETE
+**Dépendances**: EPIC-01 ✅
+
+#### Résumé
+Tests additionnels couvrant tous les modules Clean Architecture.
+
+#### Métriques
+- 7/7 stories complétées
+- 3069 tests totaux
+
+---
+
+### EPIC-03: Dependencies update ⏸️
+
+**Statut**: PARTIAL (64%)
+**Dépendances**: EPIC-01 ✅
+
+#### Progression
+- 9/14 stories complétées
+- 25+ packages mis à jour
+- Firebase 4.x, Supabase 2.12
+- En pause: certaines dépendances nécessitent migration majeure
+
+---
+
+### EPIC-04: Documentation ✅
+
+**Statut**: COMPLETE (2026-01-26)
+**Dépendances**: EPIC-01 ✅, EPIC-05 ✅
+
+#### Stories (5)
+1. S01: README complet
+2. S02: Architecture (15 modules, 16 Edge Functions)
+3. S03: Contributing
+4. S04: API Documentation (11 repos, 5 services)
+5. S05: ADRs (6 ADRs incluant ADR-006 secrets)
+
+#### Notes Post-Challenge
+- Statistiques corrigées (données réelles du codebase)
+- ADR-006 ajouté (flutter_dotenv vs --dart-define)
+- iOS 15.0 minimum documenté
+
+---
+
+### EPIC-05: Security cleanup ✅
+
+**Statut**: COMPLETE
+**Dépendances**: EPIC-01 ✅
+
+#### Résumé
+- Secrets migrés (flutter_dotenv - voir ADR-006)
+- Input validation
+- Auth flows sécurisés
+- OWASP compliance
+- Cleanup fichiers orphelins
