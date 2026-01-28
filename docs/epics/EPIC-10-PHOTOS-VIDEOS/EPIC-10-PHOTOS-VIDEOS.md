@@ -487,7 +487,17 @@ CREATE TABLE IF NOT EXISTS guest_media (
 
   -- Constraints
   CONSTRAINT chk_guest_media_type CHECK (media_type IN ('photo', 'video')),
-  CONSTRAINT chk_guest_media_caption_length CHECK (caption IS NULL OR length(caption) <= 500)
+  CONSTRAINT chk_guest_media_caption_length CHECK (caption IS NULL OR length(caption) <= 500),
+  -- Server-side video duration validation (max 10 minutes = 600 seconds)
+  CONSTRAINT chk_guest_media_video_duration CHECK (
+    media_type != 'video' OR duration_seconds IS NULL OR duration_seconds <= 600
+  ),
+  -- Server-side file size validation (max 500MB for video, 20MB for photo)
+  CONSTRAINT chk_guest_media_file_size CHECK (
+    file_size_bytes IS NULL OR
+    (media_type = 'video' AND file_size_bytes <= 524288000) OR  -- 500MB
+    (media_type = 'photo' AND file_size_bytes <= 20971520)       -- 20MB
+  )
 );
 
 -- Index for queries by album
@@ -1127,6 +1137,121 @@ Toutes les tables de cet Epic ont des RLS policies strictes:
 | Zip generation lente pour beaucoup de fichiers | MOYEN - UX degradee | Generation serveur, progress indicator |
 | Thumbnail generation video lente | FAIBLE - UX mineure | Async generation, placeholder |
 | Bucket wedding-media pas encore cree | BLOQUANT | Depend de EPIC-06, verifier avant |
+| Orphan files in Storage après suppression | MOYEN - Coût storage | Trigger cleanup (voir ci-dessous) |
+
+---
+
+## Storage Cleanup Strategy
+
+> ⚠️ **IMPORTANT**: Quand un `guest_album` est supprimé (CASCADE), les fichiers dans Storage ne sont PAS automatiquement supprimés. Il faut un mécanisme de cleanup.
+
+### Solution: Trigger + Edge Function
+
+**Trigger SQL pour queue de cleanup** :
+```sql
+-- Migration: 20260128100010_storage_cleanup_trigger
+-- Description: Queue orphan files for cleanup when records are deleted
+
+-- Table de queue pour fichiers à supprimer
+CREATE TABLE IF NOT EXISTS storage_cleanup_queue (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  bucket_id TEXT NOT NULL,
+  file_path TEXT NOT NULL,
+  queued_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  processed BOOLEAN DEFAULT FALSE NOT NULL
+);
+
+CREATE INDEX idx_storage_cleanup_pending
+  ON storage_cleanup_queue(processed, queued_at)
+  WHERE processed = FALSE;
+
+-- Fonction trigger pour guest_media
+CREATE OR REPLACE FUNCTION queue_storage_cleanup()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Queue les fichiers pour suppression
+  INSERT INTO storage_cleanup_queue (bucket_id, file_path)
+  VALUES
+    ('wedding-media', OLD.storage_path),
+    ('wedding-media', OLD.thumbnail_path)
+  ON CONFLICT DO NOTHING;
+
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger sur suppression guest_media
+CREATE TRIGGER trg_guest_media_cleanup
+  AFTER DELETE ON guest_media
+  FOR EACH ROW
+  EXECUTE FUNCTION queue_storage_cleanup();
+
+-- Trigger sur suppression album_images (bride media)
+CREATE TRIGGER trg_album_images_cleanup
+  AFTER DELETE ON album_images
+  FOR EACH ROW
+  EXECUTE FUNCTION queue_storage_cleanup();
+```
+
+**Edge Function: process-storage-cleanup** (appelée par pg_cron toutes les heures) :
+```typescript
+// supabase/functions/process-storage-cleanup/index.ts
+import { createClient } from '@supabase/supabase-js';
+
+Deno.serve(async () => {
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  );
+
+  // Get pending cleanup tasks (batch of 100)
+  const { data: tasks } = await supabase
+    .from('storage_cleanup_queue')
+    .select('*')
+    .eq('processed', false)
+    .limit(100);
+
+  if (!tasks?.length) {
+    return new Response(JSON.stringify({ processed: 0 }));
+  }
+
+  let processed = 0;
+  for (const task of tasks) {
+    try {
+      // Delete from storage
+      const { error } = await supabase.storage
+        .from(task.bucket_id)
+        .remove([task.file_path]);
+
+      if (!error) {
+        // Mark as processed
+        await supabase
+          .from('storage_cleanup_queue')
+          .update({ processed: true })
+          .eq('id', task.id);
+        processed++;
+      }
+    } catch (e) {
+      console.error(`Cleanup failed for ${task.file_path}:`, e);
+    }
+  }
+
+  return new Response(JSON.stringify({ processed }));
+});
+```
+
+**pg_cron job** :
+```sql
+SELECT cron.schedule(
+  'process-storage-cleanup',
+  '0 * * * *',  -- Every hour
+  $$SELECT net.http_post(
+    'https://hekyovgnovhfhmkpfrna.supabase.co/functions/v1/process-storage-cleanup',
+    '{}',
+    '{"Authorization": "Bearer ' || current_setting('supabase.service_role_key') || '"}'
+  )$$
+);
+```
 
 ---
 

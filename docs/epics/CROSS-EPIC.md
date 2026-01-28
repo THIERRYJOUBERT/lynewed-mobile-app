@@ -211,14 +211,15 @@ Integration Stripe complete :
 
 ### EPIC-12: Reels Generation (APP-06) 🔵
 
-**Statut**: DRAFT | **Dépendances**: EPIC-06, EPIC-10
-**Stories**: 10 | **Estimation**: 1.5 jours
+**Statut**: DRAFT | **Dépendances**: EPIC-06 → EPIC-10 → EPIC-11 (ordre strict)
+**Stories**: 13 (S00-S12 + S01b) | **Estimation**: 1.5 jours
 
 Generation de reels :
 - Guest: ses propres videos uniquement
 - Bride: toutes videos + guests partages
-- FFmpeg MVP (concatenation + fade)
+- **Shotstack API** (cloud video processing - remplace FFmpeg)
 - Cleanup automatique 7 jours
+- CGVU acceptance avec version tracking
 
 ---
 
@@ -279,12 +280,14 @@ EPIC-11 (Stripe) ─────────┼───────────
                                               26 stories, 7 jours
 
 ORDRE D'EXECUTION RECOMMANDE :
-1. EPIC-06 (BLOQUANT)
-2. EPIC-11 (Stripe - independant, requis par EPIC-14)
-3. EPIC-07, EPIC-08, EPIC-09 (parallelisables)
-4. EPIC-10, EPIC-12 (dependent de EPIC-09/10)
-5. EPIC-13 (depend de EPIC-07 pour minRating)
-6. EPIC-14 (le plus gros, depend de EPIC-06, EPIC-11, EPIC-13)
+1. EPIC-06 (BLOQUANT - tous les autres en dépendent)
+2. EPIC-07, EPIC-08 (parallelisables, sans dépendances)
+3. EPIC-09 (dépend de EPIC-06)
+4. EPIC-11 (Stripe - peut démarrer en parallèle)
+5. EPIC-10 (dépend de EPIC-06, EPIC-09)
+6. EPIC-12 (dépend de EPIC-06 → EPIC-10 → EPIC-11, utilise Shotstack API)
+7. EPIC-13 (dépend de EPIC-07 pour minRating - feature flags si pas prêt)
+8. EPIC-14 (le plus gros - dépend de EPIC-06, EPIC-11, EPIC-13)
 ```
 
 ---
@@ -302,3 +305,5 @@ ORDRE D'EXECUTION RECOMMANDE :
 | 2026-01-26 | EPIC-04 complété - Documentation production-ready |
 | 2026-01-28 | EPIC-06 créé - Prerequisites Migration (APP-00) - Mission 2026 |
 | 2026-01-28 | EPIC-07 à EPIC-14 créés - Mission 2026 complète (9 Epics, 102 stories) |
+| 2026-01-28 | Challenge Deep /challenge --deep (EPIC-06 à EPIC-14) - Score 82→92/100 |
+| 2026-01-28 | Corrections appliquées : FFmpeg→Shotstack, TIMESTAMPTZ, RLS, Storage cleanup, FedEx docs |

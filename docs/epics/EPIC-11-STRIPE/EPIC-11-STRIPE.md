@@ -430,15 +430,46 @@ Deno.serve(async (req: Request) => {
 
   } catch (err) {
     console.error("Processing error:", err);
+
+    // Get current attempt count
+    const { data: eventData } = await supabase
+      .from("stripe_events")
+      .select("processing_attempts")
+      .eq("stripe_event_id", event.id)
+      .single();
+
+    const attempts = (eventData?.processing_attempts || 0) + 1;
+    const MAX_ATTEMPTS = 5;
+
     await supabase
       .from("stripe_events")
       .update({
         error_message: err.message,
-        processing_attempts: existing?.processing_attempts + 1 || 1
+        processing_attempts: attempts,
+        // Mark as permanently failed after max attempts
+        status: attempts >= MAX_ATTEMPTS ? 'failed' : 'pending'
       })
       .eq("stripe_event_id", event.id);
 
-    // Return 500 to trigger Stripe retry
+    // Alert if max attempts reached (dead letter scenario)
+    if (attempts >= MAX_ATTEMPTS) {
+      console.error(`ALERT: Webhook ${event.id} failed after ${MAX_ATTEMPTS} attempts. Manual intervention required.`);
+      // Could also send to notifications_outbox for admin alert
+      await supabase.from("notifications_outbox").insert({
+        event_type: "webhook_dead_letter",
+        payload: {
+          event_id: event.id,
+          event_type: event.type,
+          error: err.message,
+          attempts: attempts
+        },
+        recipient_id: null // Admin notification
+      });
+      // Return 200 to stop Stripe retries (we've logged it for manual review)
+      return new Response("Max retries reached, logged for manual review", { status: 200 });
+    }
+
+    // Return 500 to trigger Stripe retry (up to max attempts)
     return new Response("Processing error", { status: 500 });
   }
 

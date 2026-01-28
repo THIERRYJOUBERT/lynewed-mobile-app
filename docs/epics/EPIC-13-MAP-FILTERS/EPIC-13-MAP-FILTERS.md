@@ -1055,12 +1055,51 @@ void main() {
 
 ---
 
+## Feature Flags Implementation
+
+Les filtres dépendants d'autres Epics sont contrôlés par feature flags :
+
+```dart
+// lib/core/config/feature_flags.dart
+
+/// Feature flags for gradual rollout
+class FeatureFlags {
+  /// minRating filter - requires EPIC-07 (Reviews) to be deployed
+  /// Set to true when reviews table exists and has data
+  static const bool enableMinRatingFilter = false; // TODO: Set to true after EPIC-07
+
+  /// Marketplace markers on map - requires EPIC-14 (Marketplace)
+  /// Set to true when marketplace_listings table exists
+  static const bool enableMarketplaceMarkers = false; // TODO: Set to true after EPIC-14
+
+  /// Check if minRating should be shown in UI
+  static bool get showRatingFilter => enableMinRatingFilter;
+
+  /// Check if marketplace toggle should be shown
+  static bool get showMarketplaceToggle => enableMarketplaceMarkers;
+}
+
+// Usage in FilterSheetWidget:
+if (FeatureFlags.showRatingFilter) {
+  // Show rating slider
+} else {
+  // Show "Coming soon" or hide entirely
+}
+```
+
+**Processus d'activation** :
+1. Déployer EPIC-07 → Mettre `enableMinRatingFilter = true`
+2. Déployer EPIC-14 → Mettre `enableMarketplaceMarkers = true`
+3. Faire un build et release
+
+---
+
 ## Risques et Mitigations
 
 | Risque | Impact | Mitigation |
 |--------|--------|------------|
-| EPIC-07 pas deploye | MOYEN - minRating inutilisable | Feature flag, section UI disabled |
-| EPIC-14 pas deploye | MOYEN - marketplace markers vides | Toggle off par defaut, pas de crash |
+| EPIC-07 pas deploye | MOYEN - minRating inutilisable | Feature flag `enableMinRatingFilter`, section UI disabled |
+| EPIC-14 pas deploye | MOYEN - marketplace markers vides | Feature flag `enableMarketplaceMarkers`, toggle off par defaut |
 | Performance RPC degradee | MOYEN - map lente | Index sur nouvelles colonnes, EXPLAIN ANALYZE |
 | UI filter sheet trop longue | FAIBLE - UX degradee | Sections collapsibles si necessaire |
 | Backward compatibility | MOYEN - crash ancienne version | Default values null/false preservent comportement |

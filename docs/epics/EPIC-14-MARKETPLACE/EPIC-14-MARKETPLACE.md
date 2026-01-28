@@ -812,9 +812,10 @@ CREATE TABLE IF NOT EXISTS marketplace_transactions (
 
   -- Constraints
   CONSTRAINT chk_buyer_not_seller CHECK (buyer_id != seller_id),
-  CONSTRAINT chk_commission_correct CHECK (
-    platform_fee_cents = ROUND(item_price_cents * 0.10) AND
-    seller_payout_cents = item_price_cents - platform_fee_cents AND
+  -- Note: Commission validation done in application layer, not DB constraint
+  -- Reason: ROUND() behavior varies with edge cases (e.g., 333 * 0.10 = 33.3)
+  -- The Edge Function calculates and validates commission before insert
+  CONSTRAINT chk_total_paid_cents CHECK (
     total_paid_cents = item_price_cents + shipping_cost_cents
   )
 );
@@ -1563,6 +1564,56 @@ case 'account.updated':
 
 **Complexite** : M (Medium) - Integration API externe
 
+#### Configuration FedEx (IMPORTANT - À faire AVANT S11)
+
+**Étape 1: Créer un compte FedEx Developer**
+1. Aller sur https://developer.fedex.com/
+2. Créer un compte ou se connecter
+3. Créer une "Organization" pour Lynewed
+
+**Étape 2: Créer une Application API**
+1. Dashboard → Create API Project
+2. Sélectionner les APIs requises:
+   - **Address Validation API** (gratuit)
+   - **Rate API** (gratuit)
+   - **Ship API** (coût par étiquette ~$0.10)
+   - **Track API** (gratuit)
+3. Choisir "Server" comme type d'application
+4. Obtenir les credentials:
+   - `Client ID`
+   - `Client Secret`
+   - `Account Number` (depuis votre compte FedEx business)
+
+**Étape 3: Variables d'environnement Supabase**
+```bash
+# Dans Supabase Dashboard > Edge Functions > Secrets
+FEDEX_CLIENT_ID=your_client_id_here
+FEDEX_CLIENT_SECRET=your_client_secret_here
+FEDEX_ACCOUNT_NUMBER=your_account_number_here
+FEDEX_ENV=sandbox  # 'sandbox' pour tests, 'production' pour prod
+```
+
+**Étape 4: Tester en mode Sandbox**
+```bash
+# URL Sandbox: https://apis-sandbox.fedex.com
+# URL Production: https://apis.fedex.com
+
+# Test rapide avec curl
+curl -X POST "https://apis-sandbox.fedex.com/oauth/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials&client_id=YOUR_ID&client_secret=YOUR_SECRET"
+```
+
+**Coûts estimés FedEx API**:
+| API | Coût |
+|-----|------|
+| Address Validation | Gratuit |
+| Rate | Gratuit |
+| Ship (étiquette) | ~$0.10/étiquette |
+| Track | Gratuit |
+
+**Note**: Le compte FedEx business doit être activé pour l'expédition internationale si nécessaire.
+
 **Criteres d'acceptance (Gherkin)** :
 
 ```gherkin
@@ -1886,8 +1937,8 @@ Feature: Listing detail page
 **Criteres cles** :
 - Filter sheet avec tous criteres
 - Categorie (dress/shoes)
-- Taille (avec guide tailles)
-- Marque (autocomplete)
+- Taille (avec guide tailles) - voir section Guide des Tailles ci-dessous
+- Marque (autocomplete) - voir section Autocomplete Marques ci-dessous
 - Etat (checkboxes)
 - Prix (range slider)
 - Localisation (pays, rayon km)
@@ -1895,6 +1946,105 @@ Feature: Listing detail page
 **Source** : MISSION-01-EVOLUTIONS-2026.md Section 11 (US-08.12)
 
 **Complexite** : M (Medium) - UI filter sheet
+
+#### Guide des Tailles (Robes)
+
+Référence pour le champ `size` dans les filtres et la création d'annonce :
+
+| Size | EU | US | UK | Bust (cm) | Waist (cm) |
+|------|----|----|----|-----------:|----------:|
+| XS | 32-34 | 0-2 | 4-6 | 76-84 | 58-64 |
+| S | 36-38 | 4-6 | 8-10 | 84-92 | 64-72 |
+| M | 40-42 | 8-10 | 12-14 | 92-100 | 72-80 |
+| L | 44-46 | 12-14 | 16-18 | 100-108 | 80-88 |
+| XL | 48-50 | 16-18 | 20-22 | 108-116 | 88-96 |
+
+**Implémentation** : Dropdown avec labels "XS (EU 32-34 / US 0-2)" etc.
+
+#### Guide des Tailles (Chaussures)
+
+| Size | EU | US | UK |
+|------|----|----|----|
+| 35 | 35 | 4 | 2.5 |
+| 36 | 36 | 5 | 3.5 |
+| 37 | 37 | 6 | 4.5 |
+| 38 | 38 | 7 | 5.5 |
+| 39 | 39 | 8 | 6.5 |
+| 40 | 40 | 9 | 7.5 |
+| 41 | 41 | 10 | 8.5 |
+| 42 | 42 | 11 | 9.5 |
+
+**Implémentation** : Dropdown avec labels "37 (US 6 / UK 4.5)" etc.
+
+#### Autocomplete Marques
+
+**Source de données** : Liste statique de marques populaires de robes de mariée
+
+```dart
+// lib/features/marketplace/data/brands_data.dart
+
+const List<String> popularWeddingDressBrands = [
+  // Haute Couture
+  'Vera Wang',
+  'Monique Lhuillier',
+  'Oscar de la Renta',
+  'Carolina Herrera',
+  'Marchesa',
+  'Elie Saab',
+  'Zuhair Murad',
+  'Pronovias',
+  'Rosa Clará',
+
+  // Mid-range
+  'Maggie Sottero',
+  'Sottero and Midgley',
+  'Rebecca Ingram',
+  'Allure Bridals',
+  'Mori Lee',
+  'Justin Alexander',
+  'Stella York',
+  'Essense of Australia',
+  'Morilee',
+
+  // Accessible
+  'David\'s Bridal',
+  'BHLDN',
+  'Lulus',
+  'Reformation',
+  'ASOS',
+
+  // French
+  'Delphine Manivet',
+  'Laure de Sagazan',
+  'Rime Arodaky',
+  'Cymbeline',
+  'Suzanne Neville',
+
+  // Other
+  'Other / Unknown',
+];
+
+const List<String> popularBridalShoeBrands = [
+  'Jimmy Choo',
+  'Manolo Blahnik',
+  'Badgley Mischka',
+  'Bella Belle',
+  'Rachel Simpson',
+  'Charlotte Mills',
+  'Emmy London',
+  'Freya Rose',
+  'Stuart Weitzman',
+  'Louboutin',
+  'Aquazzura',
+  'Other / Unknown',
+];
+```
+
+**Widget Autocomplete** :
+- Utiliser `Autocomplete<String>` de Flutter
+- Filtrer la liste pendant la frappe
+- Permettre entrée libre (marque non listée)
+- Option "Other / Unknown" si marque non trouvée
 
 **Criteres d'acceptance (Gherkin)** :
 

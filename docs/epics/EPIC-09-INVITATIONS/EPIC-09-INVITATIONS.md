@@ -345,7 +345,11 @@ Feature: Join Wedding page with code input and QR scanner
 - `lib/features/auth/presentation/widgets/qr_scanner_widget.dart`
 
 **Dependencies** :
-- Package `mobile_scanner` ou `qr_code_scanner` pour QR
+- Package **`mobile_scanner`** (recommandé) pour QR - https://pub.dev/packages/mobile_scanner
+  - Plus maintenu que qr_code_scanner
+  - Support MLKit (Google) et Vision (Apple)
+  - Compatible iOS 12+ et Android 5+
+  - Installation: `flutter pub add mobile_scanner`
 
 ---
 
@@ -1355,7 +1359,11 @@ FOR INSERT WITH CHECK (
 
 ### Server Configuration
 
-**File: `/.well-known/apple-app-site-association`** (hosted on lynewed.app):
+> ⚠️ **IMPORTANT**: Ces fichiers doivent être hébergés sur lynewed.app AVANT de tester les deep links.
+
+#### iOS: Apple App Site Association (AASA)
+
+**File: `/.well-known/apple-app-site-association`** (hosted on https://lynewed.app):
 ```json
 {
   "applinks": {
@@ -1370,7 +1378,35 @@ FOR INSERT WITH CHECK (
 }
 ```
 
-**File: `/.well-known/assetlinks.json`** (hosted on lynewed.app):
+**Configuration requise**:
+1. Fichier servi depuis `https://lynewed.app/.well-known/apple-app-site-association`
+2. Content-Type: `application/json` (PAS `application/pkcs7-mime`)
+3. HTTPS obligatoire (pas de redirect HTTP → HTTPS)
+4. Remplacer `TEAM_ID` par l'ID d'équipe Apple Developer (format: `A1B2C3D4E5`)
+5. Le fichier doit être accessible sans authentification
+
+**Pour obtenir TEAM_ID**:
+```bash
+# Dans Apple Developer Portal > Membership > Team ID
+# Ou via Xcode: Preferences > Accounts > Team
+```
+
+**Tester la configuration iOS**:
+```bash
+# Valider le fichier AASA
+curl -I https://lynewed.app/.well-known/apple-app-site-association
+
+# Doit retourner:
+# HTTP/2 200
+# content-type: application/json
+
+# Outil Apple de validation:
+# https://search.developer.apple.com/appsearch-validation-tool/
+```
+
+#### Android: Asset Links
+
+**File: `/.well-known/assetlinks.json`** (hosted on https://lynewed.app):
 ```json
 [{
   "relation": ["delegate_permission/common.handle_all_urls"],
@@ -1380,6 +1416,45 @@ FOR INSERT WITH CHECK (
     "sha256_cert_fingerprints": ["SHA256_FINGERPRINT"]
   }
 }]
+```
+
+**Pour obtenir SHA256_FINGERPRINT**:
+```bash
+# Pour le keystore de release:
+keytool -list -v -keystore ~/upload-keystore.jks -alias upload
+
+# Copier la ligne SHA256 (format: AA:BB:CC:DD:...)
+```
+
+**Tester la configuration Android**:
+```bash
+# Valider le fichier assetlinks
+curl https://lynewed.app/.well-known/assetlinks.json
+
+# Outil Google de validation:
+# https://developers.google.com/digital-asset-links/tools/generator
+```
+
+#### Déploiement serveur (Supabase/Vercel)
+
+Si lynewed.app est sur Supabase ou Vercel, ajouter ces fichiers:
+
+**Option Vercel** (`vercel.json`):
+```json
+{
+  "rewrites": [
+    { "source": "/.well-known/apple-app-site-association", "destination": "/api/aasa" },
+    { "source": "/.well-known/assetlinks.json", "destination": "/api/assetlinks" }
+  ]
+}
+```
+
+**Option Supabase Edge Function**:
+```typescript
+// supabase/functions/aasa/index.ts
+Deno.serve(() => new Response(JSON.stringify({
+  applinks: { apps: [], details: [{ appID: "TEAM_ID.com.lynewed.app", paths: ["/join/*"] }] }
+}), { headers: { "content-type": "application/json" } }));
 ```
 
 ---

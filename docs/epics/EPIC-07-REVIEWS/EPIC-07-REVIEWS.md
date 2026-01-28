@@ -366,11 +366,18 @@ Feature: Reviews RLS policies
 -- Ensure RLS is enabled (should already be from S01)
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 
--- Policy 1: Everyone can read all reviews
-CREATE POLICY "Reviews readable by all"
+-- Policy 1: Brides and professionals can read all reviews
+-- Note: Guests are excluded to prevent data exposure via guest accounts
+CREATE POLICY "Reviews readable by brides and professionals"
 ON reviews FOR SELECT
 TO authenticated
-USING (true);
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE id = auth.uid()
+    AND role IN ('bride', 'professional')
+  )
+);
 
 -- Policy 2: Bride can create review (only for herself)
 CREATE POLICY "Bride can create review"
@@ -396,7 +403,7 @@ WITH CHECK (bride_id = auth.uid());
 -- This is intentional for data integrity and trust
 
 -- Comments for documentation
-COMMENT ON POLICY "Reviews readable by all" ON reviews IS 'All authenticated users can read reviews';
+COMMENT ON POLICY "Reviews readable by brides and professionals" ON reviews IS 'Brides and professionals can read reviews (guests excluded)';
 COMMENT ON POLICY "Bride can create review" ON reviews IS 'Only brides can create reviews, and only for themselves';
 COMMENT ON POLICY "Bride can update own review" ON reviews IS 'Brides can only update their own reviews';
 ```
@@ -407,7 +414,7 @@ COMMENT ON POLICY "Bride can update own review" ON reviews IS 'Brides can only u
 
 DROP POLICY IF EXISTS "Bride can update own review" ON reviews;
 DROP POLICY IF EXISTS "Bride can create review" ON reviews;
-DROP POLICY IF EXISTS "Reviews readable by all" ON reviews;
+DROP POLICY IF EXISTS "Reviews readable by brides and professionals" ON reviews;
 ```
 
 ---

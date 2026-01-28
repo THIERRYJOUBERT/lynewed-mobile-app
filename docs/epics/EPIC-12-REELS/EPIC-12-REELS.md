@@ -18,8 +18,36 @@ Cet Epic implemente la fonctionnalite Reels (APP-06) permettant aux utilisateurs
 **Strategie MVP** :
 - **Gratuit** dans un premier temps pour tester le marche
 - **Architecture prete pour paiement futur** (champs `is_paid`, `price_cents`)
-- **FFmpeg server-side** pour le MVP (transitions fade simples)
-- **Evolutif** vers Shotstack API ou IA (OpusClip-like) pour V2/V3
+- **Shotstack API** pour le MVP (service cloud video processing) - voir section Infrastructure Video
+- **Evolutif** vers IA (OpusClip-like) pour V2/V3
+
+### Infrastructure Video Processing
+
+> ⚠️ **IMPORTANT**: Supabase Edge Functions (Deno) n'ont PAS FFmpeg nativement.
+
+**Solution retenue : Shotstack API (Recommandé)**
+
+| Critère | Shotstack | FFmpeg WASM | AWS Lambda + FFmpeg |
+|---------|-----------|-------------|---------------------|
+| Complexité | ✅ Faible | ⚠️ Moyenne | ❌ Haute |
+| Performance | ✅ Excellente | ⚠️ Limitée | ✅ Bonne |
+| Coût | ~$0.05/min video | Gratuit | ~$0.02/min |
+| Maintenance | ✅ Aucune | ⚠️ Updates WASM | ⚠️ Infra AWS |
+| Temps setup | 1 jour | 3 jours | 5 jours |
+
+**Configuration Shotstack requise** :
+```bash
+# Variables d'environnement Edge Function
+SHOTSTACK_API_KEY=xxx      # Depuis dashboard.shotstack.io
+SHOTSTACK_ENV=v1           # 'stage' pour tests, 'v1' pour prod
+```
+
+**Coût estimé** : 102 stories × ~2min moyenne = ~200 min = **~$10/mois** au démarrage
+
+**Alternative de fallback** : Si Shotstack indisponible, utiliser ffmpeg.wasm avec limitations:
+- Videos < 2 min uniquement
+- Pas de crossfade (cut simple)
+- Processing time x3
 
 ### Piliers Techniques Concernes
 
@@ -34,15 +62,18 @@ Cet Epic implemente la fonctionnalite Reels (APP-06) permettant aux utilisateurs
 
 ### Dependances
 
-| Dependance | Epic | Statut | Impact |
-|------------|------|--------|--------|
-| Bucket `wedding-media` | EPIC-06 | 🔵 Todo | Stockage des fichiers reel |
-| Table `guest_albums` | EPIC-10 | 🔵 Todo | Validation ownership videos guest |
-| Table `guest_media` | EPIC-10 | 🔵 Todo | Source videos guest |
-| Video upload support | EPIC-10 | 🔵 Todo | Les videos doivent exister pour creer reels |
-| Table `purchases` | EPIC-08 | 🔵 Todo | Pour paiement futur |
+| Dependance | Epic | Statut | Blocage | Impact |
+|------------|------|--------|---------|--------|
+| Bucket `wedding-media` | EPIC-06 | 🔵 Todo | ⛔ BLOQUANT | Stockage des fichiers reel |
+| Table `guest_albums` | EPIC-10 | 🔵 Todo | ⛔ BLOQUANT | Validation ownership videos guest |
+| Table `guest_media` | EPIC-10 | 🔵 Todo | ⛔ BLOQUANT | Source videos guest |
+| Video upload support | EPIC-10 | 🔵 Todo | ⛔ BLOQUANT | Les videos doivent exister pour creer reels |
+| Table `purchases` | EPIC-11 | 🔵 Todo | ⚠️ SOFT | FK purchase_id (nullable, ajoutée en migration séparée) |
+| Table `cgvu_acceptances` | EPIC-12 S05 | 🔵 Todo | ✅ Interne | Créée dans cet Epic (table partagée) |
 
-**Note** : Cet Epic peut etre prepare en parallele mais ne pourra etre teste qu'apres EPIC-10 (Photos/Videos).
+**Ordre d'exécution obligatoire** : EPIC-06 → EPIC-10 → EPIC-11 → EPIC-12
+
+**Note** : La FK `purchase_id` vers `purchases` est ajoutée dans une migration séparée (S01b) après EPIC-11 pour éviter les erreurs de dépendance.
 
 ---
 
@@ -224,12 +255,14 @@ Future<List<String>> getProInstagramHandles(String weddingId) async {
 
 | # | Story | Domaine | Dep. | Criteres cles | Source PRD | Complexite |
 |---|-------|---------|------|---------------|------------|------------|
-| S01 | Creer table reels avec tous les champs | DB | - | Schema complet, indexes, RLS policies | APP-06 | S |
+| S00 | Valider infrastructure Shotstack | Backend | - | API key, test render, coût validé | Infra | S |
+| S01 | Creer table reels avec tous les champs | DB | S00 | Schema complet, indexes, RLS policies | APP-06 | S |
+| S01b | Ajouter FK purchase_id vers purchases | DB | EPIC-11 | Migration séparée après EPIC-11 | APP-06 | XS |
 | S02 | Ajouter RLS policies pour reels | DB | S01 | D.4 policies (user own, bride wedding) | Section D.4 | S |
 | S03 | Implementer UI selection videos | Flutter | - | Max 10, max 2min chacune, validation | US-06.1 | M |
 | S04 | Valider ownership videos | Flutter/Backend | S03 | Guest=own only, Bride=all shared | D-14 | M |
-| S05 | Modal CGVU acceptation reels | Flutter | - | 4 checkboxes, 1ere fois only | Section 11 | S |
-| S06 | Creer Edge Function generate-reel | Backend | S01 | FFmpeg MVP, fade transitions | US-06.2 | L |
+| S05 | Modal CGVU acceptation reels + table cgvu_acceptances | Flutter + DB | - | 4 checkboxes, 1ere fois only, table partagée | Section 11 | M |
+| S06 | Creer Edge Function generate-reel (Shotstack) | Backend | S01, S00 | Shotstack API, fade transitions | US-06.2 | L |
 | S07 | Generer preview (480p + watermark) | Backend | S06 | Watermark "LYNEWED" central | US-06.2 | M |
 | S08 | Generer output final (1080p + logo) | Backend | S06 | Logo discret coin inferieur | US-06.3 | M |
 | S09 | Envoyer notification reel pret | Backend | S06 | Push FCM | US-06.6 | S |
@@ -284,7 +317,7 @@ Feature: Reels table creation
     Given the reels table exists
     Then user_id should reference profiles(id)
     And wedding_id should reference weddings(id)
-    And purchase_id should reference purchases(id)
+    And purchase_id should be nullable (FK added in separate migration S01b after EPIC-11)
 
   Scenario: Status constraint is enforced
     Given the reels table exists
@@ -332,7 +365,7 @@ CREATE TABLE IF NOT EXISTS reels (
   -- Paiement (futur - MVP gratuit)
   is_paid BOOLEAN NOT NULL DEFAULT FALSE,
   price_cents INTEGER NOT NULL DEFAULT 0,
-  purchase_id UUID REFERENCES purchases(id),
+  purchase_id UUID, -- FK added in migration S01b after EPIC-11 completes
 
   -- Metadonnees
   error_message TEXT,
@@ -708,6 +741,88 @@ Feature: CGVU acceptance modal for reels
 - `lib/features/reels/presentation/widgets/reel_cgvu_modal.dart`
 - `lib/features/reels/domain/usecases/check_cgvu_acceptance.dart`
 - `lib/features/reels/data/repositories/cgvu_repository_impl.dart`
+
+**Migration SQL: Table cgvu_acceptances (si pas déjà créée)** :
+```sql
+-- Migration: 20260128001205_create_cgvu_acceptances
+-- Description: Create shared CGVU acceptances table (used by reels, marketplace, etc.)
+-- Note: Check if already exists from EPIC-14, skip if so
+
+CREATE TABLE IF NOT EXISTS cgvu_acceptances (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) NOT NULL,
+  cgvu_type VARCHAR(50) NOT NULL,
+  cgvu_version VARCHAR(20) NOT NULL,
+  ip_address VARCHAR(50),
+  user_agent TEXT,
+  device_info JSONB,
+  accepted_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+
+  -- Unique constraint: one acceptance per type per version per user
+  UNIQUE(user_id, cgvu_type, cgvu_version)
+);
+
+-- Index for checking acceptance
+CREATE INDEX IF NOT EXISTS idx_cgvu_acceptances_user_type
+  ON cgvu_acceptances(user_id, cgvu_type);
+
+-- Enable RLS
+ALTER TABLE cgvu_acceptances ENABLE ROW LEVEL SECURITY;
+
+-- Policy: User can view own acceptances
+CREATE POLICY "User views own acceptances"
+ON cgvu_acceptances FOR SELECT
+TO authenticated
+USING (user_id = auth.uid());
+
+-- Policy: User can insert own acceptances
+CREATE POLICY "User creates own acceptances"
+ON cgvu_acceptances FOR INSERT
+TO authenticated
+WITH CHECK (user_id = auth.uid());
+
+COMMENT ON TABLE cgvu_acceptances IS 'CGVU acceptance audit log - shared across features (reels, marketplace)';
+```
+
+**Logique de vérification de version (check_cgvu_acceptance.dart)** :
+```dart
+// lib/features/reels/domain/usecases/check_cgvu_acceptance.dart
+
+/// Version courante des CGVU reels
+/// IMPORTANT: Incrémenter cette version quand les CGVU changent
+const String CURRENT_REEL_CGVU_VERSION = '1.0';
+
+class CheckCgvuAcceptanceUseCase {
+  final CgvuRepository _repository;
+
+  CheckCgvuAcceptanceUseCase(this._repository);
+
+  /// Returns true if user needs to accept CGVU (not accepted OR version mismatch)
+  Future<bool> needsAcceptance(String userId) async {
+    final acceptance = await _repository.getLatestAcceptance(
+      userId: userId,
+      cgvuType: 'reel',
+    );
+
+    // No acceptance found = needs to accept
+    if (acceptance == null) return true;
+
+    // Version mismatch = needs to re-accept
+    if (acceptance.cgvuVersion != CURRENT_REEL_CGVU_VERSION) {
+      return true;
+    }
+
+    return false;
+  }
+}
+
+// Query pour vérifier l'acceptance
+// SELECT * FROM cgvu_acceptances
+// WHERE user_id = :userId
+//   AND cgvu_type = 'reel'
+//   AND cgvu_version = :CURRENT_REEL_CGVU_VERSION
+// LIMIT 1
+```
 
 ---
 

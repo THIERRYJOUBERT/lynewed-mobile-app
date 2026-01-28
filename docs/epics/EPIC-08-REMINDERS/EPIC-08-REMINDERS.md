@@ -97,7 +97,7 @@ Permettre aux brides de configurer des rappels multi-selectionnes (1 semaine, 1 
 |---|-------|---------|------|---------------|------------|------------|
 | S01 | Ajouter colonnes reminder a wedding_events | DB | - | 3 colonnes boolean, migration safe | APP-02 | S |
 | S02 | Creer table scheduled_notifications | DB | - | CASCADE delete, index performance, RLS | APP-02 | S |
-| S03 | Creer pg_cron job pour traitement notifications | DB | S02 | Job toutes les minutes, atomique, idempotent | APP-02 | M |
+| S03 | Creer pg_cron job pour traitement notifications | DB | S02 | Job toutes les 5 minutes, atomique, idempotent | APP-02 | M |
 | S04 | Mettre a jour entite WeddingEvent en Dart | Dart | S01 | 3 nouveaux champs, serialization, tests | APP-02 | S |
 | S05 | Ajouter checkboxes rappel dans formulaire event | UI | S04 | Multi-selection, coherence UI, validation | APP-02 | M |
 | S06 | Implementer scheduling des rappels dans repository | Dart | S02,S04 | CRUD scheduled_notifications, calcul dates | APP-02 | M |
@@ -235,11 +235,12 @@ Feature: Scheduled notifications table
     And it should have column id of type UUID with default gen_random_uuid()
     And it should have column event_id of type UUID referencing wedding_events(id)
     And it should have column user_id of type UUID referencing profiles(id)
-    And it should have column scheduled_at of type TIMESTAMP NOT NULL
+    And it should have column scheduled_at of type TIMESTAMPTZ NOT NULL (with timezone)
     And it should have column notification_type of type VARCHAR(20) NOT NULL
     And it should have column sent of type BOOLEAN default FALSE
-    And it should have column sent_at of type TIMESTAMP nullable
-    And it should have column created_at of type TIMESTAMP default NOW()
+    And it should have column sent_at of type TIMESTAMPTZ nullable
+    And it should have column created_at of type TIMESTAMPTZ default NOW()
+    # Note: TIMESTAMPTZ ensures correct handling across timezones (stored as UTC)
 
   Scenario: CASCADE delete when event is deleted
     Given a scheduled notification for event 'event-123'
@@ -278,11 +279,12 @@ CREATE TABLE IF NOT EXISTS scheduled_notifications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id UUID NOT NULL REFERENCES wedding_events(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  scheduled_at TIMESTAMP NOT NULL,
+  -- IMPORTANT: Utiliser TIMESTAMPTZ pour gestion correcte des fuseaux horaires
+  scheduled_at TIMESTAMPTZ NOT NULL,
   notification_type VARCHAR(20) NOT NULL,
   sent BOOLEAN DEFAULT FALSE NOT NULL,
-  sent_at TIMESTAMP,
-  created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+  sent_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
 
   -- Constraint for valid notification types
   CONSTRAINT chk_notification_type
@@ -360,7 +362,7 @@ DROP TABLE IF EXISTS scheduled_notifications;
 ```gherkin
 Feature: pg_cron job for notification processing
 
-  Scenario: Job is scheduled every minute
+  Scenario: Job is scheduled every 5 minutes
     Given pg_cron extension is enabled
     When the migration creates the cron job
     Then job 'send-scheduled-notifications' should exist
@@ -461,16 +463,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Schedule the cron job to run every minute
+-- Schedule the cron job to run every 5 minutes
+-- Note: 5 minutes provides good balance between precision and performance
+-- For 248 users with ~100 notifications/day, 1 minute was excessive
 SELECT cron.schedule(
   'send-scheduled-notifications',  -- job name
-  '* * * * *',                     -- every minute
+  '*/5 * * * *',                   -- every 5 minutes
   $$SELECT process_scheduled_notifications()$$
 );
 
 -- Comment for documentation
 COMMENT ON FUNCTION process_scheduled_notifications IS
-  'Processes pending scheduled notifications and inserts them into notifications_outbox. Called by pg_cron every minute.';
+  'Processes pending scheduled notifications and inserts them into notifications_outbox. Called by pg_cron every 5 minutes.';
 ```
 
 **Rollback** :
