@@ -188,6 +188,22 @@ auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, prof
 |------|-------------|--------|
 | EPIC-03 | Dependencies update | ⏸️ PARTIAL (64%) |
 
+### Mission 2026 (NEW - 2026-01-28)
+
+| Epic | PRD | Description | Stories | Est. |
+|------|-----|-------------|---------|------|
+| EPIC-06 | APP-00 | Prerequisites (BLOQUANT) | 6 | 0.5j |
+| EPIC-07 | APP-01 | Reviews (Avis clients) | 9 | 0.5j |
+| EPIC-08 | APP-02 | Reminders (Rappels RDV) | 8 | 0.5j |
+| EPIC-09 | APP-03 | Invitations (Guests) | 12 | 2j |
+| EPIC-10 | APP-04 | Photos/Videos | 10 | 1.5j |
+| EPIC-11 | APP-05 | Stripe Integration | 12 | 1j |
+| EPIC-12 | APP-06 | Reels Generation | 10 | 1.5j |
+| EPIC-13 | APP-07 | Map Filters | 9 | 1j |
+| EPIC-14 | APP-08 | Marketplace | 26 | 7j |
+
+**Total** : 102 stories, 15 jours, 4500€ - PRD: `docs/specs/MISSION-01-EVOLUTIONS-2026.md`
+
 ---
 
 ## Index Rapide

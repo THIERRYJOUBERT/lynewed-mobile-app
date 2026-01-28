@@ -1,0 +1,284 @@
+# EPIC-08-REMINDERS - Sources de Reference
+# Cree le: 2026-01-28
+
+epic:
+  id: EPIC-08-REMINDERS
+  name: "Notifications de rappel RDV (APP-02)"
+  description: "Enrichir l'agenda existant avec rappels programmes multi-selection"
+  status: draft
+  created_at: "2026-01-28"
+  estimated_days: 0.5
+
+# Source PRD principale
+prd:
+  document: "docs/specs/MISSION-01-EVOLUTIONS-2026.md"
+  version: "2.1 (Post-Challenge Deep)"
+  sections_used:
+    - section: "4. APP-02 - Notifications de rappel RDV"
+      subsections:
+        - "Contexte existant"
+        - "Description"
+        - "User Stories (US-02.1 a US-02.4)"
+        - "Specifications techniques"
+        - "Edge Function (pg_cron)"
+        - "Integration UI"
+        - "Criteres d'acceptation"
+
+# Etat production verifie
+production_state:
+  project_id: "hekyovgnovhfhmkpfrna"
+  verified_at: "2026-01-28"
+  findings:
+    wedding_events_table:
+      rows: 9
+      existing_columns:
+        - "id"
+        - "wedding_id"
+        - "title"
+        - "description"
+        - "event_date"
+        - "event_end_date"
+        - "location"
+        - "reminder_sent"  # placeholder boolean, not implemented
+      missing_columns:
+        - "reminder_1_week"
+        - "reminder_1_day"
+        - "reminder_1_hour"
+    notifications_outbox_table:
+      rows: 247
+      status: "FCM production-ready"
+      note: "Existing queue for push notifications"
+    scheduled_notifications_table:
+      exists: false
+      note: "TABLE ABSENTE - a creer"
+    pg_cron:
+      available: true
+      note: "Extension Supabase standard disponible"
+
+# User Stories from PRD
+user_stories:
+  - id: US-02.1
+    description: "En tant que bride, je peux choisir mes rappels lors de la creation/edition d'un event"
+    stories: [S01, S04, S05]
+
+  - id: US-02.2
+    description: "En tant que bride, je peux selectionner : 1 semaine, 1 jour, 1 heure (multi-selection)"
+    stories: [S05]
+
+  - id: US-02.3
+    description: "En tant que bride, je recois une notification push au moment choisi"
+    stories: [S03, S06, S07]
+
+  - id: US-02.4
+    description: "En tant que bride, je peux modifier/supprimer mes rappels"
+    stories: [S05, S06]
+
+# Stories mapping vers PRD
+stories:
+  - id: S01
+    name: "Ajouter colonnes reminder a wedding_events"
+    prd_reference: "Section 4 - Modifications base de donnees"
+    complexity: S
+    domain: DB
+    depends_on: []
+
+  - id: S02
+    name: "Creer table scheduled_notifications"
+    prd_reference: "Section 4 - Table des notifications programmees"
+    complexity: S
+    domain: DB
+    depends_on: []
+
+  - id: S03
+    name: "Creer pg_cron job pour traitement notifications"
+    prd_reference: "Section 4 - Edge Function (pg_cron)"
+    complexity: M
+    domain: DB
+    depends_on: [S02]
+
+  - id: S04
+    name: "Mettre a jour entite WeddingEvent en Dart"
+    prd_reference: "Section 4 - Contexte existant (entite Dart)"
+    complexity: S
+    domain: Dart
+    depends_on: [S01]
+
+  - id: S05
+    name: "Ajouter checkboxes rappel dans formulaire event"
+    prd_reference: "Section 4 - Integration UI"
+    complexity: M
+    domain: UI
+    depends_on: [S04]
+
+  - id: S06
+    name: "Implementer scheduling des rappels dans repository"
+    prd_reference: "Section 4 - Specifications techniques"
+    complexity: M
+    domain: Dart
+    depends_on: [S02, S04]
+
+  - id: S07
+    name: "Integrer avec notifications_outbox existante"
+    prd_reference: "Section 4 - Edge Function (pg_cron)"
+    complexity: S
+    domain: Integration
+    depends_on: [S03, S06]
+
+# Decisions techniques de cet Epic
+decisions:
+  - id: D-EPIC08-01
+    decision: "3 rappels fixes (1 semaine, 1 jour, 1 heure)"
+    source: "PRD Section 4"
+    rationale: "Simplicite UX, couvre 95% des cas d'usage"
+
+  - id: D-EPIC08-02
+    decision: "Multi-selection via boolean columns"
+    source: "PRD Section 4"
+    rationale: "Simple, pas de table de jointure necessaire"
+
+  - id: D-EPIC08-03
+    decision: "pg_cron toutes les minutes"
+    source: "PRD Section 4"
+    rationale: "Precision acceptable, performance OK pour ~100 notifs/jour"
+
+  - id: D-EPIC08-04
+    decision: "CASCADE delete sur event_id"
+    source: "PRD Section 4 - Criteres d'acceptation"
+    rationale: "Pas de notifications orphelines"
+
+  - id: D-EPIC08-05
+    decision: "Skip rappels deja passes"
+    source: "Best practice"
+    rationale: "Si event dans 6h, seul rappel 1h est cree"
+
+  - id: D-EPIC08-06
+    decision: "Format message 'Rappel : [titre] dans [duree]'"
+    source: "PRD Section 4 - Criteres d'acceptation"
+    rationale: "Message clair et concis"
+
+# Fichiers Dart a modifier
+dart_files:
+  - path: "lib/features/my_wedding/domain/entities/wedding_event.dart"
+    story: S04
+    changes:
+      - "Add reminder1Week bool field"
+      - "Add reminder1Day bool field"
+      - "Add reminder1Hour bool field"
+      - "Update copyWith method"
+      - "Update props getter"
+
+  - path: "lib/features/my_wedding/data/models/wedding_event_model.dart"
+    story: S04
+    changes:
+      - "Add fromJson for reminder fields with backward compat"
+      - "Add toJson for reminder fields"
+
+  - path: "lib/features/my_wedding/presentation/pages/event_form_page.dart"
+    story: S05
+    changes:
+      - "Add _RemindersSection widget"
+      - "Add 3 CheckboxListTile widgets"
+      - "Bind to cubit state"
+
+  - path: "lib/features/my_wedding/data/repositories/wedding_event_repository_impl.dart"
+    story: S06
+    changes:
+      - "Add _scheduleReminders method"
+      - "Call in createEvent and updateEvent"
+
+# Tests a creer
+tests:
+  - story: S04
+    file: "test/features/my_wedding/domain/entities/wedding_event_test.dart"
+    cases:
+      - "Default values are false"
+      - "JSON serialization includes reminders"
+      - "JSON deserialization handles reminders"
+      - "Backward compatibility with old data"
+      - "copyWith supports reminder fields"
+
+  - story: S05
+    file: "test/features/my_wedding/presentation/pages/event_form_page_test.dart"
+    cases:
+      - "Checkboxes are displayed"
+      - "Multi-selection works"
+      - "Checkboxes reflect existing values"
+      - "Past events have disabled checkboxes"
+
+  - story: S06
+    file: "test/features/my_wedding/data/repositories/wedding_event_repository_impl_test.dart"
+    cases:
+      - "Creating scheduled notifications for new event"
+      - "Updating reminders for existing event"
+      - "No duplicate notifications"
+      - "Past reminder times are skipped"
+
+  - story: S03
+    type: integration
+    description: "Test pg_cron function execution"
+
+  - story: S07
+    type: integration
+    description: "Test E2E flow from scheduled to push"
+
+# Ordre d'execution recommande
+execution_order:
+  phase_1:
+    name: "Database setup"
+    stories: [S01, S02]
+    parallel: true
+
+  phase_2:
+    name: "pg_cron job"
+    stories: [S03]
+    depends_on: phase_1
+
+  phase_3:
+    name: "Dart entity"
+    stories: [S04]
+    depends_on: [S01]
+
+  phase_4:
+    name: "UI + Repository"
+    stories: [S05, S06]
+    depends_on: phase_3
+
+  phase_5:
+    name: "Integration"
+    stories: [S07]
+    depends_on: [phase_2, phase_4]
+
+# Validation checklist
+validation:
+  pre_merge:
+    - "All migrations tested on dev branch"
+    - "Rollback tested for each migration"
+    - "pg_cron job runs correctly"
+    - "No orphan notifications possible (CASCADE)"
+    - "RLS policies validated with tests"
+    - "No flutter analyze warnings"
+    - "Production backup created"
+
+  post_merge:
+    - "reminder_1_week, reminder_1_day, reminder_1_hour columns exist"
+    - "scheduled_notifications table exists"
+    - "pg_cron job send-scheduled-notifications is running"
+    - "Creating event with reminders creates scheduled_notifications"
+    - "Cron job inserts into notifications_outbox"
+    - "Push notification received on device"
+    - "Deleting event removes scheduled notifications"
+
+# Criteres d'acceptation PRD
+acceptance_criteria:
+  - "Multi-selection des rappels possible"
+  - "Notifications push meme app fermee (via FCM existant)"
+  - "Suppression event → annulation notifications programmees (CASCADE)"
+  - "Format : 'Rappel : [Titre] dans [duree]'"
+  - "Integration transparente avec l'agenda existant"
+
+# Notes de production
+production_notes:
+  - "wedding_events a 9 rows - migration doit etre non-destructive"
+  - "notifications_outbox a 247 rows - FCM deja en production"
+  - "pg_cron est une extension Supabase, pas besoin d'install"
+  - "Le FCM worker doit supporter event_type 'event_reminder'"

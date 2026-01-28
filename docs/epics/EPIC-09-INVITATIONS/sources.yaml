@@ -1,0 +1,232 @@
+# EPIC-09-INVITATIONS - Sources de Reference
+# Fichier YAML listant toutes les sources utilisees pour creer cet Epic
+
+epic:
+  id: EPIC-09
+  name: INVITATIONS
+  title: Systeme d'invitations guests
+  created: 2026-01-28
+  app_reference: APP-03
+
+# Source PRD principale
+prd:
+  file: docs/specs/MISSION-01-EVOLUTIONS-2026.md
+  version: 2.1 (Post-Challenge Deep)
+  sections_used:
+    - name: "Section 5 (APP-03)"
+      line_range: "398-590"
+      content: "Specifications completes systeme d'invitations"
+    - name: "Section 3 - Utilisateurs et Roles"
+      line_range: "202-230"
+      content: "Role Guest definition, interface limitee"
+    - name: "Section 2 (APP-00) - Prerequisites"
+      line_range: "64-199"
+      content: "Enum userRole, invite_code, rate limiting"
+
+# Decisions de conception referencees
+decisions:
+  - id: D-14
+    title: "Guests PEUVENT creer des reels"
+    context: "Override conversations Thierry - Guest peut creer reels avec SES propres videos uniquement"
+    location: "PRD Section 14"
+
+  - id: D-15
+    title: "Code invitation 8 caracteres + expiration"
+    context: "Securite anti-bruteforce: 2.8 trillions combinaisons, expiration 30 jours"
+    location: "PRD Section 14"
+
+  - id: D-17
+    title: "Reutiliser chat_rooms existante pour chat mariage"
+    context: "Eviter duplication code, type='wedding_team' existe deja"
+    location: "PRD Section 14"
+
+# User Stories du PRD
+user_stories:
+  - id: US-03.1
+    description: "Bride peut envoyer invitation par email"
+    stories: [S06, S07]
+
+  - id: US-03.2
+    description: "Bride voit statut invites (pending/invited/joined)"
+    stories: [S08]
+
+  - id: US-03.3
+    description: "Guest recoit email avec lien + QR code"
+    stories: [S06]
+
+  - id: US-03.4
+    description: "Guest peut scanner QR ou entrer code"
+    stories: [S01, S02]
+
+  - id: US-03.5
+    description: "Deep link skip la page de code"
+    stories: [S02, S03]
+
+  - id: US-03.6
+    description: "Guest cree compte lie au mariage"
+    stories: [S04]
+
+  - id: US-03.7
+    description: "Guest acces UNIQUEMENT album, chat groupe"
+    stories: [S05]
+
+  - id: US-03.8
+    description: "Guest peut passer en compte Bride (irreversible)"
+    stories: [S09]
+
+  - id: US-03.9
+    description: "Bride peut creer groupes de discussion"
+    stories: [S10]
+
+# Dependances Epic
+dependencies:
+  blocking:
+    - epic: EPIC-06-PREREQUISITES
+      stories:
+        - id: S01
+          description: "Enum userRole avec guest"
+          required_for: [S01, S04, S05, S09]
+        - id: S02
+          description: "Colonnes weddings invite_code"
+          required_for: [S02, S03, S04, S06]
+        - id: S04
+          description: "Trigger generate_secure_invite_code"
+          required_for: [S02, S06]
+        - id: S05
+          description: "Colonnes wedding_guests user_id/status"
+          required_for: [S04, S07, S08]
+
+  non_blocking:
+    - epic: EPIC-06-PREREQUISITES
+      stories:
+        - id: S06
+          description: "Bucket wedding-media"
+          required_for: ["Guest album (futur Epic)"]
+
+# Etat production verifie (via Supabase MCP)
+production_state:
+  verified_at: 2026-01-28
+  project_id: hekyovgnovhfhmkpfrna
+  tables:
+    wedding_guests:
+      exists: true
+      rows: 5
+      columns: [name, email, phone, role, notes]
+      missing_columns: [user_id, invited_at, joined_at, status]
+      note: "Colonnes ajoutees par EPIC-06 S05"
+
+    chat_rooms:
+      exists: true
+      rows: 80
+      types:
+        - type: private
+          count: 66
+        - type: public
+          count: 6
+        - type: wedding_team
+          count: 8
+      columns: [id, type, name, is_active, created_at, wedding_id]
+      note: "Reutilisation confirmee pour D-17"
+
+    chat_messages:
+      exists: true
+      rows: 199
+      note: "Reutilisation confirmee pour D-17"
+
+    weddings:
+      exists: true
+      rows: 8
+      missing_columns: [invite_code, invite_code_expires_at]
+      note: "Colonnes ajoutees par EPIC-06 S02"
+
+# Code existant reference
+existing_code:
+  chat_module:
+    path: lib/features/chat/
+    readme: lib/features/chat/README.md
+    datasource: lib/features/chat/data/datasources/chat_remote_datasource.dart
+    note: "Module chat complet, reutiliser pour guests"
+
+  chat_rooms_table:
+    path: lib/backend/supabase/database/tables/chat_rooms.dart
+    columns: [id, type, name, is_active, created_at]
+    note: "wedding_id column existe en production mais pas dans Dart model"
+
+  auth_module:
+    path: lib/features/auth/
+    login_page: lib/features/auth/presentation/pages/login_page.dart
+    user_role: lib/features/auth/domain/entities/user_role.dart
+    note: "A modifier pour ajouter guest button et UserRole.guest"
+
+  my_wedding_module:
+    path: lib/features/my_wedding/
+    guests_page: lib/features/my_wedding/presentation/pages/
+    note: "A modifier pour ajouter envoi invitations"
+
+# Technologies et packages
+technologies:
+  deep_linking:
+    ios:
+      - Universal Links
+      - Associated Domains
+    android:
+      - App Links
+      - Intent Filters
+    packages:
+      - app_links (recommande)
+      - uni_links (alternative)
+
+  qr_code:
+    scanner:
+      - mobile_scanner (recommande)
+      - qr_code_scanner (alternative)
+    generator:
+      - qrcode (npm, pour Edge Function)
+
+  email:
+    service: Resend
+    integration: Edge Function
+    template: HTML inline
+
+  realtime:
+    service: Supabase Realtime
+    existing: true
+    module: chat
+
+# Fichiers a creer/modifier (resume)
+file_changes:
+  create:
+    - lib/features/auth/presentation/pages/join_wedding_page.dart
+    - lib/features/auth/presentation/pages/guest_signup_page.dart
+    - lib/features/auth/presentation/widgets/invite_code_input.dart
+    - lib/features/auth/presentation/widgets/qr_scanner_widget.dart
+    - lib/features/guest/presentation/pages/guest_home_page.dart
+    - lib/features/guest/presentation/pages/guest_album_page.dart
+    - lib/features/guest/presentation/pages/guest_chat_page.dart
+    - lib/features/guest/presentation/pages/guest_profile_page.dart
+    - lib/features/guest/presentation/widgets/guest_nav_bar.dart
+    - lib/features/guest/presentation/widgets/upgrade_to_bride_section.dart
+    - lib/core/navigation/deep_link_handler.dart
+    - supabase/functions/send-wedding-invitation/index.ts
+
+  modify:
+    - lib/features/auth/presentation/pages/login_page.dart
+    - lib/features/auth/domain/entities/user_role.dart
+    - lib/features/my_wedding/presentation/pages/wedding_guests_page.dart
+    - lib/features/my_wedding/presentation/widgets/guest_tile.dart
+    - lib/core/navigation/app_router.dart
+    - ios/Runner/Runner.entitlements
+    - android/app/src/main/AndroidManifest.xml
+
+# Validation
+validation:
+  created_by: Claude Opus 4.5
+  based_on:
+    - PRD MISSION-01-EVOLUTIONS-2026.md v2.1
+    - EPIC-06-PREREQUISITES specification
+    - Production Supabase state verification
+  confidence: 95%
+  notes:
+    - "Decision D-17 confirmee par etat production (8 wedding_team rooms existent)"
+    - "Dependance EPIC-06 absolue pour colonnes manquantes"
+    - "Chat existant complet et reutilisable sans modification majeure"

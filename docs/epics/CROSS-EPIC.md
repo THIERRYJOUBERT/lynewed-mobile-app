@@ -2,13 +2,31 @@
 
 ## Vue d'Ensemble
 
+### Phase 1 : Foundation (COMPLETE)
+
 | Epic | Titre | Status | Progression |
 |------|-------|--------|-------------|
 | EPIC-01 | Migration Clean Architecture | ✅ COMPLETE | 42/42 (100%) |
 | EPIC-02 | Tests additionnels | ✅ COMPLETE | 7/7 (100%) |
 | EPIC-03 | Dependencies update | ⏸️ PARTIAL | 9/14 (64%) |
-| EPIC-04 | Documentation | 🔜 READY | 0/5 (challengé 2026-01-26) |
+| EPIC-04 | Documentation | ✅ COMPLETE | 5/5 (100%) |
 | EPIC-05 | Security cleanup | ✅ COMPLETE | 10/10 (100%) |
+
+### Phase 2 : Mission 2026 (NEW)
+
+| Epic | PRD | Titre | Status | Stories | Est. |
+|------|-----|-------|--------|---------|------|
+| **EPIC-06** | APP-00 | Prerequisites Migration | 🔵 DRAFT | 6 | 0.5j |
+| **EPIC-07** | APP-01 | Reviews (Avis clients) | 🔵 DRAFT | 9 | 0.5j |
+| **EPIC-08** | APP-02 | Reminders (Rappels RDV) | 🔵 DRAFT | 8 | 0.5j |
+| **EPIC-09** | APP-03 | Invitations (Guests) | 🔵 DRAFT | 12 | 2j |
+| **EPIC-10** | APP-04 | Photos/Videos | 🔵 DRAFT | 10 | 1.5j |
+| **EPIC-11** | APP-05 | Stripe Integration | 🔵 DRAFT | 12 | 1j |
+| **EPIC-12** | APP-06 | Reels Generation | 🔵 DRAFT | 10 | 1.5j |
+| **EPIC-13** | APP-07 | Map Filters | 🔵 DRAFT | 9 | 1j |
+| **EPIC-14** | APP-08 | Marketplace | 🔵 DRAFT | 26 | 7j |
+
+**Total Mission 2026** : 102 stories, 15 jours estimés, 4500€
 
 ---
 
@@ -111,13 +129,162 @@ Tests additionnels couvrant tous les modules Clean Architecture.
 
 ---
 
+## Mission 2026 - Epics
+
+### EPIC-06: Prerequisites Migration (APP-00) 🔵
+
+**Statut**: DRAFT | **BLOQUANT** pour tous les autres
+**Stories**: 6 | **Estimation**: 0.5 jour
+
+Migration des prerequis techniques CRITIQUES :
+- Enum userRole + 'guest'
+- Colonnes invitation (invite_code, expires_at)
+- Table invitation_attempts (rate limiting)
+- Bucket wedding-media avec RLS
+
+---
+
+### EPIC-07: Reviews (APP-01) 🔵
+
+**Statut**: DRAFT | **Dépendances**: Aucune
+**Stories**: 9 | **Estimation**: 0.5 jour
+
+Systeme d'avis clients interne Lynewed :
+- Table reviews (1-5 etoiles + commentaire)
+- Vue pro_ratings (moyenne, count)
+- UI soumission + affichage profil
+- Filtre minRating sur Map
+
+---
+
+### EPIC-08: Reminders (APP-02) 🔵
+
+**Statut**: DRAFT | **Dépendances**: Aucune
+**Stories**: 8 | **Estimation**: 0.5 jour
+
+Notifications de rappel RDV :
+- Table scheduled_notifications
+- pg_cron pour envoi programme
+- Templates J-7, J-1, H-2
+- Preferences utilisateur
+
+---
+
+### EPIC-09: Invitations (APP-03) 🔵
+
+**Statut**: DRAFT | **Dépendances**: EPIC-06 (S01-S05)
+**Stories**: 12 | **Estimation**: 2 jours
+
+Systeme d'invitations guests :
+- Envoi email avec code/QR
+- Onboarding guest simplifie
+- Interface guest limitee (3 tabs)
+- Chat groupe mariage (wedding_team)
+
+---
+
+### EPIC-10: Photos/Videos (APP-04) 🔵
+
+**Statut**: DRAFT | **Dépendances**: EPIC-06 (S06)
+**Stories**: 10 | **Estimation**: 1.5 jours
+
+Projet Photo & Video :
+- Upload videos (max 10min, 500MB)
+- Legendes sur medias
+- Album guest separe
+- Partage opt-in avec bride
+
+---
+
+### EPIC-11: Stripe Integration (APP-05) 🔵
+
+**Statut**: DRAFT | **Dépendances**: Aucune
+**Stories**: 12 | **Estimation**: 1 jour
+
+Integration Stripe complete :
+- Stripe Connect Express (vendeuses)
+- Tables stripe_accounts, purchases, stripe_events
+- Webhook handler (tous events)
+- Edge Function stripe-webhook
+
+---
+
+### EPIC-12: Reels Generation (APP-06) 🔵
+
+**Statut**: DRAFT | **Dépendances**: EPIC-06, EPIC-10
+**Stories**: 10 | **Estimation**: 1.5 jours
+
+Generation de reels :
+- Guest: ses propres videos uniquement
+- Bride: toutes videos + guests partages
+- FFmpeg MVP (concatenation + fade)
+- Cleanup automatique 7 jours
+
+---
+
+### EPIC-13: Map Filters (APP-07) 🔵
+
+**Statut**: DRAFT | **Dépendances**: EPIC-07 (minRating)
+**Stories**: 9 | **Estimation**: 1 jour
+
+Filtres Map additionnels :
+- offers_free_wedding_book
+- offers_free_trailer
+- minRating (1-5)
+- Marqueur marketplace
+
+---
+
+### EPIC-14: Marketplace (APP-08) 🔵
+
+**Statut**: DRAFT | **Dépendances**: EPIC-06, EPIC-11, EPIC-13
+**Stories**: 26 | **Estimation**: 7 jours
+
+Marketplace Robes & Chaussures :
+- 7 tables (listings, photos, offers, transactions, messages, fedex_events, cgvu_acceptances)
+- Stripe Connect 10% commission
+- FedEx worldwide shipping
+- Nouvel onglet navbar bride
+
+---
+
 ## Graphe de Dépendances
 
 ```
+PHASE 1 : FOUNDATION (COMPLETE)
+═══════════════════════════════
+
 EPIC-01 (COMPLETE) ──┬── EPIC-02 (COMPLETE)
                      ├── EPIC-03 (PARTIAL 64%)
-                     ├── EPIC-04 (READY) ◄── Prochaine exécution
+                     ├── EPIC-04 (COMPLETE)
                      └── EPIC-05 (COMPLETE)
+
+
+PHASE 2 : MISSION 2026
+══════════════════════
+
+                            EPIC-07 (Reviews)
+                           /
+EPIC-06 (Prerequisites) ──┼── EPIC-08 (Reminders) ────────────────────────┐
+   APP-00 BLOQUANT        │                                                │
+                          ├── EPIC-09 (Invitations) ──► EPIC-10 (Photos) ──┤
+                          │                                                │
+                          │                              EPIC-12 (Reels) ◄─┘
+                          │                                    │
+EPIC-11 (Stripe) ─────────┼────────────────────────────────────┤
+   Independant            │                                    │
+                          └── EPIC-13 (Map Filters) ◄─ EPIC-07 │
+                                    │                          │
+                                    └───────► EPIC-14 (Marketplace)
+                                              26 stories, 7 jours
+
+ORDRE D'EXECUTION RECOMMANDE :
+1. EPIC-06 (BLOQUANT)
+2. EPIC-11 (Stripe - independant, requis par EPIC-14)
+3. EPIC-07, EPIC-08, EPIC-09 (parallelisables)
+4. EPIC-10, EPIC-12 (dependent de EPIC-09/10)
+5. EPIC-13 (depend de EPIC-07 pour minRating)
+6. EPIC-14 (le plus gros, depend de EPIC-06, EPIC-11, EPIC-13)
 ```
 
 ---
@@ -132,3 +299,6 @@ EPIC-01 (COMPLETE) ──┬── EPIC-02 (COMPLETE)
 | 2026-01-26 | EPIC-01 S30-S42 complétées - EPIC TERMINÉ |
 | 2026-01-26 | EPIC-02 et EPIC-05 marqués COMPLETE |
 | 2026-01-26 | EPIC-04 challengé --deep, corrections appliquées |
+| 2026-01-26 | EPIC-04 complété - Documentation production-ready |
+| 2026-01-28 | EPIC-06 créé - Prerequisites Migration (APP-00) - Mission 2026 |
+| 2026-01-28 | EPIC-07 à EPIC-14 créés - Mission 2026 complète (9 Epics, 102 stories) |

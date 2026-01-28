@@ -1,0 +1,345 @@
+# EPIC-13-MAP-FILTERS - Sources de Reference
+# Cree le: 2026-01-28
+
+epic:
+  id: EPIC-13-MAP-FILTERS
+  name: "Filtres Map additionnels (APP-07)"
+  description: "Ajout filtres wedding book/trailer free, note minimum, marqueurs marketplace"
+  status: draft
+  created_at: "2026-01-28"
+  estimated_days: 1
+
+# Source PRD principale
+prd:
+  document: "docs/specs/MISSION-01-EVOLUTIONS-2026.md"
+  version: "2.1 (Post-Challenge Deep)"
+  sections_used:
+    - section: "9. APP-07 - Filtres Map additionnels"
+      user_stories:
+        - id: US-07.1
+          description: "Bride can filter pros offering free wedding book"
+          stories: [S01, S03, S06]
+        - id: US-07.2
+          description: "Bride can filter pros offering free trailer"
+          stories: [S02, S03, S06]
+        - id: US-07.3
+          description: "Bride sees marketplace items on map"
+          stories: [S04, S05, S08]
+        - id: US-07.4
+          description: "Bride can filter pros by minimum rating"
+          stories: [S03, S06, S07]
+        - id: US-07.5
+          description: "User can tap marketplace marker to see details"
+          stories: [S08]
+    - section: "14. Decisions de conception"
+      decisions_used:
+        - "D-13: Guests n'ont pas acces a la map"
+
+# Etat production verifie
+production_state:
+  project_id: "hekyovgnovhfhmkpfrna"
+  verified_at: "2026-01-28"
+  findings:
+    professional_details_table:
+      rows: 51
+      missing_columns:
+        - "offers_free_wedding_book"
+        - "offers_free_trailer"
+    map_marker_type_enum:
+      current: ["proFixedLocation", "professionalAlert", "wedding"]
+      missing: ["marketplaceItem"]
+    map_filter_class:
+      file: "lib/features/map/domain/entities/map_filter.dart"
+      missing_fields:
+        - "weddingBookFree"
+        - "trailerFree"
+        - "minRating"
+    layer_toggles_class:
+      file: "lib/features/map/domain/entities/map_filter.dart"
+      missing_fields:
+        - "showMarketplace"
+    filter_sheet_widget:
+      file: "lib/features/map/presentation/widgets/filter_sheet.dart"
+      missing_sections:
+        - "Special offers (checkboxes)"
+        - "Minimum rating (stars)"
+        - "Marketplace layer toggle"
+
+# Dependances externes
+external_dependencies:
+  - epic: EPIC-07
+    name: "Systeme d'avis clients"
+    table: "reviews"
+    impact: "minRating filter requires reviews table"
+    status: pending
+    mitigation: "Feature flag - disabled until EPIC-07 deployed"
+
+  - epic: EPIC-14
+    name: "Marketplace Robes & Chaussures"
+    table: "marketplace_listings"
+    impact: "Marketplace markers require listings data"
+    status: pending
+    mitigation: "Toggle off by default - no crash if no data"
+
+# Stories mapping vers PRD
+stories:
+  - id: S01
+    name: "Ajouter colonne offers_free_wedding_book"
+    prd_reference: "Section 9 (APP-07), US-07.1"
+    complexity: S
+    domain: database
+    blocking: false
+    depends_on: []
+
+  - id: S02
+    name: "Ajouter colonne offers_free_trailer"
+    prd_reference: "Section 9 (APP-07), US-07.2"
+    complexity: S
+    domain: database
+    blocking: false
+    depends_on: []
+
+  - id: S03
+    name: "Etendre MapFilter avec nouveaux champs"
+    prd_reference: "Section 9 (APP-07), US-07.1, US-07.2, US-07.4"
+    complexity: S
+    domain: domain
+    blocking: false
+    depends_on: [S01, S02]
+
+  - id: S04
+    name: "Ajouter marketplaceItem a MapMarkerType"
+    prd_reference: "Section 9 (APP-07), US-07.3"
+    complexity: S
+    domain: domain
+    blocking: false
+    depends_on: []
+
+  - id: S05
+    name: "Creer icone marqueur marketplace"
+    prd_reference: "Section 9 (APP-07), US-07.3"
+    complexity: S
+    domain: presentation
+    blocking: false
+    depends_on: [S04]
+
+  - id: S06
+    name: "Mettre a jour FilterSheet UI"
+    prd_reference: "Section 9 (APP-07), US-07.1, US-07.2, US-07.4"
+    complexity: M
+    domain: presentation
+    blocking: false
+    depends_on: [S03]
+
+  - id: S07
+    name: "Mettre a jour query map avec nouveaux filtres"
+    prd_reference: "Section 9 (APP-07)"
+    complexity: M
+    domain: data
+    blocking: false
+    depends_on: [S03]
+
+  - id: S08
+    name: "Tap marqueur marketplace ouvre details"
+    prd_reference: "Section 9 (APP-07), US-07.5"
+    complexity: M
+    domain: presentation
+    blocking: false
+    depends_on: [S04, S05]
+
+  - id: S09
+    name: "Verifier que guests n'ont pas acces map"
+    prd_reference: "Decision D-13"
+    complexity: S
+    domain: tests
+    blocking: false
+    depends_on: []
+
+# Decisions techniques de cet Epic
+decisions:
+  - id: D-EPIC13-01
+    decision: "minRating disabled par defaut (feature flag)"
+    source: "Dependance EPIC-07 non deployee"
+    rationale: "Permet de deployer EPIC-13 independamment"
+
+  - id: D-EPIC13-02
+    decision: "showMarketplace = false par defaut"
+    source: "Dependance EPIC-14 non deployee"
+    rationale: "Evite crash si pas de donnees marketplace"
+
+  - id: D-EPIC13-03
+    decision: "Couleur marketplace = purple (#7B1FA2)"
+    source: "Design decision"
+    rationale: "Distinction visuelle claire vs pink (wedding), green (pro), red (alert)"
+
+  - id: D-EPIC13-04
+    decision: "Index partiels sur colonnes boolean"
+    source: "Performance optimization"
+    rationale: "WHERE column = TRUE est plus frequent que FALSE, index partiel suffit"
+
+  - id: D-EPIC13-05
+    decision: "Filtres nullable (null = no filter)"
+    source: "Best practice"
+    rationale: "Preserve comportement existant, backward compatible"
+
+# Fichiers Dart a modifier
+dart_files:
+  - path: "lib/features/map/domain/entities/map_filter.dart"
+    story: S03
+    changes:
+      - "Add weddingBookFree field (bool?)"
+      - "Add trailerFree field (bool?)"
+      - "Add minRating field (double?)"
+      - "Add hasSpecialOffersFilter getter"
+      - "Add hasRatingFilter getter"
+      - "Update copyWith method"
+      - "Update equality and hashCode"
+
+  - path: "lib/features/map/domain/entities/map_filter.dart"
+    story: S03
+    changes:
+      - "Add showMarketplace to LayerToggles (bool, default false)"
+      - "Update copyWith, equality, hashCode"
+
+  - path: "lib/features/map/domain/entities/map_marker.dart"
+    story: S04
+    changes:
+      - "Add marketplaceItem to MapMarkerType enum"
+
+  - path: "lib/features/map/presentation/services/marker_icon_generator.dart"
+    story: S05
+    changes:
+      - "Add case MapMarkerType.marketplaceItem in generateIcon"
+      - "Create _createMarketplaceIcon method"
+
+  - path: "lib/features/map/presentation/theme/map_theme.dart"
+    story: S05
+    changes:
+      - "Add marketplaceItem case in forMarkerType (return purple)"
+
+  - path: "lib/features/map/presentation/widgets/filter_sheet.dart"
+    story: S06
+    changes:
+      - "Add _buildSpecialOffersCheckboxes method"
+      - "Add _buildRatingSlider method"
+      - "Add _buildLayerToggles method (marketplace toggle)"
+      - "Update _resetFilters to clear new fields"
+
+  - path: "lib/features/map/data/datasources/supabase_map_datasource.dart"
+    story: S07
+    changes:
+      - "Pass new filter params to RPC call"
+
+# Nouveaux fichiers a creer
+new_files:
+  - path: "lib/features/map/presentation/sheets/marketplace_details_sheet.dart"
+    story: S08
+    description: "Bottom sheet for marketplace item details"
+
+  - path: "lib/features/map/domain/entities/marketplace_item.dart"
+    story: S08
+    description: "Simple entity for marketplace item summary"
+
+# Tests a creer/modifier
+tests:
+  - story: S03
+    file: "test/features/map/domain/entities/map_filter_test.dart"
+    cases:
+      - "weddingBookFree filter works"
+      - "trailerFree filter works"
+      - "minRating filter works"
+      - "showMarketplace toggle works"
+      - "hasSpecialOffersFilter getter"
+      - "hasRatingFilter getter"
+      - "copyWith preserves new fields"
+      - "equality includes new fields"
+
+  - story: S04
+    file: "test/features/map/domain/entities/map_marker_test.dart"
+    cases:
+      - "MapMarkerType.marketplaceItem is valid value"
+      - "MapMarker accepts marketplaceItem type"
+
+  - story: S05
+    file: "test/features/map/presentation/services/marker_icon_generator_test.dart"
+    cases:
+      - "generates icon for marketplaceItem type"
+      - "icon is cached correctly"
+      - "dress category uses correct icon"
+      - "shoes category uses correct icon"
+
+  - story: S06
+    file: "test/features/map/presentation/widgets/filter_sheet_test.dart"
+    cases:
+      - "special offers checkboxes displayed"
+      - "wedding book checkbox toggles filter"
+      - "trailer checkbox toggles filter"
+      - "rating slider disabled when feature flag off"
+      - "marketplace toggle works"
+      - "reset clears new filters"
+
+  - story: S09
+    file: "test/features/map/presentation/pages/map_page_access_test.dart"
+    cases:
+      - "guest role cannot access map"
+      - "bride role can access map"
+      - "professional role can access map"
+
+# Ordre d'execution recommande
+execution_order:
+  phase_1:
+    name: "Database migrations"
+    stories: [S01, S02]
+    parallel: true
+    environment: "Supabase dev branch"
+
+  phase_2:
+    name: "Domain layer"
+    stories: [S04, S03]
+    sequential: true
+    note: "S04 independent, S03 depends on S01/S02"
+
+  phase_3:
+    name: "Presentation layer"
+    stories: [S05, S06, S09]
+    parallel: true
+    depends_on: [phase_2]
+
+  phase_4:
+    name: "Integration"
+    stories: [S07, S08]
+    sequential: true
+    depends_on: [phase_3]
+
+# Validation checklist
+validation:
+  pre_merge:
+    - "All migrations tested on dev branch"
+    - "flutter analyze --fatal-infos = 0 warnings"
+    - "flutter test = all pass"
+    - "RPC performance < 500ms"
+    - "UI renders correctly on iOS and Android"
+    - "Guest access blocked verified"
+
+  post_merge:
+    - "offers_free_wedding_book column exists"
+    - "offers_free_trailer column exists"
+    - "Filters work in production"
+    - "No regression on existing filters"
+    - "Marketplace toggle ready for EPIC-14"
+    - "Rating filter ready for EPIC-07"
+
+# Rollback plan
+rollback:
+  database:
+    - "DROP INDEX idx_pro_details_wedding_book"
+    - "DROP INDEX idx_pro_details_trailer"
+    - "ALTER TABLE professional_details DROP COLUMN offers_free_wedding_book"
+    - "ALTER TABLE professional_details DROP COLUMN offers_free_trailer"
+
+  code:
+    - "Revert commits on map_filter.dart"
+    - "Revert commits on map_marker.dart"
+    - "Revert commits on filter_sheet.dart"
+    - "Revert commits on marker_icon_generator.dart"
+    - "Delete marketplace_details_sheet.dart"

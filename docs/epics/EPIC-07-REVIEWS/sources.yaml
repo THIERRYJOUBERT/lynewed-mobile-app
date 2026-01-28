@@ -1,0 +1,243 @@
+# EPIC-07-REVIEWS - Source Mapping
+# Maps each story to its PRD sources and production state verification
+
+epic:
+  id: EPIC-07-REVIEWS
+  name: Reviews System
+  prd_source: docs/specs/MISSION-01-EVOLUTIONS-2026.md
+  prd_section: "Section 4 - APP-01 Systeme d'avis clients"
+  created_at: 2026-01-28
+
+production_state:
+  project_id: hekyovgnovhfhmkpfrna
+  verified_at: 2026-01-28
+  tables:
+    reviews:
+      exists: false
+      action: CREATE
+    pro_ratings:
+      exists: false
+      type: VIEW
+      action: CREATE
+  columns:
+    professional_details:
+      exists: true
+      row_count: 51
+      modifications: none
+    profiles:
+      exists: true
+      row_count: 254
+      modifications: none
+  views:
+    pro_ratings:
+      exists: false
+      action: CREATE
+  indexes:
+    idx_reviews_pro_id:
+      exists: false
+      action: CREATE
+    idx_reviews_bride_id:
+      exists: false
+      action: CREATE
+
+prd_decisions:
+  - id: D-10
+    text: "Systeme d'avis interne Lynewed (pas Google Places)"
+    impact: "reviews table avec rating 1-5, comment optionnel"
+  - id: Implicit
+    text: "Une bride peut noter un pro une seule fois"
+    impact: "UNIQUE(pro_id, bride_id) constraint"
+
+stories:
+  - id: S01
+    name: "Creer table reviews avec contraintes"
+    domain: Database
+    prd_sources:
+      - section: "4. APP-01 Systeme d'avis clients"
+        quote: "Table reviews avec rating 1-5 etoiles + commentaire optionnel"
+      - section: "16. Annexes techniques"
+        quote: "CREATE TABLE reviews"
+    production_verified:
+      - element: "Table reviews"
+        status: MISSING
+        action: CREATE
+    sql_migration:
+      name: "20260128100001_create_reviews_table"
+      type: DDL
+      reversible: true
+    complexity: S
+    dependencies: []
+
+  - id: S02
+    name: "Creer vue pro_ratings pour moyenne"
+    domain: Database
+    prd_sources:
+      - section: "4. APP-01"
+        quote: "Note moyenne visible sur profil pro"
+    production_verified:
+      - element: "View pro_ratings"
+        status: MISSING
+        action: CREATE
+    sql_migration:
+      name: "20260128100002_create_pro_ratings_view"
+      type: VIEW
+      reversible: true
+    complexity: S
+    dependencies:
+      - S01
+
+  - id: S03
+    name: "Ajouter RLS policies pour reviews"
+    domain: Database
+    prd_sources:
+      - section: "2.2 RLS Policies"
+        quote: "CHAQUE nouvelle table doit avoir des RLS policies"
+      - section: "1. Principes de developpement"
+        quote: "RLS Supabase, validation inputs"
+    production_verified:
+      - element: "RLS reviews"
+        status: MISSING
+        action: CREATE
+    sql_migration:
+      name: "20260128100003_add_reviews_rls"
+      type: RLS
+      reversible: true
+    complexity: S
+    dependencies:
+      - S01
+
+  - id: S04
+    name: "Creer entites Dart Review et ProRating"
+    domain: Flutter Domain
+    prd_sources:
+      - section: "1. Architecture existante"
+        quote: "Clean Architecture avec 15 modules features"
+      - section: "4. APP-01"
+        quote: "Rating 1-5 etoiles + commentaire"
+    flutter_files:
+      - path: "lib/features/reviews/domain/entities/review.dart"
+        action: CREATE
+      - path: "lib/features/reviews/domain/entities/pro_rating.dart"
+        action: CREATE
+    complexity: S
+    dependencies: []
+
+  - id: S05
+    name: "Implementer ReviewRepository et Use Cases"
+    domain: Flutter Data
+    prd_sources:
+      - section: "4. APP-01"
+        quote: "Bride peut noter un pro, voir les avis"
+    flutter_files:
+      - path: "lib/features/reviews/domain/repositories/review_repository.dart"
+        action: CREATE
+      - path: "lib/features/reviews/data/repositories/review_repository_impl.dart"
+        action: CREATE
+      - path: "lib/features/reviews/domain/usecases/submit_review.dart"
+        action: CREATE
+      - path: "lib/features/reviews/domain/usecases/get_reviews_for_pro.dart"
+        action: CREATE
+      - path: "lib/features/reviews/domain/usecases/get_pro_rating.dart"
+        action: CREATE
+    complexity: M
+    dependencies:
+      - S04
+
+  - id: S06
+    name: "Creer UI soumission avis"
+    domain: Flutter UI
+    prd_sources:
+      - section: "4. APP-01 User Stories"
+        quote: "US-01.1 En tant que bride, je peux noter un pro (1-5 etoiles)"
+        quote: "US-01.2 En tant que bride, je peux ajouter un commentaire"
+    flutter_files:
+      - path: "lib/features/reviews/presentation/widgets/star_rating_widget.dart"
+        action: CREATE
+      - path: "lib/features/reviews/presentation/pages/submit_review_page.dart"
+        action: CREATE
+      - path: "lib/features/reviews/presentation/bloc/submit_review_bloc.dart"
+        action: CREATE
+    complexity: M
+    dependencies:
+      - S05
+
+  - id: S07
+    name: "Afficher avis sur profil pro"
+    domain: Flutter UI
+    prd_sources:
+      - section: "4. APP-01 User Stories"
+        quote: "US-01.3 En tant que visiteur, je vois la note moyenne sur le profil pro"
+        quote: "US-01.4 En tant que visiteur, je vois la liste des avis"
+    flutter_files:
+      - path: "lib/features/reviews/presentation/widgets/pro_rating_badge.dart"
+        action: CREATE
+      - path: "lib/features/reviews/presentation/widgets/reviews_list.dart"
+        action: CREATE
+      - path: "lib/features/profile/presentation/pages/professional_profile_page.dart"
+        action: MODIFY
+        modification: "Add reviews section"
+    complexity: M
+    dependencies:
+      - S05
+
+  - id: S08
+    name: "Ajouter minRating a MapFilter"
+    domain: Flutter Map
+    prd_sources:
+      - section: "9. APP-07 Filtres Map additionnels"
+        quote: "Filtre par note client (avis)"
+        quote: "minRating: 1.0 - 5.0, null = pas de filtre"
+    flutter_files:
+      - path: "lib/features/map/domain/entities/map_filter.dart"
+        action: MODIFY
+        modification: "Add minRating field"
+    complexity: S
+    dependencies: []
+
+  - id: S09
+    name: "Mettre a jour requete map pour filtrer par rating"
+    domain: Flutter Map
+    prd_sources:
+      - section: "9. APP-07 User Stories"
+        quote: "US-07.4 En tant que bride, je peux filtrer les pros par note minimum"
+    flutter_files:
+      - path: "lib/features/map/data/datasources/map_remote_datasource.dart"
+        action: MODIFY
+        modification: "Add minRating filter to query"
+      - path: "lib/features/map/presentation/widgets/filter_sheet.dart"
+        action: MODIFY
+        modification: "Add rating slider"
+    complexity: M
+    dependencies:
+      - S08
+      - S02
+
+cross_epic_dependencies:
+  - epic: EPIC-13-MAP-FILTERS
+    story: S06
+    dependency_type: FEATURE_FLAG
+    description: "minRating filter depends on reviews system being live"
+
+rls_policies:
+  - name: "reviews_select_all"
+    table: reviews
+    operation: SELECT
+    description: "Anyone can read reviews"
+
+  - name: "reviews_insert_bride"
+    table: reviews
+    operation: INSERT
+    description: "Only brides can create reviews"
+    condition: "auth.uid() = bride_id AND role = 'bride'"
+
+  - name: "reviews_update_own"
+    table: reviews
+    operation: UPDATE
+    description: "Bride can update own review"
+    condition: "auth.uid() = bride_id"
+
+notes:
+  - "Reviews are internal to Lynewed (not Google Places)"
+  - "One review per bride per professional"
+  - "No DELETE policy - reviews persist for audit"
+  - "minRating filter in EPIC-13 depends on this Epic"

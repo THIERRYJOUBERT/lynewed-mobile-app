@@ -1,0 +1,159 @@
+# EPIC-10-PHOTOS-VIDEOS - Sources de reference
+# Ce fichier liste toutes les sources utilisees pour creer cet Epic
+
+prd_source:
+  file: docs/specs/MISSION-01-EVOLUTIONS-2026.md
+  version: "2.1"
+  sections_used:
+    - section: "7. APP-04 — Projet Photo & Video"
+      line_range: "593-739"
+      content_summary: |
+        Description complete de la feature APP-04:
+        - Enrichir galerie existante (pas recreer)
+        - Support videos (max 10 min, 500MB)
+        - Legendes (max 500 chars)
+        - Albums guests separes
+        - Opt-in partage avec bride
+        - Telechargement haute qualite
+        - Preparation commande impressions (futur)
+
+    - section: "D.3 Guest Albums & Media (APP-03, APP-04)"
+      line_range: "1939-1977"
+      content_summary: |
+        RLS Policies completes pour:
+        - guest_albums: Guest CRUD own, Bride SELECT shared
+        - guest_media: Guest CRUD via album, Bride SELECT shared
+
+user_stories:
+  - id: US-04.1
+    description: "En tant que bride, je peux uploader des videos (max 10 min)"
+    mapped_to: S01, S05
+
+  - id: US-04.2
+    description: "En tant que bride, je peux ajouter une legende a mes medias"
+    mapped_to: S01, S06
+
+  - id: US-04.3
+    description: "En tant que bride, je vois les albums des guests (opt-in par guest)"
+    mapped_to: S08
+
+  - id: US-04.4
+    description: "En tant que bride, je peux telecharger tout en haute qualite"
+    mapped_to: S09
+
+  - id: US-04.7
+    description: "En tant que guest, j'ai mon propre album personnel"
+    mapped_to: S02
+
+  - id: US-04.8
+    description: "En tant que guest, je peux uploader photos et videos (max 10 min)"
+    mapped_to: S03, S05
+
+  - id: US-04.9
+    description: "En tant que guest, je peux ajouter des legendes"
+    mapped_to: S06
+
+  - id: US-04.10
+    description: "En tant que guest, je vois UNIQUEMENT mon album"
+    mapped_to: S02, S03 (RLS)
+
+  - id: US-04.11
+    description: "En tant que guest, je peux choisir de partager avec la bride (opt-in)"
+    mapped_to: S07
+
+decisions_used:
+  - id: D-03
+    decision: "Guest ne voit que SES photos"
+    impact: "RLS strictes sur guest_albums et guest_media"
+
+  - id: D-16
+    decision: "RLS obligatoires AVANT toute table"
+    impact: "Policies creees dans les migrations"
+
+file_limits:
+  photo_max_size_mb: 20
+  video_max_duration_minutes: 10
+  video_max_size_mb: 500
+  video_for_reel_max_minutes: 2
+  caption_max_chars: 500
+
+database_state:
+  verified_date: "2026-01-28"
+  project_id: "hekyovgnovhfhmkpfrna"
+
+  existing_tables:
+    inspiration_albums:
+      rows: 6
+      description: "Albums bride avec categories"
+
+    album_images:
+      rows: 5
+      description: "Photos uploadees - PAS de video, PAS de legendes"
+      columns_missing:
+        - media_type
+        - caption
+        - duration_seconds
+        - file_size_bytes
+        - print_ready
+
+    saved_posts:
+      rows: 4
+      description: "Photos sauvees depuis feed"
+
+  missing_tables:
+    - guest_albums
+    - guest_media
+    - gallery_access_logs
+
+dependencies:
+  epic_dependencies:
+    - epic: EPIC-06-PREREQUISITES
+      status: draft
+      required_for:
+        - "S02: Enum userRole avec 'guest'"
+        - "Storage: Bucket wedding-media"
+      blocking: true
+
+    - epic: EPIC-09-GUESTS
+      status: not_created
+      required_for:
+        - "Integration complete systeme guest"
+      blocking: false
+
+  story_dependencies:
+    S01: []
+    S02: ["EPIC-06:S01"]
+    S03: ["S02"]
+    S04: []
+    S05: ["S01"]
+    S06: ["S01"]
+    S07: ["S02", "S03"]
+    S08: ["S02", "S03"]
+    S09: ["S01", "S02", "S03"]
+    S10: ["S01", "S03"]
+
+estimation:
+  total_days: 1.5
+  prd_estimation: "1.5 jours (450 EUR)"
+  stories_breakdown:
+    S01: "S (0.1j)"
+    S02: "S (0.1j)"
+    S03: "S (0.1j)"
+    S04: "S (0.1j)"
+    S05: "M (0.2j)"
+    S06: "S (0.1j)"
+    S07: "S (0.1j)"
+    S08: "M (0.2j)"
+    S09: "M (0.2j)"
+    S10: "S (0.1j)"
+
+future_features:
+  - name: "Print Orders"
+    prd_mention: "Preparer commande impressions (futur)"
+    current_preparation: "Colonne print_ready sur album_images et guest_media"
+    story: S10
+
+  - name: "Album Purchases"
+    prd_mention: "Preparer achat album complet guests (futur)"
+    current_preparation: "Tables guest_albums et guest_media pretes"
+    story: null

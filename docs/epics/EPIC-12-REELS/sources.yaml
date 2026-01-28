@@ -1,0 +1,423 @@
+# EPIC-12-REELS - Sources de Reference
+# Cree le: 2026-01-28
+
+epic:
+  id: EPIC-12-REELS
+  name: "Reels - Video Montage Generation (APP-06)"
+  description: "Generation de reels a partir des videos du mariage pour guests et brides"
+  status: draft
+  created_at: "2026-01-28"
+  estimated_days: 1.5
+
+# Source PRD principale
+prd:
+  document: "docs/specs/MISSION-01-EVOLUTIONS-2026.md"
+  version: "2.1 (Post-Challenge Deep)"
+  sections_used:
+    - section: "8. APP-06 - Reels"
+      subsections:
+        - "User Stories Guest (US-06.1 to US-06.5)"
+        - "User Stories Bride (US-06.6 to US-06.9)"
+        - "Specifications techniques"
+        - "Pipeline de generation"
+        - "Limites"
+        - "Criteres d'acceptation"
+    - section: "11. CGVU & Conformite juridique"
+      subsections:
+        - "Reel Generation - 4 checkboxes (EN)"
+        - "Tracabilite (logs obligatoires)"
+    - section: "14. Decisions de conception"
+      decisions_used:
+        - "D-14: Guests PEUVENT creer des reels avec leurs propres videos"
+    - section: "Annexe D.4"
+      description: "RLS Policies pour reels"
+    - section: "Annexe B"
+      description: "Edge Functions a creer (generate-reel, cleanup-expired-reels)"
+
+# Etat production verifie
+production_state:
+  project_id: "hekyovgnovhfhmkpfrna"
+  verified_at: "2026-01-28"
+  findings:
+    reels_table:
+      exists: false
+      required: true
+    purchases_table:
+      exists: false
+      note: "Needed for is_paid FK (optional, created by EPIC-08)"
+    guest_media_table:
+      exists: false
+      note: "Needed for video ownership validation (created by EPIC-10)"
+    guest_albums_table:
+      exists: false
+      note: "Needed for bride access to shared videos (created by EPIC-10)"
+    wedding_media_bucket:
+      exists: false
+      note: "Required for storing reel files (created by EPIC-06)"
+    cgvu_acceptances_table:
+      exists: false
+      note: "Required for logging CGVU acceptance"
+    fcm_configured:
+      status: true
+      note: "FCM push notifications already working in production"
+    pg_cron_extension:
+      status: true
+      note: "Already enabled, used by other features"
+
+# Dependencies externes
+dependencies:
+  blocking:
+    - epic: EPIC-10
+      name: "Photos/Videos"
+      tables_needed: ["guest_media", "guest_albums", "album_images video support"]
+      note: "Cannot test reels without video content"
+
+    - epic: EPIC-06
+      name: "Prerequisites"
+      resources_needed: ["wedding-media bucket"]
+      note: "Storage bucket for reel files"
+
+  optional:
+    - epic: EPIC-08
+      name: "Stripe Integration"
+      tables_needed: ["purchases"]
+      note: "For future paid reels feature (FK can be nullable)"
+
+# Stories mapping vers PRD
+stories:
+  - id: S01
+    name: "Creer table reels avec tous les champs"
+    prd_reference: "Section 8 - Specifications techniques"
+    complexity: S
+    blocking: true
+
+  - id: S02
+    name: "Ajouter RLS policies pour reels"
+    prd_reference: "Section D.4"
+    complexity: S
+    depends_on: [S01]
+
+  - id: S03
+    name: "Implementer UI selection videos"
+    prd_reference: "US-06.1"
+    complexity: M
+    depends_on: []
+    external_deps: [EPIC-10]
+
+  - id: S04
+    name: "Valider ownership videos"
+    prd_reference: "Decision D-14"
+    complexity: M
+    depends_on: [S03]
+
+  - id: S05
+    name: "Modal CGVU acceptation reels"
+    prd_reference: "Section 11 - Reel Generation"
+    complexity: S
+    depends_on: []
+
+  - id: S06
+    name: "Creer Edge Function generate-reel"
+    prd_reference: "Section 8 - Pipeline de generation"
+    complexity: L
+    depends_on: [S01]
+    note: "Most complex story - FFmpeg integration"
+
+  - id: S07
+    name: "Generer preview (480p + watermark)"
+    prd_reference: "US-06.2"
+    complexity: M
+    depends_on: [S06]
+
+  - id: S08
+    name: "Generer output final (1080p + logo)"
+    prd_reference: "US-06.3"
+    complexity: M
+    depends_on: [S06]
+
+  - id: S09
+    name: "Envoyer notification reel pret"
+    prd_reference: "Section 8 - Pipeline etape 6"
+    complexity: S
+    depends_on: [S06]
+
+  - id: S10
+    name: "Implementer download feature"
+    prd_reference: "US-06.3"
+    complexity: M
+    depends_on: [S08]
+
+  - id: S11
+    name: "Afficher @ Instagram pros (bride only)"
+    prd_reference: "US-06.8"
+    complexity: S
+    depends_on: []
+
+  - id: S12
+    name: "Creer pg_cron job cleanup-expired-reels"
+    prd_reference: "Section 8 - Pipeline etape 9"
+    complexity: S
+    depends_on: [S01]
+
+# Decisions techniques de cet Epic
+decisions:
+  - id: D-EPIC12-01
+    decision: "Guests CAN create reels with their own videos"
+    source: "PRD Decision D-14"
+    rationale: "Override previous conversation, guests should have this feature"
+
+  - id: D-EPIC12-02
+    decision: "FFmpeg MVP approach (not Shotstack)"
+    source: "PRD Section 8"
+    rationale: "Minimal cost, simple transitions, evaluate before upgrading"
+
+  - id: D-EPIC12-03
+    decision: "Preview 480p with central watermark"
+    source: "PRD Section 8"
+    rationale: "Intentionally low quality to encourage full download"
+
+  - id: D-EPIC12-04
+    decision: "Output 1080p with discreet corner logo"
+    source: "PRD Section 8"
+    rationale: "High quality for social sharing, branding without intrusion"
+
+  - id: D-EPIC12-05
+    decision: "7 days retention then auto-delete"
+    source: "PRD Section 8"
+    rationale: "Control storage costs, reels are temporary"
+
+  - id: D-EPIC12-06
+    decision: "Free MVP with payment architecture ready"
+    source: "PRD Section 8"
+    rationale: "Test market before monetizing, fields is_paid/price_cents"
+
+  - id: D-EPIC12-07
+    decision: "Limits: 10 videos, 2min each, 10min total"
+    source: "PRD Section 8 - Limites"
+    rationale: "Performance and reasonable scope"
+
+# Limites techniques
+limits:
+  videos_per_reel: 10
+  duration_per_video_seconds: 120
+  total_duration_seconds: 600
+  retention_days: 7
+  preview_resolution: "480p"
+  output_resolution: "1080p"
+  video_format: "MP4 H.264"
+  supported_input_formats:
+    - "video/mp4"
+    - "video/quicktime"
+    - "video/x-m4v"
+
+# FFmpeg commands reference
+ffmpeg_commands:
+  concatenate_with_fade: |
+    ffmpeg -f concat -safe 0 -i list.txt \
+      -filter_complex "[0:v]fade=t=out:st=DURATION-1:d=1[v0];..." \
+      -c:v libx264 -preset medium -crf 23 output_temp.mp4
+
+  preview_480p_watermark: |
+    ffmpeg -i input.mp4 \
+      -vf "scale=854:480,drawtext=text='LYNEWED':fontsize=72:fontcolor=white@0.5:x=(w-text_w)/2:y=(h-text_h)/2" \
+      -c:v libx264 -preset fast -crf 28 preview.mp4
+
+  output_1080p_logo: |
+    ffmpeg -i input.mp4 -i logo.png \
+      -filter_complex "[0:v]scale=1920:1080[v];[v][1:v]overlay=W-w-20:H-h-20" \
+      -c:v libx264 -preset medium -crf 20 output.mp4
+
+# CGVU text reference
+cgvu:
+  type: "reel"
+  version: "1.0"
+  checkboxes:
+    - id: 1
+      title: "OWNERSHIP OF CONTENT"
+      text: "I confirm that all videos selected for this reel are my own content, captured by me personally."
+    - id: 2
+      title: "GENERATED CONTENT"
+      text: "I understand that the generated reel becomes my own creation and my personal property."
+    - id: 3
+      title: "DISTRIBUTION RESPONSIBILITY"
+      text: "Any publication, sharing, or distribution of the generated reel is done entirely under my sole responsibility."
+    - id: 4
+      title: "LYNEWED'S ROLE"
+      text: "I acknowledge that Lynewed acts only as a technical processing service and bears no responsibility for how I use the reel."
+
+# Fichiers Dart a creer
+dart_files:
+  new_feature_module:
+    - path: "lib/features/reels/"
+      description: "New feature module for reels"
+
+  domain_layer:
+    - path: "lib/features/reels/domain/entities/reel.dart"
+    - path: "lib/features/reels/domain/entities/video_selection.dart"
+    - path: "lib/features/reels/domain/repositories/reel_repository.dart"
+    - path: "lib/features/reels/domain/usecases/create_reel.dart"
+    - path: "lib/features/reels/domain/usecases/download_reel.dart"
+    - path: "lib/features/reels/domain/usecases/validate_video_ownership.dart"
+    - path: "lib/features/reels/domain/usecases/check_cgvu_acceptance.dart"
+    - path: "lib/features/reels/domain/usecases/get_wedding_pro_instagrams.dart"
+
+  data_layer:
+    - path: "lib/features/reels/data/models/reel_model.dart"
+    - path: "lib/features/reels/data/repositories/reel_repository_impl.dart"
+    - path: "lib/features/reels/data/datasources/reel_remote_datasource.dart"
+
+  presentation_layer:
+    - path: "lib/features/reels/presentation/pages/video_selection_page.dart"
+    - path: "lib/features/reels/presentation/pages/reel_detail_page.dart"
+    - path: "lib/features/reels/presentation/pages/reel_processing_page.dart"
+    - path: "lib/features/reels/presentation/widgets/video_grid.dart"
+    - path: "lib/features/reels/presentation/widgets/selection_counter.dart"
+    - path: "lib/features/reels/presentation/widgets/reel_cgvu_modal.dart"
+    - path: "lib/features/reels/presentation/widgets/download_button.dart"
+    - path: "lib/features/reels/presentation/widgets/pro_instagram_section.dart"
+    - path: "lib/features/reels/presentation/bloc/reel_bloc.dart"
+
+# Edge Functions a creer
+edge_functions:
+  - name: "generate-reel"
+    trigger: "HTTP POST"
+    input:
+      reel_id: "UUID"
+    output:
+      success: "boolean"
+      reel_id: "UUID"
+    description: "Process reel with FFmpeg, generate preview and output"
+
+  - name: "cleanup-reel-files"
+    trigger: "pg_cron or HTTP"
+    description: "Delete Storage files for expired reels"
+
+# Tests a creer
+tests:
+  - story: S01
+    file: "test/features/reels/data/models/reel_model_test.dart"
+    cases:
+      - "Reel entity serialization"
+      - "Status enum values"
+      - "Creator type validation"
+
+  - story: S02
+    type: integration
+    description: "Test RLS policies (user own, bride view)"
+
+  - story: S03
+    file: "test/features/reels/presentation/pages/video_selection_page_test.dart"
+    cases:
+      - "Display video grid"
+      - "Selection counter updates"
+      - "Duration validation"
+      - "Reorder functionality"
+
+  - story: S04
+    file: "test/features/reels/domain/usecases/validate_video_ownership_test.dart"
+    cases:
+      - "Guest owns all videos"
+      - "Guest unauthorized video"
+      - "Bride owns videos"
+      - "Bride shared videos"
+      - "Bride unshared video rejected"
+
+  - story: S05
+    file: "test/features/reels/presentation/widgets/reel_cgvu_modal_test.dart"
+    cases:
+      - "All checkboxes required"
+      - "Continue button state"
+      - "Acceptance logged"
+
+  - story: S06
+    type: integration
+    description: "Test Edge Function (mock FFmpeg)"
+
+  - story: S10
+    file: "test/features/reels/domain/usecases/download_reel_test.dart"
+    cases:
+      - "Download success"
+      - "Save to gallery"
+      - "Track downloaded_at"
+
+# Ordre d'execution recommande
+execution_order:
+  phase_1:
+    name: "Database setup"
+    stories: [S01, S02]
+    sequential: true
+
+  phase_2:
+    name: "CGVU (parallel)"
+    stories: [S05]
+    parallel_with: phase_1
+
+  phase_3:
+    name: "Flutter UI"
+    stories: [S03, S04]
+    sequential: true
+    depends_on: phase_1
+    external_deps: "EPIC-10 must be complete"
+
+  phase_4:
+    name: "Backend processing"
+    stories: [S06, S07, S08, S09]
+    sequential: true
+    depends_on: phase_1
+
+  phase_5:
+    name: "Download and extras"
+    stories: [S10, S11]
+    parallel: true
+    depends_on: phase_4
+
+  phase_6:
+    name: "Cleanup automation"
+    stories: [S12]
+    depends_on: phase_1
+
+# Validation checklist
+validation:
+  pre_merge:
+    - "Table reels exists with all columns"
+    - "RLS policies tested (user own, bride view)"
+    - "EPIC-10 complete (video tables exist)"
+    - "Edge Functions deployed"
+    - "FFmpeg works on Edge Runtime"
+    - "CGVU acceptance logged"
+    - "FCM notification sent"
+    - "Download saves to gallery"
+    - "pg_cron cleanup scheduled"
+    - "No flutter analyze warnings"
+
+  post_merge:
+    - "Guest can create reel with own videos"
+    - "Bride can create reel with all accessible videos"
+    - "Preview has watermark"
+    - "Output has logo"
+    - "Notification received on completion"
+    - "Download works"
+    - "Cleanup removes files after 7 days"
+    - "Instagram handles displayed for bride"
+
+# Risk assessment
+risks:
+  - risk: "FFmpeg not available on Edge Runtime"
+    impact: critical
+    mitigation: "Use WASM FFmpeg or external service"
+
+  - risk: "Processing timeout for long videos"
+    impact: high
+    mitigation: "10 min total limit, 10 min timeout"
+
+  - risk: "Storage costs"
+    impact: medium
+    mitigation: "7 day retention, aggressive preview compression"
+
+  - risk: "Corrupted video files"
+    impact: medium
+    mitigation: "Validation before processing, clear error messages"
+
+  - risk: "RLS too permissive"
+    impact: high
+    mitigation: "Exhaustive testing, adversarial review"

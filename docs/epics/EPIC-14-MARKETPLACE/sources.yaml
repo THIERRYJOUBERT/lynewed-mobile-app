@@ -1,0 +1,730 @@
+# EPIC-14-MARKETPLACE - Sources de Reference
+# Cree le: 2026-01-28
+
+epic:
+  id: EPIC-14-MARKETPLACE
+  name: "Marketplace Robes & Chaussures (APP-08)"
+  description: "Marketplace style Vinted pour vendre robes ET chaussures de mariage avec commission 10% Stripe Connect et expedition FedEx mondiale"
+  status: draft
+  created_at: "2026-01-28"
+  estimated_days: 7
+  estimated_cost: 2100
+
+# Source PRD principale
+prd:
+  document: "docs/specs/MISSION-01-EVOLUTIONS-2026.md"
+  version: "2.1 (Post-Challenge Deep)"
+  sections_used:
+    - section: "11. APP-08 - Marketplace Robes & Chaussures"
+      description: "Specification complete de la marketplace"
+      subsections:
+        - "Structure de donnees (6 tables)"
+        - "User Stories - Vendeuse (US-08.1 to US-08.9)"
+        - "User Stories - Acheteuse (US-08.10 to US-08.18)"
+        - "Stripe Connect - Onboarding Express"
+        - "FedEx - Integration Complete (5 APIs)"
+        - "Devises (USD cents)"
+        - "UI/UX - Coherence"
+        - "Responsabilite & Litiges"
+        - "Criteres d'acceptation"
+    - section: "8. APP-05 - Integration Stripe Complete"
+      description: "Tables Stripe et webhooks"
+      subsections:
+        - "stripe_accounts table"
+        - "purchases table"
+        - "stripe_events table"
+        - "Webhooks a gerer"
+    - section: "12. CGVU & Conformite juridique"
+      description: "Textes CGVU et tracabilite"
+      subsections:
+        - "Types de CGVU"
+        - "Tracabilite (logs obligatoires)"
+        - "Textes CGVU Marketplace vendeuse (EN)"
+        - "Textes CGVU Marketplace acheteuse (EN)"
+    - section: "14. Decisions de conception"
+      decisions_used:
+        - "D-07: USD comme devise interne (Simplifie Stripe et FedEx)"
+        - "D-08: Tous webhooks Stripe geres (Securite, pas de cas non geres)"
+        - "D-09: Marketplace dans navbar + preview home (Visibilite maximale)"
+        - "D-10: Coherence UI avec my_wedding (Utilisateurs familiers)"
+    - section: "15. Annexes techniques"
+      subsections:
+        - "A. Tables Supabase a creer/modifier"
+        - "B. Edge Functions a creer"
+        - "D.5 Marketplace RLS Policies"
+
+# Dependances inter-epics
+dependencies:
+  blocking:
+    - epic_id: EPIC-06-PREREQUISITES
+      reason: "Enum userRole avec 'guest', colonnes invitation sur weddings"
+      status: required_before_start
+    - epic_id: EPIC-11-STRIPE
+      reason: "Tables stripe_accounts, purchases, stripe_events"
+      status: required_before_start
+  optional:
+    - epic_id: EPIC-13-MAP-FILTERS
+      reason: "Marqueurs marketplace sur la carte"
+      affected_stories: [S24]
+      note: "S24 peut etre fait sans EPIC-13 mais perd l'integration carte"
+
+# External services required
+external_services:
+  stripe:
+    type: "Payment processor"
+    features_required:
+      - "Stripe Connect Express accounts"
+      - "Payment Intents"
+      - "Transfers with application fees"
+      - "Webhooks (account.updated, payment_intent.succeeded, etc.)"
+    credentials_needed:
+      - "STRIPE_SECRET_KEY"
+      - "STRIPE_PUBLISHABLE_KEY"
+      - "STRIPE_WEBHOOK_SECRET"
+    documentation: "https://stripe.com/docs/connect"
+
+  fedex:
+    type: "Shipping carrier"
+    apis_required:
+      - name: "Address Validation API"
+        description: "Verify shipping addresses before label creation"
+      - name: "Rate API"
+        description: "Calculate shipping costs for display to buyer"
+      - name: "Ship API"
+        description: "Create shipments and generate labels"
+      - name: "Track API"
+        description: "Track package status updates"
+      - name: "Pickup API"
+        description: "Schedule package pickup (optional)"
+    credentials_needed:
+      - "FEDEX_CLIENT_ID"
+      - "FEDEX_CLIENT_SECRET"
+      - "FEDEX_ACCOUNT_NUMBER"
+    environments:
+      - sandbox: "Testing with fake shipments"
+      - production: "Real shipments, requires certification"
+    documentation: "https://developer.fedex.com"
+
+# Stories mapping vers PRD
+stories:
+  # Phase 1: Database Foundation
+  - id: S01
+    name: "Creer table marketplace_listings"
+    prd_reference: "Section 11 - Structure de donnees"
+    complexity: M
+    blocking: true
+    type: database
+    tables_created: [marketplace_listings]
+
+  - id: S02
+    name: "Creer table marketplace_photos"
+    prd_reference: "Section 11 - Structure de donnees"
+    complexity: S
+    depends_on: [S01]
+    type: database
+    tables_created: [marketplace_photos]
+
+  - id: S03
+    name: "Creer table marketplace_offers"
+    prd_reference: "Section 11 - Structure de donnees"
+    complexity: S
+    depends_on: [S01]
+    type: database
+    tables_created: [marketplace_offers]
+
+  - id: S04
+    name: "Creer table marketplace_transactions"
+    prd_reference: "Section 11 - Structure de donnees"
+    complexity: M
+    depends_on: [S01, S03]
+    type: database
+    tables_created: [marketplace_transactions]
+
+  - id: S05
+    name: "Creer table marketplace_messages"
+    prd_reference: "Section 11 - Structure de donnees"
+    complexity: S
+    depends_on: [S01]
+    type: database
+    tables_created: [marketplace_messages]
+    features: [realtime]
+
+  - id: S06
+    name: "Creer table fedex_events"
+    prd_reference: "Section 11 - Structure de donnees"
+    complexity: S
+    depends_on: [S04]
+    type: database
+    tables_created: [fedex_events]
+
+  - id: S07
+    name: "Creer bucket marketplace-listings avec RLS"
+    prd_reference: "Section 11"
+    complexity: S
+    depends_on: [S01]
+    type: storage
+    buckets_created: [marketplace-listings]
+
+  # Phase 2: CGVU & Stripe
+  - id: S08
+    name: "Implementer CGVU marketplace seller"
+    prd_reference: "Section 12 - CGVU Marketplace vendeuse"
+    complexity: M
+    depends_on: []
+    type: frontend_backend
+    cgvu_type: marketplace_seller
+
+  - id: S09
+    name: "Implementer CGVU marketplace buyer"
+    prd_reference: "Section 12 - CGVU Marketplace acheteuse"
+    complexity: M
+    depends_on: [S08]
+    type: frontend_backend
+    cgvu_type: marketplace_buyer
+
+  - id: S10
+    name: "Stripe Connect onboarding Express vendeurs"
+    prd_reference: "Section 8 + Section 11 - Stripe Connect"
+    complexity: L
+    depends_on: [EPIC-11]
+    type: backend_frontend
+    external_service: stripe
+
+  # Phase 3: FedEx Integration
+  - id: S11
+    name: "Edge Function FedEx Rate API"
+    prd_reference: "Section 11 - FedEx APIs"
+    complexity: M
+    depends_on: []
+    type: backend
+    external_service: fedex
+    fedex_api: rate
+
+  - id: S12
+    name: "Edge Function FedEx Ship API"
+    prd_reference: "Section 11 - FedEx APIs"
+    complexity: M
+    depends_on: [S11]
+    type: backend
+    external_service: fedex
+    fedex_api: ship
+
+  - id: S13
+    name: "Edge Function FedEx Track API"
+    prd_reference: "Section 11 - FedEx APIs"
+    complexity: M
+    depends_on: [S12]
+    type: backend
+    external_service: fedex
+    fedex_api: track
+
+  # Phase 4: Frontend Core
+  - id: S14
+    name: "Formulaire creation annonce vendeur"
+    prd_reference: "Section 11 - US-08.1 to US-08.4"
+    complexity: L
+    depends_on: [S01, S02, S07, S08, S10]
+    type: frontend
+    user_stories: [US-08.1, US-08.2, US-08.3, US-08.4]
+
+  - id: S15
+    name: "Page liste annonces (feed)"
+    prd_reference: "Section 11 - US-08.10"
+    complexity: M
+    depends_on: [S01]
+    type: frontend
+    user_stories: [US-08.10]
+
+  - id: S16
+    name: "Page detail annonce"
+    prd_reference: "Section 11 - US-08.10"
+    complexity: M
+    depends_on: [S01, S02]
+    type: frontend
+    user_stories: [US-08.10]
+
+  - id: S17
+    name: "Systeme de filtres avances"
+    prd_reference: "Section 11 - US-08.12"
+    complexity: M
+    depends_on: [S15]
+    type: frontend
+    user_stories: [US-08.12]
+
+  - id: S18
+    name: "Chat buyer/seller"
+    prd_reference: "Section 11 - US-08.13"
+    complexity: M
+    depends_on: [S05]
+    type: frontend
+    user_stories: [US-08.13]
+
+  # Phase 5: Transactions
+  - id: S19
+    name: "Systeme d'offres"
+    prd_reference: "Section 11 - US-08.7, US-08.14"
+    complexity: M
+    depends_on: [S03]
+    type: frontend_backend
+    user_stories: [US-08.7, US-08.14]
+
+  - id: S20
+    name: "Flow achat complet"
+    prd_reference: "Section 11 - US-08.15 to US-08.17"
+    complexity: L
+    depends_on: [S04, S09, S10, S11]
+    type: frontend_backend
+    user_stories: [US-08.15, US-08.16, US-08.17]
+
+  - id: S21
+    name: "Generation etiquette FedEx (vendeur)"
+    prd_reference: "Section 11 - US-08.8"
+    complexity: M
+    depends_on: [S12]
+    type: frontend_backend
+    user_stories: [US-08.8]
+
+  - id: S22
+    name: "Tracking colis (acheteur)"
+    prd_reference: "Section 11 - US-08.18"
+    complexity: M
+    depends_on: [S06, S13]
+    type: frontend
+    user_stories: [US-08.18]
+
+  # Phase 6: Polish
+  - id: S23
+    name: "Notifications marketplace"
+    prd_reference: "Section 11 - US-08.6"
+    complexity: M
+    depends_on: [S19, S20]
+    type: backend
+    user_stories: [US-08.6]
+
+  - id: S24
+    name: "Marqueurs marketplace sur carte"
+    prd_reference: "Section 11 - US-08.11, Section 10 APP-07"
+    complexity: S
+    depends_on: [S01]
+    optional_depends_on: [EPIC-13]
+    type: frontend
+    user_stories: [US-08.11]
+
+  - id: S25
+    name: "Page 'Mes ventes' vendeur"
+    prd_reference: "Section 11 - US-08.9"
+    complexity: M
+    depends_on: [S01, S04]
+    type: frontend
+    user_stories: [US-08.9]
+
+  - id: S26
+    name: "Navbar integration + Home preview"
+    prd_reference: "Section 11 - Decision D-09"
+    complexity: S
+    depends_on: [S15]
+    type: frontend
+
+# User Stories mapping depuis PRD
+user_stories:
+  seller:
+    - id: US-08.1
+      description: "En tant que bride, je peux creer une annonce (robe ou chaussures)"
+      mapped_to: S14
+    - id: US-08.2
+      description: "En tant que vendeuse, je dois uploader 5-10 photos"
+      mapped_to: S14
+    - id: US-08.3
+      description: "En tant que vendeuse, je remplis : titre, description, prix, taille, marque, etat, localisation"
+      mapped_to: S14
+    - id: US-08.4
+      description: "En tant que vendeuse, je dois accepter les CGVU (scroll + checkbox)"
+      mapped_to: [S08, S14]
+    - id: US-08.5
+      description: "En tant que vendeuse, je configure mon compte Stripe Connect (onboarding simple)"
+      mapped_to: S10
+    - id: US-08.6
+      description: "En tant que vendeuse, je recois des notifications (offre, message, vente)"
+      mapped_to: S23
+    - id: US-08.7
+      description: "En tant que vendeuse, je peux accepter/refuser les offres"
+      mapped_to: S19
+    - id: US-08.8
+      description: "En tant que vendeuse, je genere l'etiquette FedEx apres paiement"
+      mapped_to: S21
+    - id: US-08.9
+      description: "En tant que vendeuse, je recois 90% du prix (- 10% commission)"
+      mapped_to: [S04, S25]
+
+  buyer:
+    - id: US-08.10
+      description: "En tant qu'acheteuse, je vois les annonces dans un feed"
+      mapped_to: [S15, S16]
+    - id: US-08.11
+      description: "En tant qu'acheteuse, je vois les annonces sur la carte"
+      mapped_to: S24
+    - id: US-08.12
+      description: "En tant qu'acheteuse, je filtre par categorie, taille, marque, etat, prix, localisation"
+      mapped_to: S17
+    - id: US-08.13
+      description: "En tant qu'acheteuse, je peux contacter la vendeuse via chat"
+      mapped_to: S18
+    - id: US-08.14
+      description: "En tant qu'acheteuse, je peux faire une offre"
+      mapped_to: S19
+    - id: US-08.15
+      description: "En tant qu'acheteuse, je peux acheter au prix affiche"
+      mapped_to: S20
+    - id: US-08.16
+      description: "En tant qu'acheteuse, je dois accepter les CGVU avant paiement"
+      mapped_to: [S09, S20]
+    - id: US-08.17
+      description: "En tant qu'acheteuse, je paie prix + frais de port (calcules FedEx)"
+      mapped_to: [S11, S20]
+    - id: US-08.18
+      description: "En tant qu'acheteuse, je suis le tracking de mon colis"
+      mapped_to: S22
+
+# Decisions techniques de cet Epic
+decisions:
+  - id: D-EPIC14-01
+    decision: "Tous montants en USD cents"
+    source: "PRD Decision D-07"
+    rationale: "Simplifie calculs, evite erreurs float, compatible Stripe/FedEx"
+
+  - id: D-EPIC14-02
+    decision: "Commission fixe 10%"
+    source: "PRD APP-08"
+    rationale: "Simple a calculer, industrie standard pour marketplace"
+
+  - id: D-EPIC14-03
+    decision: "Expiration offres 48h"
+    source: "PRD APP-08"
+    rationale: "Balance entre laisser le temps au vendeur et engagement acheteur"
+
+  - id: D-EPIC14-04
+    decision: "7 jours avant completion transaction"
+    source: "PRD APP-08"
+    rationale: "Protection acheteur pour disputes, standard e-commerce"
+
+  - id: D-EPIC14-05
+    decision: "5-10 photos obligatoires par annonce"
+    source: "PRD APP-08"
+    rationale: "Qualite des annonces, confiance acheteurs"
+
+  - id: D-EPIC14-06
+    decision: "Stripe Connect Express (pas Standard ou Custom)"
+    source: "PRD APP-08"
+    rationale: "Onboarding le plus simple pour vendeurs occasionnels"
+
+  - id: D-EPIC14-07
+    decision: "FedEx worldwide shipping"
+    source: "PRD APP-08"
+    rationale: "Couverture internationale, calcul frais automatique"
+
+  - id: D-EPIC14-08
+    decision: "CGVU scroll + checkbox"
+    source: "PRD Section 12"
+    rationale: "Preuve juridique d'acceptation, conformite RGPD"
+
+  - id: D-EPIC14-09
+    decision: "Lynewed non responsable litiges"
+    source: "PRD APP-08"
+    rationale: "Intermediaire technique uniquement, limite responsabilite"
+
+# Tables creees par cet Epic
+tables_created:
+  - name: marketplace_listings
+    story: S01
+    rls_policies: 5
+    indexes: 5
+    description: "Annonces marketplace (dress/shoes)"
+
+  - name: marketplace_photos
+    story: S02
+    rls_policies: 2
+    indexes: 1
+    description: "Photos des annonces (5-10 par annonce)"
+
+  - name: marketplace_offers
+    story: S03
+    rls_policies: 5
+    indexes: 3
+    description: "Offres acheteurs avec expiration 48h"
+
+  - name: marketplace_transactions
+    story: S04
+    rls_policies: 1
+    indexes: 5
+    description: "Historique complet des transactions"
+
+  - name: marketplace_messages
+    story: S05
+    rls_policies: 3
+    indexes: 3
+    realtime: true
+    description: "Chat buyer/seller par annonce"
+
+  - name: fedex_events
+    story: S06
+    rls_policies: 1
+    indexes: 3
+    description: "Audit log FedEx tracking events"
+
+  - name: cgvu_acceptances
+    story: S08
+    rls_policies: 2
+    indexes: 1
+    description: "Logs acceptation CGVU (peut exister deja)"
+    note: "Verifier si table existe deja dans EPIC-11"
+
+# Edge Functions creees par cet Epic
+edge_functions:
+  - name: create-stripe-connect-account
+    story: S10
+    description: "Cree compte Stripe Connect Express et lien onboarding"
+    trigger: http
+
+  - name: fedex-calculate-rate
+    story: S11
+    description: "Calcule frais de port via FedEx Rate API"
+    trigger: http
+
+  - name: fedex-create-shipment
+    story: S12
+    description: "Cree expedition et genere etiquette via FedEx Ship API"
+    trigger: http
+
+  - name: fedex-track-shipment
+    story: S13
+    description: "Recupere statut tracking via FedEx Track API"
+    trigger: http_or_cron
+
+  - name: expire-marketplace-offers
+    story: S03
+    description: "Cron job pour expirer offres > 48h"
+    trigger: cron
+    schedule: "*/15 * * * *"
+
+  - name: complete-delivered-transactions
+    story: S04
+    description: "Cron job pour completer transactions livrees > 7 jours"
+    trigger: cron
+    schedule: "0 0 * * *"
+
+# Storage buckets crees par cet Epic
+storage_buckets:
+  - name: marketplace-listings
+    story: S07
+    public: false
+    max_file_size: 20971520  # 20MB
+    allowed_mime_types:
+      - "image/jpeg"
+      - "image/png"
+      - "image/webp"
+      - "image/heic"
+    rls_policies: 4
+    structure: "{listing_id}/{filename}"
+
+# Flutter files to create/modify
+flutter_files:
+  domain:
+    entities:
+      - path: "lib/features/marketplace/domain/entities/listing.dart"
+        story: S01
+      - path: "lib/features/marketplace/domain/entities/listing_photo.dart"
+        story: S02
+      - path: "lib/features/marketplace/domain/entities/offer.dart"
+        story: S03
+      - path: "lib/features/marketplace/domain/entities/transaction.dart"
+        story: S04
+      - path: "lib/features/marketplace/domain/entities/message.dart"
+        story: S05
+      - path: "lib/features/marketplace/domain/entities/fedex_event.dart"
+        story: S06
+
+    repositories:
+      - path: "lib/features/marketplace/domain/repositories/listing_repository.dart"
+        story: S01
+      - path: "lib/features/marketplace/domain/repositories/offer_repository.dart"
+        story: S03
+      - path: "lib/features/marketplace/domain/repositories/transaction_repository.dart"
+        story: S04
+      - path: "lib/features/marketplace/domain/repositories/message_repository.dart"
+        story: S05
+
+  data:
+    datasources:
+      - path: "lib/features/marketplace/data/datasources/marketplace_remote_datasource.dart"
+        stories: [S01, S02, S03, S04, S05]
+    repositories:
+      - path: "lib/features/marketplace/data/repositories/listing_repository_impl.dart"
+        story: S01
+      - path: "lib/features/marketplace/data/repositories/offer_repository_impl.dart"
+        story: S03
+
+  presentation:
+    pages:
+      - path: "lib/features/marketplace/presentation/pages/marketplace_feed_page.dart"
+        story: S15
+      - path: "lib/features/marketplace/presentation/pages/listing_detail_page.dart"
+        story: S16
+      - path: "lib/features/marketplace/presentation/pages/create_listing_page.dart"
+        story: S14
+      - path: "lib/features/marketplace/presentation/pages/checkout_page.dart"
+        story: S20
+      - path: "lib/features/marketplace/presentation/pages/my_sales_page.dart"
+        story: S25
+      - path: "lib/features/marketplace/presentation/pages/marketplace_chat_page.dart"
+        story: S18
+
+    widgets:
+      - path: "lib/features/marketplace/presentation/widgets/listing_card.dart"
+        story: S15
+      - path: "lib/features/marketplace/presentation/widgets/photo_carousel.dart"
+        story: S16
+      - path: "lib/features/marketplace/presentation/widgets/filter_sheet.dart"
+        story: S17
+      - path: "lib/features/marketplace/presentation/widgets/offer_modal.dart"
+        story: S19
+      - path: "lib/features/marketplace/presentation/widgets/cgvu_seller_modal.dart"
+        story: S08
+      - path: "lib/features/marketplace/presentation/widgets/cgvu_buyer_modal.dart"
+        story: S09
+      - path: "lib/features/marketplace/presentation/widgets/tracking_timeline.dart"
+        story: S22
+
+# Tests to create
+tests:
+  unit:
+    - story: S01
+      file: "test/features/marketplace/domain/entities/listing_test.dart"
+      cases:
+        - "Listing.fromJson parses correctly"
+        - "Listing price_cents converts to display price"
+        - "Listing validates category correctly"
+
+    - story: S03
+      file: "test/features/marketplace/domain/entities/offer_test.dart"
+      cases:
+        - "Offer expires after 48 hours"
+        - "Offer status transitions work correctly"
+
+    - story: S04
+      file: "test/features/marketplace/domain/entities/transaction_test.dart"
+      cases:
+        - "Commission calculated as 10%"
+        - "Seller payout is 90%"
+        - "Total paid includes shipping"
+
+  integration:
+    - story: S01
+      description: "RLS policies for marketplace_listings"
+
+    - story: S10
+      description: "Stripe Connect onboarding flow"
+
+    - story: S11
+      description: "FedEx Rate API integration"
+
+    - story: S20
+      description: "Complete purchase flow end-to-end"
+
+# Execution order
+execution_order:
+  phase_1:
+    name: "Database Foundation"
+    stories: [S01, S02, S03, S04, S05, S06, S07]
+    duration_days: 1.5
+    parallel_groups:
+      - [S01]  # First, blocking
+      - [S02, S03, S05, S07]  # Can be parallel after S01
+      - [S04]  # After S03
+      - [S06]  # After S04
+
+  phase_2:
+    name: "CGVU & Stripe"
+    stories: [S08, S09, S10]
+    duration_days: 1
+    depends_on: [phase_1, EPIC-11]
+
+  phase_3:
+    name: "FedEx Integration"
+    stories: [S11, S12, S13]
+    duration_days: 1
+    sequential: true
+    can_parallel_with: phase_2
+
+  phase_4:
+    name: "Frontend Core"
+    stories: [S14, S15, S16, S17, S18]
+    duration_days: 1.5
+    depends_on: [phase_1, phase_2]
+
+  phase_5:
+    name: "Transactions"
+    stories: [S19, S20, S21, S22]
+    duration_days: 1.5
+    depends_on: [phase_3, phase_4]
+
+  phase_6:
+    name: "Polish"
+    stories: [S23, S24, S25, S26]
+    duration_days: 0.5
+    depends_on: [phase_5]
+
+# Validation checklist
+validation:
+  pre_merge:
+    database:
+      - "All migrations tested on dev branch"
+      - "Rollback tested for each migration"
+      - "RLS policies validated with tests"
+      - "Indexes performant (EXPLAIN ANALYZE < 100ms)"
+
+    edge_functions:
+      - "FedEx sandbox tests passed"
+      - "Stripe Connect flow tested"
+      - "Error handling for all edge cases"
+
+    flutter:
+      - "flutter analyze --fatal-infos passes"
+      - "All unit tests pass"
+      - "Widget tests for main screens"
+
+    legal:
+      - "CGVU texts validated"
+      - "Acceptance logging works"
+
+  post_merge:
+    - "Marketplace tab visible in navbar (bride only)"
+    - "Can create listing with 5+ photos"
+    - "Can browse and filter listings"
+    - "Can make offers and buy"
+    - "FedEx rates calculate correctly"
+    - "Stripe payments work"
+    - "Commission 10% deducted correctly"
+    - "Tracking updates work"
+    - "Notifications sent correctly"
+
+# Metrics for success
+success_metrics:
+  - name: "Listings created"
+    target: "50+ first month"
+    query: "COUNT(*) FROM marketplace_listings WHERE created_at > NOW() - INTERVAL '30 days'"
+
+  - name: "Transactions completed"
+    target: "10+ first month"
+    query: "COUNT(*) FROM marketplace_transactions WHERE status = 'completed'"
+
+  - name: "Commission generated"
+    target: "500+ USD first month"
+    query: "SUM(platform_fee_cents) / 100 FROM marketplace_transactions WHERE status = 'completed'"
+
+  - name: "Checkout abandonment rate"
+    target: "< 30%"
+    source: "Analytics"
+
+  - name: "Seller satisfaction"
+    target: "> 4/5"
+    source: "Survey"

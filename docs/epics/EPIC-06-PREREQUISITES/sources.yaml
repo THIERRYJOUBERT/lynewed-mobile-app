@@ -1,0 +1,205 @@
+# EPIC-06-PREREQUISITES - Sources de Reference
+# Cree le: 2026-01-28
+
+epic:
+  id: EPIC-06-PREREQUISITES
+  name: "Prerequisites Migration (APP-00)"
+  description: "Migration des prerequis techniques BLOQUANTS pour Mission 2026"
+  status: draft
+  created_at: "2026-01-28"
+  estimated_days: 0.5
+
+# Source PRD principale
+prd:
+  document: "docs/specs/MISSION-01-EVOLUTIONS-2026.md"
+  version: "2.1 (Post-Challenge Deep)"
+  sections_used:
+    - section: "2. APP-00 - Prerequisites Migration"
+      subsections:
+        - "2.1 Migration Enum userRole"
+        - "2.2 RLS Policies pour nouvelles tables"
+        - "2.3 Securisation Code Invitation"
+        - "2.4 Storage Bucket Policies"
+    - section: "3. Utilisateurs et Roles"
+      description: "Definition du role Guest"
+    - section: "5. APP-03 - Systeme d'invitations guests"
+      description: "Colonnes wedding_guests"
+    - section: "14. Decisions de conception"
+      decisions_used:
+        - "D-15: Code invitation 8 caracteres + expiration 30j + rate limiting"
+        - "D-16: RLS obligatoires AVANT toute table"
+        - "D-17: Reutiliser chat_rooms existante"
+
+# Etat production verifie
+production_state:
+  project_id: "hekyovgnovhfhmkpfrna"
+  verified_at: "2026-01-28"
+  findings:
+    userRole_enum:
+      current: ["bride", "professional"]
+      missing: ["guest"]
+    weddings_table:
+      rows: 8
+      missing_columns:
+        - "invite_code"
+        - "invite_code_expires_at"
+    wedding_guests_table:
+      rows: 5
+      missing_columns:
+        - "user_id"
+        - "invited_at"
+        - "joined_at"
+        - "status"
+    wedding_events_table:
+      rows: 9
+      has: "reminder_sent"
+      missing_columns:
+        - "reminder_1_week"
+        - "reminder_1_day"
+        - "reminder_1_hour"
+    chat_rooms_table:
+      rows: 80
+      note: "Type 'wedding_team' EXISTS - can be reused (D-17)"
+    profiles_table:
+      rows: 254
+      uses: "userRole enum"
+    missing_tables:
+      - "scheduled_notifications"
+      - "invitation_attempts"
+      - "guest_albums"
+      - "guest_media"
+      - "reviews"
+      - "reels"
+      - "stripe_accounts"
+      - "purchases"
+      - "stripe_events"
+      - "marketplace_*"
+      - "cgvu_acceptances"
+    missing_buckets:
+      - "wedding-media"
+
+# Stories mapping vers PRD
+stories:
+  - id: S01
+    name: "Ajouter 'guest' a l'enum userRole"
+    prd_reference: "Section 2.1"
+    complexity: S
+    blocking: true
+
+  - id: S02
+    name: "Ajouter colonnes invitation a weddings"
+    prd_reference: "Section 2.3, Decision D-15"
+    complexity: S
+    depends_on: [S01]
+
+  - id: S03
+    name: "Creer table invitation_attempts"
+    prd_reference: "Section 2.3, Decision D-15"
+    complexity: S
+    depends_on: []
+
+  - id: S04
+    name: "Creer fonction generate_secure_invite_code"
+    prd_reference: "Section 2.3"
+    complexity: S
+    depends_on: [S02]
+
+  - id: S05
+    name: "Ajouter colonnes invitation a wedding_guests"
+    prd_reference: "Section APP-03"
+    complexity: S
+    depends_on: [S01]
+
+  - id: S06
+    name: "Creer bucket wedding-media avec RLS"
+    prd_reference: "Section 2.4"
+    complexity: M
+    depends_on: []
+
+# Decisions techniques de cet Epic
+decisions:
+  - id: D-EPIC06-01
+    decision: "Code invitation 8 caracteres (pas 6)"
+    source: "PRD Decision D-15"
+    rationale: "2.8 trillions de combinaisons vs 2 milliards"
+
+  - id: D-EPIC06-02
+    decision: "Alphabet 32 chars exclut I,O,0,1"
+    source: "Best practice"
+    rationale: "Eviter confusion visuelle lors de saisie manuelle"
+
+  - id: D-EPIC06-03
+    decision: "Rate limit 5 attempts par 15 minutes"
+    source: "Security standard"
+    rationale: "Balance securite et UX"
+
+  - id: D-EPIC06-04
+    decision: "Expiration 30 jours par defaut"
+    source: "PRD Section 2.3"
+    rationale: "Balance securite et flexibilite organisationnelle"
+
+# Fichiers Dart a modifier
+dart_files:
+  - path: "lib/features/auth/domain/entities/user_role.dart"
+    story: S01
+    changes:
+      - "Add UserRole.guest enum value"
+      - "Update UserRoleX.value extension"
+      - "Update UserRoleX.fromString extension"
+
+# Tests a creer
+tests:
+  - story: S01
+    file: "test/features/auth/domain/entities/user_role_test.dart"
+    cases:
+      - "UserRole.guest.value returns 'guest'"
+      - "UserRole.fromString('guest') returns UserRole.guest"
+      - "Backward compatibility with bride and professional"
+
+  - story: S03
+    type: integration
+    description: "Test rate limiting function"
+
+  - story: S06
+    type: integration
+    description: "Test RLS policies on storage bucket"
+
+# Ordre d'execution recommande
+execution_order:
+  phase_1:
+    name: "Core migrations"
+    stories: [S01, S03]
+    parallel: true
+
+  phase_2:
+    name: "Weddings extension"
+    stories: [S02, S04]
+    sequential: true
+    depends_on: phase_1
+
+  phase_3:
+    name: "Guests extension"
+    stories: [S05]
+    depends_on: [S01]
+
+  phase_4:
+    name: "Storage setup"
+    stories: [S06]
+    parallel_with: phase_2
+
+# Validation checklist
+validation:
+  pre_merge:
+    - "All migrations tested on dev branch"
+    - "Rollback tested for each migration"
+    - "RLS policies validated with tests"
+    - "No flutter analyze warnings"
+    - "Production backup created"
+
+  post_merge:
+    - "Enum contains 'guest' value"
+    - "weddings.invite_code column exists"
+    - "Trigger generates codes on new weddings"
+    - "Rate limiting function works"
+    - "Storage bucket accepts uploads"
+    - "RLS policies block unauthorized access"

@@ -1,0 +1,494 @@
+# EPIC-11-STRIPE - Sources de Reference
+# Cree le: 2026-01-28
+
+epic:
+  id: EPIC-11-STRIPE
+  name: "Integration Stripe Complete (APP-05)"
+  description: "Infrastructure Stripe complete pour marketplace et achats"
+  status: draft
+  created_at: "2026-01-28"
+  estimated_days: 1
+  estimated_price: "300 EUR"
+
+# Source PRD principale
+prd:
+  document: "docs/specs/MISSION-01-EVOLUTIONS-2026.md"
+  version: "2.1 (Post-Challenge Deep)"
+  sections_used:
+    - section: "8. APP-05 - Integration Stripe Complete"
+      subsections:
+        - "Fonctionnalites Stripe"
+        - "Stripe Connect (Marketplace)"
+        - "Payment Intents (Achats)"
+        - "Base de donnees"
+        - "Webhooks Stripe a gerer (TOUS)"
+        - "Edge Function : Webhook Handler"
+        - "Criteres d'acceptation"
+    - section: "16. Annexes techniques - D.6 RLS Policies"
+      description: "Policies stripe_accounts et stripe_events"
+    - section: "14. Decisions de conception"
+      decisions_used:
+        - "D-08: Tous webhooks Stripe geres"
+
+# Etat production verifie (MCP Supabase)
+production_state:
+  project_id: "hekyovgnovhfhmkpfrna"
+  verified_at: "2026-01-28"
+  findings:
+    stripe_events_log:
+      exists: true
+      rows: 0
+      note: "Table limitee - pas de payload, event_id/type/timestamps seulement"
+    professional_subscriptions:
+      exists: true
+      rows: 174
+      has: ["stripe_customer_id", "stripe_subscription_id"]
+      note: "Pour abonnements pros, pas pour Connect"
+    missing_tables:
+      - name: "stripe_accounts"
+        purpose: "Comptes Stripe Connect des vendeuses"
+        critical: true
+      - name: "purchases"
+        purpose: "Tous les achats (marketplace, reels, etc.)"
+        critical: true
+      - name: "stripe_events"
+        purpose: "Audit complet avec payload"
+        critical: true
+    existing_edge_functions:
+      - "notifications_outbox_drain"
+      - "create-or-sync-user"
+      - "sync-professional-profile"
+      - "send-verification-email"
+      note: "Pas de stripe-webhook existant"
+
+# Webhooks Stripe a gerer (exhaustif depuis PRD)
+webhooks:
+  payment_intents:
+    - event: "payment_intent.created"
+      action: "Log, creer purchase pending"
+      priority: HIGH
+    - event: "payment_intent.processing"
+      action: "MAJ purchase processing"
+      priority: MEDIUM
+    - event: "payment_intent.succeeded"
+      action: "MAJ purchase succeeded, notify"
+      priority: CRITICAL
+    - event: "payment_intent.payment_failed"
+      action: "MAJ purchase failed, notify, log error"
+      priority: CRITICAL
+    - event: "payment_intent.canceled"
+      action: "MAJ purchase canceled"
+      priority: MEDIUM
+    - event: "payment_intent.amount_capturable_updated"
+      action: "Log event"
+      priority: LOW
+    - event: "payment_intent.requires_action"
+      action: "Notify user action requise"
+      priority: HIGH
+
+  checkout_sessions:
+    - event: "checkout.session.completed"
+      action: "Finaliser achat"
+      priority: CRITICAL
+    - event: "checkout.session.expired"
+      action: "Log expiration"
+      priority: MEDIUM
+    - event: "checkout.session.async_payment_succeeded"
+      action: "Finaliser achat async"
+      priority: HIGH
+    - event: "checkout.session.async_payment_failed"
+      action: "Marquer echec, notify"
+      priority: HIGH
+
+  connect_accounts:
+    - event: "account.updated"
+      action: "MAJ onboarding_complete, charges_enabled"
+      priority: CRITICAL
+    - event: "account.application.deauthorized"
+      action: "Desactiver compte, notify"
+      priority: HIGH
+    - event: "account.external_account.created"
+      action: "Log event"
+      priority: LOW
+    - event: "account.external_account.updated"
+      action: "Log event"
+      priority: LOW
+    - event: "account.external_account.deleted"
+      action: "Log event"
+      priority: LOW
+
+  transfers:
+    - event: "transfer.created"
+      action: "MAJ purchase.stripe_transfer_id"
+      priority: MEDIUM
+    - event: "transfer.updated"
+      action: "Log event"
+      priority: LOW
+    - event: "transfer.reversed"
+      action: "Marquer reversal, notify seller"
+      priority: HIGH
+
+  disputes:
+    - event: "charge.dispute.created"
+      action: "Notify admin + seller, MAJ purchase disputed"
+      priority: CRITICAL
+    - event: "charge.dispute.updated"
+      action: "Log update, notify"
+      priority: MEDIUM
+    - event: "charge.dispute.closed"
+      action: "MAJ statut final, notify resolution"
+      priority: HIGH
+    - event: "charge.dispute.funds_reinstated"
+      action: "Log, notify seller bonne nouvelle"
+      priority: MEDIUM
+    - event: "charge.dispute.funds_withdrawn"
+      action: "Log, notify seller"
+      priority: HIGH
+
+  refunds:
+    - event: "charge.refunded"
+      action: "MAJ purchase refunded, notify buyer"
+      priority: HIGH
+    - event: "charge.refund.updated"
+      action: "Log update"
+      priority: LOW
+
+  payouts:
+    - event: "payout.created"
+      action: "Log event"
+      priority: LOW
+    - event: "payout.updated"
+      action: "Log event"
+      priority: LOW
+    - event: "payout.paid"
+      action: "Notify seller virement recu"
+      priority: HIGH
+    - event: "payout.failed"
+      action: "Notify seller + admin, investiguer"
+      priority: CRITICAL
+    - event: "payout.canceled"
+      action: "Log event, notify"
+      priority: MEDIUM
+
+# Stories mapping vers PRD
+stories:
+  - id: S01
+    name: "Creer table stripe_accounts"
+    prd_reference: "Section 8 - Base de donnees - stripe_accounts"
+    complexity: S
+    points: 2
+    blocking: true
+    deliverables:
+      - "Migration SQL"
+      - "RLS policies"
+
+  - id: S02
+    name: "Creer table purchases"
+    prd_reference: "Section 8 - Base de donnees - purchases"
+    complexity: M
+    points: 3
+    blocking: true
+    deliverables:
+      - "Migration SQL avec tous les champs"
+      - "RLS policies buyer/seller"
+      - "Index de performance"
+
+  - id: S03
+    name: "Creer table stripe_events"
+    prd_reference: "Section 8 - Base de donnees - stripe_events"
+    complexity: S
+    points: 2
+    blocking: true
+    deliverables:
+      - "Migration SQL"
+      - "RLS (service_role only)"
+      - "Index pour requetes"
+
+  - id: S04
+    name: "Creer Edge Function stripe-webhook avec signature verification"
+    prd_reference: "Section 8 - Edge Function : Webhook Handler"
+    complexity: M
+    points: 3
+    depends_on: [S01, S02, S03]
+    deliverables:
+      - "Edge Function deployee"
+      - "Signature verification"
+      - "Logging dans stripe_events"
+      - "Idempotency"
+
+  - id: S05
+    name: "Implementer handlers payment_intent.*"
+    prd_reference: "Section 8 - Webhooks - Paiements"
+    complexity: M
+    points: 3
+    depends_on: [S04]
+    webhooks_count: 7
+    deliverables:
+      - "7 handlers payment_intent"
+      - "MAJ purchases"
+      - "Notifications"
+
+  - id: S06
+    name: "Implementer handlers checkout.session.*"
+    prd_reference: "Section 8 - Webhooks - Checkout"
+    complexity: M
+    points: 3
+    depends_on: [S04]
+    webhooks_count: 4
+    deliverables:
+      - "4 handlers checkout.session"
+      - "Creation purchases"
+
+  - id: S07
+    name: "Implementer handler account.updated (Connect status)"
+    prd_reference: "Section 8 - Webhooks - Connect"
+    complexity: S
+    points: 2
+    depends_on: [S04]
+    webhooks_count: 5
+    deliverables:
+      - "Handler account.updated"
+      - "Handler account.application.deauthorized"
+      - "MAJ stripe_accounts"
+      - "Notifications onboarding"
+
+  - id: S08
+    name: "Implementer handlers charge.dispute.*"
+    prd_reference: "Section 8 - Webhooks - Disputes"
+    complexity: M
+    points: 3
+    depends_on: [S04]
+    webhooks_count: 5
+    deliverables:
+      - "5 handlers dispute"
+      - "MAJ purchases.status disputed"
+      - "Notifications admin CRITIQUES"
+      - "Notifications seller"
+
+  - id: S09
+    name: "Implementer handlers payout.*"
+    prd_reference: "Section 8 - Webhooks - Payout"
+    complexity: S
+    points: 2
+    depends_on: [S04]
+    webhooks_count: 5
+    deliverables:
+      - "5 handlers payout"
+      - "Notifications seller"
+      - "Alertes admin pour failures"
+
+  - id: S10
+    name: "Implementer handlers transfers + refunds"
+    prd_reference: "Section 8 - Webhooks - Transferts et Refunds"
+    complexity: S
+    points: 2
+    depends_on: [S04]
+    webhooks_count: 5
+    deliverables:
+      - "3 handlers transfer"
+      - "2 handlers refund"
+      - "MAJ purchases"
+
+  - id: S11
+    name: "Creer entites Dart et repository Stripe"
+    prd_reference: "Clean Architecture pattern"
+    complexity: M
+    points: 3
+    depends_on: [S01, S02]
+    deliverables:
+      - "StripeAccount entity"
+      - "Purchase entity"
+      - "PurchaseStatus enum"
+      - "StripeRepository interface"
+      - "SupabaseStripeRepository implementation"
+      - "StripeDatasource"
+      - "Tests unitaires"
+
+# Decisions techniques de cet Epic
+decisions:
+  - id: D-EPIC11-01
+    decision: "Utiliser service_role pour Edge Function"
+    source: "PRD Section D.6"
+    rationale: "Les webhooks doivent pouvoir modifier toutes les tables"
+
+  - id: D-EPIC11-02
+    decision: "Idempotency via UPSERT stripe_event_id"
+    source: "Best practice Stripe"
+    rationale: "Stripe peut renvoyer le meme event plusieurs fois"
+
+  - id: D-EPIC11-03
+    decision: "Stocker payload complet dans stripe_events"
+    source: "Audit requirement"
+    rationale: "Debugging et compliance"
+
+  - id: D-EPIC11-04
+    decision: "Commission 10% dans platform_fee_cents"
+    source: "PRD Section 8"
+    rationale: "Monetisation marketplace"
+
+  - id: D-EPIC11-05
+    decision: "USD comme devise interne"
+    source: "PRD Decision D-07"
+    rationale: "Simplifie Stripe et FedEx"
+
+  - id: D-EPIC11-06
+    decision: "Notifications critiques pour disputes et payout failures"
+    source: "PRD Section 8"
+    rationale: "Ces events necessitent action immediate"
+
+# Fichiers Dart a creer
+dart_files:
+  entities:
+    - path: "lib/features/payments/domain/entities/stripe_account.dart"
+      story: S11
+      description: "Entite StripeAccount avec fromJson, copyWith"
+
+    - path: "lib/features/payments/domain/entities/purchase.dart"
+      story: S11
+      description: "Entite Purchase avec tous les champs"
+
+    - path: "lib/features/payments/domain/entities/purchase_status.dart"
+      story: S11
+      description: "Enum PurchaseStatus"
+
+  repositories:
+    - path: "lib/features/payments/domain/repositories/stripe_repository.dart"
+      story: S11
+      description: "Interface abstraite StripeRepository"
+
+    - path: "lib/features/payments/data/repositories/supabase_stripe_repository.dart"
+      story: S11
+      description: "Implementation Supabase"
+
+  datasources:
+    - path: "lib/features/payments/data/datasources/stripe_datasource.dart"
+      story: S11
+      description: "Datasource pour queries Supabase"
+
+# Fichiers Edge Function
+edge_functions:
+  - path: "supabase/functions/stripe-webhook/index.ts"
+    story: S04
+    description: "Edge Function principale webhook handler"
+    secrets_required:
+      - "STRIPE_SECRET_KEY"
+      - "STRIPE_WEBHOOK_SECRET"
+      - "SUPABASE_SERVICE_ROLE_KEY"
+
+# Tests a creer
+tests:
+  unit:
+    - story: S11
+      file: "test/features/payments/domain/entities/stripe_account_test.dart"
+      cases:
+        - "fromJson creates valid entity"
+        - "copyWith works correctly"
+        - "onboardingComplete computed property"
+
+    - story: S11
+      file: "test/features/payments/domain/entities/purchase_test.dart"
+      cases:
+        - "fromJson with all fields"
+        - "fromJson with minimal fields"
+        - "commission calculation correct"
+
+  integration:
+    - story: S04
+      description: "Webhook signature verification"
+
+    - story: S04
+      description: "Idempotency - same event twice"
+
+    - story: S05
+      description: "payment_intent.succeeded updates purchase"
+
+    - story: S08
+      description: "dispute.created triggers notifications"
+
+# RLS Policies a creer
+rls_policies:
+  stripe_accounts:
+    - name: "User sees own stripe account"
+      operation: SELECT
+      using: "user_id = auth.uid()"
+    - name: "User can create own stripe account"
+      operation: INSERT
+      with_check: "user_id = auth.uid()"
+
+  purchases:
+    - name: "Buyer sees own purchases"
+      operation: SELECT
+      using: "user_id = auth.uid()"
+    - name: "Seller sees sales"
+      operation: SELECT
+      using: "seller_id = auth.uid()"
+
+  stripe_events:
+    - name: "No public access"
+      operation: ALL
+      using: "false"
+      note: "Service role only via Edge Function"
+
+# Ordre d'execution recommande
+execution_order:
+  phase_1:
+    name: "Infrastructure Database"
+    stories: [S01, S02, S03]
+    parallel: true
+    blocking: true
+
+  phase_2:
+    name: "Edge Function Core"
+    stories: [S04]
+    depends_on: phase_1
+    blocking: true
+
+  phase_3:
+    name: "Webhook Handlers"
+    stories: [S05, S06, S07, S08, S09, S10]
+    depends_on: phase_2
+    parallel: true
+
+  phase_4:
+    name: "Dart Layer"
+    stories: [S11]
+    depends_on: phase_1
+    parallel_with: phase_3
+
+# Validation checklist
+validation:
+  pre_merge:
+    - "All migrations tested on dev branch"
+    - "Rollback tested for each migration"
+    - "RLS policies validated with tests"
+    - "Edge Function deployed and tested"
+    - "Webhook endpoint configured in Stripe Dashboard"
+    - "All webhook types tested in Stripe test mode"
+    - "No flutter analyze warnings"
+    - "Production backup created"
+
+  post_merge:
+    - "Tables exist in production"
+    - "Edge Function responds to webhooks"
+    - "Events logged correctly"
+    - "Notifications sent correctly"
+    - "Commission calculated correctly"
+    - "Documentation updated"
+
+# Dependencies externes
+external_dependencies:
+  stripe:
+    version: "2024-12-18.acacia"
+    products_used:
+      - "Connect (Express)"
+      - "Checkout"
+      - "Payment Intents"
+      - "Webhooks"
+
+  supabase:
+    project_id: "hekyovgnovhfhmkpfrna"
+    features_used:
+      - "Database (PostgreSQL)"
+      - "RLS"
+      - "Edge Functions"
+      - "Secrets"
