@@ -198,11 +198,11 @@ auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, prof
 | EPIC-09 | APP-03 | Invitations (Guests) | 12 | 2j |
 | EPIC-10 | APP-04 | Photos/Videos | 10 | 1.5j |
 | EPIC-11 | APP-05 | Stripe Integration | 12 | 1j |
-| EPIC-12 | APP-06 | Reels Generation | 10 | 1.5j |
+| EPIC-12 | APP-06 | Reels Generation | 14 | 1.5j |
 | EPIC-13 | APP-07 | Map Filters | 9 | 1j |
 | EPIC-14 | APP-08 | Marketplace | 26 | 7j |
 
-**Total** : 102 stories, 15 jours, 4500€ - PRD: `docs/specs/MISSION-01-EVOLUTIONS-2026.md`
+**Total** : 106 stories (créées), 15 jours, 4500€ - PRD: `docs/specs/MISSION-01-EVOLUTIONS-2026.md`
 
 ---
 

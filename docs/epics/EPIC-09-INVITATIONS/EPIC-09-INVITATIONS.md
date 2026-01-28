@@ -217,8 +217,9 @@ Cet Epic implemente APP-03 de la Mission 2026 : **Systeme d'invitations guests**
 | S09 | Creer flow Guest → Bride upgrade avec warning | Frontend/Backend | S05 | Confirmation dialog, irreversible, role change | US-03.8 | S |
 | S10 | Setup trigger chat room wedding_team par defaut | Backend | EPIC-06 | Chat cree auto pour nouveau mariage | US-03.9 | S |
 | S11 | Integrer guest dans systeme chat existant | Frontend/Backend | S04, S10 | Guest ajoute au chat, messages temps reel | D-17 | M |
+| S12 | Creer RPC validate_invite_code | Backend | EPIC-06 | Validation code, rate limit, retour wedding info | US-03.4 | S |
 
-**Total Stories** : 11
+**Total Stories** : 12
 **Complexite estimee** : 2 jours (conforme PRD)
 
 ---

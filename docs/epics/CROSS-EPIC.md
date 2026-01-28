@@ -22,11 +22,11 @@
 | **EPIC-09** | APP-03 | Invitations (Guests) | 🔵 DRAFT | 12 | 2j |
 | **EPIC-10** | APP-04 | Photos/Videos | 🔵 DRAFT | 10 | 1.5j |
 | **EPIC-11** | APP-05 | Stripe Integration | 🔵 DRAFT | 12 | 1j |
-| **EPIC-12** | APP-06 | Reels Generation | 🔵 DRAFT | 10 | 1.5j |
+| **EPIC-12** | APP-06 | Reels Generation | 🔵 DRAFT | 14 | 1.5j |
 | **EPIC-13** | APP-07 | Map Filters | 🔵 DRAFT | 9 | 1j |
 | **EPIC-14** | APP-08 | Marketplace | 🔵 DRAFT | 26 | 7j |
 
-**Total Mission 2026** : 102 stories, 15 jours estimés, 4500€
+**Total Mission 2026** : 106 stories, 15 jours estimés, 4500€
 
 ---
 
@@ -209,6 +209,7 @@ ORDRE D'EXECUTION RECOMMANDE :
 | 2026-01-28 | Challenge Deep /challenge --deep (EPIC-06 à EPIC-14) - Score 82→92/100 |
 | 2026-01-28 | Corrections appliquées : FFmpeg→Shotstack, TIMESTAMPTZ, RLS, Storage cleanup, FedEx docs |
 | 2026-01-28 | Reorganisation CROSS-EPIC : Phase 1 (EPIC-01 à 05) déplacée en archive |
+| 2026-01-28 | **Stories créées** : 106 stories INVEST via 9 agents Opus parallèles (EPIC-06 à EPIC-14) |
 
 ---
 

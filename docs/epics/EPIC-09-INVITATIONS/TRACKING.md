@@ -1,7 +1,7 @@
 # TRACKING - EPIC-09-INVITATIONS
 
 > Status : 🔵 Draft
-> Stories : 0/11 completees
+> Stories : 0/12 completees
 > Derniere MAJ : 2026-01-28
 
 ---
@@ -43,6 +43,7 @@
 | S09 - Guest → Bride upgrade | 🔵 Todo | - | - | - | Irreversible |
 | S10 - Chat room trigger | 🔵 Todo | - | - | - | SQL trigger |
 | S11 - Chat integration | 🔵 Todo | - | - | - | Reutilise chat existant (D-17) |
+| S12 - Validate invite code RPC | 🔵 Todo | - | - | - | Backend validation + rate limit |
 
 ---
 
@@ -94,7 +95,7 @@
 - [ ] S09: Dialog confirmation irreversible
 - [ ] S09: Changement role + redirection
 
-### Backend (Stories S06, S10, S11)
+### Backend (Stories S06, S10, S11, S12)
 
 - [ ] S06: Edge Function send-wedding-invitation
 - [ ] S06: Template email HTML
@@ -107,6 +108,9 @@
 - [ ] S11: RLS policies pour guest chat access
 - [ ] S11: Guest ajoute a chat_room_participants
 - [ ] S11: Verification realtime fonctionne pour guests
+- [ ] S12: RPC validate_invite_code
+- [ ] S12: Rate limiting (5 attempts / 15 min)
+- [ ] S12: Retour infos wedding + bride_name
 
 ### Configuration (Story S03)
 
@@ -130,7 +134,7 @@
 
 | Metrique | Valeur |
 |----------|--------|
-| Stories totales | 11 |
+| Stories totales | 12 |
 | Stories completees | 0 |
 | Pages Flutter a creer | 5 |
 | Widgets Flutter a creer | ~8 |
@@ -146,15 +150,17 @@
 ```
 EPIC-06 (PREREQUIS) ← BLOQUANT
 
+S12 (Validate RPC) ◄── EPIC-06
+        │
 S01 ──► S02 ──► S03 (Deep links)
-              │
-              └──► S04 (Account creation)
-                      │
-                      ├──► S05 (Navigation)
-                      │       │
-                      │       └──► S09 (Upgrade)
-                      │
-                      └──► S11 (Chat) ◄── S10 (Trigger)
+        │
+        └──► S04 (Account creation)
+                │
+                ├──► S05 (Navigation)
+                │       │
+                │       └──► S09 (Upgrade)
+                │
+                └──► S11 (Chat) ◄── S10 (Trigger)
 
 S06 (Email) ──► S07 (UI) ──► S08 (Status)
 ```
