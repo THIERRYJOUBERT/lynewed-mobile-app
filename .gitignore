@@ -76,3 +76,4 @@ SECRETS_TRACKING.md
 # Kotlin compiler cache
 android/.kotlin/
 .mcp.json
+.env.fedex

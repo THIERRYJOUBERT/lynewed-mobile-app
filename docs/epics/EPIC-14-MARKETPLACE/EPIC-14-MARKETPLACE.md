@@ -2485,6 +2485,104 @@ Phase 6: Polish (S23-S26)
 
 ---
 
+## Configuration FedEx API
+
+> ⚠️ **IMPORTANT** : Les credentials ci-dessous sont en mode **SANDBOX (test)**. Ne PAS utiliser en production sans basculer vers les endpoints production.
+
+### Credentials Disponibles
+
+Les credentials FedEx sont stockés dans `.env.fedex` (gitignored) :
+
+```bash
+# Credentials de connexion
+FEDEX_CLIENT_ID=l7915167202dbc400c9c338d7bbf591bc0
+FEDEX_CLIENT_SECRET=3be7c39d9ab1402eba0a867430edfcf6
+
+# Compte FedEx
+FEDEX_ACCOUNT_NUMBER=740561073
+
+# Environnement
+FEDEX_API_URL=https://apis-sandbox.fedex.com
+# Production: https://apis.fedex.com
+```
+
+### APIs Activées
+
+| API | Usage dans Lynewed | Stories |
+|-----|-------------------|---------|
+| **Address Validation API** | Valider adresses vendeur/acheteur avant expédition | S11 |
+| **Rates and Transit Times API** | Calculer frais de port en temps réel | S11 |
+| **Ship API** | Générer étiquettes, obtenir tracking number | S12, S21 |
+
+### Authentification OAuth2
+
+```typescript
+// Obtenir un token d'accès (valide 1 heure)
+const response = await fetch('https://apis-sandbox.fedex.com/oauth/token', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  body: `grant_type=client_credentials&client_id=${FEDEX_CLIENT_ID}&client_secret=${FEDEX_CLIENT_SECRET}`
+});
+const { access_token } = await response.json();
+
+// Utiliser le token dans les requêtes
+const rateResponse = await fetch('https://apis-sandbox.fedex.com/rate/v1/rates/quotes', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${access_token}`,
+    'Content-Type': 'application/json',
+    'X-locale': 'en_US'
+  },
+  body: JSON.stringify(rateRequest)
+});
+```
+
+### Documentation Context7
+
+Pour la documentation complète des APIs FedEx, utiliser Context7 :
+
+```
+Library ID: /websites/developer_fedex_api_en-us
+```
+
+Queries utiles :
+- "How to calculate shipping rates"
+- "How to create shipment and generate label"
+- "How to validate address"
+- "OAuth2 authentication flow"
+
+### Variables Supabase Edge Functions
+
+Configurer dans **Supabase Dashboard > Edge Functions > Secrets** :
+
+```
+FEDEX_CLIENT_ID=l7915167202dbc400c9c338d7bbf591bc0
+FEDEX_CLIENT_SECRET=3be7c39d9ab1402eba0a867430edfcf6
+FEDEX_ACCOUNT_NUMBER=740561073
+FEDEX_API_URL=https://apis-sandbox.fedex.com
+```
+
+### Passage en Production
+
+Quand prêt pour la production :
+
+1. **Basculer l'URL** : `https://apis.fedex.com` (au lieu de sandbox)
+2. **Vérifier le compte FedEx** : S'assurer que le compte business est activé pour l'international
+3. **Tester** : Faire une expédition test avec vrai colis
+4. **Mettre à jour les secrets Supabase** : Changer `FEDEX_API_URL`
+
+### Coûts Estimés
+
+| API | Coût |
+|-----|------|
+| Address Validation | Gratuit |
+| Rates and Transit Times | Gratuit |
+| Ship (génération étiquette) | ~$0.10/étiquette |
+
+> **Note** : Les frais d'expédition réels (payés par l'acheteur) sont distincts des frais API.
+
+---
+
 ## References PRD
 
 | Section PRD | Contenu utilise |

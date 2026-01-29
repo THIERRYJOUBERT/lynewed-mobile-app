@@ -298,3 +298,63 @@ Pour toute intégration Stripe, utiliser le MCP pour :
 - Vérifier la structure existante avant création
 - Créer les produits/prix nécessaires
 - Tester les webhooks avec les clés test
+
+---
+
+### API FedEx - Marketplace Shipping
+
+| Élément | Valeur |
+|---------|--------|
+| **Statut** | 🟡 **TEST** (sandbox) |
+| **Projet** | Lynewed Marketplace Mobile |
+| **Compte** | `740561073` |
+| **Config** | `.env.fedex` (racine projet - gitignored) |
+| **Docs** | Context7 `/websites/developer_fedex_api_en-us` |
+
+#### APIs Activées
+
+| API | Usage | Endpoint |
+|-----|-------|----------|
+| **Address Validation** | Valider adresses avant envoi | `/address/v1/addresses/resolve` |
+| **Rates and Transit Times** | Calculer frais de port au checkout | `/rate/v1/rates/quotes` |
+| **Ship API** | Générer étiquettes + tracking | `/ship/v1/shipments` |
+
+#### Credentials (TEST)
+
+```
+FEDEX_CLIENT_ID=l7915167202dbc400c9c338d7bbf591bc0
+FEDEX_CLIENT_SECRET=3be7c39d9ab1402eba0a867430edfcf6
+FEDEX_ACCOUNT_NUMBER=740561073
+FEDEX_API_URL=https://apis-sandbox.fedex.com
+```
+
+> ⚠️ **Production** : Remplacer par `https://apis.fedex.com` et nouvelles clés prod
+
+#### Authentification OAuth2
+
+```typescript
+// Obtenir un token (valide 1h)
+const response = await fetch('https://apis-sandbox.fedex.com/oauth/token', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  body: `grant_type=client_credentials&client_id=${FEDEX_CLIENT_ID}&client_secret=${FEDEX_CLIENT_SECRET}`
+});
+const { access_token } = await response.json();
+```
+
+#### Usage pour EPIC-14 Marketplace
+
+Workflow automatisé :
+1. **Checkout** : Rates API → afficher frais de port
+2. **Paiement OK** : Ship API → générer étiquette PDF
+3. **Envoi** : Vendeuse télécharge étiquette dans l'app
+4. **Suivi** : Tracking automatique via numéro retourné par Ship API
+
+#### Documentation Context7
+
+Pour rechercher dans la doc FedEx :
+```
+mcp__plugin_context7_context7__query-docs:
+- libraryId: "/websites/developer_fedex_api_en-us"
+- query: "create shipment label"
+```
