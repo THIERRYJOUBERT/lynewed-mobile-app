@@ -12,6 +12,7 @@ import '/core/services/currency_service.dart';
 import '/backend/schema/enums/enums.dart' as backend_enums show Profession, getAvailableProfessions;
 import '/flutter_flow/profession_display_helper.dart';
 import '../../domain/entities/entities.dart';
+import '/features/reviews/presentation/widgets/rating_filter_slider.dart';
 
 /// Callback quand les filtres sont appliqués
 typedef OnFilterApply = void Function(MapFilter filter);
@@ -86,6 +87,15 @@ class _FilterSheetState extends State<FilterSheet> {
                       _buildSection(
                         title: 'Budget range',
                         child: _buildBudgetSlider(),
+                      ),
+                    ],
+
+                    // Rating filter (only for brides)
+                    if (widget.userRole == 'bride') ...[
+                      LynewedGap.verticalXxl,
+                      _buildSection(
+                        title: 'Rating',
+                        child: _buildRatingSlider(),
                       ),
                     ],
 
@@ -286,6 +296,17 @@ class _FilterSheetState extends State<FilterSheet> {
             budgetMax: upper,
             currency: userCurrency,
           );
+        });
+      },
+    );
+  }
+
+  Widget _buildRatingSlider() {
+    return RatingFilterSlider(
+      value: _filter.minRating,
+      onChanged: (value) {
+        setState(() {
+          _filter = _filter.copyWith(minRating: value);
         });
       },
     );

@@ -88,6 +88,7 @@ class MapFilter {
     this.radiusKm,
     this.countryCode,
     this.toggles = const LayerToggles(),
+    this.minRating,
   });
 
   /// Professions à afficher (vide = toutes)
@@ -114,6 +115,10 @@ class MapFilter {
   /// Toggles d'affichage des couches
   final LayerToggles toggles;
 
+  /// Minimum rating to filter professionals (1.0 - 5.0)
+  /// null = no rating filter
+  final double? minRating;
+
   /// Filtres par défaut
   static const defaults = MapFilter();
 
@@ -126,6 +131,9 @@ class MapFilter {
   /// Vérifie si un filtre géographique est actif
   bool get hasGeoFilter => center != null && radiusKm != null;
 
+  /// Check if a rating filter is active
+  bool get hasRatingFilter => minRating != null && minRating! > 0;
+
   MapFilter copyWith({
     List<Profession>? professions,
     double? budgetMin,
@@ -135,6 +143,7 @@ class MapFilter {
     double? radiusKm,
     String? countryCode,
     LayerToggles? toggles,
+    double? minRating,
   }) {
     return MapFilter(
       professions: professions ?? this.professions,
@@ -145,6 +154,7 @@ class MapFilter {
       radiusKm: radiusKm ?? this.radiusKm,
       countryCode: countryCode ?? this.countryCode,
       toggles: toggles ?? this.toggles,
+      minRating: minRating ?? this.minRating,
     );
   }
 
@@ -159,7 +169,8 @@ class MapFilter {
         other.center == center &&
         other.radiusKm == radiusKm &&
         other.countryCode == countryCode &&
-        other.toggles == toggles;
+        other.toggles == toggles &&
+        other.minRating == minRating;
   }
 
   @override
@@ -172,5 +183,6 @@ class MapFilter {
         radiusKm,
         countryCode,
         toggles,
+        minRating,
       );
 }

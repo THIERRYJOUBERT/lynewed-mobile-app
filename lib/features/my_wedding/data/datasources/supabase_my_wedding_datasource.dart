@@ -974,6 +974,9 @@ class SupabaseMyWeddingDatasource {
     String? location,
     String? linkedProId,
     bool isPublic = false,
+    bool reminder1Week = false,
+    bool reminder1Day = false,
+    bool reminder1Hour = false,
   }) async {
     try {
       final response = await _client
@@ -988,12 +991,28 @@ class SupabaseMyWeddingDatasource {
             'linked_pro_id': linkedProId,
             'is_public': isPublic,
             'status': 'pending',
+            'reminder_1_week': reminder1Week,
+            'reminder_1_day': reminder1Day,
+            'reminder_1_hour': reminder1Hour,
           })
           .select()
           .single();
 
+      final event = WeddingEvent.fromJson(response);
       SecureLogger.info('createWeddingEvent: Created event for wedding $weddingId');
-      return WeddingEvent.fromJson(response);
+
+      // Schedule reminders if any are enabled (EPIC-08)
+      if (reminder1Week || reminder1Day || reminder1Hour) {
+        await _scheduleReminders(
+          eventId: event.id,
+          eventDate: eventDate,
+          reminder1Week: reminder1Week,
+          reminder1Day: reminder1Day,
+          reminder1Hour: reminder1Hour,
+        );
+      }
+
+      return event;
     } catch (e) {
       SecureLogger.error('createWeddingEvent error: $e');
       rethrow;
@@ -1011,6 +1030,9 @@ class SupabaseMyWeddingDatasource {
     String? linkedProId,
     bool? isPublic,
     String? status,
+    bool? reminder1Week,
+    bool? reminder1Day,
+    bool? reminder1Hour,
   }) async {
     try {
       final updateData = <String, dynamic>{};
@@ -1022,6 +1044,9 @@ class SupabaseMyWeddingDatasource {
       if (linkedProId != null) updateData['linked_pro_id'] = linkedProId;
       if (isPublic != null) updateData['is_public'] = isPublic;
       if (status != null) updateData['status'] = status;
+      if (reminder1Week != null) updateData['reminder_1_week'] = reminder1Week;
+      if (reminder1Day != null) updateData['reminder_1_day'] = reminder1Day;
+      if (reminder1Hour != null) updateData['reminder_1_hour'] = reminder1Hour;
       updateData['updated_at'] = DateTime.now().toIso8601String();
 
       if (updateData.length == 1) {
@@ -1035,9 +1060,111 @@ class SupabaseMyWeddingDatasource {
           .eq('id', eventId);
 
       SecureLogger.info('updateWeddingEvent: Updated event $eventId');
+
+      // Re-schedule reminders if any reminder field changed (EPIC-08)
+      if (reminder1Week != null || reminder1Day != null || reminder1Hour != null) {
+        // Get the current event to get the eventDate
+        final eventResponse = await _client
+            .from('wedding_events')
+            .select('event_date, reminder_1_week, reminder_1_day, reminder_1_hour')
+            .eq('id', eventId)
+            .single();
+
+        final currentEventDate = DateTime.parse(eventResponse['event_date'] as String);
+        final r1Week = eventResponse['reminder_1_week'] as bool? ?? false;
+        final r1Day = eventResponse['reminder_1_day'] as bool? ?? false;
+        final r1Hour = eventResponse['reminder_1_hour'] as bool? ?? false;
+
+        await _scheduleReminders(
+          eventId: eventId,
+          eventDate: eventDate ?? currentEventDate,
+          reminder1Week: r1Week,
+          reminder1Day: r1Day,
+          reminder1Hour: r1Hour,
+        );
+      }
     } catch (e) {
       SecureLogger.error('updateWeddingEvent error: $e');
       rethrow;
+    }
+  }
+
+  /// Schedule reminders for a wedding event (EPIC-08)
+  ///
+  /// Deletes existing scheduled notifications and creates new ones
+  /// based on the reminder settings. Skips reminders that are in the past.
+  Future<void> _scheduleReminders({
+    required String eventId,
+    required DateTime eventDate,
+    required bool reminder1Week,
+    required bool reminder1Day,
+    required bool reminder1Hour,
+  }) async {
+    final userId = _currentUserId;
+    if (userId == null) {
+      SecureLogger.warning('_scheduleReminders: No authenticated user');
+      return;
+    }
+
+    try {
+      // Delete existing scheduled notifications for this event
+      await _client
+          .from('scheduled_notifications')
+          .delete()
+          .eq('event_id', eventId);
+
+      final now = DateTime.now();
+      final notifications = <Map<String, dynamic>>[];
+
+      // Schedule 1 week reminder
+      if (reminder1Week) {
+        final scheduledAt = eventDate.subtract(const Duration(days: 7));
+        if (scheduledAt.isAfter(now)) {
+          notifications.add({
+            'event_id': eventId,
+            'user_id': userId,
+            'scheduled_at': scheduledAt.toUtc().toIso8601String(),
+            'notification_type': '1_week',
+          });
+        }
+      }
+
+      // Schedule 1 day reminder
+      if (reminder1Day) {
+        final scheduledAt = eventDate.subtract(const Duration(days: 1));
+        if (scheduledAt.isAfter(now)) {
+          notifications.add({
+            'event_id': eventId,
+            'user_id': userId,
+            'scheduled_at': scheduledAt.toUtc().toIso8601String(),
+            'notification_type': '1_day',
+          });
+        }
+      }
+
+      // Schedule 1 hour reminder
+      if (reminder1Hour) {
+        final scheduledAt = eventDate.subtract(const Duration(hours: 1));
+        if (scheduledAt.isAfter(now)) {
+          notifications.add({
+            'event_id': eventId,
+            'user_id': userId,
+            'scheduled_at': scheduledAt.toUtc().toIso8601String(),
+            'notification_type': '1_hour',
+          });
+        }
+      }
+
+      // Insert new notifications if any
+      if (notifications.isNotEmpty) {
+        await _client.from('scheduled_notifications').insert(notifications);
+        SecureLogger.info('_scheduleReminders: Scheduled ${notifications.length} reminders for event $eventId');
+      } else {
+        SecureLogger.info('_scheduleReminders: No reminders to schedule for event $eventId (all in past or disabled)');
+      }
+    } catch (e) {
+      SecureLogger.error('_scheduleReminders error: $e');
+      // Don't rethrow - reminder scheduling failure shouldn't block event creation/update
     }
   }
 

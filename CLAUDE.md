@@ -73,6 +73,9 @@ Ce projet utilise une **methodologie structuree** avec des workflows, des agents
 | `chat_rooms` / `chat_messages` | 80/199 | Chat temps réel |
 | `notifications_outbox` | 245 | Queue push notifications |
 | `video_sessions` | 59 | Sessions vidéo Agora |
+| `stripe_accounts` | 0 | Comptes Stripe Connect (EPIC-11) |
+| `purchases` | 0 | Achats/transactions (EPIC-11) |
+| `stripe_events` | 0 | Events Stripe webhook (EPIC-11) |
 
 ## Commandes
 
@@ -164,12 +167,12 @@ flutter run                        # Run
 | Métrique | Valeur |
 |----------|--------|
 | Stories | 42/42 (100%) |
-| Tests | 3069 |
+| Tests | 3148+ |
 | Warnings | 0 |
-| Features CA | **15 modules** |
+| Features CA | **16 modules** |
 
 **Modules Clean Architecture (`lib/features/`):**
-auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, profile, settings, support, video_call, **weddings_hub_pro**, wishlist
+auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, **payments**, profile, settings, support, video_call, **weddings_hub_pro**, wishlist
 
 > **Note**: iOS minimum 15.0 (Firebase 12.x requirement). Secrets via flutter_dotenv (runtime .env).
 
@@ -181,6 +184,7 @@ auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, prof
 | EPIC-02 | Tests additionnels | ✅ COMPLETE |
 | EPIC-04 | Documentation | ✅ COMPLETE (2026-01-26) |
 | EPIC-05 | Security cleanup | ✅ COMPLETE |
+| EPIC-11 | Stripe Integration | ✅ COMPLETE (2026-01-29) |
 
 ### Epics En Cours / Attente
 
@@ -197,7 +201,7 @@ auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, prof
 | EPIC-08 | APP-02 | Reminders (Rappels RDV) | 8 | 0.5j |
 | EPIC-09 | APP-03 | Invitations (Guests) | 12 | 2j |
 | EPIC-10 | APP-04 | Photos/Videos | 10 | 1.5j |
-| EPIC-11 | APP-05 | Stripe Integration | 12 | 1j |
+| EPIC-11 | APP-05 | Stripe Integration | 12 | ✅ DONE |
 | EPIC-12 | APP-06 | Magazines Photo | 12 | 1.5j |
 | EPIC-13 | APP-07 | Map Filters | 9 | 1j |
 | EPIC-14 | APP-08 | Marketplace | 26 | 7j |

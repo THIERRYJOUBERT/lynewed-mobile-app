@@ -74,6 +74,66 @@ void main() {
     });
   });
 
+  group('MapFilter minRating', () {
+    test('should have null minRating by default', () {
+      const filter = MapFilter();
+      expect(filter.minRating, isNull);
+      expect(filter.hasRatingFilter, isFalse);
+    });
+
+    test('MapFilter.defaults should have null minRating', () {
+      const filter = MapFilter.defaults;
+      expect(filter.minRating, isNull);
+      expect(filter.hasRatingFilter, isFalse);
+    });
+
+    test('should accept minRating value', () {
+      const filter = MapFilter(minRating: 4.0);
+      expect(filter.minRating, 4.0);
+      expect(filter.hasRatingFilter, isTrue);
+    });
+
+    test('should update minRating with copyWith', () {
+      const filter = MapFilter(minRating: 3.0);
+      final updated = filter.copyWith(minRating: 4.5);
+      expect(updated.minRating, 4.5);
+    });
+
+    test('should preserve minRating when copyWith called without it', () {
+      const filter = MapFilter(minRating: 3.0);
+      final updated = filter.copyWith(budgetMin: 1000);
+      expect(updated.minRating, 3.0);
+    });
+
+    test('should treat 0 as no filter', () {
+      const filter = MapFilter(minRating: 0);
+      expect(filter.hasRatingFilter, isFalse);
+    });
+
+    test('should treat negative values as no filter', () {
+      const filter = MapFilter(minRating: -1.0);
+      expect(filter.hasRatingFilter, isFalse);
+    });
+
+    test('should not be equal when minRating differs', () {
+      const filter1 = MapFilter(minRating: 3.0);
+      const filter2 = MapFilter(minRating: 4.0);
+      expect(filter1, isNot(equals(filter2)));
+    });
+
+    test('should be equal when minRating is the same', () {
+      const filter1 = MapFilter(minRating: 4.0);
+      const filter2 = MapFilter(minRating: 4.0);
+      expect(filter1, equals(filter2));
+    });
+
+    test('should have different hashCode when minRating differs', () {
+      const filter1 = MapFilter(minRating: 3.0);
+      const filter2 = MapFilter(minRating: 4.0);
+      expect(filter1.hashCode, isNot(equals(filter2.hashCode)));
+    });
+  });
+
   group('LayerToggles', () {
     test('should create with default values', () {
       const toggles = LayerToggles();

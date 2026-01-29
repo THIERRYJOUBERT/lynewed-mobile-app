@@ -423,6 +423,9 @@ class MyWeddingRepositoryImpl implements MyWeddingRepository {
     String? location,
     String? linkedProId,
     bool isPublic = false,
+    bool reminder1Week = false,
+    bool reminder1Day = false,
+    bool reminder1Hour = false,
   }) async {
     try {
       final event = await _datasource.createWeddingEvent(
@@ -434,6 +437,9 @@ class MyWeddingRepositoryImpl implements MyWeddingRepository {
         location: location,
         linkedProId: linkedProId,
         isPublic: isPublic,
+        reminder1Week: reminder1Week,
+        reminder1Day: reminder1Day,
+        reminder1Hour: reminder1Hour,
       );
       return RepositoryResult.success(event);
     } catch (e) {
@@ -452,6 +458,9 @@ class MyWeddingRepositoryImpl implements MyWeddingRepository {
     String? linkedProId,
     bool? isPublic,
     String? status,
+    bool? reminder1Week,
+    bool? reminder1Day,
+    bool? reminder1Hour,
   }) async {
     try {
       await _datasource.updateWeddingEvent(
@@ -464,6 +473,9 @@ class MyWeddingRepositoryImpl implements MyWeddingRepository {
         linkedProId: linkedProId,
         isPublic: isPublic,
         status: status,
+        reminder1Week: reminder1Week,
+        reminder1Day: reminder1Day,
+        reminder1Hour: reminder1Hour,
       );
       return const RepositoryResult.success(null);
     } catch (e) {

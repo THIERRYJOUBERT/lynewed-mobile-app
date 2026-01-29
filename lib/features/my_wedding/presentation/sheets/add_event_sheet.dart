@@ -37,6 +37,11 @@ class _AddEventSheetState extends State<AddEventSheet> {
   bool _isPublic = false;
   bool _isSaving = false;
 
+  // Reminder fields (EPIC-08)
+  bool _reminder1Week = false;
+  bool _reminder1Day = false;
+  bool _reminder1Hour = false;
+
   @override
   void initState() {
     super.initState();
@@ -48,6 +53,10 @@ class _AddEventSheetState extends State<AddEventSheet> {
       _eventDate = widget.event!.eventDate;
       _eventTime = TimeOfDay.fromDateTime(widget.event!.eventDate);
       _isPublic = widget.event!.isPublic;
+      // Load reminder settings (EPIC-08)
+      _reminder1Week = widget.event!.reminder1Week;
+      _reminder1Day = widget.event!.reminder1Day;
+      _reminder1Hour = widget.event!.reminder1Hour;
     }
   }
 
@@ -146,6 +155,9 @@ class _AddEventSheetState extends State<AddEventSheet> {
         eventDate: eventDateTime,
         location: location.isNotEmpty ? location : null,
         isPublic: _isPublic,
+        reminder1Week: _reminder1Week,
+        reminder1Day: _reminder1Day,
+        reminder1Hour: _reminder1Hour,
       );
 
       if (!mounted) return;
@@ -179,6 +191,9 @@ class _AddEventSheetState extends State<AddEventSheet> {
         description: description.isNotEmpty ? description : null,
         location: location.isNotEmpty ? location : null,
         isPublic: _isPublic,
+        reminder1Week: _reminder1Week,
+        reminder1Day: _reminder1Day,
+        reminder1Hour: _reminder1Hour,
       );
 
       if (!mounted) return;
@@ -291,6 +306,12 @@ class _AddEventSheetState extends State<AddEventSheet> {
             ),
             const SizedBox(height: 30),
 
+            // Reminders section (EPIC-08)
+            _buildSectionTitle('Reminders'),
+            const SizedBox(height: 10),
+            _buildRemindersSection(),
+            const SizedBox(height: 30),
+
             // Visibility toggle
             _buildSectionTitle('Visibility'),
             const SizedBox(height: 10),
@@ -381,6 +402,113 @@ class _AddEventSheetState extends State<AddEventSheet> {
                     ? LynewedColors.textPrimary
                     : LynewedColors.textSecondary,
                 fontWeight: FontWeight.w300,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Check if reminders can be enabled (event must be in the future)
+  bool get _canEnableReminders {
+    if (_eventDate == null) return true; // Allow setting before date is picked
+    final time = _eventTime ?? const TimeOfDay(hour: 12, minute: 0);
+    final eventDateTime = DateTime(
+      _eventDate!.year,
+      _eventDate!.month,
+      _eventDate!.day,
+      time.hour,
+      time.minute,
+    );
+    return eventDateTime.isAfter(DateTime.now());
+  }
+
+  Widget _buildRemindersSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: LynewedColors.surface,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!_canEnableReminders) ...[
+            Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  size: 16,
+                  color: LynewedColors.textSecondary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Reminders not available for past events',
+                    style: LynewedTextStyles.labelSmall.copyWith(
+                      color: LynewedColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
+          _buildReminderCheckbox(
+            label: '1 week before',
+            value: _reminder1Week,
+            onChanged: _canEnableReminders
+                ? (value) => setState(() => _reminder1Week = value ?? false)
+                : null,
+          ),
+          _buildReminderCheckbox(
+            label: '1 day before',
+            value: _reminder1Day,
+            onChanged: _canEnableReminders
+                ? (value) => setState(() => _reminder1Day = value ?? false)
+                : null,
+          ),
+          _buildReminderCheckbox(
+            label: '1 hour before',
+            value: _reminder1Hour,
+            onChanged: _canEnableReminders
+                ? (value) => setState(() => _reminder1Hour = value ?? false)
+                : null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReminderCheckbox({
+    required String label,
+    required bool value,
+    required ValueChanged<bool?>? onChanged,
+  }) {
+    return GestureDetector(
+      onTap: onChanged != null ? () => onChanged(!value) : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: Checkbox(
+                value: value,
+                onChanged: onChanged,
+                activeColor: LynewedColors.primary,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: LynewedTextStyles.bodyMedium.copyWith(
+                color: onChanged != null
+                    ? LynewedColors.textPrimary
+                    : LynewedColors.textSecondary,
               ),
             ),
           ],

@@ -29,6 +29,9 @@ class WeddingEvent {
     this.isPublic = false,
     this.status = EventStatus.pending,
     this.reminderMinutes = const [1440, 60],
+    this.reminder1Week = false,
+    this.reminder1Day = false,
+    this.reminder1Hour = false,
     this.createdAt,
   });
 
@@ -68,6 +71,15 @@ class WeddingEvent {
   /// Reminder times in minutes before event
   final List<int> reminderMinutes;
 
+  /// Send reminder 1 week before event (APP-02)
+  final bool reminder1Week;
+
+  /// Send reminder 1 day before event (APP-02)
+  final bool reminder1Day;
+
+  /// Send reminder 1 hour before event (APP-02)
+  final bool reminder1Hour;
+
   /// Creation date
   final DateTime? createdAt;
 
@@ -99,8 +111,11 @@ class WeddingEvent {
       reminderMinutes: (json['reminder_minutes'] as List<dynamic>?)
           ?.map((e) => e as int)
           .toList() ?? [1440, 60],
-      createdAt: json['created_at'] != null 
-          ? DateTime.parse(json['created_at'] as String) 
+      reminder1Week: json['reminder_1_week'] as bool? ?? false,
+      reminder1Day: json['reminder_1_day'] as bool? ?? false,
+      reminder1Hour: json['reminder_1_hour'] as bool? ?? false,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
           : null,
     );
   }
@@ -128,6 +143,9 @@ class WeddingEvent {
       'is_public': isPublic,
       'status': status.name,
       'reminder_minutes': reminderMinutes,
+      'reminder_1_week': reminder1Week,
+      'reminder_1_day': reminder1Day,
+      'reminder_1_hour': reminder1Hour,
     };
   }
 
@@ -144,6 +162,9 @@ class WeddingEvent {
     bool? isPublic,
     EventStatus? status,
     List<int>? reminderMinutes,
+    bool? reminder1Week,
+    bool? reminder1Day,
+    bool? reminder1Hour,
     DateTime? createdAt,
   }) {
     return WeddingEvent(
@@ -159,6 +180,9 @@ class WeddingEvent {
       isPublic: isPublic ?? this.isPublic,
       status: status ?? this.status,
       reminderMinutes: reminderMinutes ?? this.reminderMinutes,
+      reminder1Week: reminder1Week ?? this.reminder1Week,
+      reminder1Day: reminder1Day ?? this.reminder1Day,
+      reminder1Hour: reminder1Hour ?? this.reminder1Hour,
       createdAt: createdAt ?? this.createdAt,
     );
   }

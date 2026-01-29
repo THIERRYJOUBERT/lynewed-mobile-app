@@ -251,6 +251,9 @@ abstract class MyWeddingRepository {
     String? location,
     String? linkedProId,
     bool isPublic = false,
+    bool reminder1Week = false,
+    bool reminder1Day = false,
+    bool reminder1Hour = false,
   });
 
   /// Update a wedding event
@@ -264,6 +267,9 @@ abstract class MyWeddingRepository {
     String? linkedProId,
     bool? isPublic,
     String? status,
+    bool? reminder1Week,
+    bool? reminder1Day,
+    bool? reminder1Hour,
   });
 
   /// Delete a wedding event

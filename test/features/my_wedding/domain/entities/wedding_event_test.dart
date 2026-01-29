@@ -556,6 +556,173 @@ void main() {
   });
 
   // ==============================================================
+  // REMINDER FIELDS TESTS (EPIC-08)
+  // ==============================================================
+
+  group('reminder fields', () {
+    test('should have default values of false', () {
+      final event = WeddingEvent(
+        id: 'event-1',
+        weddingId: 'wedding-1',
+        title: 'Test Event',
+        eventDate: DateTime.now(),
+      );
+
+      expect(event.reminder1Week, false);
+      expect(event.reminder1Day, false);
+      expect(event.reminder1Hour, false);
+    });
+
+    test('should create event with reminder fields set to true', () {
+      final event = WeddingEvent(
+        id: 'event-1',
+        weddingId: 'wedding-1',
+        title: 'Test Event',
+        eventDate: DateTime.now(),
+        reminder1Week: true,
+        reminder1Day: true,
+        reminder1Hour: true,
+      );
+
+      expect(event.reminder1Week, true);
+      expect(event.reminder1Day, true);
+      expect(event.reminder1Hour, true);
+    });
+
+    test('should serialize reminder fields to JSON', () {
+      final event = WeddingEvent(
+        id: 'event-1',
+        weddingId: 'wedding-1',
+        title: 'Test Event',
+        eventDate: DateTime(2025, 9, 15),
+        reminder1Week: true,
+        reminder1Day: true,
+        reminder1Hour: false,
+      );
+
+      final json = event.toJson();
+
+      expect(json['reminder_1_week'], true);
+      expect(json['reminder_1_day'], true);
+      expect(json['reminder_1_hour'], false);
+    });
+
+    test('should deserialize reminder fields from JSON', () {
+      final json = {
+        'id': 'event-1',
+        'wedding_id': 'wedding-1',
+        'title': 'Test Event',
+        'event_date': DateTime.now().toIso8601String(),
+        'reminder_1_week': true,
+        'reminder_1_day': false,
+        'reminder_1_hour': true,
+      };
+
+      final event = WeddingEvent.fromJson(json);
+
+      expect(event.reminder1Week, true);
+      expect(event.reminder1Day, false);
+      expect(event.reminder1Hour, true);
+    });
+
+    test('should handle missing reminder fields (backward compatibility)', () {
+      final json = {
+        'id': 'event-1',
+        'wedding_id': 'wedding-1',
+        'title': 'Test Event',
+        'event_date': DateTime.now().toIso8601String(),
+        // No reminder fields - simulating old data
+      };
+
+      final event = WeddingEvent.fromJson(json);
+
+      expect(event.reminder1Week, false);
+      expect(event.reminder1Day, false);
+      expect(event.reminder1Hour, false);
+    });
+
+    test('should handle null reminder fields (backward compatibility)', () {
+      final json = {
+        'id': 'event-1',
+        'wedding_id': 'wedding-1',
+        'title': 'Test Event',
+        'event_date': DateTime.now().toIso8601String(),
+        'reminder_1_week': null,
+        'reminder_1_day': null,
+        'reminder_1_hour': null,
+      };
+
+      final event = WeddingEvent.fromJson(json);
+
+      expect(event.reminder1Week, false);
+      expect(event.reminder1Day, false);
+      expect(event.reminder1Hour, false);
+    });
+
+    test('copyWith should update reminder1Week', () {
+      final event = WeddingEvent(
+        id: 'event-1',
+        weddingId: 'wedding-1',
+        title: 'Test',
+        eventDate: DateTime.now(),
+        reminder1Week: false,
+      );
+
+      final updated = event.copyWith(reminder1Week: true);
+
+      expect(updated.reminder1Week, true);
+      expect(updated.reminder1Day, false);
+      expect(updated.reminder1Hour, false);
+    });
+
+    test('copyWith should update reminder1Day', () {
+      final event = WeddingEvent(
+        id: 'event-1',
+        weddingId: 'wedding-1',
+        title: 'Test',
+        eventDate: DateTime.now(),
+        reminder1Day: false,
+      );
+
+      final updated = event.copyWith(reminder1Day: true);
+
+      expect(updated.reminder1Day, true);
+    });
+
+    test('copyWith should update reminder1Hour', () {
+      final event = WeddingEvent(
+        id: 'event-1',
+        weddingId: 'wedding-1',
+        title: 'Test',
+        eventDate: DateTime.now(),
+        reminder1Hour: false,
+      );
+
+      final updated = event.copyWith(reminder1Hour: true);
+
+      expect(updated.reminder1Hour, true);
+    });
+
+    test('copyWith should preserve unchanged reminder fields', () {
+      final event = WeddingEvent(
+        id: 'event-1',
+        weddingId: 'wedding-1',
+        title: 'Test',
+        eventDate: DateTime.now(),
+        reminder1Week: true,
+        reminder1Day: true,
+        reminder1Hour: true,
+      );
+
+      final updated = event.copyWith(title: 'Updated Title');
+
+      expect(updated.reminder1Week, true);
+      expect(updated.reminder1Day, true);
+      expect(updated.reminder1Hour, true);
+    });
+  });
+
+  // ==============================================================
   // EVENTSTATUS ENUM TESTS
   // ==============================================================
 
