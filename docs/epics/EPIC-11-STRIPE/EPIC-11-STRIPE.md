@@ -21,6 +21,54 @@ Cette integration est la **fondation** pour toutes les fonctionnalites de moneti
 
 ---
 
+## MCP Stripe - Configuration Autonome
+
+> ⚠️ **IMPORTANT : COMPTE STRIPE PRODUCTION**
+
+Le MCP Stripe est connecté au **compte officiel Lynewed** (mode test activé). Cela permet de créer/configurer les produits Stripe en toute autonomie.
+
+### ⛔ PRODUITS EXISTANTS - NE PAS MODIFIER
+
+Ces produits sont les **offres d'abonnement pro du CRM** - déjà utilisés en production :
+
+| Produit | ID | Usage |
+|---------|-----|-------|
+| **EARLY ACCESS** | `prod_TCeouF5WM5cN8Z` | Abonnement pro basique |
+| **PREMIUM VISIBILITY** | `prod_TCesp37xX9fPKZ` | Abonnement pro avancé |
+| **ULTIMATE ACCESS** | `prod_TCeuXHDpPaS7hB` | Abonnement pro premium |
+
+**RÈGLES STRICTES :**
+1. **JAMAIS** modifier/supprimer ces produits existants
+2. **JAMAIS** modifier leurs prix associés
+3. **TOUJOURS** créer de NOUVEAUX produits pour marketplace, magazines, etc.
+
+### Outils MCP Disponibles
+
+Pour cet Epic, utiliser le MCP Stripe pour :
+
+| Action | Outil MCP | Notes |
+|--------|-----------|-------|
+| Vérifier structure existante | `list_products`, `list_prices` | Avant toute création |
+| Créer produit magazine | `create_product` | Metadata: `source: lynewed-app` |
+| Créer prix | `create_price` | Pour nouveaux produits uniquement |
+| Créer lien paiement | `create_payment_link` | Pour tests |
+| Rechercher docs | `search_stripe_documentation` | Best practices |
+
+### Exemple création produit Magazine
+
+```
+Utiliser mcp__stripe__create_product:
+- name: "Magazine Photo Mariage"
+- description: "Magazine photo personnalisé de votre mariage"
+
+Puis mcp__stripe__create_price:
+- product: [ID du produit créé]
+- unit_amount: 4900 (49.00 USD)
+- currency: "usd"
+```
+
+---
+
 ## Contexte
 
 ### Etat Actuel Production

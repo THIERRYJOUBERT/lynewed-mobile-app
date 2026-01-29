@@ -221,7 +221,9 @@ auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, prof
 
 ---
 
-## MCP Supabase - Outils Disponibles
+## MCP Connectés
+
+### MCP Supabase
 
 Le MCP Supabase est connecté et permet :
 
@@ -235,10 +237,64 @@ Le MCP Supabase est connecté et permet :
 | `list_edge_functions` | Voir les Edge Functions |
 | `deploy_edge_function` | Déployer une Edge Function |
 
-### Autres Projets Supabase (même organisation)
+#### Autres Projets Supabase (même organisation)
 
 | Projet | ID | Usage |
 |--------|-----|-------|
 | LYNEWED-V1-CRM | `pjcorrkwafjskmzmimon` | Back-office admin |
 | Tom Leo App Lynewed | `odzkhcplevcqbuhzqsmq` | Dev/Test |
 | WEBSITE LYNEWED | `ojnyblbxrndhirjqdhro` | Site web |
+
+---
+
+### MCP Stripe ⚠️ COMPTE PRODUCTION
+
+| Élément | Valeur |
+|---------|--------|
+| **Statut** | 🔴 **PRODUCTION** (mode test activé) |
+| **Compte** | Compte officiel Lynewed |
+| **Mode** | `sk_test_*` (test) - clés live disponibles |
+| **Config** | `.mcp.json` (racine projet) |
+
+#### ⛔ PRODUITS EXISTANTS - NE PAS MODIFIER
+
+Ces produits sont les **offres d'abonnement pro du CRM** - déjà en production :
+
+| Produit | ID | Description |
+|---------|-----|-------------|
+| **EARLY ACCESS** | `prod_TCeouF5WM5cN8Z` | Plan essentiel pour démarrer |
+| **PREMIUM VISIBILITY** | `prod_TCesp37xX9fPKZ` | CRM étendu, masterclasses |
+| **ULTIMATE ACCESS** | `prod_TCeuXHDpPaS7hB` | Package leaders, CRM illimité |
+
+**RÈGLES STRICTES :**
+1. **JAMAIS** modifier/supprimer ces produits existants
+2. **JAMAIS** modifier leurs prix associés
+3. **TOUJOURS** créer de NOUVEAUX produits pour les features (magazines, etc.)
+4. **TOUJOURS** utiliser des metadata claires pour identifier l'origine
+
+#### Outils MCP Stripe Disponibles
+
+| Outil | Usage | Sécurité |
+|-------|-------|----------|
+| `list_products` | Lister les produits | ✅ Safe |
+| `list_prices` | Lister les prix | ✅ Safe |
+| `list_customers` | Lister les clients | ✅ Safe |
+| `create_product` | Créer un produit | ⚠️ Nouveaux uniquement |
+| `create_price` | Créer un prix | ⚠️ Pour nouveaux produits |
+| `create_payment_link` | Créer lien de paiement | ✅ Safe |
+| `list_subscriptions` | Lister abonnements | ✅ Safe |
+| `search_stripe_documentation` | Rechercher docs Stripe | ✅ Safe |
+
+#### Usage pour EPIC-11 et EPIC-12
+
+Pour les **Magazines Photo** (EPIC-12), créer de NOUVEAUX produits :
+```
+Nom: "Magazine Photo Mariage"
+Type: one_time (pas subscription)
+Metadata: { "source": "lynewed-app", "feature": "magazine" }
+```
+
+Pour toute intégration Stripe, utiliser le MCP pour :
+- Vérifier la structure existante avant création
+- Créer les produits/prix nécessaires
+- Tester les webhooks avec les clés test

@@ -91,6 +91,51 @@ Cet Epic remplace l'ancien EPIC-12-REELS (abandonne). Thierry a decide de pivote
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
+### MCP Stripe - Configuration Autonome
+
+> ⚠️ **IMPORTANT : COMPTE STRIPE PRODUCTION**
+
+Le MCP Stripe est connecté au **compte officiel Lynewed** (mode test activé). Utiliser ce MCP pour créer les produits magazines.
+
+#### ⛔ PRODUITS EXISTANTS - NE PAS MODIFIER
+
+| Produit | ID | Usage |
+|---------|-----|-------|
+| **EARLY ACCESS** | `prod_TCeouF5WM5cN8Z` | Abonnement pro (CRM) |
+| **PREMIUM VISIBILITY** | `prod_TCesp37xX9fPKZ` | Abonnement pro (CRM) |
+| **ULTIMATE ACCESS** | `prod_TCeuXHDpPaS7hB` | Abonnement pro (CRM) |
+
+**Ces produits sont pour le CRM - NE PAS TOUCHER.**
+
+#### Produits à créer pour cet Epic
+
+Utiliser le MCP Stripe pour créer :
+
+```
+1. Produit Magazine:
+   mcp__stripe__create_product:
+   - name: "Lynewed Wedding Magazine"
+   - description: "Custom printed wedding photo magazine - 50 pages max"
+
+2. Prix Magazine (base):
+   mcp__stripe__create_price:
+   - product: [ID créé ci-dessus]
+   - unit_amount: 4900 (49.00 USD)
+   - currency: "usd"
+
+3. Prix Shipping Domestic:
+   mcp__stripe__create_price:
+   - product: [Créer produit "Magazine Shipping"]
+   - unit_amount: 1500 (15.00 USD)
+   - currency: "usd"
+
+4. Prix Shipping International:
+   mcp__stripe__create_price:
+   - product: [même produit shipping]
+   - unit_amount: 3500 (35.00 USD)
+   - currency: "usd"
+```
+
 ### Dependances
 
 | Dependance | Epic | Status | Impact si non fait |
