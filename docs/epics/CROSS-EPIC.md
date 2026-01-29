@@ -16,7 +16,7 @@
 
 | Epic | PRD | Titre | Status | Stories | Est. |
 |------|-----|-------|--------|---------|------|
-| **EPIC-06** | APP-00 | Prerequisites Migration | 🔵 DRAFT | 6 | 0.5j |
+| **EPIC-06** | APP-00 | Prerequisites Migration | 🟢 DONE | 6 | 0.5j |
 | **EPIC-07** | APP-01 | Reviews (Avis clients) | 🔵 DRAFT | 9 | 0.5j |
 | **EPIC-08** | APP-02 | Reminders (Rappels RDV) | 🔵 DRAFT | 8 | 0.5j |
 | **EPIC-09** | APP-03 | Invitations (Guests) | 🔵 DRAFT | 12 | 2j |
@@ -32,16 +32,24 @@
 
 ## Mission 2026 - Epics Actifs
 
-### EPIC-06: Prerequisites Migration (APP-00) 🔵
+### EPIC-06: Prerequisites Migration (APP-00) 🟢
 
-**Statut**: DRAFT | **BLOQUANT** pour tous les autres
-**Stories**: 6 | **Estimation**: 0.5 jour
+**Statut**: DONE (2026-01-29) | **Déployé en Production**
+**Stories**: 6 (5/6 complètes, S06 partiel - manuel requis)
+**Estimation**: 0.5 jour | **Durée réelle**: ~1 jour
 
-Migration des prerequis techniques CRITIQUES :
-- Enum userRole + 'guest'
-- Colonnes invitation (invite_code, expires_at)
-- Table invitation_attempts (rate limiting)
-- Bucket wedding-media avec RLS
+Migration des prerequis techniques CRITIQUES déployée en production :
+- ✅ Enum userRole + 'guest' (Dart + Postgres)
+- ✅ Colonnes invitation (invite_code, expires_at) sur weddings
+- ✅ Table invitation_attempts avec rate limiting
+- ✅ Fonction generate_secure_invite_code + trigger
+- ✅ Colonnes invitation sur wedding_guests
+- 🟡 Bucket wedding-media (création manuelle via Dashboard requise)
+
+**Documentation**:
+- Bilan: `EPIC-06-BILAN.md`
+- Déploiement S02-S05: `S02-S05-DEPLOYMENT.md`
+- Guide S06 manuel: `S06-manual-steps.md`
 
 ---
 
@@ -210,6 +218,8 @@ ORDRE D'EXECUTION RECOMMANDE :
 | 2026-01-28 | Corrections appliquées : FFmpeg→Shotstack, TIMESTAMPTZ, RLS, Storage cleanup, FedEx docs |
 | 2026-01-28 | Reorganisation CROSS-EPIC : Phase 1 (EPIC-01 à 05) déplacée en archive |
 | 2026-01-28 | **Stories créées** : 106 stories INVEST via 9 agents Opus parallèles (EPIC-06 à EPIC-14) |
+| 2026-01-29 | **EPIC-06 TERMINÉ** : 5/6 stories déployées en production (LYNEWED-V1-APP) |
+| 2026-01-29 | S06 partiel : Bucket wedding-media nécessite création manuelle via Dashboard |
 
 ---
 

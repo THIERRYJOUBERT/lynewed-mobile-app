@@ -1,8 +1,8 @@
 # TRACKING - EPIC-06-PREREQUISITES
 
-> Status : 🔵 Draft
-> Stories : 0/6 completees
-> Derniere MAJ : 2026-01-28
+> Status : 🟡 In Progress
+> Stories : 5/6 completees (1 partielle)
+> Derniere MAJ : 2026-01-29
 
 ---
 
@@ -11,7 +11,8 @@
 | Date | Evenement |
 |------|-----------|
 | 2026-01-28 | Epic cree - Prerequis techniques Mission 2026 |
-| - | - |
+| 2026-01-29 | S01-S05 Deployes en production |
+| 2026-01-29 | S06 Partiel (RLS via Dashboard requis) |
 
 ---
 
@@ -19,12 +20,12 @@
 
 | Story | Status | Assignee | Date Start | Date Done | Notes |
 |-------|--------|----------|------------|-----------|-------|
-| S01 - Enum userRole guest | 🔵 Todo | - | - | - | BLOQUANT pour autres stories |
-| S02 - Colonnes weddings invite | 🔵 Todo | - | - | - | Depend de S01 |
-| S03 - Table invitation_attempts | 🔵 Todo | - | - | - | Independant |
-| S04 - Trigger generate_invite_code | 🔵 Todo | - | - | - | Depend de S02 |
-| S05 - Colonnes wedding_guests | 🔵 Todo | - | - | - | Depend de S01 |
-| S06 - Bucket wedding-media RLS | 🔵 Todo | - | - | - | Independant |
+| S01 - Enum userRole guest | ✅ Done | Claude | 2026-01-29 | 2026-01-29 | Migration OK en prod |
+| S02 - Colonnes weddings invite | ✅ Done | Claude | 2026-01-29 | 2026-01-29 | Migration OK en prod |
+| S03 - Table invitation_attempts | ✅ Done | Claude | 2026-01-29 | 2026-01-29 | Migration OK en prod |
+| S04 - Trigger generate_invite_code | ✅ Done | Claude | 2026-01-29 | 2026-01-29 | Migration OK en prod |
+| S05 - Colonnes wedding_guests | ✅ Done | Claude | 2026-01-29 | 2026-01-29 | Migration OK en prod |
+| S06 - Bucket wedding-media RLS | 🟡 Partial | Claude | 2026-01-29 | - | Bucket manuel + RLS Dashboard |
 
 ---
 
@@ -32,7 +33,7 @@
 
 | Date | Probleme | Resolution | Status |
 |------|----------|------------|--------|
-| - | *Aucun pour l'instant* | - | - |
+| 2026-01-29 | S06: RLS storage requires owner priv | Manuel via Dashboard | 🟡 En attente |
 
 ---
 
@@ -52,37 +53,37 @@
 
 ### Database (Stories S01-S05)
 
-- [ ] S01: Migration enum userRole avec valeur 'guest'
-- [ ] S01: Verification enum en production
-- [ ] S02: Colonnes invite_code et invite_code_expires_at sur weddings
-- [ ] S02: Index sur invite_code
-- [ ] S03: Table invitation_attempts avec index
-- [ ] S03: Fonction check_invitation_rate_limit
-- [ ] S04: Fonction generate_invite_code_value
-- [ ] S04: Trigger trg_generate_invite_code
-- [ ] S04: Fonction regenerate_wedding_invite_code
-- [ ] S05: Colonnes user_id, invited_at, joined_at, status sur wedding_guests
-- [ ] S05: Constraint chk_guest_status
-- [ ] S05: Index sur wedding_id + status
+- [x] S01: Migration enum userRole avec valeur 'guest'
+- [x] S01: Verification enum en production
+- [x] S02: Colonnes invite_code et invite_code_expires_at sur weddings
+- [x] S02: Index sur invite_code
+- [x] S03: Table invitation_attempts avec index
+- [x] S03: Fonction check_invitation_rate_limit
+- [x] S04: Fonction generate_invite_code_value
+- [x] S04: Trigger trg_generate_invite_code
+- [x] S04: Fonction regenerate_wedding_invite_code
+- [x] S05: Colonnes user_id, invited_at, joined_at, status sur wedding_guests
+- [x] S05: Constraint chk_guest_status
+- [x] S05: Index sur wedding_id + status
 
 ### Storage (Story S06)
 
-- [ ] S06: Creer bucket wedding-media (private)
-- [ ] S06: Policy "Guest upload own folder"
-- [ ] S06: Policy "Guest read own files"
-- [ ] S06: Policy "Guest delete own files"
-- [ ] S06: Policy "Bride read shared guest media"
-- [ ] S06: Policy "Bride upload own folder"
-- [ ] S06: Policy "Bride read own files"
-- [ ] S06: Configurer file size limits (500MB max)
-- [ ] S06: Configurer allowed MIME types
+- [ ] S06: Creer bucket wedding-media (private) - MANUEL VIA DASHBOARD
+- [ ] S06: Policy "Guest upload own folder" - MANUEL VIA DASHBOARD
+- [ ] S06: Policy "Guest read own files" - MANUEL VIA DASHBOARD
+- [ ] S06: Policy "Guest delete own files" - MANUEL VIA DASHBOARD
+- [ ] S06: Policy "Bride read shared guest media" - MANUEL VIA DASHBOARD
+- [ ] S06: Policy "Bride upload own folder" - MANUEL VIA DASHBOARD
+- [ ] S06: Policy "Bride read own files" - MANUEL VIA DASHBOARD
+- [ ] S06: Configurer file size limits (500MB max) - MANUEL VIA DASHBOARD
+- [ ] S06: Configurer allowed MIME types - MANUEL VIA DASHBOARD
 
 ### Dart (Story S01)
 
-- [ ] S01: Ajouter UserRole.guest dans enum
-- [ ] S01: Mettre a jour UserRoleX.value pour guest
-- [ ] S01: Mettre a jour UserRoleX.fromString pour guest
-- [ ] S01: Tests unitaires UserRole
+- [x] S01: Ajouter UserRole.guest dans enum
+- [x] S01: Mettre a jour UserRoleX.value pour guest
+- [x] S01: Mettre a jour UserRoleX.fromString pour guest
+- [x] S01: Tests unitaires UserRole (16 tests passent)
 
 ### TEST (Transversal)
 
@@ -99,11 +100,12 @@
 | Metrique | Valeur |
 |----------|--------|
 | Stories totales | 6 |
-| Stories completees | 0 |
-| Migrations SQL | 6 (a creer) |
-| Policies RLS | 7 (6 storage + 0 tables publiques) |
-| Tests a ajouter | ~15 (estimes) |
-| Temps estime | 0.5 jour |
+| Stories completees | 5 |
+| Stories partielles | 1 (S06) |
+| Migrations SQL | 5 appliquees en prod |
+| Policies RLS | 6 en attente (manuel) |
+| Tests ajoutes | 5 nouveaux tests UserRole |
+| Temps realise | ~1h |
 
 ---
 

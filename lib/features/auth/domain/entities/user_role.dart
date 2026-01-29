@@ -13,6 +13,9 @@ enum UserRole {
 
   /// System administrator.
   admin,
+
+  /// Guest invited to a wedding.
+  guest,
 }
 
 /// Extension methods for [UserRole].
@@ -26,6 +29,8 @@ extension UserRoleX on UserRole {
         return 'professional';
       case UserRole.admin:
         return 'admin';
+      case UserRole.guest:
+        return 'guest';
     }
   }
 
@@ -40,6 +45,8 @@ extension UserRoleX on UserRole {
         return UserRole.professional;
       case 'admin':
         return UserRole.admin;
+      case 'guest':
+        return UserRole.guest;
       default:
         return UserRole.bride;
     }

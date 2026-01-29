@@ -1,9 +1,10 @@
 # EPIC-06-PREREQUISITES
 
 > Resume : Migration des prerequis techniques BLOQUANTS pour les features Guest et Mission 2026
-> Status : 🔵 Draft
+> Status : 🟢 Done (5/6 stories - S06 partiel)
 > Domaine : Backend / Database / Auth
 > Cree le : 2026-01-28
+> Deploye le : 2026-01-29
 
 ---
 

@@ -1,0 +1,100 @@
+-- Migration: 20260129000006_create_wedding_media_bucket
+-- Description: Create wedding-media storage bucket with RLS policies
+-- Created: 2026-01-29
+-- Risk Level: MEDIUM - Storage RLS policies
+-- Status: MANUAL - Requires Supabase Dashboard for bucket creation
+-- Note: Bucket must be created manually via Supabase Dashboard first
+
+-- STEP 1: Create bucket via Supabase Dashboard with these settings:
+--   Name: wedding-media
+--   Public: false
+--   File size limit: 524288000 (500MB)
+--   Allowed MIME types:
+--     - image/jpeg
+--     - image/png
+--     - image/webp
+--     - image/heic
+--     - video/mp4
+--     - video/quicktime
+--     - video/x-m4v
+
+-- STEP 2: Run these SQL statements in Supabase SQL Editor (requires owner privileges):
+
+-- Policy 1: Guest can upload to their own folder
+-- CREATE POLICY "Guest upload own folder"
+-- ON storage.objects FOR INSERT
+-- TO authenticated
+-- WITH CHECK (
+--   bucket_id = 'wedding-media'
+--   AND (storage.foldername(name))[1] IN (
+--     SELECT w.id::text FROM weddings w
+--     JOIN wedding_guests wg ON wg.wedding_id = w.id
+--     WHERE wg.user_id = auth.uid()
+--   )
+--   AND (storage.foldername(name))[2] = 'guests'
+--   AND (storage.foldername(name))[3] = auth.uid()::text
+-- );
+
+-- Policy 2: Guest can read their own files
+-- CREATE POLICY "Guest read own files"
+-- ON storage.objects FOR SELECT
+-- TO authenticated
+-- USING (
+--   bucket_id = 'wedding-media'
+--   AND (storage.foldername(name))[2] = 'guests'
+--   AND (storage.foldername(name))[3] = auth.uid()::text
+-- );
+
+-- Policy 3: Guest can delete their own files
+-- CREATE POLICY "Guest delete own files"
+-- ON storage.objects FOR DELETE
+-- TO authenticated
+-- USING (
+--   bucket_id = 'wedding-media'
+--   AND (storage.foldername(name))[2] = 'guests'
+--   AND (storage.foldername(name))[3] = auth.uid()::text
+-- );
+
+-- Policy 4: Bride can read shared guest media
+-- CREATE POLICY "Bride read shared guest media"
+-- ON storage.objects FOR SELECT
+-- TO authenticated
+-- USING (
+--   bucket_id = 'wedding-media'
+--   AND (storage.foldername(name))[2] = 'guests'
+--   AND EXISTS (
+--     SELECT 1 FROM weddings w
+--     WHERE w.bride_profile_id = auth.uid()
+--     AND w.id::text = (storage.foldername(name))[1]
+--   )
+-- );
+
+-- Policy 5: Bride can upload to bride folder
+-- CREATE POLICY "Bride upload own folder"
+-- ON storage.objects FOR INSERT
+-- TO authenticated
+-- WITH CHECK (
+--   bucket_id = 'wedding-media'
+--   AND (storage.foldername(name))[2] = 'bride'
+--   AND EXISTS (
+--     SELECT 1 FROM weddings w
+--     WHERE w.bride_profile_id = auth.uid()
+--     AND w.id::text = (storage.foldername(name))[1]
+--   )
+-- );
+
+-- Policy 6: Bride can read own files
+-- CREATE POLICY "Bride read own files"
+-- ON storage.objects FOR SELECT
+-- TO authenticated
+-- USING (
+--   bucket_id = 'wedding-media'
+--   AND (storage.foldername(name))[2] = 'bride'
+--   AND EXISTS (
+--     SELECT 1 FROM weddings w
+--     WHERE w.bride_profile_id = auth.uid()
+--     AND w.id::text = (storage.foldername(name))[1]
+--   )
+-- );
+
+-- See docs/epics/EPIC-06-PREREQUISITES/S06-manual-steps.md for complete instructions
