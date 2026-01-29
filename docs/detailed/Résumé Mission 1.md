@@ -1,7 +1,7 @@
 MISSION LYNEWED - APP MOBILE
 Récapitulatif complet pour Léo Berthet
 1. DEVIS INITIAL — 8 jours / 2 400€
-RéfFeatureJoursAPP-01Avis clients (système de notes/étoiles in-app pour les pros)0.5jAPP-02Notifications de rappel RDV personnalisables (1 semaine, 1 jour, 1h)0.5jAPP-03Système invitations : bride entre des emails, envoie un lien/QR code, guests peuvent rejoindre et chatter2jAPP-04Projet Photo complet (espace partagé guests, albums, accès sécurisé, téléchargement bride)1.5jAPP-05Option paiement Stripe pour les photos/reels1jAPP-06Reels mono-user (montage auto avec vidéos d'un seul user)1.5jAPP-07Carte mondiale vendors + système de filtres1j
+RéfFeatureJoursAPP-01Avis clients (système de notes/étoiles in-app pour les pros)0.5jAPP-02Notifications de rappel RDV personnalisables (1 semaine, 1 jour, 1h)0.5jAPP-03Système invitations : bride entre des emails, envoie un lien/QR code, guests peuvent rejoindre et chatter2jAPP-04Projet Photo complet (espace partagé guests, albums, accès sécurisé, téléchargement bride)1.5jAPP-05Option paiement Stripe pour les photos/magazines1jAPP-06Magazines Photo (commande magazine imprimé avec sélection photos)1.5jAPP-07Carte mondiale vendors + système de filtres1j
 
 2. MARKETPLACE ROBES & CHAUSSURES — 7 jours / 2 100€
 MARKETPLACE ROBES - 7 jours / 2 100€
@@ -22,7 +22,7 @@ Modal obligatoire à scroller jusqu'en bas + case à cocher avant de déposer/ac
 Photos/Vidéos (guests)
 Consentement initial (1ère utilisation) : 4 cases à cocher
 Rappel AVANT CHAQUE envoi de photo/vidéo
-Consentement spécifique AVANT génération d'un reel
+Consentement spécifique AVANT commande d'un magazine (scroll + checkbox)
 → Thierry fournira les textes exacts (en anglais)
 5. RÉCAPITULATIF FINANCIER
 

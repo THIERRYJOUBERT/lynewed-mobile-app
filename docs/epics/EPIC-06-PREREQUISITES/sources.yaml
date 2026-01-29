@@ -69,7 +69,7 @@ production_state:
       - "guest_albums"
       - "guest_media"
       - "reviews"
-      - "reels"
+      - "magazines"
       - "stripe_accounts"
       - "purchases"
       - "stripe_events"

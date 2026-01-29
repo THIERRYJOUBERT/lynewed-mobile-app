@@ -14,7 +14,7 @@
 
 Integration Stripe **complete et securisee** pour :
 1. **Marketplace** : Stripe Connect Express pour les vendeuses
-2. **Achats** : Payment Intents pour tous les types d'achats (marketplace, reels futurs, etc.)
+2. **Achats** : Payment Intents pour tous les types d'achats (marketplace, magazines futurs, etc.)
 3. **Audit complet** : Tous les webhooks geres, tous les events logges
 
 Cette integration est la **fondation** pour toutes les fonctionnalites de monetisation de Lynewed.
@@ -81,7 +81,7 @@ Cette integration est la **fondation** pour toutes les fonctionnalites de moneti
 1. Commission 10% automatique sur ventes marketplace
 2. Paiements multi-pays (monde entier)
 3. Gestion des disputes avec notification
-4. Architecture evolutive pour futurs produits (reels payants, etc.)
+4. Architecture evolutive pour futurs produits (magazines payants, etc.)
 
 ---
 
@@ -211,13 +211,13 @@ CREATE INDEX idx_stripe_accounts_stripe_id ON stripe_accounts(stripe_account_id)
 ### Table: purchases (NOUVELLE)
 
 ```sql
--- Achats (marketplace, reels, albums, prints futurs)
+-- Achats (marketplace, magazines, albums, prints futurs)
 CREATE TABLE purchases (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES profiles(id) NOT NULL,
 
   -- Type de produit
-  product_type VARCHAR(50) NOT NULL CHECK (product_type IN ('marketplace_item', 'reel', 'album', 'print', 'subscription')),
+  product_type VARCHAR(50) NOT NULL CHECK (product_type IN ('marketplace_item', 'magazine', 'album', 'print', 'subscription')),
   product_id UUID,
 
   -- Seller (pour marketplace)
@@ -657,7 +657,7 @@ Scenario: RLS Policy - Cannot see others
 
 ### S02: Creer table `purchases`
 
-**Description** : Creer la table pour tracker tous les achats (marketplace, reels, etc.).
+**Description** : Creer la table pour tracker tous les achats (marketplace, magazines, etc.).
 
 **Criteres d'Acceptation** :
 ```gherkin

@@ -22,7 +22,7 @@
 | **EPIC-09** | APP-03 | Invitations (Guests) | 🔵 DRAFT | 12 | 2j |
 | **EPIC-10** | APP-04 | Photos/Videos | 🔵 DRAFT | 10 | 1.5j |
 | **EPIC-11** | APP-05 | Stripe Integration | 🔵 DRAFT | 12 | 1j |
-| **EPIC-12** | APP-06 | Reels Generation | 🔵 DRAFT | 14 | 1.5j |
+| **EPIC-12** | APP-06 | Magazines Photo | 🔵 DRAFT | 12 | 1.5j |
 | **EPIC-13** | APP-07 | Map Filters | 🔵 DRAFT | 9 | 1j |
 | **EPIC-14** | APP-08 | Marketplace | 🔵 DRAFT | 26 | 7j |
 
@@ -118,17 +118,23 @@ Integration Stripe complete :
 
 ---
 
-### EPIC-12: Reels Generation (APP-06) 🔵
+### EPIC-12: Magazines Photo (APP-06) 🔵
 
 **Statut**: DRAFT | **Dépendances**: EPIC-06 → EPIC-10 → EPIC-11 (ordre strict)
-**Stories**: 13 (S00-S12 + S01b) | **Estimation**: 1.5 jours
+**Stories**: 12 | **Estimation**: 1.5 jours
 
-Generation de reels :
-- Guest: ses propres videos uniquement
-- Bride: toutes videos + guests partages
-- **Shotstack API** (cloud video processing - remplace FFmpeg)
-- Cleanup automatique 7 jours
-- CGVU acceptance avec version tracking
+> ⚠️ **BLOQUANTS IDENTIFIÉS** (Challenge Deep 2026-01-29):
+> - S04-S08 nécessitent EPIC-10 S01-S03 (tables guest_albums, guest_media)
+> - S10-S12 nécessitent EPIC-11 (Stripe + table cgvu_acceptances)
+> - Table `app_config` pour prix dynamique non créée
+
+Commande de magazines photo imprimés :
+- Galerie avec sélection (favoris, masquer, supprimer)
+- Partage galerie avec guests
+- Preview mockup magazine (couverture + pages)
+- Checkout Stripe avec adresse livraison
+- Fulfillment manuel par Thierry (pas d'API imprimeur V1)
+- CGVU acceptance avec scroll obligatoire + logging
 
 ---
 
@@ -179,7 +185,7 @@ EPIC-06 (Prerequisites) ──┼── EPIC-08 (Reminders) ──────�
    APP-00 BLOQUANT        │                                                │
                           ├── EPIC-09 (Invitations) ──► EPIC-10 (Photos) ──┤
                           │                                                │
-                          │                              EPIC-12 (Reels) ◄─┘
+                          │                              EPIC-12 (Magazines) ◄┘
                           │                                    │
 EPIC-11 (Stripe) ─────────┼────────────────────────────────────┤
    Independant            │                                    │
@@ -194,7 +200,7 @@ ORDRE D'EXECUTION RECOMMANDE :
 3. EPIC-09 (dépend de EPIC-06)
 4. EPIC-11 (Stripe - peut démarrer en parallèle)
 5. EPIC-10 (dépend de EPIC-06, EPIC-09)
-6. EPIC-12 (dépend de EPIC-06 → EPIC-10 → EPIC-11, utilise Shotstack API)
+6. EPIC-12 (dépend de EPIC-06 → EPIC-10 → EPIC-11, Stripe Checkout)
 7. EPIC-13 (dépend de EPIC-07 pour minRating - feature flags si pas prêt)
 8. EPIC-14 (le plus gros - dépend de EPIC-06, EPIC-11, EPIC-13)
 ```
@@ -220,6 +226,9 @@ ORDRE D'EXECUTION RECOMMANDE :
 | 2026-01-28 | **Stories créées** : 106 stories INVEST via 9 agents Opus parallèles (EPIC-06 à EPIC-14) |
 | 2026-01-29 | **EPIC-06 TERMINÉ** : 5/6 stories déployées en production (LYNEWED-V1-APP) |
 | 2026-01-29 | S06 partiel : Bucket wedding-media nécessite création manuelle via Dashboard |
+| 2026-01-29 | **Migration Reels → Magazines** : EPIC-12-REELS supprimé, EPIC-12-MAGAZINES créé (12 stories) |
+| 2026-01-29 | **Challenge Deep EPIC-12** : 20 findings (5 HIGH, 7 MEDIUM, 8 LOW), score 71%→89% |
+| 2026-01-29 | Corrections : validation metadata Stripe, dépendances documentées, cgvu_acceptances requis |
 
 ---
 

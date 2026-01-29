@@ -32,7 +32,7 @@ Le challenge deep (3 agents Sonnet en parallele) a identifie des prerequis techn
 **Impact si non fait:**
 - APP-03 (Invitations Guests) : IMPOSSIBLE
 - APP-04 (Photos/Videos) : IMPOSSIBLE pour guests
-- APP-06 (Reels) : IMPOSSIBLE pour guests
+- APP-06 (Magazines) : IMPOSSIBLE pour guests
 - Securite : Codes invitation bruteforce-able
 
 ### Piliers Techniques Concernes

@@ -49,7 +49,7 @@ production_state:
         purpose: "Comptes Stripe Connect des vendeuses"
         critical: true
       - name: "purchases"
-        purpose: "Tous les achats (marketplace, reels, etc.)"
+        purpose: "Tous les achats (marketplace, magazines, etc.)"
         critical: true
       - name: "stripe_events"
         purpose: "Audit complet avec payload"

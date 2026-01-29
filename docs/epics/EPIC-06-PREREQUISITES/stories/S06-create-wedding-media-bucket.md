@@ -178,4 +178,4 @@ La policy "Bride read shared guest media" sera completee dans EPIC-10 (APP-04) q
 ## Stories Dependantes
 
 - EPIC-10 (APP-04 Photos/Videos) - Utilisera ce bucket
-- EPIC-12 (APP-06 Reels) - Utilisera ce bucket
+- EPIC-12 (APP-06 Magazines) - Utilisera ce bucket

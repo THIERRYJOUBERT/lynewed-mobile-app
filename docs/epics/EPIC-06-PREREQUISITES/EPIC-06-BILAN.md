@@ -184,7 +184,7 @@ L'Epic EPIC-06-PREREQUISITES a été **livré avec succès** en production. Cet 
 | EPIC-09 | APP-03 Invitations Guests | S01-S05 | ✅ Prêt |
 | EPIC-10 | APP-04 Photos/Videos | S06 bucket | 🟡 Prêt après manuel |
 | EPIC-11 | APP-05 Votes | ❌ Non | Prêt |
-| EPIC-12 | APP-06 Reels | S06 bucket | 🟡 Prêt après manuel |
+| EPIC-12 | APP-06 Magazines | S06 bucket | 🟡 Prêt après manuel |
 | EPIC-13 | APP-07 Messagerie | ❌ Non | Prêt |
 | EPIC-14 | APP-08 Stories | S06 bucket | 🟡 Prêt après manuel |
 

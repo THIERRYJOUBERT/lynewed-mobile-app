@@ -12,7 +12,7 @@ En tant que developpeur, je veux creer la couche Dart (entites, repository, data
 - [ ] Given la classe Purchase Then elle a une methode factory fromJson
 - [ ] Given la classe Purchase Then elle a une methode copyWith
 - [ ] Given l'enum PurchaseStatus Then elle contient tous les statuts: pending, processing, requires_action, succeeded, failed, canceled, refunded, partially_refunded, disputed
-- [ ] Given l'enum ProductType Then elle contient: marketplace_item, reel, album, print, subscription
+- [ ] Given l'enum ProductType Then elle contient: marketplace_item, magazine, album, print, subscription
 - [ ] Given le StripeRepository Then il a getStripeAccount(userId) qui retourne StripeAccount?
 - [ ] Given le StripeRepository Then il a getPurchases(userId) qui retourne List<Purchase>
 - [ ] Given le StripeRepository Then il a getPurchase(id) qui retourne Purchase?
@@ -239,7 +239,7 @@ enum PurchaseStatus {
 // lib/features/payments/domain/entities/product_type.dart
 enum ProductType {
   marketplaceItem,
-  reel,
+  magazine,
   album,
   print,
   subscription;
@@ -248,8 +248,8 @@ enum ProductType {
     switch (value) {
       case 'marketplace_item':
         return ProductType.marketplaceItem;
-      case 'reel':
-        return ProductType.reel;
+      case 'magazine':
+        return ProductType.magazine;
       case 'album':
         return ProductType.album;
       case 'print':
@@ -265,8 +265,8 @@ enum ProductType {
     switch (this) {
       case ProductType.marketplaceItem:
         return 'marketplace_item';
-      case ProductType.reel:
-        return 'reel';
+      case ProductType.magazine:
+        return 'magazine';
       case ProductType.album:
         return 'album';
       case ProductType.print:
@@ -573,5 +573,5 @@ class SupabaseStripeRepository implements StripeRepository {
 
 ## Stories Dependantes
 
-- EPIC-12: Reels Generation (utilise Purchase pour achats)
+- EPIC-12: Magazines Photo (utilise Purchase pour achats)
 - EPIC-14: Marketplace (utilise StripeAccount et Purchase)

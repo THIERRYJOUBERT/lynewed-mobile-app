@@ -1,14 +1,14 @@
 # Story S02: Creer table purchases
 
 ## Description
-En tant que developpeur, je veux creer la table `purchases` pour tracker tous les achats (marketplace, reels, albums, etc.), afin de gerer les transactions et les paiements avec commission.
+En tant que developpeur, je veux creer la table `purchases` pour tracker tous les achats (marketplace, magazines, albums, etc.), afin de gerer les transactions et les paiements avec commission.
 
 ## Criteres d'Acceptance (Gherkin)
 
 - [ ] Given la base de donnees Supabase When j'applique la migration Then la table purchases existe avec toutes les colonnes
 - [ ] Given la table purchases When j'inspecte la structure Then id est UUID PRIMARY KEY avec gen_random_uuid()
 - [ ] Given la table purchases When j'inspecte la structure Then user_id reference profiles(id) et est NOT NULL
-- [ ] Given la table purchases When j'inspecte la structure Then product_type a CHECK ('marketplace_item', 'reel', 'album', 'print', 'subscription')
+- [ ] Given la table purchases When j'inspecte la structure Then product_type a CHECK ('marketplace_item', 'magazine', 'album', 'print', 'subscription')
 - [ ] Given la table purchases When j'inspecte la structure Then amount_cents a CHECK (amount_cents > 0)
 - [ ] Given la table purchases When j'inspecte la structure Then status a CHECK avec tous les statuts possibles
 - [ ] Given les index When j'inspecte la table Then tous les index de performance sont crees (user_id, seller_id, status, stripe_pi, stripe_cs, product)
@@ -30,13 +30,13 @@ En tant que developpeur, je veux creer la table `purchases` pour tracker tous le
 ### Schema SQL
 
 ```sql
--- Achats (marketplace, reels, albums, prints futurs)
+-- Achats (marketplace, magazines, albums, prints futurs)
 CREATE TABLE purchases (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES profiles(id) NOT NULL,
 
   -- Type de produit
-  product_type VARCHAR(50) NOT NULL CHECK (product_type IN ('marketplace_item', 'reel', 'album', 'print', 'subscription')),
+  product_type VARCHAR(50) NOT NULL CHECK (product_type IN ('marketplace_item', 'magazine', 'album', 'print', 'subscription')),
   product_id UUID,
 
   -- Seller (pour marketplace)

@@ -13,7 +13,7 @@
 
 ## Contexte
 
-Cette story est la **fondation technique** de l'EPIC-06-PREREQUISITES. Elle permet l'introduction du rôle `guest` dans le système, prérequis absolu pour toutes les features Guest (APP-03 Invitations, APP-04 Photos/Vidéos, APP-06 Reels).
+Cette story est la **fondation technique** de l'EPIC-06-PREREQUISITES. Elle permet l'introduction du rôle `guest` dans le système, prérequis absolu pour toutes les features Guest (APP-03 Invitations, APP-04 Photos/Vidéos, APP-06 Magazines).
 
 ### État Initial
 - Enum Postgres `userRole`: `['bride', 'professional']`

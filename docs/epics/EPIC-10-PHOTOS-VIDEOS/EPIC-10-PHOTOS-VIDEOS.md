@@ -11,7 +11,7 @@
 
 ### Pourquoi cet Epic
 
-Cet Epic **enrichit** les fonctionnalites de galerie existantes pour supporter les videos, les legendes, et creer un systeme d'albums separe pour les guests. Il prepare egalement l'infrastructure pour les futures fonctionnalites de commande d'impressions et d'achat d'albums.
+Cet Epic **enrichit** les fonctionnalites de galerie existantes pour supporter les videos, les legendes, et creer un systeme d'albums separe pour les guests. Il prepare egalement l'infrastructure pour la commande de magazines photo (EPIC-12).
 
 **Etat actuel verifie en production (Supabase MCP):**
 
@@ -124,7 +124,6 @@ Bucket: wedding-media (cree dans EPIC-06)
 | **Photo** | 20 MB max | Qualite suffisante |
 | **Video duree** | 10 minutes max | Eviter abus storage |
 | **Video taille** | 500 MB max | Balance qualite/cout |
-| **Video pour reel** | 2 minutes max par video | Reels exploitables |
 | **Legende** | 500 caracteres max | UX concise |
 
 ---

@@ -19,7 +19,7 @@
 6. [APP-03 — Système d'invitations guests](#6-app-03--système-dinvitations-guests)
 7. [APP-04 — Projet Photo & Vidéo](#7-app-04--projet-photo--vidéo)
 8. [APP-05 — Intégration Stripe Complète](#8-app-05--intégration-stripe-complète)
-9. [APP-06 — Reels](#9-app-06--reels)
+9. [APP-06 — Magazines Photo](#9-app-06--magazines-photo)
 10. [APP-07 — Filtres Map additionnels](#10-app-07--filtres-map-additionnels)
 11. [APP-08 — Marketplace Robes & Chaussures](#11-app-08--marketplace-robes--chaussures)
 12. [CGVU & Conformité juridique](#12-cgvu--conformité-juridique)
@@ -49,7 +49,7 @@ L'app utilise **Clean Architecture** avec 15 modules features :
 |---|----------|--------|
 | 1 | **Enrichir l'expérience bride** | Photos/vidéos partagées, invitations guests, rappels RDV |
 | 2 | **Créer une marketplace** | Vente de robes ET chaussures entre brides (style Vinted) |
-| 3 | **Monétiser (préparation)** | Stripe Connect avec commission 10%, architecture paiement reels |
+| 3 | **Monétiser (préparation)** | Stripe Connect avec commission 10%, commande magazines photo |
 | 4 | **Protéger juridiquement** | CGVU, logs de consentement, droit à l'image |
 
 ### Principes de développement
@@ -96,7 +96,7 @@ ALTER TYPE "public"."userRole" ADD VALUE 'guest';
 
 #### Template RLS par type de table
 
-**Tables Guest-owned** (`guest_albums`, `guest_media`, `reels`) :
+**Tables Guest-owned** (`guest_albums`, `guest_media`) :
 ```sql
 -- Le guest ne voit que SES propres données
 CREATE POLICY "Guest can CRUD own data" ON {table_name}
@@ -958,36 +958,48 @@ Deno.serve(async (req) => {
 
 ---
 
-## 8. APP-06 — Reels
+## 8. APP-06 — Magazines Photo
 
 > **Estimation** : 1.5 jours | **Prix** : 450€
+> **NOTE** : Remplace les Reels (abandonnés) - Décision Thierry 28/01/2026
 
 ### Description
 
-Génération de reels à partir des vidéos. Deux modes :
-1. **Guest** : Uniquement ses propres vidéos (droit à l'image)
-2. **Bride** : Toutes les vidéos de sa galerie + guests partagés
+Système de commande de **magazines photo imprimés** pour les mariages. La bride sélectionne ses photos préférées (y compris celles des guests), prévisualise un mockup magazine style éditorial, et commande via Stripe. **Fulfillment manuel par Thierry en V1** (pas d'intégration API imprimeur).
 
-**Gratuit dans un premier temps**, architecture prête pour paiement futur.
+### Parcours Utilisateur
 
-### User Stories — Guest
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  1. GALERIE  →  2. SÉLECTION  →  3. PREVIEW  →  4. CHECKOUT  →  5. ORDER   │
+│                                                                              │
+│  Bride voit     Bride marque     Mockup        Paiement       Thierry       │
+│  toutes ses     favorites,       magazine      Stripe +       produit       │
+│  photos +       sélectionne      avec          adresse        manuellement  │
+│  guests         pour magazine    couverture    livraison                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### User Stories — Galerie
 
 | ID | Story |
 |----|-------|
-| US-06.1 | En tant que guest, je peux sélectionner MES vidéos (max 10, max 2min chacune) |
-| US-06.2 | En tant que guest, je vois une prévisualisation basse qualité avec watermark |
-| US-06.3 | En tant que guest, je peux télécharger le reel en haute qualité |
-| US-06.4 | En tant que guest, je peux envoyer mon reel à la bride |
-| US-06.5 | En tant que guest, mon reel n'est pas stocké durablement |
+| US-06.1 | En tant que bride, je peux voir toutes mes photos + celles des guests partagées |
+| US-06.2 | En tant que bride, je peux marquer des photos en favoris |
+| US-06.3 | En tant que bride, je peux masquer des photos guests de ma vue |
+| US-06.4 | En tant que bride, je peux supprimer (soft) des photos de ma galerie |
+| US-06.5 | En tant que bride, je peux filtrer : Toutes / Favoris / Masquées |
+| US-06.6 | En tant que bride, je peux partager une sélection avec les guests |
 
-### User Stories — Bride
+### User Stories — Magazine
 
 | ID | Story |
 |----|-------|
-| US-06.6 | En tant que bride, je peux créer des reels avec TOUTES mes vidéos |
-| US-06.7 | En tant que bride, je peux inclure les vidéos partagées par les guests |
-| US-06.8 | En tant que bride, je vois les @ Instagram des pros de mon mariage à copier |
-| US-06.9 | En tant que bride, je peux télécharger en haute qualité avec logo Lynewed discret |
+| US-06.7 | En tant que bride, je peux sélectionner jusqu'à 50 photos pour le magazine |
+| US-06.8 | En tant que bride, je peux réordonner les photos (drag & drop) |
+| US-06.9 | En tant que bride, je vois une prévisualisation du magazine avec couverture |
+| US-06.10 | En tant que bride, je peux commander et payer via Stripe |
+| US-06.11 | En tant que bride, je reçois une confirmation et un suivi de commande |
 
 ### Spécifications techniques
 
@@ -995,131 +1007,150 @@ Génération de reels à partir des vidéos. Deux modes :
 
 | Limite | Valeur | Raison |
 |--------|--------|--------|
-| Vidéos par reel | 10 max | Performance |
-| Durée par vidéo | 2 minutes max | Reels exploitables |
-| Durée totale reel | 10 minutes max | Limite raisonnable |
-| Vidéos uploadées | 10 minutes max | Stockage |
+| Photos par magazine | 50 max | Taille raisonnable, coût production |
+| Prix magazine | $49.00 | Base, configurable |
+| Frais port USA | $15.00 | FedEx domestic |
+| Frais port International | $35.00 | FedEx international |
 
 #### Base de données
 
 ```sql
-CREATE TABLE reels (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+-- Favoris photos (bride peut favoriser album_images ET guest_media)
+CREATE TABLE photo_favorites (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES profiles(id) NOT NULL,
-  wedding_id UUID REFERENCES weddings(id) NOT NULL,
-
-  -- Type de créateur
-  creator_type VARCHAR(10) CHECK (creator_type IN ('guest', 'bride')) NOT NULL,
-
-  -- Vidéos source
-  source_media_ids UUID[] NOT NULL, -- IDs des vidéos utilisées
-  total_duration_seconds INTEGER,
-
-  -- Fichiers générés
-  preview_path TEXT, -- Basse qualité + watermark
-  output_path TEXT, -- Haute qualité + logo discret
-
-  -- Statut
-  status VARCHAR(20) DEFAULT 'pending',
-  -- 'pending', 'processing', 'ready', 'downloaded', 'expired', 'failed'
-
-  -- Paiement (futur)
-  is_paid BOOLEAN DEFAULT FALSE,
-  price_cents INTEGER DEFAULT 0, -- 0 = gratuit
-  purchase_id UUID REFERENCES purchases(id),
-
-  -- Métadonnées
-  error_message TEXT,
-  expires_at TIMESTAMP, -- Auto-suppression après 7 jours
+  media_type VARCHAR(20) NOT NULL, -- 'album_image' | 'guest_media'
+  media_id UUID NOT NULL,
   created_at TIMESTAMP DEFAULT NOW(),
-  downloaded_at TIMESTAMP
+  UNIQUE(user_id, media_type, media_id)
 );
 
--- Config prix reels (administrable)
+-- Sélection pour magazine avec ordre
+CREATE TABLE magazine_selections (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  wedding_id UUID REFERENCES weddings(id) NOT NULL,
+  user_id UUID REFERENCES profiles(id) NOT NULL,
+  media_type VARCHAR(20) NOT NULL,
+  media_id UUID NOT NULL,
+  position INTEGER NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(wedding_id, media_type, media_id)
+);
+
+-- Commandes magazines
+CREATE TABLE magazine_orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  wedding_id UUID REFERENCES weddings(id) NOT NULL,
+  bride_user_id UUID REFERENCES profiles(id) NOT NULL,
+
+  -- Stripe
+  stripe_payment_intent_id VARCHAR(255),
+  stripe_checkout_session_id VARCHAR(255),
+
+  -- Montants (centimes)
+  magazine_price_cents INTEGER NOT NULL,
+  shipping_cost_cents INTEGER NOT NULL,
+  total_paid_cents INTEGER NOT NULL,
+  currency VARCHAR(3) DEFAULT 'USD',
+
+  -- Shipping
+  shipping_name VARCHAR(255) NOT NULL,
+  shipping_address_line1 VARCHAR(255) NOT NULL,
+  shipping_address_line2 VARCHAR(255),
+  shipping_city VARCHAR(255) NOT NULL,
+  shipping_zip VARCHAR(50) NOT NULL,
+  shipping_country VARCHAR(100) NOT NULL,
+  shipping_phone VARCHAR(50),
+
+  -- Magazine
+  magazine_title VARCHAR(255) NOT NULL,
+  magazine_date DATE,
+  photo_count INTEGER NOT NULL,
+
+  -- Status: pending → paid → in_production → shipped → delivered
+  status VARCHAR(30) DEFAULT 'pending',
+  tracking_number VARCHAR(255),
+  tracking_url TEXT,
+
+  created_at TIMESTAMP DEFAULT NOW(),
+  paid_at TIMESTAMP,
+  shipped_at TIMESTAMP
+);
+
+-- Snapshot photos au moment de la commande
+CREATE TABLE magazine_order_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id UUID REFERENCES magazine_orders(id) ON DELETE CASCADE,
+  media_type VARCHAR(20) NOT NULL,
+  media_id UUID NOT NULL,
+  position INTEGER NOT NULL,
+  storage_url TEXT NOT NULL, -- Snapshot URL, préservé même si original supprimé
+  caption TEXT
+);
+
+-- Config prix magazine (administrable)
 INSERT INTO app_config (key, value) VALUES
-('reel_pricing', '{"enabled": false, "price_cents": 0, "currency": "USD"}')
-ON CONFLICT (key) DO NOTHING;
+('magazine_pricing', '{
+  "base_price_cents": 4900,
+  "currency": "USD",
+  "max_photos": 50,
+  "shipping_domestic_cents": 1500,
+  "shipping_international_cents": 3500
+}')
+ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 ```
 
-#### Pipeline de génération
+#### Ajout status à guest_media
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        PIPELINE GÉNÉRATION REEL                             │
-│                                                                              │
-│  1. SÉLECTION                                                               │
-│     User sélectionne vidéos (max 10, max 2min chacune)                     │
-│     ↓                                                                        │
-│  2. VALIDATION                                                              │
-│     - Guest : toutes vidéos lui appartiennent                               │
-│     - Bride : vidéos de sa galerie + guests partagés                        │
-│     - Durée totale ≤ 10 minutes                                             │
-│     ↓                                                                        │
-│  3. CGVU (1ère fois)                                                        │
-│     Modal consentement spécifique reels                                     │
-│     ↓                                                                        │
-│  4. PROCESSING (Edge Function)                                              │
-│     - MVP : FFmpeg concaténation + fade transitions                         │
-│     - Futur : Shotstack API pour montage intelligent                        │
-│     ↓                                                                        │
-│  5. PREVIEW                                                                 │
-│     - Basse qualité (480p)                                                  │
-│     - Watermark "LYNEWED" central                                           │
-│     ↓                                                                        │
-│  6. NOTIFICATION                                                            │
-│     Push "Votre reel est prêt !"                                            │
-│     ↓                                                                        │
-│  7. TÉLÉCHARGEMENT                                                          │
-│     - Haute qualité (1080p)                                                 │
-│     - Logo Lynewed discret (coin inférieur)                                 │
-│     - Marquer downloaded_at                                                 │
-│     ↓                                                                        │
-│  8. CLEANUP                                                                 │
-│     - Suppression fichiers après 7 jours                                    │
-│     - Cron job quotidien                                                    │
-└─────────────────────────────────────────────────────────────────────────────┘
+```sql
+-- Permettre bride de masquer/supprimer photos guests
+ALTER TABLE guest_media
+  ADD COLUMN status VARCHAR(20) DEFAULT 'active';
+-- 'active', 'hidden_by_bride', 'deleted_by_bride'
 ```
 
-#### Affichage @ Instagram des pros
+### Preview Magazine
 
-Pour les brides, afficher liste des @ Instagram des pros du mariage :
-```dart
-// Récupérer depuis wedding_participants + professional_details
-final pros = await getProsInWedding(weddingId);
-final instagrams = pros
-  .where((p) => p.instagramHandle != null)
-  .map((p) => '@${p.instagramHandle}')
-  .toList();
+Le preview affiche un mockup style magazine éditorial :
 
-// Afficher avec bouton "Copier tout"
-showCopyableProsTags(instagrams);
-```
+**Couverture** :
+- "DIGITAL EDITION" + date
+- "LYNEWED" branding
+- Photo de couverture (première sélectionnée ou choisie)
+- Nom des mariés (ex: "Jessica & Kyle")
+- "Captured by our loved ones"
 
-#### Approche technique MVP vs Futur
-
-| Phase | Approche | Coût | Qualité |
-|-------|----------|------|---------|
-| **MVP** | FFmpeg server-side (Edge Function) | ~$0.001/reel | ⭐⭐⭐ Basique |
-| **V2** | Shotstack API | ~$0.20/min | ⭐⭐⭐⭐ Pro |
-| **V3** | IA (OpusClip-like) | Custom | ⭐⭐⭐⭐⭐ Intelligent |
-
-Pour le MVP, FFmpeg avec :
-- Concaténation des vidéos
-- Transitions fade (1 seconde)
-- Pas de musique (droits d'auteur)
-- Pas de découpe intelligente
+**Pages intérieures** :
+- Layouts variés automatiques (1 photo, 2 photos, mosaïque 4-6)
+- Sections : "The Party", "Guest Moments", "Celebration"
+- Numérotation des pages
 
 ### Critères d'acceptation
 
-- [ ] Guest : uniquement SES vidéos
-- [ ] Bride : toutes vidéos galerie + guests partagés
-- [ ] Max 10 vidéos, 2 min chacune, 10 min total
-- [ ] Prévisualisation basse qualité + watermark
-- [ ] Téléchargement haute qualité + logo discret
-- [ ] Liste @ Instagram des pros (bride only)
-- [ ] CGVU obligatoire (1ère fois)
-- [ ] Suppression automatique après 7 jours
-- [ ] Architecture prête pour paiement futur
+- [ ] Galerie avec sélection multiple
+- [ ] Actions favorite/hide/delete sur photos
+- [ ] Filtres All/Favorites/Hidden
+- [ ] Partage sélection avec guests
+- [ ] Sélection magazine avec reorder (drag & drop)
+- [ ] Max 50 photos par magazine
+- [ ] Preview magazine avec couverture personnalisée
+- [ ] Checkout Stripe avec adresse livraison
+- [ ] CGVU magazine obligatoire (scroll + checkbox)
+- [ ] Webhook création commande après paiement
+- [ ] Push notification confirmation commande
+- [ ] Admin panel pour gestion commandes (service_role)
+
+### Fulfillment V1 (Manuel)
+
+**Important** : En V1, pas d'intégration API imprimeur.
+
+1. Bride commande et paie via Stripe
+2. Commande créée dans `magazine_orders`
+3. Thierry voit la commande dans l'admin panel (CRM Tom)
+4. Thierry télécharge les photos et crée le magazine manuellement
+5. Thierry paie le fournisseur et envoie à l'adresse
+6. Thierry met à jour le status et ajoute le tracking
+7. Bride reçoit notification de livraison
 
 ---
 
@@ -1559,7 +1590,7 @@ Ajouter section "Articles récents" sur home page bride :
 | Type | Moment | Format | Fréquence |
 |------|--------|--------|-----------|
 | **Photo/Vidéo** | 1ère utilisation | 4 checkboxes | Une fois |
-| **Reel** | 1ère génération | 4 checkboxes | Une fois |
+| **Magazine** | 1ère commande | Scroll + checkbox | Une fois |
 | **Galerie partage** | Activation partage | 1 checkbox | Chaque activation |
 | **Marketplace vendeuse** | 1ère annonce | Scroll + checkbox | Une fois |
 | **Marketplace acheteuse** | 1er achat | Scroll + checkbox | Une fois |
@@ -1613,26 +1644,49 @@ I understand that Lynewed acts solely as a technical platform and hosting servic
 By checking these boxes, I confirm I have read, understood, and agree to these terms.
 ```
 
-#### Reel Generation — 4 checkboxes (EN)
+#### Magazine Purchase — Scroll + checkbox (EN)
 
 ```
-REEL GENERATION — TERMS OF USE
+LYNEWED MAGAZINE — TERMS OF PURCHASE
 
-Before generating your reel, please confirm the following:
+Please read these terms carefully before ordering your magazine.
 
-☐ 1. OWNERSHIP OF CONTENT
-I confirm that all videos selected for this reel are my own content, captured by me personally. I am using only videos from my personal album.
+1. PRODUCT DESCRIPTION
+The Lynewed Wedding Magazine is a custom-printed photo book featuring photos you have selected from your wedding gallery. Each magazine is uniquely created based on your selections.
 
-☐ 2. GENERATED CONTENT
-I understand that the generated reel becomes my own creation and my personal property. The reel is created using automated processing and Lynewed provides no warranty regarding its quality or suitability.
+2. PRODUCTION & DELIVERY
+• Magazines are produced manually by our partner printing service
+• Production typically takes 5-10 business days
+• Shipping time varies by location (7-21 days)
+• You will receive tracking information once shipped
 
-☐ 3. DISTRIBUTION RESPONSIBILITY
-Any publication, sharing, or distribution of the generated reel is done entirely under my sole responsibility. I will ensure I have appropriate rights before sharing on any platform.
+3. CUSTOM PRODUCT POLICY
+As each magazine is custom-made with your personal photos:
+• Orders cannot be cancelled once production begins
+• Refunds are not available for delivered products
+• Exchanges are only possible for production defects
 
-☐ 4. LYNEWED'S ROLE
-I acknowledge that Lynewed acts only as a technical processing service. Lynewed is NOT the publisher, editor, or producer of the generated content and bears no responsibility for how I use the reel.
+4. PHOTO QUALITY
+• Final print quality depends on original photo resolution
+• We recommend high-resolution photos for best results
+• Lynewed is not responsible for print quality issues caused by low-resolution source images
 
-By proceeding, I confirm I have read and agree to these terms.
+5. INTELLECTUAL PROPERTY
+• You confirm you have rights to all photos included
+• By ordering, you grant Lynewed permission to print your photos
+• Photos are not shared or used for any other purpose
+
+6. SHIPPING
+• Shipping costs are calculated at checkout
+• Risk of loss transfers upon delivery to carrier
+• Lynewed is not responsible for shipping delays or damage by carriers
+
+7. LIMITATION OF LIABILITY
+Lynewed's liability is limited to the order value. We are not liable for indirect damages or delays beyond our control.
+
+By scrolling to the bottom and checking the box below, you confirm you have read and accept these terms.
+
+☐ I have read and accept the Lynewed Magazine Terms of Purchase
 ```
 
 #### Gallery Sharing — 1 checkbox (EN)
@@ -1799,7 +1853,7 @@ By scrolling to the bottom and checking the box below, you confirm you have read
 | S1 | 25-31 jan | Setup, APP-01, APP-02 |
 | S2 | 1-7 fév | APP-03 (invitations), APP-07 (filtres) |
 | S3 | 8-14 fév | APP-04 (photos), APP-05 (Stripe) |
-| S4 | 15-21 fév | APP-06 (reels), Marketplace (début) |
+| S4 | 15-21 fév | APP-06 (magazines), Marketplace (début) |
 | S5 | 22-28 fév | Marketplace (suite) |
 | S6 | 1-7 mars | Marketplace (fin), CGVU |
 | S7 | 8-14 mars | Tests, corrections, déploiement |
@@ -1834,16 +1888,16 @@ By scrolling to the bottom and checking the box below, you confirm you have read
 | D-02 | Interface Guest séparée de Bride | Sécurité, UX claire, accès limité |
 | D-03 | Guest ne voit que SES photos | Protection vie privée, droit à l'image |
 | D-04 | CGVU une seule fois + logs complets | UX non intrusive, traçabilité juridique |
-| D-05 | Reels gratuits avec flag paiement | Test marché avant monétisation |
-| D-06 | FFmpeg MVP, Shotstack futur | Coût minimal, évolutif |
+| D-05 | Magazines avec paiement Stripe Checkout | Revenus directs, fulfillment manuel par Thierry |
+| D-06 | Magazine preview local, pas de génération PDF | Coût minimal, preview mockup suffisant |
 | D-07 | USD comme devise interne | Simplifie Stripe et FedEx |
 | D-08 | Tous webhooks Stripe gérés | Sécurité, pas de cas non gérés |
 | D-09 | Marketplace dans navbar + preview home | Visibilité maximale |
 | D-10 | Cohérence UI avec my_wedding | Utilisateurs familiers avec l'app |
-| D-11 | Limites vidéos (10min upload, 2min reel) | Éviter abus, reels exploitables |
+| D-11 | Limites vidéos (10min upload) | Éviter abus storage |
 | D-12 | Bride peut utiliser vidéos guests partagés | Flexibilité pour mariée |
 | D-13 | Guests n'ont pas accès à la map | Map = feature bride/pro uniquement |
-| D-14 | **Guests PEUVENT créer des reels** | Décision finale post-challenge : override conversations Thierry (ligne 839) qui mentionnait "pas d'accès reels". Guest peut créer reels avec SES propres vidéos uniquement |
+| D-14 | **Guests NE PEUVENT PAS commander de magazines** | Seule la bride peut commander un magazine avec les photos sélectionnées |
 | D-15 | Code invitation 8 caractères + expiration | Sécurité anti-bruteforce (challenge finding) |
 | D-16 | RLS obligatoires avant toute table | Sécurité données multi-tenant |
 | D-17 | Réutiliser `chat_rooms` existante pour chat mariage | Éviter duplication code, type='wedding_team' existe |
@@ -1866,7 +1920,10 @@ By scrolling to the bottom and checking the box below, you confirm you have read
 | `guest_albums` | Albums photos des guests |
 | `guest_media` | Médias des guests |
 | `gallery_access_logs` | Logs accès galerie |
-| `reels` | Reels générés |
+| `photo_favorites` | Photos favorites de la bride |
+| `magazine_selections` | Sélection photos pour magazine |
+| `magazine_orders` | Commandes de magazines |
+| `magazine_order_items` | Photos dans une commande |
 | `stripe_accounts` | Comptes Stripe Connect |
 | `purchases` | Achats (marketplace, reels, etc.) |
 | `stripe_events` | Audit events Stripe |
@@ -1894,10 +1951,10 @@ By scrolling to the bottom and checking the box below, you confirm you have read
 |----------|---------|-------------|
 | `send-scheduled-notifications` | pg_cron (1 min) | Envoie rappels programmés |
 | `send-wedding-invitation` | HTTP | Envoie email invitation |
-| `generate-reel` | HTTP | Génère reel FFmpeg |
+| `create-magazine-checkout` | HTTP | Crée session Stripe Checkout pour magazine |
+| `magazine-order-webhook` | Webhook Stripe | Crée commande après paiement |
 | `stripe-webhook` | Webhook Stripe | Gère tous events Stripe |
 | `fedex-webhook` | Webhook FedEx | Gère tracking events |
-| `cleanup-expired-reels` | pg_cron (daily) | Supprime reels expirés |
 
 ### C. Intégrations externes
 

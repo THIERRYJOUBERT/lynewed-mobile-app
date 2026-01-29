@@ -1,0 +1,58 @@
+# Sources de reference pour EPIC-12-MAGAZINES
+
+prd:
+  file: docs/specs/MISSION-01-EVOLUTIONS-2026.md
+  sections:
+    - "Section 8 (ex APP-06, remplace par Magazines)"
+    - "Section 11 (CGVU)"
+    - "Section 14 (Decisions D-14 supprimee, D-18 ajoutee)"
+
+conversations:
+  - type: whatsapp
+    date: 2026-01-28
+    participants: [Thierry, Leo]
+    key_decisions:
+      - Abandon des reels
+      - Pivot vers magazines photo
+      - Fulfillment manuel par Thierry
+      - Meme budget que reels (1.5j)
+
+  - type: email
+    date: 2026-01-28
+    subject: "Feature: Guest Photos → Bride Gallery → Magazine Order"
+    key_points:
+      - Parcours utilisateur detaille
+      - Tables suggerees (pas de ChatGPT, focus parcours)
+      - Production manuelle cote Thierry
+
+screenshots:
+  - description: "Gallery preview avec selection"
+    features:
+      - Grid photos
+      - Checkboxes selection
+      - Counter 'X PHOTOS SELECTED'
+      - Actions Share/Download/Delete
+
+  - description: "Magazine mockup couverture"
+    features:
+      - DIGITAL EDITION label
+      - LYNEWED branding
+      - Nom maries (Jessica & Kyle)
+      - Date mariage
+
+  - description: "Magazine mockup pages interieures"
+    features:
+      - Layouts varies (single, double, mosaic)
+      - Section "The Party"
+      - Section "Guest Moments"
+
+limites:
+  photos_par_magazine: 50
+  prix_base_cents: 4900
+  shipping_domestic_cents: 1500
+  shipping_international_cents: 3500
+
+notes:
+  - "Reels COMPLETEMENT abandonnes pour cette mission"
+  - "Pas d'integration API imprimeur en V1"
+  - "Admin panel gere par Tom (CRM)"
