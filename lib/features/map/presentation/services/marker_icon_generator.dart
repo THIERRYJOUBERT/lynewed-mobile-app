@@ -64,6 +64,9 @@ class MarkerIconGenerator {
       case MapMarkerType.proFixedLocation:
         icon = await _createProIcon(marker, actualSize);
         break;
+      case MapMarkerType.marketplaceItem:
+        icon = await _createMarketplaceIcon(marker, actualSize);
+        break;
     }
     
     _iconCache[cacheKey] = icon;
@@ -163,8 +166,9 @@ class MarkerIconGenerator {
   // ============================================================
   // WEDDING MARKER - Heart shape or circle with heart
   // ============================================================
-  
-  Future<gmaps.BitmapDescriptor> _createWeddingIcon(MapMarker marker, double size) async {
+
+  Future<gmaps.BitmapDescriptor> _createWeddingIcon(
+      MapMarker marker, double size) async {
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
     final center = Offset(size / 2, size / 2);
@@ -180,11 +184,52 @@ class MarkerIconGenerator {
     canvas.drawCircle(center, radius, bgPaint);
 
     // Diamond icon in center - unified wedding icon
-    _drawFlutterIcon(canvas, center, radius * 0.6, Icons.diamond_outlined, const Color(0xFFE91E63));
+    _drawFlutterIcon(canvas, center, radius * 0.6, Icons.diamond_outlined,
+        const Color(0xFFE91E63));
 
     // Rose border
     final borderPaint = Paint()
       ..color = const Color(0xFFE91E63) // Pink 500
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = _config.borderWidth;
+    canvas.drawCircle(center, radius, borderPaint);
+
+    return _finishIcon(recorder, size);
+  }
+
+  // ============================================================
+  // MARKETPLACE MARKER - Purple circle with dress/shoes icon (EPIC-13)
+  // ============================================================
+
+  Future<gmaps.BitmapDescriptor> _createMarketplaceIcon(
+      MapMarker marker, double size) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final center = Offset(size / 2, size / 2);
+    final radius = size / 2 - _config.borderWidth;
+
+    // Shadow
+    _drawShadow(canvas, center, size);
+
+    // Purple background
+    final bgPaint = Paint()
+      ..color = const Color(0xFFE1BEE7) // Purple 100
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, radius, bgPaint);
+
+    // Icon based on category (dress or shoes)
+    // Category comes from marker.metadata['category']
+    final category = marker.metadata['category'] as String? ?? 'dress';
+    final icon = category == 'shoes'
+        ? Icons.shopping_bag_outlined // Shoes icon
+        : Icons.checkroom_outlined; // Dress icon
+
+    _drawFlutterIcon(
+        canvas, center, radius * 0.6, icon, const Color(0xFF7B1FA2));
+
+    // Purple border
+    final borderPaint = Paint()
+      ..color = const Color(0xFF7B1FA2) // Purple 700
       ..style = PaintingStyle.stroke
       ..strokeWidth = _config.borderWidth;
     canvas.drawCircle(center, radius, borderPaint);

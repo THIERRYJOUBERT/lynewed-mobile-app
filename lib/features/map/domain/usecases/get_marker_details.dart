@@ -168,6 +168,10 @@ class MarkerDetailsService {
         return getAlertDetails(marker.id);
       case MapMarkerType.wedding:
         return getWeddingDetails(marker.id);
+      case MapMarkerType.marketplaceItem:
+        // EPIC-13 APP-07: Marketplace items use metadata directly
+        // Full details will be loaded when EPIC-14 (Marketplace) is deployed
+        return marker.metadata;
     }
   }
   

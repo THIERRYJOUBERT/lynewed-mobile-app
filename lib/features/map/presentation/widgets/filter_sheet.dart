@@ -99,6 +99,15 @@ class _FilterSheetState extends State<FilterSheet> {
                       ),
                     ],
 
+                    // Special offers filter (EPIC-13 APP-07)
+                    if (widget.userRole == 'bride') ...[
+                      LynewedGap.verticalXxl,
+                      _buildSection(
+                        title: 'Special offers',
+                        child: _buildSpecialOffersFilter(),
+                      ),
+                    ],
+
                     const SizedBox(height: 80), // Space for button
                   ],
                 ),
@@ -314,6 +323,69 @@ class _FilterSheetState extends State<FilterSheet> {
           }
         });
       },
+    );
+  }
+
+  /// Special offers checkboxes (EPIC-13 APP-07)
+  Widget _buildSpecialOffersFilter() {
+    return Column(
+      children: [
+        // Wedding book free checkbox
+        CheckboxListTile(
+          value: _filter.weddingBookFree ?? false,
+          onChanged: (value) {
+            setState(() {
+              if (value == true) {
+                _filter = _filter.copyWith(weddingBookFree: true);
+              } else {
+                _filter = _filter.copyWith(clearWeddingBookFree: true);
+              }
+            });
+          },
+          title: Text(
+            'Free wedding book',
+            style: LynewedTextStyles.bodyMedium,
+          ),
+          subtitle: Text(
+            'Only show pros offering a complimentary wedding album',
+            style: LynewedTextStyles.labelSmall.copyWith(
+              color: LynewedColors.textSecondary,
+            ),
+          ),
+          controlAffinity: ListTileControlAffinity.leading,
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+          activeColor: LynewedColors.primary,
+        ),
+
+        // Trailer free checkbox
+        CheckboxListTile(
+          value: _filter.trailerFree ?? false,
+          onChanged: (value) {
+            setState(() {
+              if (value == true) {
+                _filter = _filter.copyWith(trailerFree: true);
+              } else {
+                _filter = _filter.copyWith(clearTrailerFree: true);
+              }
+            });
+          },
+          title: Text(
+            'Free wedding trailer',
+            style: LynewedTextStyles.bodyMedium,
+          ),
+          subtitle: Text(
+            'Only show pros offering a complimentary trailer video',
+            style: LynewedTextStyles.labelSmall.copyWith(
+              color: LynewedColors.textSecondary,
+            ),
+          ),
+          controlAffinity: ListTileControlAffinity.leading,
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+          activeColor: LynewedColors.primary,
+        ),
+      ],
     );
   }
 

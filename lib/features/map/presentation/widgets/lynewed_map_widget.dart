@@ -314,6 +314,8 @@ class _LynewedMapWidgetState extends State<LynewedMapWidget> {
         return 5;
       case MapMarkerType.wedding:
         return 4;
+      case MapMarkerType.marketplaceItem:
+        return 3; // EPIC-13 APP-07: Same level as proFixedLocation
       case MapMarkerType.proFixedLocation:
         return 3;
     }

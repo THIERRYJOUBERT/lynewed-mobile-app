@@ -60,10 +60,15 @@ class SupabaseMapDatasource {
       'showProRecent': false, // Désactivé dans la refonte
       'showBridePrivatePoi': false, // POI deprecated
       'showProAlerts': filter.toggles.showAlerts,
-      'showWeddings': filter.toggles.showWeddings,  // Updated for new RPC
+      'showWeddings': filter.toggles.showWeddings, // Updated for new RPC
       'showOnlyMyProfessionPins': filter.toggles.showOnlyMyProfession,
+      'showMarketplace': filter.toggles.showMarketplace, // EPIC-13 APP-07
       // Rating filter (null or 0 = no filter)
       'minRating': filter.minRating?.toString(),
+      // Special offers filters (EPIC-13 APP-07)
+      // null = no filter, true = only pros with this offer
+      'weddingBookFree': filter.weddingBookFree,
+      'trailerFree': filter.trailerFree,
     };
 
     final response = await _client.rpc('search_map_bundle', params: {
@@ -121,11 +126,15 @@ class SupabaseMapDatasource {
         return MapMarkerType.proFixedLocation;
       case 'professionalalert':
         return MapMarkerType.professionalAlert;
-      case 'wedding':  // New type from updated RPC
+      case 'wedding': // New type from updated RPC
         return MapMarkerType.wedding;
-      case 'weddingpin':  // Legacy compatibility
+      case 'weddingpin': // Legacy compatibility
         return MapMarkerType.wedding;
-      case 'poiprivate':  // Deprecated, fallback to pro
+      case 'marketplaceitem': // EPIC-13 APP-07
+        return MapMarkerType.marketplaceItem;
+      case 'marketplace': // Alternative name
+        return MapMarkerType.marketplaceItem;
+      case 'poiprivate': // Deprecated, fallback to pro
         return MapMarkerType.proFixedLocation;
       default:
         return MapMarkerType.proFixedLocation;

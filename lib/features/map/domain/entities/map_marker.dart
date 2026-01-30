@@ -8,23 +8,28 @@ import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 
 /// Types de marqueurs sur la map
-/// 
-/// Enum final après refactorisation Phase 5 (8→3 valeurs):
+///
+/// Enum final après refactorisation Phase 5 (8→4 valeurs):
 /// - Supprimés: user, proRecent, searchTarget, professional, poiPrivate
 /// - Fusionné: professional + fixedLocation → proFixedLocation
 /// - Remplacé: weddingPin → wedding (hub central per bride)
 /// - Source unique: professional_fixed_locations (plus de professional_details.location_coords)
+/// - EPIC-13: Ajout marketplaceItem pour articles marketplace sur la carte
 enum MapMarkerType {
   /// Position fixe d'un professionnel (depuis professional_fixed_locations uniquement)
   /// Remplace l'ancien professional + fixedLocation
   proFixedLocation,
-  
+
   /// Alerte communautaire d'un professionnel
   professionalAlert,
-  
+
   /// Mariage visible sur la map (hub central per bride)
   /// Phase 5: Remplace weddingPin, utilise nouvelle table `weddings`
   wedding,
+
+  /// Article marketplace (robe/chaussures) - EPIC-13 APP-07
+  /// Requires EPIC-14 (Marketplace) to have data
+  marketplaceItem,
 }
 
 /// Style visuel d'un marqueur

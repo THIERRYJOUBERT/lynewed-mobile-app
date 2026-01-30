@@ -16,6 +16,13 @@ enum GuestRole {
   other,
 }
 
+/// Guest invitation status
+enum GuestStatus {
+  pending,
+  invited,
+  joined,
+}
+
 /// Wedding Guest entity
 @immutable
 class WeddingGuest {
@@ -27,7 +34,10 @@ class WeddingGuest {
     this.phone,
     this.role = GuestRole.guest,
     this.notes,
+    this.status = GuestStatus.pending,
     this.createdAt,
+    this.invitedAt,
+    this.joinedAt,
   });
 
   /// UUID of the guest
@@ -51,8 +61,17 @@ class WeddingGuest {
   /// Private notes about the guest
   final String? notes;
 
+  /// Invitation status (pending, invited, joined)
+  final GuestStatus status;
+
   /// Creation date
   final DateTime? createdAt;
+
+  /// When invitation was sent
+  final DateTime? invitedAt;
+
+  /// When guest joined the wedding
+  final DateTime? joinedAt;
 
   /// Factory from Supabase JSON
   factory WeddingGuest.fromJson(Map<String, dynamic> json) {
@@ -64,8 +83,15 @@ class WeddingGuest {
       phone: json['phone'] as String?,
       role: _parseRole(json['role'] as String?),
       notes: json['notes'] as String?,
-      createdAt: json['created_at'] != null 
-          ? DateTime.parse(json['created_at'] as String) 
+      status: _parseStatus(json['status'] as String?),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : null,
+      invitedAt: json['invited_at'] != null
+          ? DateTime.parse(json['invited_at'] as String)
+          : null,
+      joinedAt: json['joined_at'] != null
+          ? DateTime.parse(json['joined_at'] as String)
           : null,
     );
   }
@@ -84,6 +110,17 @@ class WeddingGuest {
         return GuestRole.other;
       default:
         return GuestRole.guest;
+    }
+  }
+
+  static GuestStatus _parseStatus(String? value) {
+    switch (value) {
+      case 'invited':
+        return GuestStatus.invited;
+      case 'joined':
+        return GuestStatus.joined;
+      default:
+        return GuestStatus.pending;
     }
   }
 
@@ -106,7 +143,10 @@ class WeddingGuest {
     String? phone,
     GuestRole? role,
     String? notes,
+    GuestStatus? status,
     DateTime? createdAt,
+    DateTime? invitedAt,
+    DateTime? joinedAt,
   }) {
     return WeddingGuest(
       id: id ?? this.id,
@@ -116,7 +156,10 @@ class WeddingGuest {
       phone: phone ?? this.phone,
       role: role ?? this.role,
       notes: notes ?? this.notes,
+      status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
+      invitedAt: invitedAt ?? this.invitedAt,
+      joinedAt: joinedAt ?? this.joinedAt,
     );
   }
 

@@ -18,6 +18,7 @@ class LayerToggles {
     this.showAlerts = true,
     this.showWeddings = true,
     this.showOnlyMyProfession = false,
+    this.showMarketplace = false,
   });
 
   final bool showPros;
@@ -25,6 +26,10 @@ class LayerToggles {
   final bool showAlerts;
   final bool showWeddings;
   final bool showOnlyMyProfession;
+
+  /// Show marketplace items on map (EPIC-13 APP-07)
+  /// Default false until EPIC-14 (Marketplace) is deployed
+  final bool showMarketplace;
 
   /// Tous les toggles activés
   static const all = LayerToggles();
@@ -35,6 +40,7 @@ class LayerToggles {
     showFixedLocations: false,
     showAlerts: false,
     showWeddings: false,
+    showMarketplace: false,
   );
 
   LayerToggles copyWith({
@@ -43,6 +49,7 @@ class LayerToggles {
     bool? showAlerts,
     bool? showWeddings,
     bool? showOnlyMyProfession,
+    bool? showMarketplace,
   }) {
     return LayerToggles(
       showPros: showPros ?? this.showPros,
@@ -50,6 +57,7 @@ class LayerToggles {
       showAlerts: showAlerts ?? this.showAlerts,
       showWeddings: showWeddings ?? this.showWeddings,
       showOnlyMyProfession: showOnlyMyProfession ?? this.showOnlyMyProfession,
+      showMarketplace: showMarketplace ?? this.showMarketplace,
     );
   }
 
@@ -61,7 +69,8 @@ class LayerToggles {
         other.showFixedLocations == showFixedLocations &&
         other.showAlerts == showAlerts &&
         other.showWeddings == showWeddings &&
-        other.showOnlyMyProfession == showOnlyMyProfession;
+        other.showOnlyMyProfession == showOnlyMyProfession &&
+        other.showMarketplace == showMarketplace;
   }
 
   @override
@@ -71,6 +80,7 @@ class LayerToggles {
         showAlerts,
         showWeddings,
         showOnlyMyProfession,
+        showMarketplace,
       );
 }
 
@@ -89,6 +99,8 @@ class MapFilter {
     this.countryCode,
     this.toggles = const LayerToggles(),
     this.minRating,
+    this.weddingBookFree,
+    this.trailerFree,
   });
 
   /// Professions à afficher (vide = toutes)
@@ -119,6 +131,14 @@ class MapFilter {
   /// null = no rating filter
   final double? minRating;
 
+  /// Filter pros offering free wedding book (EPIC-13 APP-07)
+  /// null = no filter, true = only pros with free wedding book
+  final bool? weddingBookFree;
+
+  /// Filter pros offering free trailer video (EPIC-13 APP-07)
+  /// null = no filter, true = only pros with free trailer
+  final bool? trailerFree;
+
   /// Filtres par défaut
   static const defaults = MapFilter();
 
@@ -134,6 +154,10 @@ class MapFilter {
   /// Check if a rating filter is active
   bool get hasRatingFilter => minRating != null && minRating! > 0;
 
+  /// Check if special offers filter is active (EPIC-13)
+  bool get hasSpecialOffersFilter =>
+      weddingBookFree == true || trailerFree == true;
+
   MapFilter copyWith({
     List<Profession>? professions,
     double? budgetMin,
@@ -145,6 +169,10 @@ class MapFilter {
     LayerToggles? toggles,
     double? minRating,
     bool clearMinRating = false,
+    bool? weddingBookFree,
+    bool clearWeddingBookFree = false,
+    bool? trailerFree,
+    bool clearTrailerFree = false,
   }) {
     return MapFilter(
       professions: professions ?? this.professions,
@@ -156,6 +184,11 @@ class MapFilter {
       countryCode: countryCode ?? this.countryCode,
       toggles: toggles ?? this.toggles,
       minRating: clearMinRating ? null : (minRating ?? this.minRating),
+      weddingBookFree: clearWeddingBookFree
+          ? null
+          : (weddingBookFree ?? this.weddingBookFree),
+      trailerFree:
+          clearTrailerFree ? null : (trailerFree ?? this.trailerFree),
     );
   }
 
@@ -171,7 +204,9 @@ class MapFilter {
         other.radiusKm == radiusKm &&
         other.countryCode == countryCode &&
         other.toggles == toggles &&
-        other.minRating == minRating;
+        other.minRating == minRating &&
+        other.weddingBookFree == weddingBookFree &&
+        other.trailerFree == trailerFree;
   }
 
   @override
@@ -185,5 +220,7 @@ class MapFilter {
         countryCode,
         toggles,
         minRating,
+        weddingBookFree,
+        trailerFree,
       );
 }

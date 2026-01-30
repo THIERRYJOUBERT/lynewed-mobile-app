@@ -1040,6 +1040,47 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
           onViewBrideProfile: () => _handleViewBrideProfile(context),
           onEdit: () => _handleEditWedding(context),
         );
+
+      case MapMarkerType.marketplaceItem:
+        // EPIC-13 APP-07: Marketplace items on map
+        // Using metadata directly until EPIC-14 (Marketplace) is deployed
+        final metadata = _details as Map<String, dynamic>;
+        final itemSummary = MarketplaceItemSummary.fromMetadata(metadata);
+        return MarketplaceDetailsSheet(
+          item: itemSummary,
+          onViewListing: () => _handleViewMarketplaceListing(context, itemSummary.id),
+          onContactSeller: () => _handleContactMarketplaceSeller(context, metadata),
+        );
+    }
+  }
+
+  /// Handle view marketplace listing action (EPIC-13 APP-07)
+  /// Navigation to full listing will be available when EPIC-14 is deployed
+  void _handleViewMarketplaceListing(BuildContext context, String listingId) {
+    Navigator.pop(context);
+    // TODO EPIC-14: Navigate to MarketplaceItemDetailsPage
+    // For now, just show a snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Marketplace feature coming soon!'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  /// Handle contact marketplace seller action (EPIC-13 APP-07)
+  void _handleContactMarketplaceSeller(BuildContext context, Map<String, dynamic> metadata) {
+    Navigator.pop(context);
+    final sellerId = metadata['sellerId'] as String?;
+    if (sellerId != null) {
+      _actionsService.navigateToChat(context, sellerId);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to contact seller'),
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 

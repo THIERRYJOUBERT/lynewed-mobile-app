@@ -71,6 +71,10 @@ class MarkerDetailsSheet extends StatelessWidget {
         return _buildAlertContent(context);
       case MapMarkerType.wedding:
         return _buildWeddingContent(context);
+      case MapMarkerType.marketplaceItem:
+        // EPIC-13 APP-07: Marketplace uses separate MarketplaceDetailsSheet
+        // This is a fallback for legacy sheet usage
+        return _buildProfessionalContent(context);
     }
   }
 
@@ -338,6 +342,8 @@ class MarkerDetailsSheet extends StatelessWidget {
         return 'I Can Help';
       case MapMarkerType.wedding:
         return 'Request';
+      case MapMarkerType.marketplaceItem:
+        return 'View Listing'; // EPIC-13 APP-07
     }
   }
 

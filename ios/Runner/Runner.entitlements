@@ -4,5 +4,10 @@
 <dict>
 	<key>aps-environment</key>
 	<string>production</string>
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:lynewed.app</string>
+		<string>applinks:www.lynewed.app</string>
+	</array>
 </dict>
 </plist>

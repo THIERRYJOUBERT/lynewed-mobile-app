@@ -16,6 +16,9 @@ ff.MapMarkerType toFlutterFlowType(MapMarkerType type) {
       return ff.MapMarkerType.professionalAlert;
     case MapMarkerType.wedding:
       return ff.MapMarkerType.weddingPin; // Mapping wedding → weddingPin
+    case MapMarkerType.marketplaceItem:
+      // EPIC-13 APP-07: Marketplace items - no FF equivalent, fallback
+      return ff.MapMarkerType.proFixedLocation;
   }
 }
 
@@ -61,6 +64,10 @@ MapMarkerType? markerTypeFromString(String? value) {
     case 'poi_private':
     case 'poi':
       return null; // Deprecated, no longer supported
+    case 'marketplaceitem':
+    case 'marketplace_item':
+    case 'marketplace':
+      return MapMarkerType.marketplaceItem; // EPIC-13 APP-07
     default:
       return null;
   }

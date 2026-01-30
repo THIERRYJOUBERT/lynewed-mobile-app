@@ -26,6 +26,10 @@ class MapMarkerColors {
   static const wedding = Color(0xFFE91E63); // Pink
   static const weddingVisible = Color(0xFFD81B60); // Dark Pink
 
+  // Marketplace (EPIC-13 APP-07)
+  static const marketplace = Color(0xFF7B1FA2); // Purple 700
+  static const marketplaceBackground = Color(0xFFE1BEE7); // Purple 100
+
   /// Couleur par type de marqueur
   static Color forMarkerType(MapMarkerType type) {
     switch (type) {
@@ -35,6 +39,8 @@ class MapMarkerColors {
         return alert;
       case MapMarkerType.wedding:
         return wedding;
+      case MapMarkerType.marketplaceItem:
+        return marketplace;
     }
   }
 
@@ -118,6 +124,7 @@ class MapMarkerSizes {
   static const double proFixedLocation = 40.0;
   static const double alert = 48.0;
   static const double wedding = 44.0;
+  static const double marketplace = 42.0;
 
   /// Taille par type de marqueur
   static double forMarkerType(MapMarkerType type) {
@@ -128,6 +135,8 @@ class MapMarkerSizes {
         return alert;
       case MapMarkerType.wedding:
         return wedding;
+      case MapMarkerType.marketplaceItem:
+        return marketplace;
     }
   }
 
@@ -149,6 +158,7 @@ class MapMarkerZIndex {
 
   static const double alert = 5.0;
   static const double wedding = 4.0;
+  static const double marketplace = 3.5;
   static const double professional = 3.0;
   static const double proFixedLocation = 2.0;
 
@@ -159,6 +169,8 @@ class MapMarkerZIndex {
         return alert;
       case MapMarkerType.wedding:
         return wedding;
+      case MapMarkerType.marketplaceItem:
+        return marketplace;
       case MapMarkerType.proFixedLocation:
         return proFixedLocation;
     }

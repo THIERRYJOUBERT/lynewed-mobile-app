@@ -3,6 +3,10 @@ import '/core/design/design.dart';
 import '../../data/repositories/my_wedding_repository_impl.dart';
 import '../../domain/entities/entities.dart';
 import '../sheets/add_guest_sheet.dart';
+import '../widgets/guest_list_summary.dart';
+import '../widgets/guest_status_badge.dart';
+import '../widgets/guest_status_filter.dart';
+import '../widgets/send_invitation_button.dart';
 
 /// Guests Page - Full list of wedding guests with CRUD
 class GuestsPage extends StatefulWidget {
@@ -26,6 +30,9 @@ class _GuestsPageState extends State<GuestsPage> {
   bool _isLoading = true;
   List<WeddingGuest> _guests = [];
   String? _error;
+  GuestStatusFilter _currentFilter = GuestStatusFilter.all;
+
+  List<WeddingGuest> get _filteredGuests => filterGuests(_guests, _currentFilter);
 
   @override
   void initState() {
@@ -154,7 +161,7 @@ class _GuestsPageState extends State<GuestsPage> {
             child: Row(
               children: [
                 Text(
-                  'Guests',
+                  'Invités',
                   style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 20),
                 ),
                 if (guestCount > 0) ...[
@@ -175,6 +182,13 @@ class _GuestsPageState extends State<GuestsPage> {
                 ],
               ],
             ),
+          ),
+          // Filter button
+          GuestStatusFilterButton(
+            currentFilter: _currentFilter,
+            onFilterChanged: (filter) {
+              setState(() => _currentFilter = filter);
+            },
           ),
         ],
       ),
@@ -221,16 +235,42 @@ class _GuestsPageState extends State<GuestsPage> {
 
     return RefreshIndicator(
       onRefresh: _loadGuests,
-      child: ListView.builder(
+      child: ListView(
         padding: const EdgeInsets.all(20),
-        itemCount: _guests.length,
-        itemBuilder: (context, index) {
-          final guest = _guests[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: _buildGuestTile(guest),
-          );
-        },
+        children: [
+          // Summary at top
+          GuestListSummary(guests: _guests),
+          const SizedBox(height: 16),
+
+          // Filter chip (if filter active)
+          if (_currentFilter != GuestStatusFilter.all) ...[
+            GuestStatusFilterChip(
+              filter: _currentFilter,
+              onClear: () => setState(() => _currentFilter = GuestStatusFilter.all),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Guest list
+          ..._filteredGuests.map((guest) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _buildGuestTile(guest),
+              )),
+
+          // Empty filter result
+          if (_filteredGuests.isEmpty && _guests.isNotEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Text(
+                  'Aucun invité avec ce statut',
+                  style: LynewedTextStyles.bodyMedium.copyWith(
+                    color: LynewedColors.textSecondary,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -279,113 +319,138 @@ class _GuestsPageState extends State<GuestsPage> {
           border: Border.all(color: LynewedColors.gray200),
           borderRadius: BorderRadius.circular(4),
         ),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Avatar
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: LynewedColors.surface,
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: Center(
-                child: Text(
-                  _getInitials(guest.name ?? ''),
-                  style: LynewedTextStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: LynewedColors.textSecondary,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Avatar
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: LynewedColors.surface,
+                    borderRadius: BorderRadius.circular(22),
                   ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            // Content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          guest.name ?? 'Unknown',
-                          style: LynewedTextStyles.bodyMedium.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      if (guest.role != GuestRole.guest)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: LynewedColors.surface,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            _getRoleLabel(guest.role),
-                            style: LynewedTextStyles.labelSmall.copyWith(
-                              color: LynewedColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  if (guest.email != null || guest.phone != null) ...[
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        if (guest.email != null && guest.email!.isNotEmpty) ...[
-                          const Icon(
-                            Icons.email_outlined,
-                            size: 14,
-                            color: LynewedColors.textSecondary,
-                          ),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              guest.email!,
-                              style: LynewedTextStyles.labelMedium.copyWith(
-                                color: LynewedColors.textSecondary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                        if (guest.email != null && guest.email!.isNotEmpty &&
-                            guest.phone != null && guest.phone!.isNotEmpty)
-                          const SizedBox(width: 12),
-                        if (guest.phone != null && guest.phone!.isNotEmpty) ...[
-                          const Icon(
-                            Icons.phone_outlined,
-                            size: 14,
-                            color: LynewedColors.textSecondary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            guest.phone!,
-                            style: LynewedTextStyles.labelMedium.copyWith(
-                              color: LynewedColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
-                  if (guest.notes != null && guest.notes!.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      guest.notes!,
-                      style: LynewedTextStyles.bodySmall.copyWith(
+                  child: Center(
+                    child: Text(
+                      _getInitials(guest.name ?? ''),
+                      style: LynewedTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w500,
                         color: LynewedColors.textSecondary,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
-                ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              guest.name ?? 'Unknown',
+                              style: LynewedTextStyles.bodyMedium.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          // Status badge
+                          if (guest.status != GuestStatus.pending) ...[
+                            const SizedBox(width: 8),
+                            GuestStatusBadge(status: guest.status),
+                          ],
+                          // Role badge
+                          if (guest.role != GuestRole.guest) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: LynewedColors.surface,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                _getRoleLabel(guest.role),
+                                style: LynewedTextStyles.labelSmall.copyWith(
+                                  color: LynewedColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      if (guest.email != null || guest.phone != null) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            if (guest.email != null && guest.email!.isNotEmpty) ...[
+                              const Icon(
+                                Icons.email_outlined,
+                                size: 14,
+                                color: LynewedColors.textSecondary,
+                              ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  guest.email!,
+                                  style: LynewedTextStyles.labelMedium.copyWith(
+                                    color: LynewedColors.textSecondary,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                            if (guest.email != null && guest.email!.isNotEmpty &&
+                                guest.phone != null && guest.phone!.isNotEmpty)
+                              const SizedBox(width: 12),
+                            if (guest.phone != null && guest.phone!.isNotEmpty) ...[
+                              const Icon(
+                                Icons.phone_outlined,
+                                size: 14,
+                                color: LynewedColors.textSecondary,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                guest.phone!,
+                                style: LynewedTextStyles.labelMedium.copyWith(
+                                  color: LynewedColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                      if (guest.notes != null && guest.notes!.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          guest.notes!,
+                          style: LynewedTextStyles.bodySmall.copyWith(
+                            color: LynewedColors.textSecondary,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            // Send invitation button
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: SendInvitationButton(
+                guestId: guest.id,
+                weddingId: guest.weddingId,
+                guestEmail: guest.email,
+                guestStatus: guest.status,
+                onSuccess: _loadGuests,
               ),
             ),
           ],

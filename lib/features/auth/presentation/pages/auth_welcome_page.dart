@@ -4,6 +4,7 @@
 /// - App branding
 /// - Sign in options for bride and professional users
 /// - Create account option
+/// - Guest join option for wedding invitees
 library;
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/design/design.dart';
 import '../widgets/auth_header.dart';
+import '../widgets/guest_join_button.dart';
 
 /// Welcome page that serves as the entry point for authentication.
 ///
@@ -82,6 +84,13 @@ class AuthWelcomePage extends StatelessWidget {
                 ),
               ),
 
+              SizedBox(height: LynewedSpacing.lg),
+
+              // Guest join button - discrete entry point for wedding guests
+              GuestJoinButton(
+                onPressed: () => _navigateToJoinWedding(context),
+              ),
+
               // Bottom spacer
               SizedBox(height: LynewedSpacing.xxxl),
             ],
@@ -100,5 +109,9 @@ class AuthWelcomePage extends StatelessWidget {
 
   void _navigateToSignUp(BuildContext context) {
     context.pushNamed('SignUpPage');
+  }
+
+  void _navigateToJoinWedding(BuildContext context) {
+    context.pushNamed('JoinWeddingPage');
   }
 }

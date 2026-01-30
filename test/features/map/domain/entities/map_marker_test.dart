@@ -79,11 +79,12 @@ void main() {
 
   group('MapMarkerType', () {
     test('should have correct values', () {
-      // Phase 5: MapMarkerType reduced to 3 values (poiPrivate removed)
-      expect(MapMarkerType.values.length, 3);
+      // EPIC-13 APP-07: MapMarkerType now has 4 values (marketplaceItem added)
+      expect(MapMarkerType.values.length, 4);
       expect(MapMarkerType.values, contains(MapMarkerType.proFixedLocation));
       expect(MapMarkerType.values, contains(MapMarkerType.professionalAlert));
       expect(MapMarkerType.values, contains(MapMarkerType.wedding));
+      expect(MapMarkerType.values, contains(MapMarkerType.marketplaceItem));
     });
   });
 

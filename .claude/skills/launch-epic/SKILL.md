@@ -3,7 +3,7 @@ name: launch-epic
 description: "Lancer un Epic complet avec coordination chef. Ex: /launch-epic EPIC-01 --mode=autonomous"
 model: opus
 argument-hint: "[EPIC-ID] [--mode=supervised|autonomous]"
-disable-model-invocation: true
+disable-model-invocation: fasle
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion, TodoWrite
 ---
 

@@ -202,7 +202,7 @@ flutter test  # Sans options = output ligne par ligne
 | Features CA | **16 modules** |
 
 **Modules Clean Architecture (`lib/features/`):**
-auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, **payments**, profile, settings, support, video_call, **weddings_hub_pro**, wishlist
+auth, chat, content, dashboard, feed, **guest**, home, map, my_wedding, notifications, **payments**, profile, **reviews**, settings, support, video_call, **weddings_hub_pro**, wishlist
 
 > **Note**: iOS minimum 15.0 (Firebase 12.x requirement). Secrets via flutter_dotenv (runtime .env).
 
@@ -214,7 +214,11 @@ auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, **pa
 | EPIC-02 | Tests additionnels | ✅ COMPLETE |
 | EPIC-04 | Documentation | ✅ COMPLETE (2026-01-26) |
 | EPIC-05 | Security cleanup | ✅ COMPLETE |
+| EPIC-06 | Prerequisites | ✅ COMPLETE (2026-01-29) |
+| EPIC-07 | Reviews (Avis clients) | ✅ COMPLETE (2026-01-29) |
+| EPIC-09 | Invitations (Guests) | ✅ COMPLETE (2026-01-30) |
 | EPIC-11 | Stripe Integration | ✅ COMPLETE (2026-01-29) |
+| EPIC-13 | Map Filters | ✅ COMPLETE (2026-01-30) |
 
 ### Epics En Cours / Attente
 
@@ -226,14 +230,14 @@ auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, **pa
 
 | Epic | PRD | Description | Stories | Est. |
 |------|-----|-------------|---------|------|
-| EPIC-06 | APP-00 | Prerequisites (BLOQUANT) | 6 | 0.5j |
-| EPIC-07 | APP-01 | Reviews (Avis clients) | 9 | 🟡 TEST |
+| EPIC-06 | APP-00 | Prerequisites (BLOQUANT) | 6 | ✅ DONE |
+| EPIC-07 | APP-01 | Reviews (Avis clients) | 9 | ✅ DONE |
 | EPIC-08 | APP-02 | Reminders (Rappels RDV) | 8 | 0.5j |
-| EPIC-09 | APP-03 | Invitations (Guests) | 12 | 2j |
+| EPIC-09 | APP-03 | Invitations (Guests) | 12 | ✅ DONE |
 | EPIC-10 | APP-04 | Photos/Videos | 10 | 1.5j |
 | EPIC-11 | APP-05 | Stripe Integration | 12 | ✅ DONE |
 | EPIC-12 | APP-06 | Magazines Photo | 12 | 1.5j |
-| EPIC-13 | APP-07 | Map Filters | 9 | 1j |
+| EPIC-13 | APP-07 | Map Filters | 9 | ✅ DONE |
 | EPIC-14 | APP-08 | Marketplace | 26 | 7j |
 
 **Total** : 106 stories (créées), 15 jours, 4500€ - PRD: `docs/specs/MISSION-01-EVOLUTIONS-2026.md`

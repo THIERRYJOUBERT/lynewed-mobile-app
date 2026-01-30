@@ -56,6 +56,9 @@ abstract final class AppRoutes {
   /// Professional password setup page
   static const String setPasswordPro = '/setPasswordPagePro';
 
+  /// Join wedding page for guests
+  static const String joinWedding = '/joinWedding';
+
   /// Initial routing gate after app launch
   static const String startupGate = '/startupGate';
 
@@ -197,6 +200,15 @@ abstract final class AppRoutes {
   /// Deep link for wedding: lynewed://wedding/{weddingId}
   static String weddingDeepLink(String weddingId) =>
       '/myWedding?weddingId=$weddingId';
+
+  /// Deep link for joining wedding: lynewed.app/join/{code}
+  /// Used for query param format.
+  static String joinWeddingDeepLink(String code) =>
+      '/joinWedding?code=$code';
+
+  /// Deep link for joining wedding with path param: lynewed.app/join/{code}
+  /// Used for path param format (from external deep links).
+  static String joinWeddingPathDeepLink(String code) => '/join/$code';
 }
 
 /// Route name constants for named navigation.
@@ -214,6 +226,7 @@ abstract final class RouteNames {
   static const String resetPassword = 'ResetPasswordNewPage';
   static const String signInPro = 'SignInEmailPagePro';
   static const String setPasswordPro = 'SetPasswordPagePro';
+  static const String joinWedding = 'JoinWeddingPage';
   static const String startupGate = 'StartupGate';
   static const String onboardingBridesWizard = 'OnboardingBridesWizard';
 
