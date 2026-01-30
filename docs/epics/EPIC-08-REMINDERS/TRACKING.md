@@ -13,6 +13,8 @@
 | 2026-01-28 | Epic cree - Notifications de rappel RDV (APP-02) |
 | 2026-01-29 | S01-S08 implementees en mode autonomous |
 | 2026-01-29 | Epic COMPLETE - Toutes stories validees |
+| 2026-01-29 | UX: Bouton dans scroll + Reminders UI chips |
+| 2026-01-29 | RLS: Fix WITH CHECK sur scheduled_notifications |
 
 ---
 
@@ -69,9 +71,11 @@ idx_wedding_events_reminders ON wedding_events(event_date)
 - idx_scheduled_by_user
 
 -- RLS activee avec 2 policies:
-- "User sees own scheduled notifications"
-- "User manages own scheduled notifications"
+- "User sees own scheduled notifications" (SELECT)
+- "User manages own scheduled notifications" (ALL + WITH CHECK)
 ```
+
+> **Fix 2026-01-29:** Ajout `WITH CHECK (user_id = auth.uid())` sur policy ALL pour sécuriser INSERT/UPDATE.
 
 #### S03 - Migration: create_scheduled_notifications_cron
 
@@ -98,16 +102,21 @@ cron.schedule('send-scheduled-notifications', '*/5 * * * *', ...)
 
 **Backward compatibility:** JSON parsing gere les champs manquants/null avec defaut `false`.
 
-#### S05 - UI Checkboxes:
+#### S05 - UI Reminders (refactored 2026-01-29):
 
 | Fichier | Modifications |
 |---------|---------------|
-| `lib/features/my_wedding/presentation/sheets/add_event_sheet.dart` | +Section "Reminders" avec 3 checkboxes |
+| `lib/features/my_wedding/presentation/sheets/add_event_sheet.dart` | Section "Reminders" avec chips interactifs |
+| `lib/core/design/widgets/lynewed_sheet.dart` | Bouton dans scroll (force decouverte contenu) |
 
 **Features:**
+- **Chips animés** au lieu de checkboxes (plus moderne)
+- Icônes contextuelles (calendrier, jour, horloge)
+- Check icon quand sélectionné
+- Bordure colorée sur container si reminder actif
+- Header dynamique "Reminders enabled" / "Get notified before this event"
 - Desactivation automatique si event dans le passe
-- Message info "Reminders not available for past events"
-- Binding bidirectionnel avec state
+- **Bouton dans scroll** : oblige l'utilisateur à scroller pour voir tout le formulaire
 
 #### S06 - Repository Scheduling:
 
@@ -172,7 +181,7 @@ Exit code: 0 (All tests passed)
 | Contrainte chk_notification_type | ✅ |
 | Contrainte UNIQUE event+type | ✅ |
 | Index idx_scheduled_pending | ✅ |
-| RLS enabled | ✅ |
+| RLS enabled + WITH CHECK | ✅ |
 | pg_cron job active (ID: 10) | ✅ |
 | Fonction process_scheduled_notifications | ✅ |
 
@@ -184,7 +193,7 @@ Exit code: 0 (All tests passed)
 |----------|--------|
 | Stories totales | 8 |
 | Stories completees | 8 |
-| Migrations SQL appliquees | 3 |
+| Migrations SQL appliquees | 4 |
 | Policies RLS | 2 |
 | Tests ajoutes | 10 |
 | Fichiers Dart modifies | 6 |
@@ -203,11 +212,14 @@ Exit code: 0 (All tests passed)
 
 ### A ameliorer
 
-- Ajouter plus de tests widget pour UI checkboxes
+- Ajouter tests widget pour UI chips Reminders
 - Documenter rollback SQL dans les stories
+- Tests E2E complet du flow notification (cron → outbox → push)
 
 ### Lecons apprises
 
 - pg_cron avec FOR UPDATE SKIP LOCKED essentiel pour eviter race conditions
 - SECURITY DEFINER necessaire pour fonctions cross-table
 - Backward compatibility JSON critique pour entites existantes
+- RLS WITH CHECK obligatoire pour INSERT/UPDATE (pas juste USING)
+- UX: Bouton dans scroll > indicateurs de scroll (plus naturel)

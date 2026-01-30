@@ -12,8 +12,9 @@ import '../datasources/supabase_map_datasource.dart';
 
 /// Implémentation Supabase du MapRepository
 class SupabaseMapRepository implements MapRepository {
-  SupabaseMapRepository({SupabaseMapDatasource? datasource})
-      : _datasource = datasource ?? SupabaseMapDatasource();
+  SupabaseMapRepository({
+    SupabaseMapDatasource? datasource,
+  }) : _datasource = datasource ?? SupabaseMapDatasource();
 
   final SupabaseMapDatasource _datasource;
 
@@ -36,7 +37,7 @@ class SupabaseMapRepository implements MapRepository {
       // Note: professionals and fixedLocations are now merged (RPC returns only fixedLocation type)
       // We put all pro markers in fixedLocations, professionals stays empty to avoid double counting
       final allMarkers = _datasource.parseAllMarkers(data);
-      
+
       final fixedLocations = allMarkers
           .where((m) => m.type == MapMarkerType.proFixedLocation)
           .toList();
@@ -46,6 +47,8 @@ class SupabaseMapRepository implements MapRepository {
       final weddings = allMarkers
           .where((m) => m.type == MapMarkerType.wedding)
           .toList();
+
+      // Rating filter is now applied server-side in search_map_bundle RPC
 
       return MapSearchResult(
         professionals: const [], // Empty - all pros are in fixedLocations now

@@ -20,6 +20,8 @@ Build et lance l'app iOS sur le simulateur de manière fiable et rapide.
 - 🔏 ALWAYS désactiver la signature de code pour simulateur
 - 📋 ALWAYS copier .env dans le bundle App.framework
 - ⚡ NEVER faire flutter clean sauf si --clean demandé
+- 📍 ALWAYS utiliser des chemins absolus (éviter les cd)
+- ⏱️ ALWAYS lancer xcodebuild en background et attendre avec TaskOutput
 
 ---
 
@@ -36,8 +38,8 @@ PROJECT_DIR: "/Users/leoberthet/Desktop/lynewed_v1"
 ## Task
 
 Builder l'app iOS et la lancer sur le simulateur actif en:
-1. Vérifiant/installant les dépendances si nécessaire
-2. Compilant avec xcodebuild (sans signature)
+1. Vérifiant/démarrant le simulateur
+2. Compilant avec xcodebuild (sans signature) - EN BACKGROUND
 3. Copiant .env dans le bundle
 4. Signant les frameworks manuellement
 5. Installant et lançant l'app
@@ -46,143 +48,59 @@ Builder l'app iOS et la lancer sur le simulateur actif en:
 
 ## Execution
 
-### 0. Nettoyer les fichiers parasites
-
-Avant de commencer, supprimer les fichiers dupliqués/logs qui polluent le projet :
+### 1. Vérifier/démarrer le simulateur
 
 ```bash
-# Supprimer les copies accidentelles de .flutter-plugins-dependencies
-rm -f ".flutter-plugins-dependencies 2" ".flutter-plugins-dependencies 3" 2>/dev/null
-
-# Supprimer les anciens logs Flutter
-rm -f flutter_*.log 2>/dev/null
-
-# Supprimer le cache Kotlin Android (si présent et non gitignored)
-# Note: devrait être dans .gitignore
-```
-
----
-
-### 1. Vérifier le simulateur
-
-```bash
+# Vérifier si un simulateur est lancé
 xcrun simctl list devices | grep -i booted
 ```
 
-**Validation**: Un simulateur doit être lancé (Booted).
-
-Si aucun simulateur lancé:
+**Si aucun résultat** (pas de simulateur lancé):
 ```bash
-xcrun simctl boot 04B822AE-18B4-4BDA-86A5-47AB23CA0E2F
-open -a Simulator
+xcrun simctl boot 04B822AE-18B4-4BDA-86A5-47AB23CA0E2F && open -a Simulator
 ```
 
 ---
 
-### 2. Gérer les dépendances (conditionnel)
+### 2. Build avec xcodebuild (BACKGROUND)
 
-**Flutter packages** (si pubspec.yaml modifié):
+**IMPORTANT**: Lancer en background avec `run_in_background: true` car le build prend 1-3 minutes.
+
 ```bash
-# Vérifier si nécessaire
-if [ "pubspec.lock" -ot "pubspec.yaml" ]; then
-  flutter pub get
-fi
+cd /Users/leoberthet/Desktop/lynewed_v1/ios && xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Debug -sdk iphonesimulator -destination 'platform=iOS Simulator,id=04B822AE-18B4-4BDA-86A5-47AB23CA0E2F' CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=YES
 ```
 
-**Pods iOS** (si Podfile modifié ou Pods manquants):
-```bash
-# Vérifier si nécessaire
-if [ ! -d "ios/Pods" ] || [ "ios/Podfile.lock" -ot "ios/Podfile" ]; then
-  cd ios && pod install && cd ..
-fi
-```
+**ATTENDRE**: Utiliser `TaskOutput` avec `block: true` et `timeout: 300000` (5 min).
 
-**Si --clean demandé:**
-```bash
-flutter clean
-flutter pub get
-cd ios && pod install && cd ..
-```
+**Validation**: Le fichier output doit contenir `** BUILD SUCCEEDED **` à la fin.
+
+**Si BUILD FAILED**: Lire les dernières lignes du fichier output pour voir les erreurs.
 
 ---
 
-### 3. Build avec xcodebuild
+### 3. Copier .env, signer et lancer (une seule commande)
 
 ```bash
-cd ios
-xcodebuild \
-  -workspace Runner.xcworkspace \
-  -scheme Runner \
-  -configuration Debug \
-  -sdk iphonesimulator \
-  -destination "platform=iOS Simulator,id=04B822AE-18B4-4BDA-86A5-47AB23CA0E2F" \
-  CODE_SIGN_IDENTITY="" \
-  CODE_SIGNING_REQUIRED=NO \
-  CODE_SIGNING_ALLOWED=NO \
-  ONLY_ACTIVE_ARCH=YES \
-  2>&1 | grep -E "(BUILD|SUCCEEDED|FAILED|error:)" || true
-cd ..
-```
-
-**Validation**: Message "BUILD SUCCEEDED" dans la sortie.
-
-**Si BUILD FAILED**: Afficher les erreurs et s'arrêter.
-
----
-
-### 4. Localiser et préparer le bundle
-
-```bash
-# Trouver l'app buildée
-APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData/Runner-*/Build/Products/Debug-iphonesimulator -name "Runner.app" -type d 2>/dev/null | xargs ls -td | head -1)
-
-# Copier .env dans le bundle
-cp .env "$APP_PATH/Frameworks/App.framework/flutter_assets/.env"
-
-# Signer les frameworks
-cd "$APP_PATH/Frameworks"
-for framework in *.framework; do
-  codesign --force --sign - --timestamp=none "$framework" 2>/dev/null
-done
-cd ..
-
-# Signer l'app
-codesign --force --sign - --deep --timestamp=none "$APP_PATH"
-```
-
-**Validation**: APP_PATH non vide et .env copié.
-
----
-
-### 5. Installer et lancer
-
-```bash
-# Désinstaller l'ancienne version
-xcrun simctl uninstall 04B822AE-18B4-4BDA-86A5-47AB23CA0E2F com.lynewed.app 2>/dev/null || true
-
-# Installer la nouvelle
-xcrun simctl install 04B822AE-18B4-4BDA-86A5-47AB23CA0E2F "$APP_PATH"
-
-# Lancer
+APP_PATH="/Users/leoberthet/Library/Developer/Xcode/DerivedData/Runner-hetrbdshiimdwtavyfrtbyvcocvp/Build/Products/Debug-iphonesimulator/Runner.app" && \
+cp /Users/leoberthet/Desktop/lynewed_v1/.env "$APP_PATH/Frameworks/App.framework/flutter_assets/.env" && \
+cd "$APP_PATH/Frameworks" && for fw in *.framework; do codesign --force --sign - --timestamp=none "$fw" 2>/dev/null; done && \
+codesign --force --sign - --deep --timestamp=none "$APP_PATH" && \
+xcrun simctl uninstall 04B822AE-18B4-4BDA-86A5-47AB23CA0E2F com.lynewed.app 2>/dev/null || true && \
+xcrun simctl install 04B822AE-18B4-4BDA-86A5-47AB23CA0E2F "$APP_PATH" && \
 xcrun simctl launch 04B822AE-18B4-4BDA-86A5-47AB23CA0E2F com.lynewed.app
 ```
 
-**Validation**: PID retourné par simctl launch.
+**Validation**: La commande retourne un PID (ex: `com.lynewed.app: 77963`).
 
 ---
 
-## Validation
+## Validation Finale
 
-**Before completing:**
-✅ Simulateur actif
-✅ Build succeeded
-✅ .env copié dans bundle
-✅ App lancée (PID retourné)
-
-**If issues found:**
-- Build failed → Afficher erreurs xcodebuild
-- App not found → Vérifier DerivedData
-- Launch failed → Vérifier bundle ID et simulateur
+| Étape | Critère |
+|-------|---------|
+| ✅ Simulateur | Un simulateur est "Booted" |
+| ✅ Build | `** BUILD SUCCEEDED **` dans l'output |
+| ✅ Launch | PID retourné (ex: `com.lynewed.app: 83991`) |
 
 ---
 
@@ -191,9 +109,11 @@ xcrun simctl launch 04B822AE-18B4-4BDA-86A5-47AB23CA0E2F com.lynewed.app
 ```
 ✅ Build iOS réussi !
 
-App: Runner.app
-Simulateur: iPhone 16e
-PID: {pid}
+| Élément | Détail |
+|---------|--------|
+| App | Runner.app |
+| Simulateur | iPhone 16e |
+| PID | {pid} |
 
 Pour voir les logs:
 xcrun simctl spawn 04B822AE-18B4-4BDA-86A5-47AB23CA0E2F log stream --predicate 'processImagePath contains "Runner"' --level debug
@@ -210,16 +130,35 @@ xcrun simctl spawn 04B822AE-18B4-4BDA-86A5-47AB23CA0E2F log stream --predicate '
 
 ---
 
+## Si --clean demandé
+
+Avant l'étape 2, exécuter:
+```bash
+cd /Users/leoberthet/Desktop/lynewed_v1 && flutter clean && flutter pub get
+cd /Users/leoberthet/Desktop/lynewed_v1/ios && pod install
+```
+
+---
+
 ## Troubleshooting
+
+### Build prend trop de temps
+→ C'est normal, 1-3 minutes. Utiliser `run_in_background: true` + `TaskOutput`.
+
+### "Unknown build action ''"
+→ S'assurer qu'il n'y a pas de pipe `| grep` dans la commande xcodebuild (masque les erreurs).
 
 ### Erreur CodeSign avec flutter build
 → Utiliser xcodebuild directement avec CODE_SIGNING_REQUIRED=NO
 
 ### Pods out of sync
-→ `cd ios && rm Podfile.lock && pod install`
+→ `cd /Users/leoberthet/Desktop/lynewed_v1/ios && rm Podfile.lock && pod install`
 
 ### .env non chargé (écran blanc)
 → Vérifier que .env est copié dans App.framework/flutter_assets/
 
 ### Firebase crash (SIGABRT)
 → Vérifier que GoogleService-Info.plist est dans project.pbxproj
+
+### APP_PATH vide ou introuvable
+→ Le build a peut-être échoué. Relire l'output du build.

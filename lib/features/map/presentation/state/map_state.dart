@@ -112,10 +112,11 @@ class MapState extends ChangeNotifier {
     if (_filter == newFilter) return;
     
     // Check if content filters changed (not just toggles)
-    final contentFiltersChanged = 
+    final contentFiltersChanged =
         _filter.professions != newFilter.professions ||
         _filter.budgetMin != newFilter.budgetMin ||
-        _filter.budgetMax != newFilter.budgetMax;
+        _filter.budgetMax != newFilter.budgetMax ||
+        _filter.minRating != newFilter.minRating;
     
     _filter = newFilter;
     

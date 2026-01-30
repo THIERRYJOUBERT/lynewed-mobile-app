@@ -9,6 +9,12 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '/core/design/design.dart';
+import '/core/di/injection_container.dart';
+import '/features/reviews/domain/entities/pro_rating.dart';
+import '/features/reviews/domain/entities/review.dart';
+import '/features/reviews/domain/repositories/review_repository.dart';
+import '/features/reviews/presentation/widgets/reviews_section.dart';
+import '/features/reviews/presentation/sheets/review_submit_sheet.dart';
 
 /// A page that displays detailed information about a professional.
 ///
@@ -42,9 +48,17 @@ class _ProDetailsPageState extends State<ProDetailsPage> {
   String? _error;
   _ProDetails? _details;
 
+  // Reviews state
+  bool _isLoadingReviews = false;
+  ProRating? _proRating;
+  List<Review> _reviews = [];
+  Review? _myReview;
+  late ReviewRepository _reviewRepo;
+
   @override
   void initState() {
     super.initState();
+    _reviewRepo = sl<ReviewRepository>();
     _loadProfile();
   }
 
@@ -91,6 +105,8 @@ class _ProDetailsPageState extends State<ProDetailsPage> {
           );
           _isLoading = false;
         });
+        // Load reviews after profile
+        _loadReviews();
       } else {
         setState(() {
           _error = 'Profile not found';
@@ -105,6 +121,90 @@ class _ProDetailsPageState extends State<ProDetailsPage> {
         });
       }
     }
+  }
+
+  Future<void> _loadReviews() async {
+    if (_details == null) return;
+
+    setState(() => _isLoadingReviews = true);
+
+    try {
+      // Load rating and reviews in parallel
+      final results = await Future.wait([
+        _reviewRepo.getRatingForPro(_details!.id),
+        _reviewRepo.getReviewsForPro(_details!.id),
+        _reviewRepo.getMyReviewForPro(_details!.id),
+      ]);
+
+      if (!mounted) return;
+
+      setState(() {
+        _proRating = results[0] as ProRating?;
+        _reviews = results[1] as List<Review>;
+        _myReview = results[2] as Review?;
+        _isLoadingReviews = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingReviews = false);
+      }
+    }
+  }
+
+  void _handleWriteReview() {
+    // Capture references before async gap
+    final messenger = ScaffoldMessenger.of(context);
+    final isEdit = _myReview != null;
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => ReviewSubmitSheet(
+        proId: _details!.id,
+        proName: _details!.displayName ?? 'Professional',
+        existingReview: _myReview,
+        onSubmit: (rating, comment) async {
+          if (isEdit) {
+            await _reviewRepo.updateReview(
+              reviewId: _myReview!.id,
+              rating: rating,
+              comment: comment,
+            );
+          } else {
+            await _reviewRepo.createReview(
+              proId: _details!.id,
+              rating: rating,
+              comment: comment,
+            );
+          }
+          // Sheet closes automatically after successful submission
+          if (mounted) {
+            messenger.showSnackBar(
+              SnackBar(
+                content: Text(isEdit
+                    ? 'Review updated successfully!'
+                    : 'Review submitted successfully!'),
+                backgroundColor: LynewedColors.success,
+              ),
+            );
+            // Refresh reviews
+            _loadReviews();
+          }
+        },
+      ),
+    );
+  }
+
+  /// Check if current user can write a review (bride only, not viewing own profile)
+  bool get _canWriteReview {
+    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+    if (currentUserId == null) return false;
+    // Can't review your own profile
+    if (currentUserId == _details?.id) return false;
+    // For now, allow all logged-in users to review
+    // TODO: Add role check if needed (bride only)
+    return true;
   }
 
   @override
@@ -235,7 +335,20 @@ class _ProDetailsPageState extends State<ProDetailsPage> {
                   const Text('Portfolio', style: LynewedTextStyles.sectionTitle),
                   const SizedBox(height: 12.0),
                   _buildPortfolioGrid(),
+                  const SizedBox(height: 24.0),
                 ],
+
+                // Reviews section
+                ReviewsSection(
+                  rating: _proRating,
+                  reviews: _reviews,
+                  myReview: _myReview,
+                  isLoading: _isLoadingReviews,
+                  onWriteReview: _canWriteReview ? _handleWriteReview : null,
+                  onEditReview: _myReview != null && _canWriteReview
+                      ? _handleWriteReview
+                      : null,
+                ),
               ],
             ),
           ),

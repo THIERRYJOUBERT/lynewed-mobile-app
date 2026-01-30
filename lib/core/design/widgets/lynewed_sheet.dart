@@ -7,7 +7,7 @@ import '../design.dart';
 /// - Top handle bar
 /// - Header with Title (left) and Actions (right)
 /// - Divider
-/// - Padding content
+/// - Scrollable content with bottom action inside scroll
 class LynewedSheet extends StatelessWidget {
   const LynewedSheet({
     super.key,
@@ -31,7 +31,7 @@ class LynewedSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       behavior: HitTestBehavior.opaque,
@@ -102,22 +102,26 @@ class LynewedSheet extends StatelessWidget {
                 ),
                 
                 const Divider(height: 1, color: LynewedColors.gray200),
-                
-                // Content
+
+                // Content with bottom action inside scroll
                 Flexible(
                   child: SingleChildScrollView(
                     padding: padding,
-                    child: child,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        child,
+                        // Bottom Action - inside scroll, user must scroll to see it
+                        if (bottomAction != null) ...[
+                          const SizedBox(height: 24),
+                          bottomAction!,
+                          const SizedBox(height: 20),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
-                
-                // Bottom Action - fixed at bottom, outside scroll
-                if (bottomAction != null) ...[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                    child: bottomAction!,
-                  ),
-                ],
               ],
             ),
           ),

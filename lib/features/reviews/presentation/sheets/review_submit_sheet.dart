@@ -80,10 +80,16 @@ class _ReviewSubmitSheetState extends State<ReviewSubmitSheet> {
         _rating,
         comment.isEmpty ? null : comment,
       );
-    } finally {
+      // Close the sheet after successful submission
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      // Keep sheet open on error so user can retry
       if (mounted) {
         setState(() => _isLoading = false);
       }
+      rethrow;
     }
   }
 

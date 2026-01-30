@@ -80,11 +80,41 @@ Ce projet utilise une **methodologie structuree** avec des workflows, des agents
 ## Commandes
 
 ```bash
-flutter test                       # Tests (3069 tests)
-flutter analyze --fatal-infos      # Linting (0 warnings obligatoire)
-flutter build                      # Build
-flutter run                        # Run
+# Tests
+flutter test                              # Tous les tests (3069 tests)
+flutter test --no-pub                     # Skip pub check (plus rapide)
+flutter test path/to/test.dart            # Test spécifique
+flutter test --reporter compact           # Output minimal (évite Output too large)
+flutter test --reporter compact --no-pub  # Combinaison optimale
+
+# Analyse
+flutter analyze --fatal-infos             # Linting (0 warnings obligatoire)
+flutter analyze path/to/file.dart         # Analyser un fichier spécifique
+
+# Build/Run
+flutter build                             # Build
+flutter run                               # Run
 ```
+
+### Optimisation des Tests (IMPORTANT)
+
+**Pour éviter "Output too large" et accélérer :**
+
+```bash
+# ✅ RECOMMANDÉ - Output minimal + skip pub
+flutter test --reporter compact --no-pub path/to/test.dart 2>&1 | tail -5
+
+# ✅ Pour voir juste le résultat final
+flutter test path/to/test.dart 2>&1 | grep -E "All tests|passed|failed"
+
+# ❌ ÉVITER - Output verbeux qui sature
+flutter test  # Sans options = output ligne par ligne
+```
+
+**Gains approximatifs :**
+- `--no-pub` : -2-3s par run
+- `--reporter compact` : output 10x plus petit
+- Test spécifique vs all : -80% du temps
 
 ---
 
@@ -197,7 +227,7 @@ auth, chat, content, dashboard, feed, home, map, my_wedding, notifications, **pa
 | Epic | PRD | Description | Stories | Est. |
 |------|-----|-------------|---------|------|
 | EPIC-06 | APP-00 | Prerequisites (BLOQUANT) | 6 | 0.5j |
-| EPIC-07 | APP-01 | Reviews (Avis clients) | 9 | 0.5j |
+| EPIC-07 | APP-01 | Reviews (Avis clients) | 9 | 🟡 TEST |
 | EPIC-08 | APP-02 | Reminders (Rappels RDV) | 8 | 0.5j |
 | EPIC-09 | APP-03 | Invitations (Guests) | 12 | 2j |
 | EPIC-10 | APP-04 | Photos/Videos | 10 | 1.5j |

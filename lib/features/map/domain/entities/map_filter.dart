@@ -144,6 +144,7 @@ class MapFilter {
     String? countryCode,
     LayerToggles? toggles,
     double? minRating,
+    bool clearMinRating = false,
   }) {
     return MapFilter(
       professions: professions ?? this.professions,
@@ -154,7 +155,7 @@ class MapFilter {
       radiusKm: radiusKm ?? this.radiusKm,
       countryCode: countryCode ?? this.countryCode,
       toggles: toggles ?? this.toggles,
-      minRating: minRating ?? this.minRating,
+      minRating: clearMinRating ? null : (minRating ?? this.minRating),
     );
   }
 

@@ -24,6 +24,8 @@ import 'package:get_it/get_it.dart';
 
 import '../../backend/supabase/supabase.dart';
 import '../../features/auth/auth.dart';
+import '../../features/reviews/domain/repositories/review_repository.dart';
+import '../../features/reviews/data/repositories/supabase_review_repository.dart';
 
 /// Global service locator instance.
 ///
@@ -76,6 +78,9 @@ Future<void> initDependencies() async {
 Future<void> initSupabaseDependencies() async {
   // Auth feature (requires Supabase client)
   await _initAuth();
+
+  // Reviews feature
+  await _initReviews();
 }
 
 /// Initializes core dependencies.
@@ -102,5 +107,13 @@ Future<void> _initAuth() async {
   // Repository
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(sl<AuthRemoteDatasource>()),
+  );
+}
+
+/// Initializes reviews feature dependencies.
+Future<void> _initReviews() async {
+  // Repository (uses Supabase client)
+  sl.registerLazySingleton<ReviewRepository>(
+    () => SupabaseReviewRepository(SupaFlow.client),
   );
 }

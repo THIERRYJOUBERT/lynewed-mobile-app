@@ -425,90 +425,171 @@ class _AddEventSheetState extends State<AddEventSheet> {
   }
 
   Widget _buildRemindersSection() {
+    final hasAnyReminder = _reminder1Week || _reminder1Day || _reminder1Hour;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: LynewedColors.surface,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(8),
+        border: hasAnyReminder
+            ? Border.all(color: LynewedColors.primary.withValues(alpha: 0.3))
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!_canEnableReminders) ...[
-            Row(
-              children: [
-                Icon(
-                  Icons.info_outline,
-                  size: 16,
-                  color: LynewedColors.textSecondary,
+          // Header with icon
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: hasAnyReminder
+                      ? LynewedColors.primary.withValues(alpha: 0.1)
+                      : LynewedColors.gray100,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Reminders not available for past events',
-                    style: LynewedTextStyles.labelSmall.copyWith(
-                      color: LynewedColors.textSecondary,
-                    ),
+                child: Icon(
+                  Icons.notifications_outlined,
+                  size: 18,
+                  color: hasAnyReminder
+                      ? LynewedColors.primary
+                      : LynewedColors.textSecondary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  hasAnyReminder
+                      ? 'Reminders enabled'
+                      : 'Get notified before this event',
+                  style: LynewedTextStyles.bodySmall.copyWith(
+                    color: hasAnyReminder
+                        ? LynewedColors.primary
+                        : LynewedColors.textSecondary,
+                    fontWeight:
+                        hasAnyReminder ? FontWeight.w500 : FontWeight.w400,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
+          if (!_canEnableReminders) ...[
             const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: LynewedColors.gray100,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 14,
+                    color: LynewedColors.textSecondary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Reminders not available for past events',
+                      style: LynewedTextStyles.labelSmall.copyWith(
+                        color: LynewedColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
-          _buildReminderCheckbox(
-            label: '1 week before',
-            value: _reminder1Week,
-            onChanged: _canEnableReminders
-                ? (value) => setState(() => _reminder1Week = value ?? false)
-                : null,
-          ),
-          _buildReminderCheckbox(
-            label: '1 day before',
-            value: _reminder1Day,
-            onChanged: _canEnableReminders
-                ? (value) => setState(() => _reminder1Day = value ?? false)
-                : null,
-          ),
-          _buildReminderCheckbox(
-            label: '1 hour before',
-            value: _reminder1Hour,
-            onChanged: _canEnableReminders
-                ? (value) => setState(() => _reminder1Hour = value ?? false)
-                : null,
+          const SizedBox(height: 16),
+          // Reminder options as chips
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildReminderChip(
+                icon: Icons.date_range_outlined,
+                label: '1 week',
+                value: _reminder1Week,
+                onChanged: _canEnableReminders
+                    ? (value) => setState(() => _reminder1Week = value)
+                    : null,
+              ),
+              _buildReminderChip(
+                icon: Icons.today_outlined,
+                label: '1 day',
+                value: _reminder1Day,
+                onChanged: _canEnableReminders
+                    ? (value) => setState(() => _reminder1Day = value)
+                    : null,
+              ),
+              _buildReminderChip(
+                icon: Icons.schedule_outlined,
+                label: '1 hour',
+                value: _reminder1Hour,
+                onChanged: _canEnableReminders
+                    ? (value) => setState(() => _reminder1Hour = value)
+                    : null,
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildReminderCheckbox({
+  Widget _buildReminderChip({
+    required IconData icon,
     required String label,
     required bool value,
-    required ValueChanged<bool?>? onChanged,
+    required ValueChanged<bool>? onChanged,
   }) {
+    final isEnabled = onChanged != null;
+    final isSelected = value && isEnabled;
+
     return GestureDetector(
-      onTap: onChanged != null ? () => onChanged(!value) : null,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
+      onTap: isEnabled ? () => onChanged(!value) : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? LynewedColors.primary.withValues(alpha: 0.1)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? LynewedColors.primary
+                : isEnabled
+                    ? LynewedColors.gray200
+                    : LynewedColors.gray100,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 24,
-              height: 24,
-              child: Checkbox(
-                value: value,
-                onChanged: onChanged,
-                activeColor: LynewedColors.primary,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
+            Icon(
+              isSelected ? Icons.check_circle : icon,
+              size: 16,
+              color: isSelected
+                  ? LynewedColors.primary
+                  : isEnabled
+                      ? LynewedColors.textSecondary
+                      : LynewedColors.gray200,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 6),
             Text(
               label,
-              style: LynewedTextStyles.bodyMedium.copyWith(
-                color: onChanged != null
-                    ? LynewedColors.textPrimary
-                    : LynewedColors.textSecondary,
+              style: LynewedTextStyles.labelMedium.copyWith(
+                color: isSelected
+                    ? LynewedColors.primary
+                    : isEnabled
+                        ? LynewedColors.textPrimary
+                        : LynewedColors.textSecondary,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
           ],

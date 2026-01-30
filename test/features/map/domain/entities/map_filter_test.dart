@@ -105,6 +105,13 @@ void main() {
       expect(updated.minRating, 3.0);
     });
 
+    test('should clear minRating with clearMinRating: true', () {
+      const filter = MapFilter(minRating: 4.0);
+      final updated = filter.copyWith(clearMinRating: true);
+      expect(updated.minRating, isNull);
+      expect(updated.hasRatingFilter, isFalse);
+    });
+
     test('should treat 0 as no filter', () {
       const filter = MapFilter(minRating: 0);
       expect(filter.hasRatingFilter, isFalse);

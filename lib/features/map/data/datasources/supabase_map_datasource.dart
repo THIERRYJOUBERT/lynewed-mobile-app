@@ -62,6 +62,8 @@ class SupabaseMapDatasource {
       'showProAlerts': filter.toggles.showAlerts,
       'showWeddings': filter.toggles.showWeddings,  // Updated for new RPC
       'showOnlyMyProfessionPins': filter.toggles.showOnlyMyProfession,
+      // Rating filter (null or 0 = no filter)
+      'minRating': filter.minRating?.toString(),
     };
 
     final response = await _client.rpc('search_map_bundle', params: {

@@ -26,6 +26,9 @@ import '../widgets/filter_sheet.dart';
 import '../widgets/map_controls.dart';
 import '../sheets/sheets.dart';
 import '../services/map_actions_service.dart';
+import '/core/di/injection_container.dart';
+import '/features/reviews/domain/repositories/review_repository.dart';
+import '/features/reviews/presentation/sheets/review_submit_sheet.dart';
 
 /// Configuration de la page map
 class MapPageConfig {
@@ -882,6 +885,10 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
   String? _error;
   dynamic _details;
 
+  // Rating data for professionals
+  double? _averageRating;
+  int? _reviewCount;
+
   @override
   void initState() {
     super.initState();
@@ -896,8 +903,24 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
         final profileId = widget.marker.style.profileId ?? widget.marker.id;
         _detailsService.invalidateCache(profileId);
       }
-      
+
       final details = await _detailsService.getDetailsForMarker(widget.marker);
+
+      // Fetch ratings for professionals
+      if (widget.marker.type == MapMarkerType.proFixedLocation &&
+          sl.isRegistered<ReviewRepository>()) {
+        final profileId = widget.marker.style.profileId ?? widget.marker.id;
+        try {
+          final rating = await sl<ReviewRepository>().getRatingForPro(profileId);
+          if (rating != null) {
+            _averageRating = rating.averageRating;
+            _reviewCount = rating.reviewCount;
+          }
+        } catch (_) {
+          // Ignore rating fetch errors - not critical
+        }
+      }
+
       if (mounted) {
         setState(() {
           _details = details;
@@ -990,6 +1013,13 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
           onReport: () => _handleReportPro(context),
           // Only show favorite button for brides (adds to wishlist)
           showFavoriteButton: widget.userRole == 'bride',
+          // Rating data
+          averageRating: _averageRating,
+          reviewCount: _reviewCount,
+          // Only brides can write reviews
+          onWriteReview: widget.userRole == 'bride'
+              ? () => _handleWriteReview(context, proDetails)
+              : null,
         );
 
       case MapMarkerType.professionalAlert:
@@ -1117,6 +1147,63 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
     Navigator.pop(context);
     final details = _details as ProfessionalDetails;
     _actionsService.navigateToProProfile(context, details);
+  }
+
+  /// Handle write review action (brides only)
+  Future<void> _handleWriteReview(BuildContext sheetContext, ProfessionalDetails proDetails) async {
+    Navigator.pop(sheetContext);
+
+    // Capture references before async gap
+    final messenger = ScaffoldMessenger.of(context);
+    final reviewRepo = sl<ReviewRepository>();
+
+    // Check if user already has a review for this pro
+    final existingReview = await reviewRepo.getMyReviewForPro(proDetails.id);
+
+    if (!mounted) return;
+
+    // Open review submit sheet
+    // ignore: use_build_context_synchronously
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => ReviewSubmitSheet(
+        proId: proDetails.id,
+        proName: proDetails.fullName,
+        existingReview: existingReview,
+        onSubmit: (rating, comment) async {
+          if (existingReview != null) {
+            // Update existing review
+            await reviewRepo.updateReview(
+              reviewId: existingReview.id,
+              rating: rating,
+              comment: comment,
+            );
+          } else {
+            // Create new review
+            await reviewRepo.createReview(
+              proId: proDetails.id,
+              rating: rating,
+              comment: comment,
+            );
+          }
+          // Sheet closes automatically after successful submission
+          if (mounted) {
+            messenger.showSnackBar(
+              SnackBar(
+                content: Text(existingReview != null
+                    ? 'Review updated successfully!'
+                    : 'Review submitted successfully!'),
+                backgroundColor: LynewedColors.success,
+              ),
+            );
+            // Refresh the details to show new rating
+            _loadDetails();
+          }
+        },
+      ),
+    );
   }
 
   /// Handle help with alert action

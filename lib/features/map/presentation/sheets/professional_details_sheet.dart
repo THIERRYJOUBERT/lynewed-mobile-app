@@ -17,6 +17,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '/core/design/design.dart';
 import '/core/design/widgets/widgets.dart';
+import '/features/reviews/presentation/widgets/star_rating_display.dart';
 import '../../domain/entities/professional_details.dart';
 import 'upcoming_travels_sheet.dart';
 
@@ -37,7 +38,10 @@ class ProfessionalDetailsSheet extends StatelessWidget {
     this.onFavoriteToggle,
     this.onViewProfile,
     this.onReport,
+    this.onWriteReview,
     this.showFavoriteButton = true,
+    this.averageRating,
+    this.reviewCount,
   });
 
   final ProfessionalDetails details;
@@ -46,7 +50,14 @@ class ProfessionalDetailsSheet extends StatelessWidget {
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onViewProfile;
   final VoidCallback? onReport;
+  final VoidCallback? onWriteReview;
   final bool showFavoriteButton;
+
+  /// Average rating from pro_ratings view (null if no reviews)
+  final double? averageRating;
+
+  /// Number of reviews
+  final int? reviewCount;
 
   @override
   Widget build(BuildContext context) {
@@ -62,14 +73,17 @@ class ProfessionalDetailsSheet extends StatelessWidget {
         children: [
           // About section with fixed location, budget, and description
           _buildAboutSection(),
-          
+
           // Portfolio preview
           if (details.hasPortfolio)
             _buildPortfolioPreview(),
-          
+
           // Social links
           if (details.hasSocialLinks)
             _buildSocialLinks(),
+
+          // Reviews section
+          _buildReviewsSection(),
         ],
       ),
     );
@@ -267,6 +281,72 @@ class ProfessionalDetailsSheet extends StatelessWidget {
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewsSection() {
+    final hasRating = averageRating != null && reviewCount != null && reviewCount! > 0;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 30),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Reviews',
+            style: LynewedTextStyles.sectionTitle,
+          ),
+          const SizedBox(height: 10),
+
+          if (hasRating) ...[
+            // Display rating
+            Row(
+              children: [
+                StarRatingDisplay(
+                  rating: averageRating!,
+                  starSize: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '(${reviewCount!} ${reviewCount == 1 ? 'review' : 'reviews'})',
+                  style: LynewedTextStyles.bodyMedium.copyWith(
+                    color: LynewedColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ] else ...[
+            // No reviews yet
+            Text(
+              'No reviews yet',
+              style: LynewedTextStyles.bodyMedium.copyWith(
+                color: LynewedColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // Write review button (only if callback provided)
+          if (onWriteReview != null)
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: onWriteReview,
+                icon: const Icon(Icons.rate_review_outlined, size: 18),
+                label: Text(hasRating ? 'Write a review' : 'Be the first to review'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: LynewedColors.primary,
+                  side: const BorderSide(color: LynewedColors.primary),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ),
         ],
       ),
     );
