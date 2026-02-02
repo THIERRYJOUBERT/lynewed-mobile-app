@@ -116,7 +116,9 @@ class MapState extends ChangeNotifier {
         _filter.professions != newFilter.professions ||
         _filter.budgetMin != newFilter.budgetMin ||
         _filter.budgetMax != newFilter.budgetMax ||
-        _filter.minRating != newFilter.minRating;
+        _filter.minRating != newFilter.minRating ||
+        _filter.weddingBookFree != newFilter.weddingBookFree ||
+        _filter.trailerFree != newFilter.trailerFree;
     
     _filter = newFilter;
     

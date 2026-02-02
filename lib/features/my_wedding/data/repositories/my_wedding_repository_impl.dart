@@ -664,4 +664,134 @@ class MyWeddingRepositoryImpl implements MyWeddingRepository {
       return RepositoryResult.failure('Failed to delete guest: $e');
     }
   }
+
+  // ========== WEDDING GROUPS ==========
+
+  @override
+  Future<RepositoryResult<List<WeddingGroup>>> getWeddingGroups({
+    required String weddingId,
+  }) async {
+    try {
+      final groups = await _datasource.getWeddingGroups(weddingId: weddingId);
+      return RepositoryResult.success(groups);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get wedding groups: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<String>> createWeddingGroup({
+    required String weddingId,
+    required String name,
+    required bool isPublic,
+    List<String>? memberProfileIds,
+  }) async {
+    try {
+      final roomId = await _datasource.createWeddingGroup(
+        weddingId: weddingId,
+        name: name,
+        isPublic: isPublic,
+        memberProfileIds: memberProfileIds,
+      );
+      return RepositoryResult.success(roomId);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to create wedding group: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<void>> updateWeddingGroup({
+    required String roomId,
+    String? name,
+    bool? isPublic,
+  }) async {
+    try {
+      await _datasource.updateWeddingGroup(
+        roomId: roomId,
+        name: name,
+        isPublic: isPublic,
+      );
+      return const RepositoryResult.success(null);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to update wedding group: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<void>> deleteWeddingGroup({required String roomId}) async {
+    try {
+      await _datasource.deleteWeddingGroup(roomId: roomId);
+      return const RepositoryResult.success(null);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to delete wedding group: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<List<GroupMember>>> getWeddingGroupMembers({
+    required String roomId,
+  }) async {
+    try {
+      final members = await _datasource.getWeddingGroupMembers(roomId: roomId);
+      return RepositoryResult.success(members);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get group members: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<List<EligibleGroupMember>>> getEligibleGroupMembers({
+    required String weddingId,
+  }) async {
+    try {
+      final members = await _datasource.getEligibleGroupMembers(weddingId: weddingId);
+      return RepositoryResult.success(members);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get eligible members: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<void>> addGroupMembers({
+    required String roomId,
+    required List<String> profileIds,
+  }) async {
+    try {
+      await _datasource.manageWeddingGroupMembers(
+        roomId: roomId,
+        addProfileIds: profileIds,
+      );
+      return const RepositoryResult.success(null);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to add group members: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<void>> removeGroupMembers({
+    required String roomId,
+    required List<String> profileIds,
+  }) async {
+    try {
+      await _datasource.manageWeddingGroupMembers(
+        roomId: roomId,
+        removeProfileIds: profileIds,
+      );
+      return const RepositoryResult.success(null);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to remove group members: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<int>> sendBulkInvitations({
+    required String weddingId,
+  }) async {
+    try {
+      final count = await _datasource.sendBulkInvitations(weddingId: weddingId);
+      return RepositoryResult.success(count);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to send bulk invitations: $e');
+    }
+  }
 }

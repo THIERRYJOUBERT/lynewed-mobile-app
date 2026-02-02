@@ -138,7 +138,7 @@ class _HelperText extends StatelessWidget {
 
     if (characterCount < 8) {
       return Text(
-        '8 caractères requis ($characterCount/8)',
+        '8 characters required ($characterCount/8)',
         style: LynewedTextStyles.bodySmall.copyWith(
           color: LynewedColors.textSecondary,
         ),
@@ -147,7 +147,7 @@ class _HelperText extends StatelessWidget {
     }
 
     return Text(
-      'Code complet ✓',
+      'Code complete ✓',
       style: LynewedTextStyles.bodySmall.copyWith(
         color: LynewedColors.success,
       ),

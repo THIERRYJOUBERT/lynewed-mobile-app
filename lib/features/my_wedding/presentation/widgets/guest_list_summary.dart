@@ -38,17 +38,17 @@ class GuestListSummary extends StatelessWidget {
         children: [
           _SummaryItem(
             count: total,
-            label: 'invités',
+            label: 'guests',
             color: LynewedColors.textSecondary,
           ),
           _SummaryItem(
             count: invited,
-            label: 'invitations\nenvoyées',
+            label: 'invitations\nsent',
             color: Colors.amber.shade700,
           ),
           _SummaryItem(
             count: joined,
-            label: 'ont\nrejoint',
+            label: 'have\njoined',
             color: Colors.green,
           ),
         ],

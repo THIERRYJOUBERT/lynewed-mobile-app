@@ -145,7 +145,8 @@ class CreateGuestAccount
     if (message.contains('mot de passe') || message.contains('Password')) {
       return const WeakPassword();
     }
-    if (message.contains('invalid_code') || message.contains('code')) {
+    // Only match specific invite code errors, not any message containing 'code'
+    if (message.contains('invalid_code') || message.contains('code_expired')) {
       return const InvalidInviteCodeError();
     }
 

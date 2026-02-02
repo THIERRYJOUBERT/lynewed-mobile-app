@@ -117,7 +117,7 @@ class _QrScannerContentState extends State<_QrScannerContent> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Scanner QR Code',
+                  'Scan QR Code',
                   style: LynewedTextStyles.sheetTitle,
                 ),
                 IconButton(
@@ -135,7 +135,7 @@ class _QrScannerContentState extends State<_QrScannerContent> {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: LynewedSpacing.lg),
             child: Text(
-              "Placez le QR code de votre invitation dans le cadre",
+              "Position the QR code from your invitation within the frame",
               style: LynewedTextStyles.bodyMedium.copyWith(
                 color: LynewedColors.textSecondary,
               ),

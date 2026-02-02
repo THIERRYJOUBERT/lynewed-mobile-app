@@ -6,8 +6,8 @@
 	<string>production</string>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:lynewed.app</string>
-		<string>applinks:www.lynewed.app</string>
+		<string>applinks:lynewed.com</string>
+		<string>applinks:www.lynewed.com</string>
 	</array>
 </dict>
 </plist>

@@ -1,6 +1,6 @@
 /// My Wedding presentation bloc barrel export.
 ///
-/// Provides access to all My Wedding Cubits: Agenda, Budget, Guests,
+/// Provides access to all My Wedding Cubits: Agenda, Budget, Guests, Groups,
 /// Inspirations, Onboarding, Team, and related state classes.
 library;
 
@@ -12,6 +12,8 @@ export 'guests_cubit.dart';
 export 'guests_state.dart';
 export 'inspirations_cubit.dart';
 export 'inspirations_state.dart';
+export 'wedding_groups_cubit.dart';
+export 'wedding_groups_state.dart';
 export 'wedding_onboarding_cubit.dart';
 export 'wedding_onboarding_state.dart';
 export 'wedding_team_cubit.dart';

@@ -1,9 +1,10 @@
 /// Button widget for sending wedding invitations to guests.
 ///
 /// Shows different states based on guest email and status:
+/// - Joined: nothing displayed (guest already joined)
 /// - No email: hint text to add email
-/// - Has email, pending: "Envoyer l'invitation" button
-/// - Has email, invited: "Renvoyer l'invitation" button
+/// - Has email, pending: "Send Invitation" button
+/// - Has email, invited: "Resend Invitation" button
 /// - Loading: spinner with disabled button
 library;
 
@@ -77,7 +78,7 @@ class _SendInvitationButtonState extends State<SendInvitationButton> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Invitation envoyée !',
+              'Invitation sent!',
               style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
             ),
             backgroundColor: Colors.green,
@@ -90,10 +91,15 @@ class _SendInvitationButtonState extends State<SendInvitationButton> {
 
   @override
   Widget build(BuildContext context) {
+    // Guest already joined - no invitation needed
+    if (widget.guestStatus == GuestStatus.joined) {
+      return const SizedBox.shrink();
+    }
+
     // No email - show hint
     if (widget.guestEmail == null || widget.guestEmail!.isEmpty) {
       return Text(
-        'Ajoutez un email pour envoyer une invitation',
+        'Add an email to send an invitation',
         style: LynewedTextStyles.labelSmall.copyWith(
           color: LynewedColors.textSecondary,
           fontStyle: FontStyle.italic,
@@ -102,8 +108,8 @@ class _SendInvitationButtonState extends State<SendInvitationButton> {
     }
 
     final buttonText = widget.guestStatus == GuestStatus.invited
-        ? "Renvoyer l'invitation"
-        : "Envoyer l'invitation";
+        ? 'Resend Invitation'
+        : 'Send Invitation';
 
     return SizedBox(
       height: 36,

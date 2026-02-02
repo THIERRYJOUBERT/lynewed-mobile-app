@@ -56,14 +56,14 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="lynewed" />
             </intent-filter>
-            <!-- HTTPS deep links for lynewed.app/join/{code} -->
+            <!-- HTTPS deep links for lynewed.com/join/{code} -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="https"
-                    android:host="lynewed.app"
+                    android:host="lynewed.com"
                     android:pathPrefix="/join" />
             </intent-filter>
             <intent-filter android:autoVerify="true">
@@ -72,7 +72,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="https"
-                    android:host="www.lynewed.app"
+                    android:host="www.lynewed.com"
                     android:pathPrefix="/join" />
             </intent-filter>
 

@@ -69,7 +69,7 @@ class SendGuestInvitation {
       ));
     } catch (e) {
       return Failure(InvitationFailure(
-        message: "Erreur lors de l'envoi de l'invitation",
+        message: 'Failed to send invitation',
       ));
     }
   }
@@ -77,17 +77,17 @@ class SendGuestInvitation {
   String _mapErrorToMessage(String? error) {
     switch (error) {
       case 'invalid_email':
-        return 'Adresse email invalide';
+        return 'Invalid email address';
       case 'guest_not_found':
-        return 'Invité introuvable';
+        return 'Guest not found';
       case 'rate_limited':
-        return 'Trop de requêtes, réessayez plus tard';
+        return 'Too many requests, please try again later';
       case 'email_service_error':
-        return "Erreur du service d'email";
+        return 'Email service error';
       case 'unauthorized':
-        return 'Non autorisé';
+        return 'Unauthorized';
       default:
-        return "Échec de l'envoi de l'invitation";
+        return 'Failed to send invitation';
     }
   }
 }

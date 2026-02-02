@@ -69,7 +69,7 @@ void main() {
 
         expect(result, isA<Failure>());
         final failure = (result as Failure).failure as InvitationFailure;
-        expect(failure.message, 'Adresse email invalide');
+        expect(failure.message, 'Invalid email address');
         expect(failure.code, 'invalid_email');
       });
 
@@ -89,7 +89,7 @@ void main() {
 
         expect(result, isA<Failure>());
         final failure = (result as Failure).failure as InvitationFailure;
-        expect(failure.message, 'Invité introuvable');
+        expect(failure.message, 'Guest not found');
       });
 
       test('should return Failure with rate_limited message', () async {
@@ -108,7 +108,7 @@ void main() {
 
         expect(result, isA<Failure>());
         final failure = (result as Failure).failure as InvitationFailure;
-        expect(failure.message, 'Trop de requêtes, réessayez plus tard');
+        expect(failure.message, 'Too many requests, please try again later');
       });
 
       test('should return generic error for unknown errors', () async {
@@ -127,7 +127,7 @@ void main() {
 
         expect(result, isA<Failure>());
         final failure = (result as Failure).failure as InvitationFailure;
-        expect(failure.message, "Échec de l'envoi de l'invitation");
+        expect(failure.message, 'Failed to send invitation');
       });
 
       test('should handle FunctionException', () async {
@@ -161,7 +161,7 @@ void main() {
 
         expect(result, isA<Failure>());
         final failure = (result as Failure).failure as InvitationFailure;
-        expect(failure.message, "Erreur lors de l'envoi de l'invitation");
+        expect(failure.message, 'Failed to send invitation');
       });
     });
   });

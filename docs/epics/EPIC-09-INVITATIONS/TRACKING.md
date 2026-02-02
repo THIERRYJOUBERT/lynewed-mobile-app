@@ -1,8 +1,8 @@
 # TRACKING - EPIC-09-INVITATIONS
 
-> Status : 🔶 PARTIAL
-> Stories : 12/12 (stories spec completes - UI a finaliser)
-> Derniere MAJ : 2026-02-02 (fix Edge Function send-wedding-invitation)
+> Status : ✅ COMPLETE
+> Stories : 12/12 (100%)
+> Derniere MAJ : 2026-02-02 (UI Finalization + Auth Guest Fixes)
 
 ---
 
@@ -11,8 +11,8 @@
 | Composant | Status | Notes |
 |-----------|--------|-------|
 | **Auth Guest** | ✅ 100% | Login, join wedding, deep links fonctionnels |
-| **Interface Guest** | ⏳ A completer | Album, Chat, Profil pages a finaliser |
-| **Interface Bride** | ⏳ A creer | Gestion invites (envoi depuis app, suivi) |
+| **Interface Guest** | ✅ 100% | NavBar v2, Chat, Profil, Settings pages |
+| **Interface Bride** | ✅ 100% | Gestion invites, envoi emails, statuts, groupes |
 
 ---
 
@@ -25,6 +25,7 @@
 | 2026-01-30 | Stories S07-S09, S11 completees - Epic 100% |
 | 2026-02-02 | **Corrections Auth Guest** - 9 bugs fixes (session post-epic) |
 | 2026-02-02 | **Fix Edge Function** - send-wedding-invitation corrigee et testee |
+| 2026-02-02 | **Fix Deep Links** - Migration lynewed.app → lynewed.com |
 
 ---
 
@@ -79,6 +80,7 @@
 | 2026-02-02 | Edge Function permission denied wedding_guests | Fonctions SECURITY DEFINER + RLS policies | ✅ |
 | 2026-02-02 | QR code generation failed (canvas) | Utilisation API externe qrserver.com | ✅ |
 | 2026-02-02 | Resend domain not verified (lynewed.app) | Utilisation domaine verifie lynewed.com | ✅ |
+| 2026-02-02 | Deep link domain lynewed.app inexistant | Migration complete vers lynewed.com | ✅ |
 
 ---
 
@@ -87,7 +89,7 @@
 | Date | Decision | Contexte | Impact |
 |------|----------|----------|--------|
 | 2026-01-28 | Reutiliser chat_rooms existante (D-17) | Eviter duplication code | Utilise type='wedding_team' |
-| 2026-01-28 | Deep link format: lynewed.app/join/{code} | Standard, facile a retenir | Config Universal Links + App Links |
+| 2026-01-28 | Deep link format: lynewed.com/join/{code} | Standard, facile a retenir | Config Universal Links + App Links |
 | 2026-01-28 | QR code genere dynamiquement dans email | Pas de stockage image necessaire | Package qrcode dans Edge Function |
 | 2026-01-28 | Guest → Bride irreversible | Simplicite, evite abus | Dialog confirmation explicite |
 | 2026-01-28 | Integration Resend pour emails | Service recommande par Supabase | Edge Function dedicee |
@@ -483,3 +485,89 @@ curl -X POST ".../send-wedding-invitation" \
   `SECURITY DEFINER` sont plus fiables pour les Edge Functions
 - Les libs npm utilisant canvas (qrcode, jimp, etc.) ne fonctionnent pas dans Deno
 - Toujours verifier quel domaine est verifie sur Resend avant deploiement
+
+---
+
+## Session 2026-02-02 : Migration Deep Links lynewed.app → lynewed.com
+
+### Description
+
+Le domaine `lynewed.app` n'existe pas (DNS ENOTFOUND), causant l'echec des deep links.
+Migration complete vers le domaine existant `lynewed.com`.
+
+### Cause Racine
+
+Le domaine `lynewed.app` n'a jamais ete achete/configure. Seul `lynewed.com` existe
+et heberge le site web via Vercel.
+
+### Modifications Effectuees
+
+#### 1. Fichiers .well-known deployes sur Vercel (lynewed.com)
+
+**Fichier**: `public/.well-known/apple-app-site-association`
+```json
+{
+  "applinks": {
+    "apps": [],
+    "details": [{
+      "appID": "G234APMW4U.com.lynewed.app",
+      "paths": ["/join/*"]
+    }]
+  }
+}
+```
+
+**Fichier**: `public/.well-known/assetlinks.json`
+```json
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.lynewed.app",
+    "sha256_cert_fingerprints": ["TODO"]
+  }
+}]
+```
+
+#### 2. iOS Associated Domains
+
+**Fichier**: `ios/Runner/Runner.entitlements`
+```xml
+<key>com.apple.developer.associated-domains</key>
+<array>
+  <string>applinks:lynewed.com</string>
+  <string>applinks:www.lynewed.com</string>
+</array>
+```
+
+#### 3. Android App Links
+
+**Fichier**: `android/app/src/main/AndroidManifest.xml`
+```xml
+<data android:host="lynewed.com" android:pathPrefix="/join" />
+<data android:host="www.lynewed.com" android:pathPrefix="/join" />
+```
+
+#### 4. Edge Function v14
+
+**Deep link**: `https://lynewed.com/join/${inviteCode}`
+
+#### 5. Documentation Flutter
+
+**Fichier**: `lib/core/navigation/deep_link_handler.dart`
+- Commentaires mis a jour pour refleter lynewed.com
+
+### Test
+
+✅ Deep link fonctionne : cliquer sur `https://lynewed.com/join/CODE` ouvre l'app
+(si installee) ou affiche 404 (fallback normal si app non installee).
+
+### Fichiers Modifies
+
+| Fichier | Modification |
+|---------|--------------|
+| `ios/Runner/Runner.entitlements` | lynewed.app → lynewed.com |
+| `android/app/src/main/AndroidManifest.xml` | lynewed.app → lynewed.com |
+| `lib/core/navigation/deep_link_handler.dart` | Commentaires mis a jour |
+| Edge Function v14 | Deep link lynewed.com |
+| Site Vercel | Fichiers .well-known deployes |

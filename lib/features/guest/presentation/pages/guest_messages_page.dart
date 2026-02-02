@@ -87,8 +87,8 @@ class _GuestMessagesPageState extends State<GuestMessagesPage> {
         return;
       }
 
-      // Use the RPC that returns all rooms with unread counts
-      final response = await _callRpc('get_rooms_with_unread_counts');
+      // Use dedicated RPC for guest conversations (wedding groups only)
+      final response = await _callRpc('get_guest_conversations');
 
       if (response == null) {
         setState(() {
@@ -102,10 +102,9 @@ class _GuestMessagesPageState extends State<GuestMessagesPage> {
       final Map<String, dynamic> data = response as Map<String, dynamic>;
       final List<dynamic> items = data['items'] as List<dynamic>? ?? [];
 
-      // Filter for wedding team rooms only
+      // Map to Conversation entities (already filtered by RPC)
       final conversations = items
           .map((item) => Conversation.fromMap(item as Map<String, dynamic>))
-          .where((conv) => conv.roomType == RoomType.weddingTeam)
           .toList();
 
       if (mounted) {
@@ -152,17 +151,22 @@ class _GuestMessagesPageState extends State<GuestMessagesPage> {
   }
 
   void _onConversationTap(Conversation conversation) async {
+    // For wedding groups, use publicTitle as the room title
+    final isWeddingGroup = conversation.roomType.isWeddingGroup;
+
     await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ChatDetailsPage(
           roomId: conversation.roomId,
-          isPublicRoom: false,
+          isPublicRoom: isWeddingGroup, // Wedding groups behave like public rooms
           isWeddingTeamChat: true,
           hideVideoCall: true,
           otherProfileId: conversation.otherProfileId,
-          otherFullName: conversation.displayName,
-          otherAvatarUrl: conversation.displayAvatarUrl,
+          otherFullName: conversation.otherFullName,
+          otherAvatarUrl: conversation.otherAvatarUrl,
+          otherRole: conversation.otherRole,
+          publicRoomTitle: isWeddingGroup ? conversation.publicTitle : null,
           conversationStatus: conversation.conversationStatus,
         ),
       ),
@@ -176,41 +180,8 @@ class _GuestMessagesPageState extends State<GuestMessagesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: LynewedColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            _buildHeader(),
-
-            // Divider
-            const Divider(height: 1, color: LynewedColors.gray200),
-
-            // Body
-            Expanded(
-              child: _buildBody(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              'Messages',
-              style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 20),
-            ),
-          ),
-        ],
-      ),
-    );
+    // No header here - GuestHomePage provides the "MESSAGES" header
+    return _buildBody();
   }
 
   Widget _buildBody() {
@@ -276,18 +247,41 @@ class _GuestMessagesPageState extends State<GuestMessagesPage> {
     return RefreshIndicator(
       onRefresh: _onRefresh,
       color: LynewedColors.primary,
-      child: ListView.separated(
-        padding: const EdgeInsets.all(20),
-        itemCount: _conversations.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
-        itemBuilder: (context, index) {
-          final conversation = _conversations[index];
-          return ConversationTile(
-            conversation: conversation,
-            onTap: () => _onConversationTap(conversation),
-            onLongPress: () {}, // No long press actions for guest
-          );
-        },
+      child: CustomScrollView(
+        slivers: [
+          // Section title - same style as MessagesPage
+          // Note: No horizontal padding here - GuestHomePage already provides 20px padding
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.only(top: 30, bottom: 10),
+              child: Text(
+                'Conversations',
+                style: LynewedTextStyles.sectionTitle,
+              ),
+            ),
+          ),
+          // Conversations list - no horizontal padding (provided by parent)
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final conversation = _conversations[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: ConversationTile(
+                    conversation: conversation,
+                    onTap: () => _onConversationTap(conversation),
+                    onLongPress: () {}, // No long press actions for guest
+                  ),
+                );
+              },
+              childCount: _conversations.length,
+            ),
+          ),
+          // Bottom padding
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 100),
+          ),
+        ],
       ),
     );
   }

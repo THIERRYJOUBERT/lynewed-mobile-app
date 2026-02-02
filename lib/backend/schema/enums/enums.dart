@@ -6,6 +6,7 @@ import 'package:collection/collection.dart';
 enum UserRole {
   bride,
   professional,
+  guest,
 }
 
 enum SubscriptionTierType {

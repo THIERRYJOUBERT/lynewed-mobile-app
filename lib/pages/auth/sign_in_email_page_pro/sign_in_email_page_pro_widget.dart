@@ -1,4 +1,6 @@
 import '/auth/supabase_auth/auth_util.dart';
+import '/backend/schema/enums/enums.dart';
+import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -380,6 +382,33 @@ class _SignInEmailPageProWidgetState extends State<SignInEmailPageProWidget> {
                                 _model.passwordTextController.text,
                               );
                               if (user == null) {
+                                return;
+                              }
+
+                              // 🚫 Block guests from pro login - they should use guest login
+                              final sessionData =
+                                  await actions.loadInitialSessionData();
+                              if (sessionData?.profile.role == UserRole.guest) {
+                                if (!context.mounted) return;
+                                GoRouter.of(context).prepareAuthEvent();
+                                await authManager.signOut();
+                                if (!context.mounted) return;
+                                GoRouter.of(context).clearRedirectLocation();
+
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text(
+                                        'Guest accounts should log in via "I\'m a Guest" on the welcome page.'),
+                                    backgroundColor:
+                                        FlutterFlowTheme.of(context).warning,
+                                    duration: const Duration(seconds: 4),
+                                  ),
+                                );
+
+                                context.goNamedAuth(
+                                    AuthWelcomePageWidget.routeName,
+                                    context.mounted);
                                 return;
                               }
 

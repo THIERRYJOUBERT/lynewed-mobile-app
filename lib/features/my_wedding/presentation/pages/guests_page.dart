@@ -7,6 +7,7 @@ import '../widgets/guest_list_summary.dart';
 import '../widgets/guest_status_badge.dart';
 import '../widgets/guest_status_filter.dart';
 import '../widgets/send_invitation_button.dart';
+import '../widgets/bulk_invite_dialog.dart';
 
 /// Guests Page - Full list of wedding guests with CRUD
 class GuestsPage extends StatefulWidget {
@@ -161,7 +162,7 @@ class _GuestsPageState extends State<GuestsPage> {
             child: Row(
               children: [
                 Text(
-                  'Invités',
+                  'Guests',
                   style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 20),
                 ),
                 if (guestCount > 0) ...[
@@ -183,6 +184,14 @@ class _GuestsPageState extends State<GuestsPage> {
               ],
             ),
           ),
+          // Bulk invite button
+          if (_pendingGuestsWithEmail.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.send_outlined),
+              tooltip: 'Invite All (${_pendingGuestsWithEmail.length})',
+              color: LynewedColors.primary,
+              onPressed: _showBulkInviteDialog,
+            ),
           // Filter button
           GuestStatusFilterButton(
             currentFilter: _currentFilter,
@@ -193,6 +202,23 @@ class _GuestsPageState extends State<GuestsPage> {
         ],
       ),
     );
+  }
+
+  /// Returns pending guests that have an email address.
+  List<WeddingGuest> get _pendingGuestsWithEmail => _guests
+      .where((g) => g.status == GuestStatus.pending && g.email != null && g.email!.isNotEmpty)
+      .toList();
+
+  Future<void> _showBulkInviteDialog() async {
+    final sent = await showBulkInviteDialog(
+      context: context,
+      weddingId: widget.weddingId,
+      pendingGuests: _pendingGuestsWithEmail,
+    );
+
+    if (sent && mounted) {
+      _loadGuests();
+    }
   }
 
   Widget _buildContent() {
@@ -263,7 +289,7 @@ class _GuestsPageState extends State<GuestsPage> {
               child: Padding(
                 padding: const EdgeInsets.all(32),
                 child: Text(
-                  'Aucun invité avec ce statut',
+                  'No guests with this status',
                   style: LynewedTextStyles.bodyMedium.copyWith(
                     color: LynewedColors.textSecondary,
                   ),

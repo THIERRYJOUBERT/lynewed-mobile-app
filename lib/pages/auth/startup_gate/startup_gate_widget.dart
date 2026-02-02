@@ -113,6 +113,14 @@ class _StartupGateWidgetState extends State<StartupGateWidget> {
           await actions.initPushNotifications(
             context,
           );
+
+          // 👤 Handle guest role - redirect to GuestHomePage
+          if (FFAppState().currentUserRole == UserRole.guest) {
+            if (!mounted) return;
+            context.goNamedAuth(GuestHomePage.routeName, context.mounted);
+            return;
+          }
+
           _model.tosAccepted = await actions.checkTosAccepted();
           if ((FFAppState().currentUserRole == UserRole.bride) &&
               ((FFAppState().selfPublicProfile.fullName == '') ||

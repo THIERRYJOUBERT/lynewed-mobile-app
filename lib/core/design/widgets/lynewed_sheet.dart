@@ -103,25 +103,26 @@ class LynewedSheet extends StatelessWidget {
                 
                 const Divider(height: 1, color: LynewedColors.gray200),
 
-                // Content with bottom action inside scroll
+                // Scrollable content
                 Flexible(
                   child: SingleChildScrollView(
                     padding: padding,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        child,
-                        // Bottom Action - inside scroll, user must scroll to see it
-                        if (bottomAction != null) ...[
-                          const SizedBox(height: 24),
-                          bottomAction!,
-                          const SizedBox(height: 20),
-                        ],
-                      ],
-                    ),
+                    child: child,
                   ),
                 ),
+
+                // Bottom Action - fixed at bottom, outside scroll
+                if (bottomAction != null)
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                    decoration: const BoxDecoration(
+                      color: LynewedColors.background,
+                      border: Border(
+                        top: BorderSide(color: LynewedColors.gray100),
+                      ),
+                    ),
+                    child: bottomAction,
+                  ),
               ],
             ),
           ),

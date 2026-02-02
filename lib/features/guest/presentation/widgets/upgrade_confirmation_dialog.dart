@@ -26,7 +26,7 @@ class UpgradeConfirmationDialog extends StatelessWidget {
           const SizedBox(width: 8),
           const Expanded(
             child: Text(
-              'Passer en compte Mariée',
+              'Upgrade to Bride account',
               style: LynewedTextStyles.headlineSmall,
             ),
           ),
@@ -51,7 +51,7 @@ class UpgradeConfirmationDialog extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Attention : cette action est irréversible. Vous ne pourrez plus revenir en compte invité.',
+                    'Warning: this action is irreversible. You will not be able to switch back to a guest account.',
                     style: LynewedTextStyles.bodySmall.copyWith(
                       color: Colors.orange.shade900,
                     ),
@@ -69,7 +69,7 @@ class UpgradeConfirmationDialog extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Vous conserverez vos photos et votre compte.',
+                  'Your photos and account will be preserved.',
                   style: LynewedTextStyles.bodyMedium,
                 ),
               ),
@@ -81,7 +81,7 @@ class UpgradeConfirmationDialog extends StatelessWidget {
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
-            'Annuler',
+            'Cancel',
             style: LynewedTextStyles.labelMedium.copyWith(
               color: LynewedColors.textSecondary,
             ),
@@ -93,7 +93,7 @@ class UpgradeConfirmationDialog extends StatelessWidget {
             backgroundColor: LynewedColors.primary,
             foregroundColor: Colors.white,
           ),
-          child: const Text('Je confirme'),
+          child: const Text('I confirm'),
         ),
       ],
     );

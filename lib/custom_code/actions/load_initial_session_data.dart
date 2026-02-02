@@ -22,6 +22,8 @@ Future<SessionDataBundleStruct?> loadInitialSessionData() async {
     switch (s) {
       case 'professional':
         return UserRole.professional;
+      case 'guest':
+        return UserRole.guest;
       case 'bride':
       default:
         return UserRole.bride;

@@ -1,22 +1,23 @@
-# Step 02: Mode Autonomous (Automatique)
+# Step 02: Mode Autonomous v3 (Task-Based Orchestration)
 
-> Purpose: Exécuter l'Epic automatiquement sans interruption utilisateur, avec self-healing et review adversariale.
+> Purpose: Exécuter l'Epic automatiquement via orchestration Task avec subagents qui peuvent utiliser les workflows réels.
 
 ---
 
 ## MANDATORY RULES (READ FIRST)
 
 - 🚀 **PAS D'INTERRUPTION** : L'utilisateur ne fait RIEN après le lancement
-- 🔄 **SELF-HEALING** : Max 5 tentatives intelligentes par story
-- 🎯 **TASK TOOL** : Utiliser subagent story-executor pour chaque story
+- 🔄 **TASK ORCHESTRATION** : Utiliser Task pour déléguer aux subagents
+- 🛠️ **WORKFLOWS RÉELS** : Les subagents peuvent invoquer `/dev-story`, `/debug`, `/oneshot`, `/exploration:explore`
+- 🎯 **MODEL OPUS** : Tous les agents sont Opus par défaut
 - 📊 **DOCUMENTATION** : Tracker progression dans TRACKING.md
 
 ## PROTOCOLS
 
-- 🎯 **Goal**: Implémenter toutes les stories automatiquement
+- 🎯 **Goal**: Implémenter toutes les stories automatiquement via Task agents
 - 💾 **Output**: Epic complète ou rapport de blocage
-- 📖 **Reference**: story-executor (.claude/agents/story-executor.md)
-- ⚡ **Performance**: Exécution parallèle quand possible
+- 📖 **Reference**: Task tool + Skill tool
+- ⚡ **Performance**: Orchestration parallèle quand possible
 
 ---
 
@@ -32,6 +33,21 @@
 - `{completed_stories}` - Stories terminées avec succès
 - `{failed_stories}` - Stories en échec après 5 tentatives
 - `{execution_log}` - Log détaillé de l'exécution
+- `{active_agents}` - Agents en cours
+
+---
+
+## NOUVEAUTÉ v3: Workflows Disponibles pour Subagents
+
+Les subagents lancés via Task peuvent utiliser ces workflows réels :
+
+| Workflow | Usage | Invocation dans subagent |
+|----------|-------|--------------------------|
+| `/dev-story {id} --auto` | Implémenter une story | `Skill: dev-story, args: "{story_id} --auto"` |
+| `/debug --auto` | Résoudre un bug détecté | `Skill: debug, args: "--auto {symptom}"` |
+| `/oneshot --auto` | Tâche rapide hors story | `Skill: oneshot, args: "--auto {description}"` |
+| `/exploration:explore` | Comprendre le contexte | `Skill: exploration:explore, args: "{topic}"` |
+| `EnterPlanMode` | Planifier avant d'agir | Tool direct dans le subagent |
 
 ---
 
@@ -46,84 +62,299 @@
 
 ---
 
-### 2. Cycle par Story
+### 2. Stratégie de Délégation
+
+#### 2.1 Pour chaque Story - Agent avec /dev-story
+
+```yaml
+Task:
+  subagent_type: "general-purpose"
+  model: opus
+  description: "Implémenter {story_id}"
+  prompt: |
+    # Mission: Implémenter {story_id}
+
+    Tu es un développeur expert autonome. Ta mission est d'implémenter cette story avec qualité APEX.
+
+    ## Story à implémenter
+
+    **Path:** docs/epics/{epic_id}/stories/{story_id}.md
+
+    ## Instructions
+
+    1. **Utilise le workflow /dev-story** pour implémenter:
+       ```
+       Skill: dev-story
+       args: "{story_id} --auto"
+       ```
+
+    2. **Si tu rencontres un BUG** pendant l'implémentation:
+       ```
+       Skill: debug
+       args: "--auto {description du bug}"
+       ```
+
+    3. **Si tu as besoin de CONTEXTE** sur le codebase:
+       ```
+       Skill: exploration:explore
+       args: "{ce que tu cherches}"
+       ```
+
+    4. **Si l'implémentation est COMPLEXE** et nécessite planification:
+       - Utilise l'outil `EnterPlanMode` pour concevoir ton approche
+       - Sors du mode plan une fois le plan validé
+       - Puis exécute le plan
+
+    ## Contraintes Absolues
+
+    - TDD OBLIGATOIRE: RED → GREEN → REFACTOR
+    - VALIDATE avant EXAMINE: Tests + analyze AVANT review
+    - 0 WARNINGS: `flutter analyze --fatal-infos`
+    - SCOPE STRICT: Ne modifier que les fichiers de cette story
+
+    ## Output Attendu
+
+    Retourne un résumé structuré:
+    ```
+    STORY-XX-YY: [Titre]
+    Status: COMPLETE | PARTIAL | BLOCKED
+    Critères: X/Y satisfaits
+    Tests: X passants
+    Analyze: X warnings
+    Fichiers modifiés: [liste]
+    Workflows utilisés: [dev-story, debug, etc.]
+    Notes: [observations]
+
+    Si BLOCKED:
+    - Raison: [description]
+    - Tentatives: X/5
+    - Action requise: [ce qu'il faut faire]
+    ```
+```
+
+#### 2.2 Pour un Bug Détecté - Agent avec /debug
+
+Quand le story-agent détecte un bug qu'il ne peut pas résoudre simplement :
+
+```yaml
+Task:
+  subagent_type: "general-purpose"
+  model: opus
+  description: "Debug {symptom}"
+  prompt: |
+    # Mission: Résoudre ce bug
+
+    ## Symptôme
+    {description_du_bug}
+
+    ## Contexte
+    Détecté pendant l'implémentation de {story_id}
+
+    ## Instructions
+
+    1. **Utilise le workflow /debug** pour investiguer:
+       ```
+       Skill: debug
+       args: "--auto {symptom}"
+       ```
+
+    2. Le workflow /debug va:
+       - Collecter les FAITS (pas de suppositions)
+       - Formuler et PROUVER une hypothèse
+       - Proposer 3 solutions avec scoring
+       - Appliquer la solution recommandée
+       - Valider la résolution
+
+    ## Output Attendu
+
+    Retourne:
+    ```
+    BUG: [description]
+    Status: RESOLVED | UNRESOLVED
+    Cause racine: [explication]
+    Solution appliquée: [description]
+    Tests: PASS | FAIL
+    ```
+```
+
+#### 2.3 Pour Exploration Contexte - Agent avec /exploration:explore
+
+Quand un agent a besoin de comprendre le contexte :
+
+```yaml
+Task:
+  subagent_type: "general-purpose"
+  model: opus
+  description: "Explorer {topic}"
+  prompt: |
+    # Mission: Explorer et comprendre
+
+    ## Topic
+    {ce_quon_cherche}
+
+    ## Instructions
+
+    1. **Utilise le workflow /exploration:explore**:
+       ```
+       Skill: exploration:explore
+       args: "{topic}"
+       ```
+
+    2. Ce workflow va:
+       - Lancer des agents parallèles (codebase, docs, web)
+       - Synthétiser les résultats
+       - Retourner contexte structuré
+
+    ## Output Attendu
+
+    Retourne une synthèse avec:
+    - Fichiers pertinents trouvés
+    - Patterns existants
+    - Recommandations
+```
+
+#### 2.4 Pour Tâche Rapide - Agent avec /oneshot
+
+Pour des tâches hors scope story mais nécessaires :
+
+```yaml
+Task:
+  subagent_type: "general-purpose"
+  model: opus
+  description: "Oneshot {description}"
+  prompt: |
+    # Mission: Tâche rapide
+
+    ## Description
+    {ce_quil_faut_faire}
+
+    ## Instructions
+
+    1. **Utilise le workflow /oneshot**:
+       ```
+       Skill: oneshot
+       args: "--auto {description}"
+       ```
+
+    2. Ce workflow va:
+       - Explorer le contexte
+       - Planifier l'implémentation
+       - Exécuter avec TDD
+       - Review adversariale
+       - Commit
+
+    ## Output Attendu
+
+    Retourne:
+    ```
+    Task: [description]
+    Status: COMPLETE | BLOCKED
+    Fichiers: [liste]
+    Tests: X passants
+    ```
+```
+
+---
+
+### 3. Safety: Git Branch Strategy
+
+**AVANT de commencer une story:**
+
+```yaml
+safety_branch:
+  action: |
+    1. Créer une branche pour la story:
+       git checkout -b story/{story_id}
+
+    2. Ceci permet de rollback facilement si le subagent corrompt des fichiers
+
+    3. Après succès, merge dans la branche Epic
+```
+
+**SI un subagent corrompt des fichiers:**
+
+```yaml
+rollback:
+  action: |
+    1. git checkout -- .
+    2. Analyser ce qui s'est mal passé
+    3. Relancer avec contexte ajusté
+```
+
+---
+
+### 4. Cycle Orchestration par Story
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│                    CYCLE AUTOMATIQUE PAR STORY                   │
-│                                                                  │
-│  01. PREPARE    → Lire story, préparer contexte                  │
-│       ↓                                                          │
-│  02. EXECUTE    → Lancer story-executor via Task                 │
-│       ↓                                                          │
-│  03. VALIDATE   → {{TEST_CMD}} + analyze (AVANT review!)        │
-│       ↓                                                          │
-│  04. EXAMINE    → REVIEW ADVERSARIALE (toi-même)                │
-│       ↓                                                          │
-│  05. RESOLVE    → Si problèmes → Corriger                        │
-│       ↓                                                          │
-│  06. LOOP       → Self-healing si échec (max 5, intelligent)     │
-│       ↓                                                          │
-│  07. COMMIT     → Update TRACKING.md → Story suivante           │
+│                    CYCLE ORCHESTRATION v3                         │
+│                                                                   │
+│  00. SAFETY     → Créer branche story (rollback possible)         │
+│       ↓                                                           │
+│  01. PREPARE    → Lire story, préparer contexte                   │
+│       ↓                                                           │
+│  02. DELEGATE   → Lancer Task agent avec /dev-story               │
+│       ↓          (agent peut utiliser /debug, /explore, etc.)     │
+│                                                                   │
+│  03. MONITOR    → Attendre résultat du Task agent                 │
+│       ↓          (timeout: 15 min par story, check périodique)    │
+│                                                                   │
+│  04. ANALYZE    → Parser le output, évaluer status                │
+│       ↓                                                           │
+│  05. DECIDE     → COMPLETE → Next story                           │
+│       │          PARTIAL → Retry avec feedback                    │
+│       │          BLOCKED → Self-healing ou escalade               │
+│       ↓                                                           │
+│  06. LOOP       → Max 5 tentatives intelligentes                  │
+│       ↓                                                           │
+│  07. TRACK      → Update TRACKING.md → Story suivante             │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-### 3. Lancer Story-Executor via Task
+### 5. Timeout et Monitoring des Agents
 
-**SYNTAXE EXACTE du Task tool:**
-
-> **Note Timeout**: Les tâches complexes peuvent prendre du temps. Si le Task semble bloqué après 10+ minutes sans output, vérifier le log et considérer une relance.
+**Timeout Strategy:**
 
 ```yaml
-Task:
-  description: "Implémenter {story_id}"
-  subagent_type: "story-executor"
-  prompt: |
-    # Story à implémenter
+timeout_config:
+  default_per_story: 15 minutes
+  check_interval: 5 minutes
 
-    **Story path:** docs/epics/{epic_id}/stories/{story_id}.md
+  monitoring:
+    - Si agent actif > 10 min sans output → Warning log
+    - Si agent actif > 15 min → Consider timeout
+    - Utiliser `run_in_background: true` pour les stories longues
 
-    ## Instructions
+  on_timeout:
+    - Log l'état actuel
+    - Analyser ce qui bloque
+    - Relancer avec prompt simplifié ou scope réduit
+```
 
-    1. Lire la story complètement
-    2. Suivre le workflow 8 étapes:
-       ANALYZE → PLAN → EXECUTE (TDD) → VALIDATE → EXAMINE → RESOLVE → TEST LOOP → OUTPUT
+**Pour les agents en background:**
 
-    3. Pour chaque critère d'acceptation:
-       - RED: Écrire test qui échoue
-       - GREEN: Code minimal qui passe
-       - REFACTOR: Nettoyer
+```yaml
+background_agent:
+  Task:
+    run_in_background: true
+    ...
 
-    4. VALIDATE technique ({{TEST_CMD}} + analyze) AVANT la self-critique
+  monitoring: |
+    1. Le Task retourne un output_file path
+    2. Vérifier périodiquement avec Read tool
+    3. Ou utiliser Bash avec `tail -f` pour suivre
 
-    5. Self-critique obligatoire
-
-    6. Retourner résumé structuré:
-       ```
-       STORY-XX-YY: [Titre]
-       Status: COMPLETE | PARTIAL | BLOCKED
-       Critères: X/Y satisfaits
-       Tests: X passants
-       Analyze: X warnings
-       Fichiers modifiés: [liste]
-       Notes: [observations]
-       ```
-
-    ## Contraintes
-
-    - TDD OBLIGATOIRE: Pas de code avant test
-    - VALIDATE avant EXAMINE: Pas de review sur code qui ne compile pas
-    - SELF-HEALING: Max 5 tentatives si tests échouent
-    - SCOPE STRICT: Ne modifier que les fichiers de cette story
+  retrieval: |
+    Utiliser TaskOutput tool avec le task_id pour récupérer le résultat
 ```
 
 ---
 
-### 4. Traitement du Résultat
+### 6. Traitement du Résultat Task
 
-#### 4.1 Parser le Output
+#### 6.1 Parser le Output
 
 ```yaml
 result_parsing:
@@ -133,11 +364,12 @@ result_parsing:
     - tests_passing: X
     - warnings: X
     - files_modified: [list]
+    - workflows_used: [list]  # NEW: quels workflows ont été utilisés
     - notes: "..."
     - blocking_reason: "..." (si BLOCKED)
 ```
 
-#### 4.2 Décision
+#### 6.2 Décision
 
 ```yaml
 decision_tree:
@@ -145,104 +377,99 @@ decision_tree:
     → APPROVE: Passer à la story suivante
 
   IF status == "PARTIAL":
-    → RETRY: Relancer avec feedback
+    → ANALYZE: Quels critères manquants ?
+    → IF bug_detected:
+        → Lancer agent /debug dédié
+    → IF context_missing:
+        → Lancer agent /exploration:explore
+    → RETRY: Relancer avec informations additionnelles
     → attempt_count += 1
 
   IF status == "BLOCKED":
     → ANALYZE: Comprendre pourquoi
     → IF attempt_count < 5:
-        → RETRY avec approche ajustée
+        → Ajuster stratégie (différent workflow, plus de contexte)
+        → RETRY avec approche différente
     → ELSE:
         → ESCALATE: AskUserQuestion
 ```
 
 ---
 
-### 5. Self-Healing Intelligent
+### 7. Self-Healing Intelligent v3
 
-**Principe clé: Chaque tentative doit APPRENDRE de la précédente.**
+**Principe clé: Utiliser le bon workflow selon le problème.**
 
 ```yaml
-self_healing_loop:
+self_healing_v3:
   FOR attempt IN 1..5:
 
     1. EXECUTE:
-       - Lancer story-executor
+       - Lancer Task agent avec /dev-story
        - Attendre résultat
 
-    2. ANALYZE:
-       IF échec:
-         - Identifier la cause racine
-         - Documenter: "Tentative {N} échouée car {raison}"
-         - Déterminer ajustement pour prochaine tentative
+    2. ANALYZE failure:
+       IF failure_type == "bug":
+         → Lancer nouvel agent avec /debug --auto
+         → Intégrer le fix et réessayer /dev-story
 
-    3. ADJUST:
-       - Modifier le prompt/contexte basé sur l'analyse
-       - NE PAS répéter la même approche
+       IF failure_type == "context_missing":
+         → Lancer agent /exploration:explore
+         → Enrichir le prompt avec le contexte trouvé
+         → Réessayer /dev-story
 
-    4. LOG:
+       IF failure_type == "complexity":
+         → Lancer agent avec EnterPlanMode
+         → Obtenir un plan structuré
+         → Réessayer /dev-story avec le plan
+
+       IF failure_type == "test_failure":
+         → Analyser les tests qui échouent
+         → Ajuster le prompt avec les erreurs spécifiques
+         → Réessayer
+
+    3. LOG:
        execution_log[story_id].attempts.append({
          attempt: N,
          status: "...",
-         failure_reason: "...",
+         failure_type: "...",
+         workflow_used: "...",
          adjustment: "..."
        })
 
   IF attempt == 5 AND still_failing:
-    → ESCALATE avec rapport complet
+    → ESCALATE avec rapport complet incluant tous les workflows tentés
 ```
-
-**Règle d'or:**
-> "Chaque tentative doit APPRENDRE de la précédente. Répéter la même chose 5 fois = échec du self-healing."
 
 ---
 
-### 6. Review Adversariale (Toi-même)
+### 8. Parallélisation (Optionnel)
 
-**CHANGEMENT DE RÔLE**
-
-Tu n'es PLUS le coordinateur bienveillant. Tu es maintenant un **Reviewer Senior Impitoyable**.
+Si des stories sont **indépendantes** (pas de dépendances entre elles), lancer plusieurs agents en parallèle :
 
 ```yaml
-adversarial_review:
-  prerequisite:
-    - Code compile (VALIDATE passé)
-    - Tests passent
+parallel_execution:
+  condition: stories_without_dependencies.count >= 2
 
-  checklist:
-    conformite_spec:
-      - Implémente EXACTEMENT ce qui est demandé?
-      - Rien de manquant?
-      - Rien en trop (over-engineering)?
+  action: |
+    Lancer PLUSIEURS Task en SINGLE message:
 
-    qualite_code:
-      - Tests couvrent les cas importants?
-      - Conventions respectées?
-      - Pas de code dupliqué?
+    Task 1:
+      description: "Implémenter STORY-01-01"
+      ...
 
-    securite:
-      - Pas d'injection possible?
-      - Validation inputs présente?
-      - Pas de secrets hardcodés?
+    Task 2:
+      description: "Implémenter STORY-01-02"
+      ...
 
-  output:
-    format: |
-      REVIEW ADVERSARIALE - {story_id}
-
-      PROBLÈMES TROUVÉS:
-      1. [CRITIQUE] {description} - {fichier}:{ligne}
-      2. [IMPORTANT] {description} - {fichier}:{ligne}
-
-      VERDICT: APPROVE | NEEDS_WORK
-
-  rule:
-    IF problemes_trouves == 0:
-      → Re-examiner. C'est suspect.
+  benefit: Réduction significative du temps total
+  risk: Conflits si les stories modifient les mêmes fichiers
+  mitigation: Vérifier les fichiers impactés AVANT de paralléliser
 ```
 
 ---
 
-### 7. Documentation Continue
+### 9. Documentation Continue
 
 **Après chaque story:**
 
@@ -253,8 +480,9 @@ tracking_update:
     ## Progression
 
     - [x] {story_id} - {titre} (terminée {date})
-      - Mode: autonomous
+      - Mode: autonomous (Task-based v3)
       - Tentatives: {N}
+      - Workflows utilisés: {list}
       - Review: APPROVE après {X} iteration(s)
       - Notes: {observations}
 
@@ -263,7 +491,7 @@ tracking_update:
 
 ---
 
-### 8. Escalade (Si Blocage)
+### 10. Escalade (Si Blocage)
 
 Après 5 tentatives échouées:
 
@@ -276,12 +504,17 @@ escalation:
     question: |
       ⚠️ Story {story_id} bloquée après 5 tentatives.
 
+      **Workflows tentés:**
+      - /dev-story: {X} fois
+      - /debug: {Y} fois
+      - /exploration:explore: {Z} fois
+
       **Résumé des tentatives:**
-      1. {raison_echec_1}
-      2. {raison_echec_2}
-      3. {raison_echec_3}
-      4. {raison_echec_4}
-      5. {raison_echec_5}
+      1. {workflow} → {raison_echec_1}
+      2. {workflow} → {raison_echec_2}
+      3. {workflow} → {raison_echec_3}
+      4. {workflow} → {raison_echec_4}
+      5. {workflow} → {raison_echec_5}
 
       **Cause racine probable:** {analyse}
 
@@ -299,13 +532,13 @@ escalation:
 
 ---
 
-### 9. Finalisation Story
+### 11. Finalisation Story
 
 Quand une story est COMPLETE et APPROVED:
 
 ```yaml
 story_completion:
-  1. Update TRACKING.md
+  1. Update TRACKING.md avec workflows utilisés
   2. Add to {completed_stories}
   3. Log success in {execution_log}
   4. Move to next story OR finalize if last
@@ -316,17 +549,16 @@ story_completion:
 ## AUTO-VALIDATION
 
 **Before moving to next story:**
-✅ Story-executor a retourné COMPLETE
+✅ Task agent a retourné COMPLETE
 ✅ Tous les critères satisfaits (X/X)
 ✅ Tests passent ({{TEST_CMD}})
-✅ Analyze clean ({{LINT_CMD}}
-✅ Review adversariale APPROVE
+✅ Analyze clean ({{LINT_CMD}})
 ✅ TRACKING.md mis à jour
 
 **Self-Critique Questions:**
-- Ai-je vraiment analysé chaque échec avant de réessayer?
-- Mes ajustements étaient-ils basés sur des données ou des intuitions?
-- La review adversariale était-elle rigoureuse ou complaisante?
+- Ai-je utilisé le bon workflow pour chaque situation ?
+- Les agents ont-ils eu assez de contexte ?
+- Ai-je vraiment analysé chaque échec avant de réessayer ?
 
 ---
 
@@ -334,10 +566,11 @@ story_completion:
 
 **Success:**
 ✅ Toutes les stories COMPLETE
+✅ Workflows appropriés utilisés
 ✅ Prêt pour finalisation (step-04)
 
 **Failure modes:**
-❌ Story bloquée après 5 tentatives → ESCALATE avec rapport
+❌ Story bloquée après 5 tentatives → ESCALATE avec rapport détaillé
 ❌ Erreur technique inattendue → Log et tenter recovery
 ❌ Interruption utilisateur → Sauvegarder état, rapport partiel
 
@@ -350,8 +583,9 @@ story_completion:
 - Si blocage → Attendre décision utilisateur après escalade
 
 <critical>
-MODE AUTONOMOUS = PAS D'INTERRUPTION
-Seul AskUserQuestion autorisé: Blocage critique après 5 tentatives.
-SELF-HEALING INTELLIGENT: Analyser AVANT de réessayer.
-TASK TOOL: Utiliser la syntaxe exacte documentée ci-dessus.
+MODE AUTONOMOUS v3 = ORCHESTRATION TASK
+Les subagents peuvent utiliser les VRAIS workflows: /dev-story, /debug, /oneshot, /exploration:explore
+MODEL OPUS par défaut pour tous les agents
+SELF-HEALING INTELLIGENT: Choisir le bon workflow selon le type d'échec
+Seul AskUserQuestion autorisé: Blocage critique après 5 tentatives
 </critical>

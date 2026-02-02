@@ -1,32 +1,29 @@
 /// Settings page for guest users.
 ///
-/// Complete settings page with preferences, notifications,
-/// upgrade option, and support sections.
+/// Structure copiée de ProfileBridesAndProWidget et adaptée pour Guest role.
+/// Uses FlutterFlowTheme for consistency with Bride/Pro interface.
 library;
 
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '/core/design/design.dart';
-import '/features/settings/presentation/widgets/settings_tile.dart';
+import '/custom_code/actions/index.dart' as actions;
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 
 /// Settings page for guest users.
 ///
 /// Shows:
-/// - Profile header (avatar, name, email, guest badge)
-/// - Preferences section (settings tiles)
-/// - Upgrade section (prominent CTA)
-/// - Support section (rate, contact, terms)
-/// - Logout
+/// - Header "PROFIL" (110px) - identical to ProfileBridesAndProWidget
+/// - Preferences section (Preference, Notifications, Settings & Permissions)
+/// - Upgrade section (prominent CTA "Become a Bride")
+/// - Support section (Rate, Contact, Terms, Log out)
 /// - Version
+///
+/// Pattern copied from ProfileBridesAndProWidget for consistency.
 class GuestSettingsPage extends StatefulWidget {
-  /// Guest's display name.
-  final String? guestName;
-
-  /// Guest's email.
-  final String? email;
-
   /// Callback when upgrade button is tapped.
   final VoidCallback? onUpgradeToBride;
 
@@ -35,8 +32,6 @@ class GuestSettingsPage extends StatefulWidget {
 
   /// Creates a guest settings page.
   const GuestSettingsPage({
-    this.guestName,
-    this.email,
     this.onUpgradeToBride,
     this.onLogout,
     super.key,
@@ -47,185 +42,277 @@ class GuestSettingsPage extends StatefulWidget {
 }
 
 class _GuestSettingsPageState extends State<GuestSettingsPage> {
-  // Version is set statically since package_info_plus is not available
-  static const String _version = 'Version 1.0.0';
+  String? _brideName;
+  DateTime? _weddingDate;
+  String? _inviteCode;
+  bool _isLoadingWeddingInfo = true;
 
-  void _openPreferences() {
-    Navigator.pushNamed(context, PreferenceWidget.routeName);
+  @override
+  void initState() {
+    super.initState();
+    _loadWeddingInfo();
   }
 
-  void _openNotifications() {
-    Navigator.pushNamed(context, NotificationSettingsPage.routeName);
-  }
+  Future<void> _loadWeddingInfo() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) {
+        setState(() => _isLoadingWeddingInfo = false);
+        return;
+      }
 
-  void _openSettings() {
-    Navigator.pushNamed(context, SettingsPermissionsWidget.routeName);
-  }
+      // Step 1: Get wedding_id from wedding_guests
+      final guestData = await Supabase.instance.client
+          .from('wedding_guests')
+          .select('wedding_id')
+          .eq('user_id', user.id)
+          .eq('status', 'joined')
+          .order('joined_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
 
-  Future<void> _rateApp() async {
-    // TODO: Replace with actual App Store / Play Store URL
-    final url = Uri.parse('https://apps.apple.com/app/lynewed');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    }
-  }
+      if (guestData == null) {
+        setState(() => _isLoadingWeddingInfo = false);
+        return;
+      }
 
-  Future<void> _contactSupport() async {
-    final url = Uri.parse('mailto:support@lynewed.com');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    }
-  }
+      final weddingId = guestData['wedding_id'] as String;
 
-  Future<void> _openTerms() async {
-    final url = Uri.parse('https://lynewed.com/terms');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
+      // Step 2: Get wedding details
+      final weddingData = await Supabase.instance.client
+          .from('weddings')
+          .select('id, event_date, invite_code, bride_profile_id')
+          .eq('id', weddingId)
+          .maybeSingle();
+
+      if (weddingData == null) {
+        setState(() => _isLoadingWeddingInfo = false);
+        return;
+      }
+
+      // Step 3: Get bride profile
+      final brideProfileId = weddingData['bride_profile_id'] as String?;
+      String? brideName;
+      if (brideProfileId != null) {
+        final brideData = await Supabase.instance.client
+            .from('profiles')
+            .select('full_name')
+            .eq('id', brideProfileId)
+            .maybeSingle();
+        brideName = brideData?['full_name'] as String?;
+      }
+
+      final eventDateStr = weddingData['event_date'] as String?;
+      final inviteCode = weddingData['invite_code'] as String?;
+
+      if (mounted) {
+        setState(() {
+          _brideName = brideName;
+          _inviteCode = inviteCode;
+          if (eventDateStr != null) {
+            _weddingDate = DateTime.tryParse(eventDateStr);
+          }
+          _isLoadingWeddingInfo = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingWeddingInfo = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(height: LynewedSpacing.xl),
-
-          // Profile header
-          _buildProfileHeader(),
-
-          SizedBox(height: LynewedSpacing.xxxl),
-
-          // Preferences section
-          _buildSection(
-            title: 'PREFERENCES',
-            children: [
-              SettingsTile(
-                icon: Icons.tune,
-                title: 'Preferences',
-                subtitle: 'Currency, distance, country',
-                onTap: _openPreferences,
-              ),
-              const SizedBox(height: 8),
-              SettingsTile(
-                icon: Icons.notifications_outlined,
-                title: 'Notifications',
-                subtitle: 'Chat, updates',
-                onTap: _openNotifications,
-              ),
-              const SizedBox(height: 8),
-              SettingsTile(
-                icon: Icons.security,
-                title: 'Settings & Permissions',
-                onTap: _openSettings,
-              ),
-            ],
-          ),
-
-          SizedBox(height: LynewedSpacing.lg),
-
-          // Upgrade section
-          _buildUpgradeSection(),
-
-          SizedBox(height: LynewedSpacing.lg),
-
-          // Support section
-          _buildSection(
-            title: 'SUPPORT & LEGAL',
-            children: [
-              SettingsTile(
-                icon: Icons.star_border,
-                title: 'Rate Lynewed',
-                onTap: _rateApp,
-              ),
-              const SizedBox(height: 8),
-              SettingsTile(
-                icon: Icons.help_outline,
-                title: 'Contact Support',
-                onTap: _contactSupport,
-              ),
-              const SizedBox(height: 8),
-              SettingsTile(
-                icon: Icons.description_outlined,
-                title: 'Terms & Conditions',
-                onTap: _openTerms,
-              ),
-              const SizedBox(height: 8),
-              SettingsTile(
-                icon: Icons.logout,
-                title: 'Log Out',
-                isDestructive: true,
-                onTap: widget.onLogout,
-                trailing: const SizedBox.shrink(),
-              ),
-            ],
-          ),
-
-          SizedBox(height: LynewedSpacing.xxxl),
-
-          // Version
-          Text(
-            _version,
-            style: LynewedTextStyles.labelSmall.copyWith(
-              color: LynewedColors.textSecondary,
+    // Structure Stack comme ProfileBridesAndProWidget
+    // Pas de Scaffold car embeddé dans GuestHomePage
+    return Stack(
+      children: [
+        // === HEADER 110px (copié de ProfileBridesAndProWidget) ===
+        Align(
+          alignment: const AlignmentDirectional(0.0, -1.0),
+          child: Container(
+            width: double.infinity,
+            height: 110.0,
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context).primaryBackground,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 0.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'PROFIL',
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              fontFamily: 'Haas Grot Text Trial',
+                              fontSize: 18.0,
+                              letterSpacing: 0.0,
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                Align(
+                  alignment: const AlignmentDirectional(0.0, 1.0),
+                  child: Padding(
+                    padding:
+                        const EdgeInsetsDirectional.fromSTEB(0.0, 14.0, 0.0, 0.0),
+                    child: Container(
+                      width: double.infinity,
+                      height: 1.0,
+                      decoration: BoxDecoration(
+                        color: FlutterFlowTheme.of(context).secondary,
+                      ),
+                      alignment: const AlignmentDirectional(0.0, 1.0),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-
-          SizedBox(height: LynewedSpacing.xl),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileHeader() {
-    return Column(
-      children: [
-        // Avatar placeholder
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            color: LynewedColors.gray200,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            Icons.person,
-            size: 40,
-            color: LynewedColors.textSecondary,
-          ),
         ),
-        SizedBox(height: LynewedSpacing.md),
 
-        // Name
-        Text(
-          widget.guestName ?? 'Guest',
-          style: LynewedTextStyles.titleMedium.copyWith(
-            color: LynewedColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 4),
+        // === CONTENT avec padding (copié de ProfileBridesAndProWidget) ===
+        Padding(
+          padding:
+              const EdgeInsetsDirectional.fromSTEB(20.0, 110.0, 20.0, 0.0),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Spacing after header
+                const SizedBox(height: 16.0),
 
-        // Email
-        Text(
-          widget.email ?? '',
-          style: LynewedTextStyles.bodySmall.copyWith(
-            color: LynewedColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 8),
+                // === WEDDING INFO BANNER ===
+                _buildWeddingInfoBanner(),
 
-        // Guest badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(
-            color: LynewedColors.surface,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            'Guest',
-            style: LynewedTextStyles.labelMedium.copyWith(
-              color: LynewedColors.textSecondary,
+                // === SECTION PREFERENCE ===
+                Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    // Section title
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Preference',
+                          style:
+                              FlutterFlowTheme.of(context).bodyMedium.override(
+                                    fontFamily: 'Haas Grot Text Trial',
+                                    fontSize: 16.0,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                        ),
+                      ],
+                    ),
+                    // Menu items with exact InkWell pattern from ProfileBridesAndProWidget
+                    _buildMenuItem(
+                      'Preference',
+                      () => context.pushNamed(PreferenceWidget.routeName),
+                    ),
+                    _buildMenuItem(
+                      'Notifications',
+                      () =>
+                          context.pushNamed(NotificationSettingsPage.routeName),
+                    ),
+                    _buildMenuItem(
+                      'Settings and Permissions',
+                      () =>
+                          context.pushNamed(SettingsPermissionsWidget.routeName),
+                    ),
+                  ].divide(const SizedBox(height: 14.0)),
+                ),
+
+                // === SECTION UPGRADE (NEW for Guest) ===
+                _buildUpgradeSection(),
+
+                // === SECTION SUPPORT AND LEGAL ===
+                Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Support and Legal',
+                          style:
+                              FlutterFlowTheme.of(context).bodyMedium.override(
+                                    fontFamily: 'Haas Grot Text Trial',
+                                    fontSize: 16.0,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                        ),
+                      ],
+                    ),
+                    _buildMenuItem(
+                      'Rate Lynewed on the App Store',
+                      () async => actions.requestAppReview(),
+                    ),
+                    _buildMenuItem(
+                      'Contact us / Feedback',
+                      () => context.pushNamed(SupportWidget.routeName),
+                    ),
+                    _buildMenuItemExternal(
+                      'Terms and Conditions of Sale and Use',
+                      'https://www.lynewed.com/terms-of-service',
+                    ),
+                    _buildLogoutItem(),
+                  ].divide(const SizedBox(height: 14.0)),
+                ),
+
+                // === VERSION ===
+                Align(
+                  alignment: const AlignmentDirectional(0.0, 0.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Align(
+                        alignment: const AlignmentDirectional(0.0, 0.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Application version',
+                              style: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                    fontFamily: 'Haas Grot Text Trial',
+                                    fontSize: 12.0,
+                                    letterSpacing: 0.0,
+                                  ),
+                            ),
+                            Text(
+                              'v1.2.4',
+                              style: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                    fontFamily: 'Haas Grot Text Trial',
+                                    fontSize: 12.0,
+                                    letterSpacing: 0.0,
+                                  ),
+                            ),
+                          ].divide(const SizedBox(width: 12.0)),
+                        ),
+                      ),
+                    ].divide(const SizedBox(height: 24.0)),
+                  ),
+                ),
+              ].divide(const SizedBox(height: 24.0)),
             ),
           ),
         ),
@@ -233,76 +320,352 @@ class _GuestSettingsPageState extends State<GuestSettingsPage> {
     );
   }
 
-  Widget _buildSection({
-    required String title,
-    required List<Widget> children,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+  /// Wedding info banner showing which wedding the guest is attending
+  Widget _buildWeddingInfoBanner() {
+    // Loading state
+    if (_isLoadingWeddingInfo) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: FlutterFlowTheme.of(context).secondaryBackground,
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: const Center(
+          child: SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 1.5),
+          ),
+        ),
+      );
+    }
+
+    // No wedding linked - hide banner
+    if (_brideName == null) {
+      return const SizedBox.shrink();
+    }
+
+    final dateFormat = DateFormat('MMMM d, yyyy');
+    final dateText =
+        _weddingDate != null ? dateFormat.format(_weddingDate!) : null;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: FlutterFlowTheme.of(context).secondaryBackground,
+        borderRadius: BorderRadius.circular(4.0),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Label
           Text(
-            title,
-            style: LynewedTextStyles.labelMedium.copyWith(
-              color: LynewedColors.textSecondary,
-              letterSpacing: 1.2,
-            ),
+            "You're attending",
+            style: FlutterFlowTheme.of(context).bodySmall.override(
+                  fontFamily: 'Haas Grot Text Trial',
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                  fontSize: 12.0,
+                  letterSpacing: 0.0,
+                ),
           ),
-          const SizedBox(height: 12),
-          ...children,
+          const SizedBox(height: 6),
+          // Wedding name
+          Text(
+            "$_brideName's Wedding",
+            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  fontFamily: 'Haas Grot Text Trial',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 15.0,
+                  letterSpacing: 0.0,
+                ),
+          ),
+          const SizedBox(height: 10),
+          // Date and code row
+          Row(
+            children: [
+              if (dateText != null) ...[
+                Icon(
+                  Icons.calendar_today_outlined,
+                  size: 13,
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  dateText,
+                  style: FlutterFlowTheme.of(context).bodySmall.override(
+                        fontFamily: 'Haas Grot Text Trial',
+                        color: FlutterFlowTheme.of(context).secondaryText,
+                        fontSize: 12.0,
+                        letterSpacing: 0.0,
+                      ),
+                ),
+              ],
+              if (dateText != null && _inviteCode != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: Container(
+                    width: 1,
+                    height: 12,
+                    color: FlutterFlowTheme.of(context).secondary,
+                  ),
+                ),
+              if (_inviteCode != null)
+                GestureDetector(
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: _inviteCode!));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Code $_inviteCode copied!'),
+                        duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _inviteCode!,
+                        style: FlutterFlowTheme.of(context).bodySmall.override(
+                              fontFamily: 'Haas Grot Text Trial',
+                              color: FlutterFlowTheme.of(context).secondaryText,
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.5,
+                            ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.copy_outlined,
+                        size: 12,
+                        color: FlutterFlowTheme.of(context).secondaryText,
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildUpgradeSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+  /// Menu item with EXACT pattern from ProfileBridesAndProWidget
+  Widget _buildMenuItem(String title, VoidCallback onTap) {
+    return InkWell(
+      splashColor: Colors.transparent,
+      focusColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.all(LynewedSpacing.lg),
-        decoration: BoxDecoration(
-          color: LynewedColors.surface,
-          borderRadius: BorderRadius.circular(4),
-        ),
+        decoration: const BoxDecoration(),
         child: Column(
+          mainAxisSize: MainAxisSize.max,
           children: [
-            Icon(
-              Icons.celebration,
-              size: 32,
-              color: LynewedColors.primary,
-            ),
-            SizedBox(height: LynewedSpacing.md),
-            Text(
-              'Planning your own wedding?',
-              style: LynewedTextStyles.titleSmall.copyWith(
-                color: LynewedColors.textPrimary,
+            Padding(
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 12.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    title,
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          fontFamily: 'Haas Grot Text Trial',
+                          letterSpacing: 0.0,
+                        ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: FlutterFlowTheme.of(context).primaryText,
+                    size: 18.0,
+                  ),
+                ],
               ),
-              textAlign: TextAlign.center,
             ),
-            SizedBox(height: LynewedSpacing.sm),
-            Text(
-              'Upgrade to access all features: find vendors, organize your wedding, and more.',
-              style: LynewedTextStyles.bodySmall.copyWith(
-                color: LynewedColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: LynewedSpacing.lg),
-            SizedBox(
+            Container(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: widget.onUpgradeToBride,
-                style: LynewedComponentStyles.primaryButton(),
-                child: const Text('Become a Bride'),
+              height: 1.0,
+              decoration: BoxDecoration(
+                color: FlutterFlowTheme.of(context).secondary,
               ),
             ),
-            SizedBox(height: LynewedSpacing.sm),
-            Text(
-              'This action is irreversible',
-              style: LynewedTextStyles.labelSmall.copyWith(
-                color: LynewedColors.textSecondary,
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Menu item for external links (opens in browser)
+  Widget _buildMenuItemExternal(String title, String url) {
+    return InkWell(
+      splashColor: Colors.transparent,
+      focusColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      onTap: () async {
+        await launchURL(url);
+      },
+      child: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Padding(
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 12.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    title,
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          fontFamily: 'Haas Grot Text Trial',
+                          letterSpacing: 0.0,
+                        ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: FlutterFlowTheme.of(context).primaryText,
+                    size: 18.0,
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: double.infinity,
+              height: 1.0,
+              decoration: BoxDecoration(
+                color: FlutterFlowTheme.of(context).secondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Upgrade section - prominent CTA for guest to become a bride
+  Widget _buildUpgradeSection() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20.0),
+      decoration: BoxDecoration(
+        color: FlutterFlowTheme.of(context).secondaryBackground,
+        borderRadius: BorderRadius.circular(4.0),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Icon(
+            Icons.celebration,
+            size: 32,
+            color: FlutterFlowTheme.of(context).primary,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Planning your own wedding?',
+            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  fontFamily: 'Haas Grot Text Trial',
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.0,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Upgrade to access all features: find vendors, organize your wedding, and more.',
+            textAlign: TextAlign.center,
+            style: FlutterFlowTheme.of(context).bodySmall.override(
+                  fontFamily: 'Haas Grot Text Trial',
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                  letterSpacing: 0.0,
+                ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: widget.onUpgradeToBride,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: FlutterFlowTheme.of(context).primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              child: Text(
+                'Become a Bride',
+                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                      fontFamily: 'Haas Grot Text Trial',
+                      color: Colors.white,
+                      letterSpacing: 0.0,
+                    ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'This action is irreversible',
+            style: FlutterFlowTheme.of(context).labelSmall.override(
+                  fontFamily: 'Haas Grot Text Trial',
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                  letterSpacing: 0.0,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Logout menu item with different icon
+  Widget _buildLogoutItem() {
+    return InkWell(
+      splashColor: Colors.transparent,
+      focusColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      onTap: widget.onLogout,
+      child: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(),
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Padding(
+              padding:
+                  const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 12.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Log out',
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          fontFamily: 'Haas Grot Text Trial',
+                          letterSpacing: 0.0,
+                        ),
+                  ),
+                  Icon(
+                    Icons.login_rounded,
+                    color: FlutterFlowTheme.of(context).primaryText,
+                    size: 18.0,
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: double.infinity,
+              height: 1.0,
+              decoration: BoxDecoration(
+                color: FlutterFlowTheme.of(context).secondary,
               ),
             ),
           ],

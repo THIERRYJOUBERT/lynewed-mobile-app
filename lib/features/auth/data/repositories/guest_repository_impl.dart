@@ -33,7 +33,18 @@ class GuestRepositoryImpl implements GuestRepository {
     required String inviteCode,
   }) async {
     try {
-      // 1. Create Supabase auth account with role='guest'
+      // 1. Validate invite code BEFORE creating account (prevents orphan accounts)
+      final validateResponse = await _supabaseClient.rpc(
+        'validate_invite_code',
+        params: {'p_invite_code': inviteCode.toUpperCase()},
+      );
+      final validateData = validateResponse as Map<String, dynamic>;
+      if (validateData['success'] != true) {
+        final error = validateData['error'] as String? ?? 'invalid_code';
+        return Failure(AuthFailure(error));
+      }
+
+      // 2. Create Supabase auth account with role='guest'
       final userModel = await _authDatasource.signUpWithEmail(
         email,
         password,
@@ -43,10 +54,16 @@ class GuestRepositoryImpl implements GuestRepository {
         },
       );
 
-      // 2. Accept terms
+      // 3. Update profile with full_name (trigger doesn't copy first_name)
+      await _supabaseClient
+          .from('profiles')
+          .update({'full_name': firstName})
+          .eq('id', userModel.id);
+
+      // 4. Accept terms
       await _authDatasource.acceptTerms(userModel.id);
 
-      // 3. Join wedding via RPC
+      // 5. Join wedding via RPC (code already validated, should succeed)
       final joinResult = await _joinWeddingRpc(userModel.id, inviteCode);
 
       if (!joinResult.success) {
@@ -148,7 +165,7 @@ class GuestRepositoryImpl implements GuestRepository {
 
       return Success(JoinWeddingResult(
         weddingId: wedding['id'] as String,
-        brideName: brideProfile?['first_name'] as String? ?? 'La mariée',
+        brideName: brideProfile?['first_name'] as String? ?? 'The Bride',
         chatRoomId: chatRoom?['id'] as String?,
         guestId: response['id'] as String,
       ));
@@ -178,13 +195,13 @@ class GuestRepositoryImpl implements GuestRepository {
   String _translateAuthError(String message) {
     if (message.contains('already registered') ||
         message.contains('already exists')) {
-      return 'Cet email est déjà utilisé';
+      return 'This email is already in use';
     }
     if (message.contains('Invalid email')) {
-      return 'Email invalide';
+      return 'Invalid email';
     }
     if (message.contains('Password')) {
-      return 'Le mot de passe doit contenir au moins 6 caractères';
+      return 'Password must be at least 6 characters';
     }
     return message;
   }

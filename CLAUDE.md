@@ -46,6 +46,7 @@ Ce projet utilise une **methodologie structuree** avec des workflows, des agents
 
 ### Code
 
+- **ENGLISH ONLY IN CODE** - All user-facing text (UI strings, labels, messages, buttons, etc.) MUST be in English. No French text in the app.
 - **Commentaires en anglais** (code et commentaires)
 - **Nommage clair** et conventions Dart
 
@@ -98,23 +99,74 @@ flutter run                               # Run
 
 ### Optimisation des Tests (IMPORTANT)
 
-**Pour éviter "Output too large" et accélérer :**
+**Problème** : `flutter test` = "Output too large" même avec `--reporter compact` (3000+ tests)
+
+#### Stratégie en 3 Niveaux
+
+| Niveau | Quand | Commande |
+|--------|-------|----------|
+| **1. Fichier** | Après edit d'un fichier | Test fichier spécifique |
+| **2. Feature** | Après edit d'une feature | Test dossier feature |
+| **3. Tous** | Avant commit | Mode silencieux + debug si échec |
+
+#### Commandes par Niveau
 
 ```bash
-# ✅ RECOMMANDÉ - Output minimal + skip pub
-flutter test --reporter compact --no-pub path/to/test.dart 2>&1 | tail -5
+# ✅ NIVEAU 1 - Un fichier (output visible)
+flutter test --no-pub test/features/auth/presentation/pages/join_wedding_page_test.dart
 
-# ✅ Pour voir juste le résultat final
-flutter test path/to/test.dart 2>&1 | grep -E "All tests|passed|failed"
+# ✅ NIVEAU 2 - Une feature (output visible)
+flutter test --no-pub test/features/auth/
 
-# ❌ ÉVITER - Output verbeux qui sature
-flutter test  # Sans options = output ligne par ligne
+# ✅ NIVEAU 3 - Tous les tests (MODE SILENCIEUX)
+flutter test --no-pub > /dev/null 2>&1 && echo "✅ All tests passed" || echo "❌ Tests failed"
 ```
 
-**Gains approximatifs :**
-- `--no-pub` : -2-3s par run
-- `--reporter compact` : output 10x plus petit
-- Test spécifique vs all : -80% du temps
+#### Workflow si Échec au Niveau 3
+
+```bash
+# 1. D'abord, identifier quelle feature échoue
+flutter test --no-pub test/features/auth/ > /dev/null 2>&1 && echo "✅ auth" || echo "❌ auth"
+flutter test --no-pub test/features/chat/ > /dev/null 2>&1 && echo "✅ chat" || echo "❌ chat"
+flutter test --no-pub test/features/guest/ > /dev/null 2>&1 && echo "✅ guest" || echo "❌ guest"
+# ... etc
+
+# 2. Puis debug la feature qui échoue (avec output)
+flutter test --no-pub test/features/guest/
+```
+
+#### Features Testables
+
+```bash
+test/features/auth/
+test/features/chat/
+test/features/guest/
+test/features/map/
+test/features/payments/
+test/features/reviews/
+test/features/profile/
+test/features/notifications/
+test/features/video_call/
+test/features/weddings_hub_pro/
+# Voir test/features/ pour liste complète
+```
+
+#### ❌ À ÉVITER
+
+```bash
+flutter test                              # Output too large (276KB+)
+flutter test --reporter compact           # Toujours trop gros avec 3000 tests
+flutter test 2>&1 | tail -10              # Le pipe n'empêche pas la saturation
+```
+
+#### Résumé
+
+| Situation | Commande |
+|-----------|----------|
+| Test fichier | `flutter test --no-pub test/.../file_test.dart` |
+| Test feature | `flutter test --no-pub test/features/xxx/` |
+| Validation globale | `flutter test --no-pub > /dev/null 2>&1 && echo "✅" \|\| echo "❌"` |
+| Debug échec | Tester feature par feature puis fichier |
 
 ---
 
@@ -216,7 +268,7 @@ auth, chat, content, dashboard, feed, **guest**, home, map, my_wedding, notifica
 | EPIC-05 | Security cleanup | ✅ COMPLETE |
 | EPIC-06 | Prerequisites | ✅ COMPLETE (2026-01-29) |
 | EPIC-07 | Reviews (Avis clients) | ✅ COMPLETE (2026-01-29) |
-| EPIC-09 | Invitations (Guests) | ✅ COMPLETE (2026-01-30) |
+| EPIC-09 | Invitations (Guests) | ✅ COMPLETE (2026-02-02) |
 | EPIC-11 | Stripe Integration | ✅ COMPLETE (2026-01-29) |
 | EPIC-13 | Map Filters | ✅ COMPLETE (2026-01-30) |
 

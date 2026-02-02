@@ -52,7 +52,9 @@ class SupabaseMyWeddingDatasource {
             status,
             onboarding_step,
             cancelled_at,
-            created_at
+            created_at,
+            invite_code,
+            invite_code_expires_at
           ''')
           .eq('bride_profile_id', userId)
           .eq('is_deleted', false)
@@ -1406,6 +1408,162 @@ class SupabaseMyWeddingDatasource {
       SecureLogger.info('deleteWeddingGuest: Deleted guest $guestId');
     } catch (e) {
       SecureLogger.error('deleteWeddingGuest error: $e');
+      rethrow;
+    }
+  }
+
+  // ========== WEDDING GROUPS ==========
+
+  /// Get all wedding groups for a wedding
+  Future<List<WeddingGroup>> getWeddingGroups({required String weddingId}) async {
+    try {
+      final response = await _client.rpc(
+        'get_wedding_groups',
+        params: {'p_wedding_id': weddingId},
+      );
+
+      final List<dynamic> data = response as List<dynamic>;
+      return data.map((item) => WeddingGroup.fromMap(item as Map<String, dynamic>)).toList();
+    } catch (e) {
+      SecureLogger.error('getWeddingGroups error: $e');
+      rethrow;
+    }
+  }
+
+  /// Create a new wedding group
+  Future<String> createWeddingGroup({
+    required String weddingId,
+    required String name,
+    required bool isPublic,
+    List<String>? memberProfileIds,
+  }) async {
+    try {
+      final response = await _client.rpc(
+        'create_wedding_group',
+        params: {
+          'p_wedding_id': weddingId,
+          'p_name': name,
+          'p_is_public': isPublic,
+          if (memberProfileIds != null) 'p_member_profile_ids': memberProfileIds,
+        },
+      );
+
+      SecureLogger.info('createWeddingGroup: Created group $name for wedding $weddingId');
+      return response as String;
+    } catch (e) {
+      SecureLogger.error('createWeddingGroup error: $e');
+      rethrow;
+    }
+  }
+
+  /// Update a wedding group
+  Future<void> updateWeddingGroup({
+    required String roomId,
+    String? name,
+    bool? isPublic,
+  }) async {
+    try {
+      await _client.rpc(
+        'update_wedding_group',
+        params: {
+          'p_room_id': roomId,
+          if (name != null) 'p_name': name,
+          if (isPublic != null) 'p_is_public': isPublic,
+        },
+      );
+
+      SecureLogger.info('updateWeddingGroup: Updated group $roomId');
+    } catch (e) {
+      SecureLogger.error('updateWeddingGroup error: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a wedding group (soft delete)
+  Future<void> deleteWeddingGroup({required String roomId}) async {
+    try {
+      await _client.rpc(
+        'delete_wedding_group',
+        params: {'p_room_id': roomId},
+      );
+
+      SecureLogger.info('deleteWeddingGroup: Deleted group $roomId');
+    } catch (e) {
+      SecureLogger.error('deleteWeddingGroup error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get members of a wedding group
+  Future<List<GroupMember>> getWeddingGroupMembers({required String roomId}) async {
+    try {
+      final response = await _client.rpc(
+        'get_wedding_group_members',
+        params: {'p_room_id': roomId},
+      );
+
+      final List<dynamic> data = response as List<dynamic>;
+      return data.map((item) => GroupMember.fromMap(item as Map<String, dynamic>)).toList();
+    } catch (e) {
+      SecureLogger.error('getWeddingGroupMembers error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get eligible members for group (joined guests + active pros)
+  Future<List<EligibleGroupMember>> getEligibleGroupMembers({required String weddingId}) async {
+    try {
+      final response = await _client.rpc(
+        'get_eligible_group_members',
+        params: {'p_wedding_id': weddingId},
+      );
+
+      final List<dynamic> data = response as List<dynamic>;
+      return data.map((item) => EligibleGroupMember.fromMap(item as Map<String, dynamic>)).toList();
+    } catch (e) {
+      SecureLogger.error('getEligibleGroupMembers error: $e');
+      rethrow;
+    }
+  }
+
+  /// Manage wedding group members (add/remove)
+  Future<void> manageWeddingGroupMembers({
+    required String roomId,
+    List<String>? addProfileIds,
+    List<String>? removeProfileIds,
+  }) async {
+    try {
+      await _client.rpc(
+        'manage_wedding_group_members',
+        params: {
+          'p_room_id': roomId,
+          if (addProfileIds != null) 'p_add_profile_ids': addProfileIds,
+          if (removeProfileIds != null) 'p_remove_profile_ids': removeProfileIds,
+        },
+      );
+
+      SecureLogger.info('manageWeddingGroupMembers: Updated members for group $roomId');
+    } catch (e) {
+      SecureLogger.error('manageWeddingGroupMembers error: $e');
+      rethrow;
+    }
+  }
+
+  /// Send bulk invitations to all pending guests with email
+  Future<int> sendBulkInvitations({required String weddingId}) async {
+    try {
+      final response = await _client.rpc(
+        'send_bulk_invitations',
+        params: {'p_wedding_id': weddingId},
+      );
+
+      final Map<String, dynamic> result = response as Map<String, dynamic>;
+      final int count = result['queued'] as int? ?? 0;
+
+      SecureLogger.info('sendBulkInvitations: Queued $count invitations for wedding $weddingId');
+      return count;
+    } catch (e) {
+      SecureLogger.error('sendBulkInvitations error: $e');
       rethrow;
     }
   }

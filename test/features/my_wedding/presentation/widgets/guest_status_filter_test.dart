@@ -55,10 +55,10 @@ void main() {
       await tester.tap(find.byIcon(Icons.filter_list));
       await tester.pumpAndSettle();
 
-      expect(find.text('Tous'), findsOneWidget);
-      expect(find.text('En attente'), findsOneWidget);
-      expect(find.text('Invités'), findsOneWidget);
-      expect(find.text('Ont rejoint'), findsOneWidget);
+      expect(find.text('All'), findsOneWidget);
+      expect(find.text('Pending'), findsOneWidget);
+      expect(find.text('Invited'), findsOneWidget);
+      expect(find.text('Joined'), findsOneWidget);
     });
 
     testWidgets('should call onFilterChanged when option selected',
@@ -71,7 +71,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.filter_list));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Invités'));
+      await tester.tap(find.text('Invited'));
       await tester.pumpAndSettle();
 
       expect(selectedFilter, GuestStatusFilter.invited);
@@ -85,7 +85,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.filter_list));
       await tester.pumpAndSettle();
 
-      // Check icon should appear next to "Ont rejoint"
+      // Check icon should appear next to "Joined"
       expect(find.byIcon(Icons.check), findsOneWidget);
     });
   });
@@ -119,7 +119,7 @@ void main() {
       ));
 
       expect(find.byType(Chip), findsOneWidget);
-      expect(find.text('En attente'), findsOneWidget);
+      expect(find.text('Pending'), findsOneWidget);
     });
 
     testWidgets('should call onClear when delete icon tapped', (tester) async {
@@ -213,20 +213,20 @@ void main() {
   });
 
   group('GuestStatusFilterExtension', () {
-    test('all filter should have "Tous" label', () {
-      expect(GuestStatusFilter.all.label, 'Tous');
+    test('all filter should have "All" label', () {
+      expect(GuestStatusFilter.all.label, 'All');
     });
 
-    test('pending filter should have "En attente" label', () {
-      expect(GuestStatusFilter.pending.label, 'En attente');
+    test('pending filter should have "Pending" label', () {
+      expect(GuestStatusFilter.pending.label, 'Pending');
     });
 
-    test('invited filter should have "Invités" label', () {
-      expect(GuestStatusFilter.invited.label, 'Invités');
+    test('invited filter should have "Invited" label', () {
+      expect(GuestStatusFilter.invited.label, 'Invited');
     });
 
-    test('joined filter should have "Ont rejoint" label', () {
-      expect(GuestStatusFilter.joined.label, 'Ont rejoint');
+    test('joined filter should have "Joined" label', () {
+      expect(GuestStatusFilter.joined.label, 'Joined');
     });
   });
 }

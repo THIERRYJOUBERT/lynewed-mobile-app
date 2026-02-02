@@ -1,10 +1,10 @@
 /// Widget for filtering guests by status.
 ///
 /// Displays a popup menu with filter options:
-/// - All (Tous)
-/// - Pending (En attente)
-/// - Invited (Invités)
-/// - Joined (Ont rejoint)
+/// - All
+/// - Pending
+/// - Invited
+/// - Joined
 library;
 
 import 'package:flutter/material.dart';
@@ -23,10 +23,10 @@ enum GuestStatusFilter {
 /// Extension to convert filter to display label.
 extension GuestStatusFilterExtension on GuestStatusFilter {
   String get label => switch (this) {
-        GuestStatusFilter.all => 'Tous',
-        GuestStatusFilter.pending => 'En attente',
-        GuestStatusFilter.invited => 'Invités',
-        GuestStatusFilter.joined => 'Ont rejoint',
+        GuestStatusFilter.all => 'All',
+        GuestStatusFilter.pending => 'Pending',
+        GuestStatusFilter.invited => 'Invited',
+        GuestStatusFilter.joined => 'Joined',
       };
 }
 

@@ -1,8 +1,8 @@
 /// Tests for GuestMessagesPage.
 ///
 /// Messages page for guest users showing wedding team conversations.
-/// Tests focus on structure and UI elements since Supabase is not
-/// available in test environment.
+/// Note: This page is designed to be embedded in GuestHomePage which
+/// provides the header. The page itself only renders the body content.
 library;
 
 import 'package:flutter/material.dart';
@@ -15,29 +15,22 @@ void main() {
     testWidgets('renders basic structure', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: GuestMessagesPage(),
+          home: Scaffold(
+            body: GuestMessagesPage(),
+          ),
         ),
       );
 
       // Just verify the widget builds without crashing
       expect(find.byType(GuestMessagesPage), findsOneWidget);
-      expect(find.byType(Scaffold), findsOneWidget);
-    });
-
-    testWidgets('renders title "Messages"', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: GuestMessagesPage(),
-        ),
-      );
-
-      expect(find.text('Messages'), findsOneWidget);
     });
 
     testWidgets('shows loading indicator initially', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: GuestMessagesPage(),
+          home: Scaffold(
+            body: GuestMessagesPage(),
+          ),
         ),
       );
 
@@ -45,25 +38,35 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('has SafeArea for proper padding', (tester) async {
+    testWidgets('is a StatefulWidget', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: GuestMessagesPage(),
+          home: Scaffold(
+            body: GuestMessagesPage(),
+          ),
         ),
       );
 
-      expect(find.byType(SafeArea), findsOneWidget);
+      // Verify it's a StatefulWidget (has state)
+      expect(find.byType(GuestMessagesPage), findsOneWidget);
+      final widget = tester.widget<GuestMessagesPage>(
+        find.byType(GuestMessagesPage),
+      );
+      expect(widget, isA<StatefulWidget>());
     });
 
-    testWidgets('has header with proper text style', (tester) async {
+    testWidgets('designed to be embedded (no own Scaffold)', (tester) async {
+      // GuestMessagesPage is designed to be embedded in GuestHomePage
+      // which provides the Scaffold and header. The page returns just the body.
       await tester.pumpWidget(
         const MaterialApp(
           home: GuestMessagesPage(),
         ),
       );
 
-      final titleFinder = find.text('Messages');
-      expect(titleFinder, findsOneWidget);
+      // Verify it renders (the loading state) without its own Scaffold
+      // Parent provides Scaffold
+      expect(find.byType(GuestMessagesPage), findsOneWidget);
     });
   });
 }

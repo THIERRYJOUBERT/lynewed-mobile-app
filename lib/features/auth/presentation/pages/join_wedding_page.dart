@@ -7,6 +7,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '/index.dart';
 import '../../../../core/design/design.dart';
 import '../../data/repositories/invite_code_repository_impl.dart';
 import '../../domain/usecases/validate_invite_code.dart';
@@ -109,19 +110,19 @@ class _JoinWeddingPageState extends State<JoinWeddingPage> {
       case ValidInviteCode(:final weddingId, :final brideName):
         _onValidCode(weddingId, brideName);
       case InvalidInviteCode():
-        setState(() => _errorText = 'Code invalide ou expiré');
+        setState(() => _errorText = 'Invalid or expired code');
       case RateLimitedInviteCode():
         setState(() => _errorText =
-            'Trop de tentatives. Réessayez dans quelques minutes.');
+            'Too many attempts. Please try again in a few minutes.');
       case InviteCodeError(:final message):
         setState(() => _errorText = 'Erreur: $message');
     }
   }
 
   void _onValidCode(String weddingId, String brideName) {
-    // Navigate to guest account creation page
+    // Navigate to guest account creation page (new FlutterFlow-style page)
     context.push(
-      '/guestSignup?inviteCode=${_codeController.text}&brideName=${Uri.encodeComponent(brideName)}',
+      '/guestSignUp?inviteCode=${_codeController.text}&brideName=${Uri.encodeComponent(brideName)}',
     );
   }
 
@@ -160,7 +161,7 @@ class _JoinWeddingPageState extends State<JoinWeddingPage> {
 
               // Title
               Text(
-                'Rejoindre un mariage',
+                'Join a Wedding',
                 style: LynewedTextStyles.headlineLarge.copyWith(
                   color: LynewedColors.textPrimary,
                 ),
@@ -171,7 +172,7 @@ class _JoinWeddingPageState extends State<JoinWeddingPage> {
 
               // Subtitle
               Text(
-                'Entrez le code reçu par email ou scannez le QR code de votre invitation',
+                'Enter the code from your email or scan the QR code on your invitation',
                 style: LynewedTextStyles.bodyMedium.copyWith(
                   color: LynewedColors.textSecondary,
                 ),
@@ -191,7 +192,7 @@ class _JoinWeddingPageState extends State<JoinWeddingPage> {
 
               // Continue button
               LynewedButton(
-                text: _isLoading ? 'Vérification...' : 'Continuer',
+                text: _isLoading ? 'Verifying...' : 'Continue',
                 onPressed:
                     _isCodeComplete && !_isLoading ? _validateCode : null,
                 width: double.infinity,
@@ -209,7 +210,7 @@ class _JoinWeddingPageState extends State<JoinWeddingPage> {
                     padding:
                         EdgeInsets.symmetric(horizontal: LynewedSpacing.md),
                     child: Text(
-                      'OU',
+                      'OR',
                       style: LynewedTextStyles.bodySmall.copyWith(
                         color: LynewedColors.textSecondary,
                       ),
@@ -225,7 +226,7 @@ class _JoinWeddingPageState extends State<JoinWeddingPage> {
 
               // QR Scanner button
               LynewedButton(
-                text: 'Scanner QR Code',
+                text: 'Scan QR Code',
                 type: LynewedButtonType.secondary,
                 icon: Icons.qr_code_scanner,
                 onPressed: _isLoading ? null : _openQrScanner,
@@ -236,11 +237,26 @@ class _JoinWeddingPageState extends State<JoinWeddingPage> {
 
               // Help text
               Text(
-                "Vous n'avez pas de code ? Demandez à la mariée de vous inviter.",
+                "Don't have a code? Ask the bride to invite you.",
                 style: LynewedTextStyles.bodySmall.copyWith(
                   color: LynewedColors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
+              ),
+
+              SizedBox(height: LynewedSpacing.md),
+
+              // Already have account link
+              InkWell(
+                onTap: () => context.pushNamed(GuestSignInPage.routeName),
+                child: Text(
+                  'Already have an account? Log in',
+                  style: LynewedTextStyles.bodySmall.copyWith(
+                    color: LynewedColors.textSecondary,
+                    decoration: TextDecoration.underline,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
 
               SizedBox(height: LynewedSpacing.xxxl),

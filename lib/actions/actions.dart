@@ -109,6 +109,9 @@ chat_enums.UserRole? _convertUserRole(UserRole? role) {
       return chat_enums.UserRole.bride;
     case UserRole.professional:
       return chat_enums.UserRole.professional;
+    case UserRole.guest:
+      // Guests don't participate in Pro-Bride chat, return null
+      return null;
   }
 }
 

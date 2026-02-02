@@ -33,7 +33,7 @@ class GuestChatPage extends StatelessWidget {
     return ChatDetailsPage(
       roomId: chatRoomId!,
       isWeddingTeamChat: true,
-      publicRoomTitle: 'Groupe du mariage',
+      publicRoomTitle: 'Wedding group',
       hideVideoCall: true,
     );
   }
@@ -52,14 +52,14 @@ class GuestChatPage extends StatelessWidget {
             ),
             SizedBox(height: LynewedSpacing.lg),
             Text(
-              'Groupe du mariage',
+              'Wedding group',
               style: LynewedTextStyles.headlineSmall.copyWith(
                 color: LynewedColors.textPrimary,
               ),
             ),
             SizedBox(height: LynewedSpacing.sm),
             Text(
-              'Le chat sera disponible une fois que la mariée aura créé le groupe.',
+              'Chat will be available once the bride creates the group.',
               style: LynewedTextStyles.bodyMedium.copyWith(
                 color: LynewedColors.textSecondary,
               ),

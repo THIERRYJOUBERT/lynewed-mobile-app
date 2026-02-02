@@ -117,17 +117,47 @@ enum MessageType {
 enum RoomType {
   private,
   public,
-  weddingTeam;
+  weddingTeam,
+  weddingGroupPublic,
+  weddingGroupPrivate;
 
   static RoomType? fromString(String? value) {
     if (value == null) return null;
     // Handle snake_case from database
-    if (value == 'wedding_team') return RoomType.weddingTeam;
-    return RoomType.values.cast<RoomType?>().firstWhere(
-      (e) => e?.name == value,
-      orElse: () => null,
-    );
+    switch (value) {
+      case 'wedding_team':
+        return RoomType.weddingTeam;
+      case 'wedding_group_public':
+        return RoomType.weddingGroupPublic;
+      case 'wedding_group_private':
+        return RoomType.weddingGroupPrivate;
+      default:
+        return RoomType.values.cast<RoomType?>().firstWhere(
+          (e) => e?.name == value,
+          orElse: () => null,
+        );
+    }
   }
+
+  /// Convert to snake_case for database
+  String toBackendValue() {
+    switch (this) {
+      case RoomType.weddingTeam:
+        return 'wedding_team';
+      case RoomType.weddingGroupPublic:
+        return 'wedding_group_public';
+      case RoomType.weddingGroupPrivate:
+        return 'wedding_group_private';
+      default:
+        return name;
+    }
+  }
+
+  /// Whether this is a wedding-related group (team or custom)
+  bool get isWeddingGroup =>
+      this == RoomType.weddingTeam ||
+      this == RoomType.weddingGroupPublic ||
+      this == RoomType.weddingGroupPrivate;
 }
 
 /// User role (shared with other modules)

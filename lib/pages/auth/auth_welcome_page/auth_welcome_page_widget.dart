@@ -145,6 +145,33 @@ class _AuthWelcomePageWidgetState extends State<AuthWelcomePageWidget> {
                             ),
                           ),
                         ),
+                        // Guest join button - outlined style (EPIC-09: Invitations)
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          height: LynewedSpacing.buttonHeight,
+                          child: OutlinedButton.icon(
+                            onPressed: () => context.pushNamed(JoinWeddingPage.routeName),
+                            icon: const Icon(
+                              Icons.person_add_outlined,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                            label: Text(
+                              "I'm a Guest",
+                              style: LynewedTextStyles.bodyMedium.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Colors.white, width: 1),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(0),
+                              ),
+                            ),
+                          ),
+                        ),
                         // Secondary CTA - I'm a Professional (text link)
                         Padding(
                           padding: const EdgeInsets.only(top: 20.0),

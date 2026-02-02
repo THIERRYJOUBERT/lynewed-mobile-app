@@ -27,7 +27,7 @@ class InviteCodeRepositoryImpl implements InviteCodeRepository {
     try {
       final response = await _client.rpc(
         'validate_invite_code',
-        params: {'p_code': code.toUpperCase()},
+        params: {'p_invite_code': code.toUpperCase()},
       );
 
       // Response is a map with success, wedding_id, bride_name, error

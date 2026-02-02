@@ -61,7 +61,7 @@ class GuestProfilePage extends StatelessWidget {
 
           // Name
           Text(
-            guestName ?? 'Invité',
+            guestName ?? 'Guest',
             style: LynewedTextStyles.headlineMedium.copyWith(
               color: LynewedColors.textPrimary,
             ),
@@ -90,7 +90,7 @@ class GuestProfilePage extends StatelessWidget {
               borderRadius: BorderRadius.circular(LynewedSpacing.md),
             ),
             child: Text(
-              'Invité',
+              'Guest',
               style: LynewedTextStyles.labelMedium.copyWith(
                 color: LynewedColors.textSecondary,
               ),
@@ -116,7 +116,7 @@ class GuestProfilePage extends StatelessWidget {
                 ),
                 SizedBox(height: LynewedSpacing.md),
                 Text(
-                  'Vous organisez un mariage ?',
+                  'Are you planning a wedding?',
                   style: LynewedTextStyles.titleMedium.copyWith(
                     color: LynewedColors.textPrimary,
                   ),
@@ -124,8 +124,8 @@ class GuestProfilePage extends StatelessWidget {
                 ),
                 SizedBox(height: LynewedSpacing.sm),
                 Text(
-                  'Passez en compte Mariée pour accéder à toutes les fonctionnalités : '
-                  'recherche de prestataires, organisation, planning...',
+                  'Upgrade to a Bride account to access all features: '
+                  'find vendors, planning, organization...',
                   style: LynewedTextStyles.bodySmall.copyWith(
                     color: LynewedColors.textSecondary,
                   ),
@@ -136,12 +136,12 @@ class GuestProfilePage extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: onUpgradeToBride,
-                    child: const Text('Passer en compte Mariée'),
+                    child: const Text('Upgrade to Bride account'),
                   ),
                 ),
                 SizedBox(height: LynewedSpacing.sm),
                 Text(
-                  'Cette action est irréversible',
+                  'This action is irreversible',
                   style: LynewedTextStyles.labelSmall.copyWith(
                     color: Colors.orange.shade700,
                     fontStyle: FontStyle.italic,
@@ -161,7 +161,7 @@ class GuestProfilePage extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 foregroundColor: LynewedColors.error,
               ),
-              child: const Text('Se déconnecter'),
+              child: const Text('Log out'),
             ),
           ),
 

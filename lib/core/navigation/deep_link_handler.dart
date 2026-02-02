@@ -2,7 +2,7 @@
 ///
 /// Processes incoming deep links from:
 /// - Custom scheme: lynewed://join/{code}
-/// - HTTPS links: https://lynewed.app/join/{code}
+/// - HTTPS links: https://lynewed.com/join/{code}
 library;
 
 import 'dart:async';
@@ -13,8 +13,8 @@ import 'package:go_router/go_router.dart';
 /// Handles deep link routing for the application.
 ///
 /// Supports wedding invitation links in the format:
-/// - `https://lynewed.app/join/{code}`
-/// - `https://www.lynewed.app/join/{code}`
+/// - `https://lynewed.com/join/{code}`
+/// - `https://www.lynewed.com/join/{code}`
 /// - `lynewed://join/{code}`
 class DeepLinkHandler {
   /// Creates a deep link handler.
@@ -79,8 +79,8 @@ class DeepLinkHandler {
   /// Extracts the invitation code from a deep link URI.
   ///
   /// Supported formats:
-  /// - `https://lynewed.app/join/ABCD1234`
-  /// - `https://www.lynewed.app/join/ABCD1234`
+  /// - `https://lynewed.com/join/ABCD1234`
+  /// - `https://www.lynewed.com/join/ABCD1234`
   /// - `lynewed://join/ABCD1234`
   /// - `lynewed://join?code=ABCD1234`
   ///

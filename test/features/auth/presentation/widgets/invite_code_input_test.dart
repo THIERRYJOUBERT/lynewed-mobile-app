@@ -66,7 +66,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
 
         // Assert
-        expect(find.text('8 caractères requis (0/8)'), findsOneWidget);
+        expect(find.text('8 characters required (0/8)'), findsOneWidget);
       });
     });
 
@@ -138,7 +138,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
 
         // Assert
-        expect(find.text('8 caractères requis (3/8)'), findsOneWidget);
+        expect(find.text('8 characters required (3/8)'), findsOneWidget);
       });
 
       testWidgets('should show success when complete', (tester) async {
@@ -147,7 +147,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
 
         // Assert
-        expect(find.text('Code complet ✓'), findsOneWidget);
+        expect(find.text('Code complete ✓'), findsOneWidget);
       });
     });
 
@@ -155,21 +155,21 @@ void main() {
       testWidgets('should display error text when provided', (tester) async {
         // Arrange & Act
         await tester
-            .pumpWidget(buildTestWidget(errorText: 'Code invalide ou expiré'));
+            .pumpWidget(buildTestWidget(errorText: 'Invalid or expired code'));
 
         // Assert
-        expect(find.text('Code invalide ou expiré'), findsOneWidget);
+        expect(find.text('Invalid or expired code'), findsOneWidget);
       });
 
       testWidgets('error text should replace helper text', (tester) async {
         // Arrange & Act
         controller.text = 'ABC';
         await tester
-            .pumpWidget(buildTestWidget(errorText: 'Code invalide ou expiré'));
+            .pumpWidget(buildTestWidget(errorText: 'Invalid or expired code'));
 
         // Assert - error shown, not helper
-        expect(find.text('Code invalide ou expiré'), findsOneWidget);
-        expect(find.textContaining('8 caractères requis'), findsNothing);
+        expect(find.text('Invalid or expired code'), findsOneWidget);
+        expect(find.textContaining('8 characters required'), findsNothing);
       });
     });
 

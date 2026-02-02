@@ -1,7 +1,15 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '/core/design/design.dart';
 import '/components/nav/nav_bar_brides/nav_bar_brides_widget.dart';
@@ -25,6 +33,7 @@ import 'agenda_page.dart';
 import 'budget_page.dart';
 import 'inspirations_page.dart';
 import 'guests_page.dart';
+import 'wedding_groups_page.dart';
 
 /// My Wedding Page - Main page for brides to manage their wedding
 ///
@@ -293,6 +302,9 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
                 // Wedding Team Section
                 _buildWeddingTeamSection(),
                 const SizedBox(height: 30.0),
+                // Groups Section
+                _buildGroupsSection(),
+                const SizedBox(height: 30.0),
                 // Agenda Section
                 _buildAgendaSection(),
                 const SizedBox(height: 30.0),
@@ -301,6 +313,9 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
                 const SizedBox(height: 30.0),
                 // Inspirations Section
                 _buildInspirationsSection(),
+                const SizedBox(height: 30.0),
+                // Invite Code Section
+                _buildInviteCodeSection(),
                 const SizedBox(height: 30.0),
                 // Guests Section
                 _buildGuestsSection(),
@@ -478,6 +493,156 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
         padding: const EdgeInsets.only(bottom: 10.0),
         child: _buildProTile(member),
       )).toList(),
+    );
+  }
+
+  /// Groups Section - Chat groups for wedding communication
+  Widget _buildGroupsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('GROUPS', style: LynewedTextStyles.sectionTitle),
+            GestureDetector(
+              onTap: _openGroupsPage,
+              child: Text(
+                'View all',
+                style: LynewedTextStyles.labelLarge.copyWith(
+                  color: LynewedColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4.0),
+        Text(
+          'Chat with your guests and team',
+          style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
+        ),
+        const SizedBox(height: 10.0),
+        // Wedding Team Chat Card
+        if (_teamChatInfo != null)
+          _buildGroupPreviewTile(
+            icon: Icons.groups,
+            name: 'Wedding Team',
+            memberCount: _teamChatInfo!.participantsCount,
+            unreadCount: _teamChatInfo!.unreadCount,
+            onTap: _openTeamChat,
+          ),
+        const SizedBox(height: 8.0),
+        // Manage groups button
+        GestureDetector(
+          onTap: _openGroupsPage,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            decoration: BoxDecoration(
+              border: Border.all(color: LynewedColors.gray200),
+              borderRadius: BorderRadius.circular(4.0),
+            ),
+            child: const Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.add, size: 18, color: LynewedColors.textSecondary),
+                  SizedBox(width: 8),
+                  Text(
+                    'Manage groups',
+                    style: TextStyle(
+                      color: LynewedColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Group preview tile
+  Widget _buildGroupPreviewTile({
+    required IconData icon,
+    required String name,
+    required int memberCount,
+    int unreadCount = 0,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12.0),
+        decoration: BoxDecoration(
+          color: LynewedColors.surface,
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: LynewedColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: LynewedColors.primary, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: LynewedTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '$memberCount member${memberCount > 1 ? 's' : ''}',
+                    style: LynewedTextStyles.bodySmall.copyWith(
+                      color: LynewedColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (unreadCount > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: LynewedColors.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  unreadCount > 99 ? '99+' : '$unreadCount',
+                  style: LynewedTextStyles.labelSmall.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            const SizedBox(width: 8),
+            const Icon(Icons.chevron_right, color: LynewedColors.textSecondary),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openGroupsPage() {
+    if (_wedding == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WeddingGroupsPage(weddingId: _wedding!.id),
+      ),
     );
   }
 
@@ -1308,6 +1473,257 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
       case GuestRole.guest:
         return 'Guest';
     }
+  }
+
+  // QR Code global key for screenshot
+  final GlobalKey _qrKey = GlobalKey();
+
+  /// Invite Code Section - Display invite code and QR code for guests
+  Widget _buildInviteCodeSection() {
+    final inviteCode = _wedding?.inviteCode;
+    final expiresAt = _wedding?.inviteCodeExpiresAt;
+    final hasCode = inviteCode != null && inviteCode.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('INVITE CODE', style: LynewedTextStyles.sectionTitle),
+        const SizedBox(height: 4.0),
+        Text(
+          'Share this code with your guests',
+          style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
+        ),
+        const SizedBox(height: 10.0),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20.0),
+          decoration: BoxDecoration(
+            color: LynewedColors.surface,
+            borderRadius: BorderRadius.circular(4.0),
+          ),
+          child: hasCode
+              ? Column(
+                  children: [
+                    // QR Code
+                    RepaintBoundary(
+                      key: _qrKey,
+                      child: Container(
+                        padding: const EdgeInsets.all(16.0),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: QrImageView(
+                          data: 'https://lynewed.com/join/$inviteCode',
+                          version: QrVersions.auto,
+                          size: 160.0,
+                          backgroundColor: Colors.white,
+                          eyeStyle: const QrEyeStyle(
+                            eyeShape: QrEyeShape.square,
+                            color: LynewedColors.textPrimary,
+                          ),
+                          dataModuleStyle: const QrDataModuleStyle(
+                            dataModuleShape: QrDataModuleShape.square,
+                            color: LynewedColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16.0),
+                    // Invite Code display
+                    GestureDetector(
+                      onTap: () => _copyInviteCode(inviteCode),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: LynewedColors.gray200),
+                          borderRadius: BorderRadius.circular(4.0),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              inviteCode,
+                              style: LynewedTextStyles.headlineSmall.copyWith(
+                                letterSpacing: 4.0,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(width: 12.0),
+                            const Icon(
+                              Icons.copy,
+                              size: 18.0,
+                              color: LynewedColors.textSecondary,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8.0),
+                    Text(
+                      'Tap to copy',
+                      style: LynewedTextStyles.labelSmall.copyWith(
+                        color: LynewedColors.textSecondary,
+                      ),
+                    ),
+                    // Expiration info
+                    if (expiresAt != null) ...[
+                      const SizedBox(height: 12.0),
+                      Text(
+                        'Valid until ${DateFormat('MMMM d, yyyy').format(expiresAt)}',
+                        style: LynewedTextStyles.labelSmall.copyWith(
+                          color: LynewedColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 16.0),
+                    // Action buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _downloadQRCode(inviteCode),
+                            icon: const Icon(Icons.download, size: 18),
+                            label: const Text('Save QR'),
+                            style: LynewedComponentStyles.secondaryButton(
+                              backgroundColor: Colors.transparent,
+                              foregroundColor: LynewedColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12.0),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _shareInviteCode(inviteCode),
+                            icon: const Icon(Icons.share, size: 18),
+                            label: const Text('Share'),
+                            style: LynewedComponentStyles.primaryButton(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                )
+              : Column(
+                  children: [
+                    const Icon(Icons.qr_code, size: 48.0, color: LynewedColors.gray300),
+                    const SizedBox(height: 12.0),
+                    Text(
+                      'No invite code generated yet',
+                      style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8.0),
+                    Text(
+                      'The invite code will be generated automatically',
+                      style: LynewedTextStyles.labelSmall.copyWith(color: LynewedColors.textSecondary),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+        ),
+      ],
+    );
+  }
+
+  /// Copy invite code to clipboard
+  void _copyInviteCode(String code) {
+    Clipboard.setData(ClipboardData(text: code));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Code copied to clipboard',
+          style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
+        ),
+        backgroundColor: LynewedColors.textPrimary,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  /// Share invite code
+  Future<void> _shareInviteCode(String code) async {
+    try {
+      final weddingName = _wedding?.name ?? 'My Wedding';
+      final shareText = '''
+You're invited to $weddingName!
+
+Download the Lynewed app and use this code to join:
+$code
+
+Or scan the QR code in the app.
+''';
+
+      // Get the render box for iOS 26+ sharePositionOrigin requirement
+      final box = context.findRenderObject() as RenderBox?;
+      final sharePositionOrigin = box != null
+          ? box.localToGlobal(Offset.zero) & box.size
+          : null;
+
+      await Share.share(
+        shareText,
+        subject: 'Wedding Invitation - $weddingName',
+        sharePositionOrigin: sharePositionOrigin,
+      );
+    } catch (e) {
+      debugPrint('Share error: $e');
+      _showErrorSnackbar('Could not share invite code');
+    }
+  }
+
+  /// Download QR code as image
+  Future<void> _downloadQRCode(String code) async {
+    // Get the render box BEFORE async operations for iOS 26+ sharePositionOrigin requirement
+    final box = context.findRenderObject() as RenderBox?;
+    final sharePositionOrigin = box != null
+        ? box.localToGlobal(Offset.zero) & box.size
+        : null;
+
+    try {
+      final boundary = _qrKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) {
+        _showErrorSnackbar('Could not capture QR code');
+        return;
+      }
+
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) {
+        _showErrorSnackbar('Could not generate image');
+        return;
+      }
+
+      final bytes = byteData.buffer.asUint8List();
+      final directory = await getTemporaryDirectory();
+      final weddingName = _wedding?.name?.replaceAll(RegExp(r'[^\w\s]'), '') ?? 'wedding';
+      final fileName = 'lynewed_qr_${weddingName.toLowerCase().replaceAll(' ', '_')}.png';
+      final file = File('${directory.path}/$fileName');
+      await file.writeAsBytes(bytes);
+
+      // Share the file so user can save it
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        subject: 'Wedding QR Code - ${_wedding?.name ?? 'My Wedding'}',
+        sharePositionOrigin: sharePositionOrigin,
+      );
+    } catch (e) {
+      debugPrint('QR save error: $e');
+      _showErrorSnackbar('Could not save QR code');
+    }
+  }
+
+  void _showErrorSnackbar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
+        ),
+        backgroundColor: LynewedColors.error,
+      ),
+    );
   }
 
   /// Note for Pros Section

@@ -99,19 +99,27 @@ class _StartupGatePageState extends State<StartupGatePage> {
   }
 
   void _navigateToOnboarding(UserRole role) {
-    if (role == UserRole.bride) {
-      context.goNamed('OnboardingBridesWizard');
-    } else {
-      // Professional onboarding goes to dashboard as they onboard there
-      context.goNamed('DashboardPro');
+    switch (role) {
+      case UserRole.bride:
+        context.goNamed('OnboardingBridesWizard');
+      case UserRole.professional:
+      case UserRole.admin:
+        context.goNamed('DashboardPro');
+      case UserRole.guest:
+        // Guests have no onboarding, go straight to home
+        context.goNamed('GuestHomePage');
     }
   }
 
   void _navigateToHome(UserRole role) {
-    if (role == UserRole.bride) {
-      context.goNamed('HomeBrides');
-    } else {
-      context.goNamed('DashboardPro');
+    switch (role) {
+      case UserRole.bride:
+        context.goNamed('HomeBrides');
+      case UserRole.professional:
+      case UserRole.admin:
+        context.goNamed('DashboardPro');
+      case UserRole.guest:
+        context.goNamed('GuestHomePage');
     }
   }
 }

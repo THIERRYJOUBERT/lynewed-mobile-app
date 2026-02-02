@@ -49,7 +49,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget(guests));
 
         expect(find.text('3'), findsOneWidget);
-        expect(find.text('invités'), findsOneWidget);
+        expect(find.text('guests'), findsOneWidget);
       });
 
       testWidgets('should display correct invited count', (tester) async {
@@ -79,7 +79,7 @@ void main() {
         expect(find.text('4'), findsOneWidget); // total
         expect(find.text('1'), findsOneWidget); // invited
         expect(find.text('2'), findsOneWidget); // joined
-        expect(find.textContaining('rejoint'), findsOneWidget);
+        expect(find.textContaining('joined'), findsOneWidget);
       });
 
       testWidgets('should display mixed statuses correctly', (tester) async {

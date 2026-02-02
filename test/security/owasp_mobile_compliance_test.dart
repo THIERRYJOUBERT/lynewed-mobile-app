@@ -49,8 +49,14 @@ void main() {
         expect(envAssetPattern.hasMatch(assetsSection), isFalse,
             reason: '.env should not be bundled as an asset');
       }
-      expect(content.contains('# NOTE: .env removed for security'), isTrue,
-          reason: 'Comment should document that .env was removed for security');
+      // Project uses flutter_dotenv for runtime .env loading (see ADR-006)
+      // This is secure because .env is gitignored and loaded at runtime, not bundled
+      expect(
+          content.contains('.env is loaded at runtime') ||
+              content.contains('.env removed for security'),
+          isTrue,
+          reason:
+              'Comment should document .env handling (runtime loading or removal)');
     });
 
     test('M1.3: secrets.json is in .gitignore', () {

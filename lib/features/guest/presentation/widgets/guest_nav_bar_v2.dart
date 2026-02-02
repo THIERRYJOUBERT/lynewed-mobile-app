@@ -1,33 +1,23 @@
-/// Custom navigation bar for guest users.
+/// Navigation bar for guest users - exact same UI as NavBarBridesWidget.
 ///
-/// 84px height navbar with 3 tabs: Album, Chat (with badge), Profile.
-/// Pattern identical to NavBarBridesWidget but with 3 tabs and callback.
+/// 3 tabs: Album, Messages, Profile.
 library;
 
+import '/flutter_flow/flutter_flow_theme.dart';
 import 'package:flutter/material.dart';
-
-import '../../../../core/design/design.dart';
 
 /// Bottom navigation bar for guest users.
 ///
-/// Custom Stack-based implementation (not BottomNavigationBar) for
-/// precise control over styling. Matches Bride navbar pattern.
-///
-/// Features:
-/// - 84px fixed height with Stack layout
-/// - 3 tabs: Album, Chat, Profile
-/// - Unread badge on Chat tab
-/// - InkWell with transparent splash
-/// - Top divider (1px)
+/// Exact copy of NavBarBridesWidget structure with 3 tabs.
+/// Uses callback pattern instead of direct navigation.
 class GuestNavBarV2 extends StatelessWidget {
-  /// Currently selected tab index (0=Album, 1=Chat, 2=Profile).
+  /// Currently selected tab index (0=Album, 1=Messages, 2=Profile).
   final int currentIndex;
 
   /// Callback when a tab is tapped.
   final ValueChanged<int> onTap;
 
-  /// Number of unread messages to show as badge on Chat tab.
-  /// Shows nothing if 0, shows "99+" if > 99.
+  /// Number of unread messages (not used visually, kept for API compat).
   final int unreadCount;
 
   /// Creates a guest navigation bar.
@@ -43,177 +33,165 @@ class GuestNavBarV2 extends StatelessWidget {
     return SizedBox(
       height: 84.0,
       child: Stack(
-        alignment: AlignmentDirectional.bottomCenter,
+        alignment: const AlignmentDirectional(0.0, 1.0),
         children: [
-          // Main content
           Align(
-            alignment: AlignmentDirectional.bottomCenter,
+            alignment: const AlignmentDirectional(0.0, 1.0),
             child: Container(
               width: double.infinity,
               height: 84.0,
               decoration: BoxDecoration(
-                color: LynewedColors.background,
+                color: FlutterFlowTheme.of(context).primaryBackground,
                 borderRadius: BorderRadius.circular(0.0),
               ),
               child: Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                  24.0,
-                  12.0,
-                  24.0,
-                  0.0,
-                ),
+                padding:
+                    const EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 0.0),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Album tab
-                    _buildTab(
-                      index: 0,
-                      icon: Icons.photo_library_outlined,
-                      label: 'Album',
+                    Expanded(
+                      child: InkWell(
+                        splashColor: Colors.transparent,
+                        focusColor: Colors.transparent,
+                        hoverColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        onTap: () => onTap(0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.photo_library_outlined,
+                              color: currentIndex == 0
+                                  ? FlutterFlowTheme.of(context).primaryText
+                                  : FlutterFlowTheme.of(context).alternate,
+                              size: 23.0,
+                            ),
+                            Padding(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
+                                  0.0, 5.0, 0.0, 0.0),
+                              child: Text(
+                                'Album',
+                                style: FlutterFlowTheme.of(context)
+                                    .bodyLarge
+                                    .override(
+                                      fontFamily: 'Haas Grot Text Trial',
+                                      color: currentIndex == 0
+                                          ? FlutterFlowTheme.of(context)
+                                              .primaryText
+                                          : FlutterFlowTheme.of(context)
+                                              .alternate,
+                                      fontSize: 14.0,
+                                      letterSpacing: 0.0,
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    // Chat tab (with badge)
-                    _buildChatTab(),
+                    // Messages tab
+                    Expanded(
+                      child: InkWell(
+                        splashColor: Colors.transparent,
+                        focusColor: Colors.transparent,
+                        hoverColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        onTap: () => onTap(1),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.chat_bubble_outline_sharp,
+                              color: currentIndex == 1
+                                  ? FlutterFlowTheme.of(context).primaryText
+                                  : FlutterFlowTheme.of(context).alternate,
+                              size: 23.0,
+                            ),
+                            Padding(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
+                                  0.0, 5.0, 0.0, 0.0),
+                              child: Text(
+                                'Chat',
+                                style: FlutterFlowTheme.of(context)
+                                    .bodyLarge
+                                    .override(
+                                      fontFamily: 'Haas Grot Text Trial',
+                                      color: currentIndex == 1
+                                          ? FlutterFlowTheme.of(context)
+                                              .primaryText
+                                          : FlutterFlowTheme.of(context)
+                                              .alternate,
+                                      fontSize: 14.0,
+                                      letterSpacing: 0.0,
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     // Profile tab
-                    _buildTab(
-                      index: 2,
-                      icon: Icons.person_outline,
-                      label: 'Profile',
+                    Expanded(
+                      child: InkWell(
+                        splashColor: Colors.transparent,
+                        focusColor: Colors.transparent,
+                        hoverColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        onTap: () => onTap(2),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.person_outline,
+                              color: currentIndex == 2
+                                  ? FlutterFlowTheme.of(context).primaryText
+                                  : FlutterFlowTheme.of(context).alternate,
+                              size: 23.0,
+                            ),
+                            Padding(
+                              padding: const EdgeInsetsDirectional.fromSTEB(
+                                  0.0, 5.0, 0.0, 0.0),
+                              child: Text(
+                                'Profile',
+                                style: FlutterFlowTheme.of(context)
+                                    .bodyLarge
+                                    .override(
+                                      fontFamily: 'Haas Grot Text Trial',
+                                      color: currentIndex == 2
+                                          ? FlutterFlowTheme.of(context)
+                                              .primaryText
+                                          : FlutterFlowTheme.of(context)
+                                              .alternate,
+                                      fontSize: 14.0,
+                                      letterSpacing: 0.0,
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
           ),
-          // Top divider
           Align(
-            alignment: AlignmentDirectional.topCenter,
+            alignment: const AlignmentDirectional(0.0, -1.0),
             child: Container(
               width: double.infinity,
               height: 1.0,
               decoration: BoxDecoration(
-                color: LynewedColors.gray200,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTab({
-    required int index,
-    required IconData icon,
-    required String label,
-  }) {
-    final isActive = currentIndex == index;
-    final color =
-        isActive ? LynewedColors.textPrimary : LynewedColors.textSecondary;
-
-    return InkWell(
-      splashColor: Colors.transparent,
-      focusColor: Colors.transparent,
-      hoverColor: Colors.transparent,
-      highlightColor: Colors.transparent,
-      onTap: () => onTap(index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            color: color,
-            size: 23.0,
-          ),
-          Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
-            child: Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'Haas Grot Text Trial',
-                color: color,
-                fontSize: 14.0,
-                letterSpacing: 0.0,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildChatTab() {
-    final isActive = currentIndex == 1;
-    final color =
-        isActive ? LynewedColors.textPrimary : LynewedColors.textSecondary;
-
-    return InkWell(
-      splashColor: Colors.transparent,
-      focusColor: Colors.transparent,
-      hoverColor: Colors.transparent,
-      highlightColor: Colors.transparent,
-      onTap: () => onTap(1),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Icon with optional badge
-          SizedBox(
-            width: 32,
-            height: 24,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Positioned(
-                  left: 4.5,
-                  child: Icon(
-                    Icons.chat_bubble_outline,
-                    color: color,
-                    size: 23.0,
-                  ),
-                ),
-                if (unreadCount > 0)
-                  Positioned(
-                    top: -4,
-                    right: -4,
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      constraints: const BoxConstraints(
-                        maxWidth: 16,
-                        maxHeight: 16,
-                      ),
-                      decoration: BoxDecoration(
-                        color: LynewedColors.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          unreadCount > 99 ? '99+' : '$unreadCount',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 9.0,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
-            child: Text(
-              'Chat',
-              style: TextStyle(
-                fontFamily: 'Haas Grot Text Trial',
-                color: color,
-                fontSize: 14.0,
-                letterSpacing: 0.0,
-                fontWeight: FontWeight.w400,
+                color: FlutterFlowTheme.of(context).secondaryBackground,
               ),
             ),
           ),

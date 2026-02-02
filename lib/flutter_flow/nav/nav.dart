@@ -10,9 +10,6 @@ import '/auth/base_auth_user_provider.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
 import '/index.dart';
-import '/features/auth/presentation/pages/guest_signup_page.dart';
-import '/features/auth/presentation/pages/join_wedding_page.dart';
-import '/features/guest/presentation/pages/guest_home_page.dart';
 import '/features/chat/presentation/pages/chat_details_page.dart';
 import '/features/notifications/presentation/bloc/notifications_cubit.dart';
 import '/features/wishlist/presentation/pages/wishlist_pro_page.dart';
@@ -129,23 +126,38 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             initialCode: params.getParam('code', ParamType.String),
           ),
         ),
-        // Guest signup page (EPIC-09: create guest account after code validation)
+        // Guest sign-in page (EPIC-09: login for existing guests)
         FFRoute(
-          name: GuestSignupPage.routeName,
-          path: GuestSignupPage.routePath,
-          builder: (context, params) => GuestSignupPage(
+          name: GuestSignInPage.routeName,
+          path: GuestSignInPage.routePath,
+          builder: (context, params) => const GuestSignInPage(),
+        ),
+        // Guest sign-up page (EPIC-09: create guest account after code validation)
+        FFRoute(
+          name: GuestSignUpPage.routeName,
+          path: GuestSignUpPage.routePath,
+          builder: (context, params) => GuestSignUpPage(
             inviteCode: params.getParam('inviteCode', ParamType.String) ?? '',
             brideName: params.getParam('brideName', ParamType.String) ?? '',
             prefilledEmail: params.getParam('email', ParamType.String),
           ),
         ),
+        // Guest forgot password page (EPIC-09: password reset for guests)
+        FFRoute(
+          name: GuestForgotPasswordPage.routeName,
+          path: GuestForgotPasswordPage.routePath,
+          builder: (context, params) => const GuestForgotPasswordPage(),
+        ),
         // Guest home page (EPIC-09: main interface for guests with 3 tabs)
         FFRoute(
           name: GuestHomePage.routeName,
           path: GuestHomePage.routePath,
-          builder: (context, params) => GuestHomePage(
-            brideName: params.getParam('brideName', ParamType.String),
-            chatRoomId: params.getParam('chatRoomId', ParamType.String),
+          builder: (context, params) => ChangeNotifierProvider(
+            create: (_) => NotificationsNotifier()..loadNotifications(),
+            child: GuestHomePage(
+              brideName: params.getParam('brideName', ParamType.String),
+              chatRoomId: params.getParam('chatRoomId', ParamType.String),
+            ),
           ),
         ),
         FFRoute(

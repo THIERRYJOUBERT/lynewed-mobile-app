@@ -42,6 +42,8 @@ class WeddingOverview {
     this.createdAt,
     this.teamChatRoomId,
     this.participantsCount = 0,
+    this.inviteCode,
+    this.inviteCodeExpiresAt,
   });
 
   /// UUID du mariage
@@ -118,6 +120,12 @@ class WeddingOverview {
 
   /// Nombre de participants (pros) dans la wedding team
   final int participantsCount;
+
+  /// Invitation code for guests (8 characters)
+  final String? inviteCode;
+
+  /// Invitation code expiration date
+  final DateTime? inviteCodeExpiresAt;
 
   /// Vérifie si l'onboarding est terminé
   bool get isOnboardingComplete => onboardingStep == null;
@@ -201,6 +209,10 @@ class WeddingOverview {
           : null,
       teamChatRoomId: json['team_chat_room_id'] as String?,
       participantsCount: json['participants_count'] as int? ?? 0,
+      inviteCode: json['invite_code'] as String?,
+      inviteCodeExpiresAt: json['invite_code_expires_at'] != null
+          ? DateTime.parse(json['invite_code_expires_at'] as String)
+          : null,
     );
   }
 
@@ -247,6 +259,8 @@ class WeddingOverview {
     DateTime? createdAt,
     String? teamChatRoomId,
     int? participantsCount,
+    String? inviteCode,
+    DateTime? inviteCodeExpiresAt,
   }) {
     return WeddingOverview(
       id: id ?? this.id,
@@ -273,6 +287,8 @@ class WeddingOverview {
       createdAt: createdAt ?? this.createdAt,
       teamChatRoomId: teamChatRoomId ?? this.teamChatRoomId,
       participantsCount: participantsCount ?? this.participantsCount,
+      inviteCode: inviteCode ?? this.inviteCode,
+      inviteCodeExpiresAt: inviteCodeExpiresAt ?? this.inviteCodeExpiresAt,
     );
   }
 

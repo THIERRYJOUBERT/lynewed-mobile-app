@@ -1,6 +1,7 @@
 /// Tests for GuestNavBarV2 widget.
 ///
 /// Custom 84px navigation bar for guest users with 3 tabs.
+/// Exact same UI as NavBarBridesWidget.
 library;
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,22 @@ import 'package:lynewed_beta/features/guest/presentation/widgets/guest_nav_bar_v
 void main() {
   group('GuestNavBarV2', () {
     group('Structure', () {
+      testWidgets('tabs are evenly distributed using Expanded', (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              bottomNavigationBar: GuestNavBarV2(
+                currentIndex: 0,
+                onTap: (_) {},
+              ),
+            ),
+          ),
+        );
+
+        // Each tab should be wrapped in an Expanded widget for even distribution
+        expect(find.byType(Expanded), findsNWidgets(3));
+      });
+
       testWidgets('renders with 84px height', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -76,7 +93,7 @@ void main() {
         );
 
         expect(find.byIcon(Icons.photo_library_outlined), findsOneWidget);
-        expect(find.byIcon(Icons.chat_bubble_outline), findsOneWidget);
+        expect(find.byIcon(Icons.chat_bubble_outline_sharp), findsOneWidget);
         expect(find.byIcon(Icons.person_outline), findsOneWidget);
       });
 
@@ -138,7 +155,7 @@ void main() {
 
         // Chat icon should be highlighted
         final chatIcon = tester.widget<Icon>(
-          find.byIcon(Icons.chat_bubble_outline),
+          find.byIcon(Icons.chat_bubble_outline_sharp),
         );
         expect(chatIcon.color, isNotNull);
       });
@@ -164,27 +181,10 @@ void main() {
       });
     });
 
-    group('Badge', () {
-      testWidgets('shows no badge when unreadCount is 0', (tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              bottomNavigationBar: GuestNavBarV2(
-                currentIndex: 0,
-                onTap: (_) {},
-                unreadCount: 0,
-              ),
-            ),
-          ),
-        );
-
-        // Should not find badge text
-        expect(find.text('1'), findsNothing);
-        expect(find.text('99+'), findsNothing);
-      });
-
-      testWidgets('shows badge with count when unreadCount > 0',
+    group('UnreadCount parameter', () {
+      testWidgets('accepts unreadCount parameter for API compatibility',
           (tester) async {
+        // unreadCount is kept for API compatibility but not displayed
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -197,50 +197,8 @@ void main() {
           ),
         );
 
-        expect(find.text('5'), findsOneWidget);
-      });
-
-      testWidgets('shows 99+ when unreadCount > 99', (tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              bottomNavigationBar: GuestNavBarV2(
-                currentIndex: 0,
-                onTap: (_) {},
-                unreadCount: 150,
-              ),
-            ),
-          ),
-        );
-
-        expect(find.text('99+'), findsOneWidget);
-      });
-
-      testWidgets('badge has correct size (16x16)', (tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              bottomNavigationBar: GuestNavBarV2(
-                currentIndex: 0,
-                onTap: (_) {},
-                unreadCount: 5,
-              ),
-            ),
-          ),
-        );
-
-        // Find the badge container
-        final badgeContainers = tester.widgetList<Container>(
-          find.byType(Container),
-        );
-
-        // One of the containers should have 16x16 dimensions
-        final hasBadgeSize = badgeContainers.any((container) {
-          final constraints = container.constraints;
-          return constraints?.maxWidth == 16 && constraints?.maxHeight == 16;
-        });
-
-        expect(hasBadgeSize, isTrue);
+        // Widget should render without errors
+        expect(find.byType(GuestNavBarV2), findsOneWidget);
       });
     });
 

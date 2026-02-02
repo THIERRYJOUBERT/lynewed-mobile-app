@@ -51,7 +51,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
 
         // Assert
-        expect(find.text('Rejoindre un mariage'), findsOneWidget);
+        expect(find.text('Join a Wedding'), findsOneWidget);
       });
 
       testWidgets('should display instructions subtitle', (tester) async {
@@ -61,7 +61,7 @@ void main() {
         // Assert
         expect(
           find.text(
-            'Entrez le code reçu par email ou scannez le QR code de votre invitation',
+            'Enter the code from your email or scan the QR code on your invitation',
           ),
           findsOneWidget,
         );
@@ -74,7 +74,7 @@ void main() {
         // Assert
         expect(
           find.text(
-            "Vous n'avez pas de code ? Demandez à la mariée de vous inviter.",
+            "Don't have a code? Ask the bride to invite you.",
           ),
           findsOneWidget,
         );
@@ -85,7 +85,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
 
         // Assert
-        expect(find.text('Continuer'), findsOneWidget);
+        expect(find.text('Continue'), findsOneWidget);
       });
 
       testWidgets('should display QR scanner button', (tester) async {
@@ -93,7 +93,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
 
         // Assert
-        expect(find.text('Scanner QR Code'), findsOneWidget);
+        expect(find.text('Scan QR Code'), findsOneWidget);
         expect(find.byIcon(Icons.qr_code_scanner), findsOneWidget);
       });
 
@@ -102,7 +102,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
 
         // Assert
-        expect(find.text('OU'), findsOneWidget);
+        expect(find.text('OR'), findsOneWidget);
       });
     });
 
@@ -174,7 +174,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
 
         // Assert - initial state shows helper
-        expect(find.textContaining('8 caractères requis'), findsOneWidget);
+        expect(find.textContaining('8 characters required'), findsOneWidget);
       });
 
       testWidgets('should display text field for code entry', (tester) async {
@@ -209,7 +209,7 @@ void main() {
 
         // Assert - button should be disabled
         final button = tester.widget<ElevatedButton>(
-          find.widgetWithText(ElevatedButton, 'Continuer'),
+          find.widgetWithText(ElevatedButton, 'Continue'),
         );
         expect(button.onPressed, isNull);
       });
@@ -225,7 +225,7 @@ void main() {
 
         // Assert - button should be enabled
         final button = tester.widget<ElevatedButton>(
-          find.widgetWithText(ElevatedButton, 'Continuer'),
+          find.widgetWithText(ElevatedButton, 'Continue'),
         );
         expect(button.onPressed, isNotNull);
       });
@@ -266,9 +266,9 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
 
         // Assert
-        final titlePos = tester.getTopLeft(find.text('Rejoindre un mariage'));
+        final titlePos = tester.getTopLeft(find.text('Join a Wedding'));
         final subtitlePos = tester.getTopLeft(find.text(
-          'Entrez le code reçu par email ou scannez le QR code de votre invitation',
+          'Enter the code from your email or scan the QR code on your invitation',
         ));
         expect(titlePos.dy, lessThan(subtitlePos.dy));
       });

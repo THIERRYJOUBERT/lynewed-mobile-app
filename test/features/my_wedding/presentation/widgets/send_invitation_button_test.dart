@@ -50,12 +50,25 @@ void main() {
   }
 
   group('SendInvitationButton', () {
+    group('Joined status', () {
+      testWidgets('should not show button when guest has joined',
+          (tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          guestEmail: 'test@example.com',
+          guestStatus: GuestStatus.joined,
+        ));
+
+        expect(find.byType(ElevatedButton), findsNothing);
+        expect(find.byType(SizedBox), findsWidgets);
+      });
+    });
+
     group('No email', () {
       testWidgets('should show hint text when email is null', (tester) async {
         await tester.pumpWidget(buildTestWidget(guestEmail: null));
 
         expect(
-          find.text('Ajoutez un email pour envoyer une invitation'),
+          find.text('Add an email to send an invitation'),
           findsOneWidget,
         );
         expect(find.byType(ElevatedButton), findsNothing);
@@ -65,34 +78,32 @@ void main() {
         await tester.pumpWidget(buildTestWidget(guestEmail: ''));
 
         expect(
-          find.text('Ajoutez un email pour envoyer une invitation'),
+          find.text('Add an email to send an invitation'),
           findsOneWidget,
         );
       });
     });
 
     group('With email - pending status', () {
-      testWidgets('should display "Envoyer l\'invitation" button',
-          (tester) async {
+      testWidgets('should display "Send Invitation" button', (tester) async {
         await tester.pumpWidget(buildTestWidget(
           guestEmail: 'test@example.com',
           guestStatus: GuestStatus.pending,
         ));
 
-        expect(find.text("Envoyer l'invitation"), findsOneWidget);
+        expect(find.text('Send Invitation'), findsOneWidget);
         expect(find.byIcon(Icons.send), findsOneWidget);
       });
     });
 
     group('With email - invited status', () {
-      testWidgets('should display "Renvoyer l\'invitation" button',
-          (tester) async {
+      testWidgets('should display "Resend Invitation" button', (tester) async {
         await tester.pumpWidget(buildTestWidget(
           guestEmail: 'test@example.com',
           guestStatus: GuestStatus.invited,
         ));
 
-        expect(find.text("Renvoyer l'invitation"), findsOneWidget);
+        expect(find.text('Resend Invitation'), findsOneWidget);
       });
     });
 
@@ -105,7 +116,7 @@ void main() {
           guestEmail: 'test@example.com',
         ));
 
-        await tester.tap(find.text("Envoyer l'invitation"));
+        await tester.tap(find.text('Send Invitation'));
         await tester.pump();
 
         // Should show loading spinner
@@ -125,10 +136,10 @@ void main() {
           guestEmail: 'test@example.com',
         ));
 
-        await tester.tap(find.text("Envoyer l'invitation"));
+        await tester.tap(find.text('Send Invitation'));
         await tester.pumpAndSettle();
 
-        expect(find.text('Invitation envoyée !'), findsOneWidget);
+        expect(find.text('Invitation sent!'), findsOneWidget);
       });
 
       testWidgets('should call onSuccess callback on success', (tester) async {
@@ -142,7 +153,7 @@ void main() {
           onSuccess: () => successCalled = true,
         ));
 
-        await tester.tap(find.text("Envoyer l'invitation"));
+        await tester.tap(find.text('Send Invitation'));
         await tester.pumpAndSettle();
 
         expect(successCalled, isTrue);
@@ -151,7 +162,7 @@ void main() {
       testWidgets('should show error snackbar on failure', (tester) async {
         when(() => mockUseCase(any())).thenAnswer(
           (_) async => const Failure(
-            InvitationFailure(message: 'Adresse email invalide'),
+            InvitationFailure(message: 'Invalid email address'),
           ),
         );
 
@@ -159,10 +170,10 @@ void main() {
           guestEmail: 'test@example.com',
         ));
 
-        await tester.tap(find.text("Envoyer l'invitation"));
+        await tester.tap(find.text('Send Invitation'));
         await tester.pumpAndSettle();
 
-        expect(find.text('Adresse email invalide'), findsOneWidget);
+        expect(find.text('Invalid email address'), findsOneWidget);
       });
 
       testWidgets('should pass correct params to use case', (tester) async {
@@ -176,7 +187,7 @@ void main() {
           guestEmail: 'test@example.com',
         ));
 
-        await tester.tap(find.text("Envoyer l'invitation"));
+        await tester.tap(find.text('Send Invitation'));
         await tester.pumpAndSettle();
 
         final captured = verify(() => mockUseCase(captureAny())).captured;

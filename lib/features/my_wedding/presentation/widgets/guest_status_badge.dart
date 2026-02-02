@@ -22,8 +22,8 @@ class GuestStatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (color, text, icon) = switch (status) {
-      GuestStatus.invited => (Colors.amber, 'Invité', Icons.mail_outline),
-      GuestStatus.joined => (Colors.green, 'Rejoint', Icons.check_circle_outline),
+      GuestStatus.invited => (Colors.amber, 'Invited', Icons.mail_outline),
+      GuestStatus.joined => (Colors.green, 'Joined', Icons.check_circle_outline),
       GuestStatus.pending => (Colors.grey, '', null),
     };
 

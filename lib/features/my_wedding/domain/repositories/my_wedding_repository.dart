@@ -346,6 +346,58 @@ abstract class MyWeddingRepository {
 
   /// Delete a wedding guest
   Future<RepositoryResult<void>> deleteWeddingGuest({required String guestId});
+
+  // ========== WEDDING GROUPS ==========
+
+  /// Get all wedding groups (team + custom groups)
+  Future<RepositoryResult<List<WeddingGroup>>> getWeddingGroups({
+    required String weddingId,
+  });
+
+  /// Create a new wedding group
+  Future<RepositoryResult<String>> createWeddingGroup({
+    required String weddingId,
+    required String name,
+    required bool isPublic,
+    List<String>? memberProfileIds,
+  });
+
+  /// Update a wedding group (name and/or visibility)
+  Future<RepositoryResult<void>> updateWeddingGroup({
+    required String roomId,
+    String? name,
+    bool? isPublic,
+  });
+
+  /// Delete a wedding group (soft delete)
+  Future<RepositoryResult<void>> deleteWeddingGroup({required String roomId});
+
+  /// Get members of a wedding group
+  Future<RepositoryResult<List<GroupMember>>> getWeddingGroupMembers({
+    required String roomId,
+  });
+
+  /// Get eligible members to add to a group (joined guests + active pros)
+  Future<RepositoryResult<List<EligibleGroupMember>>> getEligibleGroupMembers({
+    required String weddingId,
+  });
+
+  /// Add members to a wedding group
+  Future<RepositoryResult<void>> addGroupMembers({
+    required String roomId,
+    required List<String> profileIds,
+  });
+
+  /// Remove members from a wedding group
+  Future<RepositoryResult<void>> removeGroupMembers({
+    required String roomId,
+    required List<String> profileIds,
+  });
+
+  /// Send bulk invitations to all pending guests with email
+  Future<RepositoryResult<int>> sendBulkInvitations({
+    required String weddingId,
+  });
 }
 
 /// Contacted professional for invitation
