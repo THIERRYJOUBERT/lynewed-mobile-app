@@ -41,7 +41,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
 
         // Assert
-        expect(find.text('Invité'), findsWidgets); // Name and badge
+        expect(find.text('Guest'), findsWidgets); // Name and badge
       });
 
       testWidgets('should display email', (tester) async {
@@ -56,8 +56,8 @@ void main() {
         // Arrange & Act
         await tester.pumpWidget(buildTestWidget());
 
-        // Assert - should have "Invité" somewhere
-        expect(find.text('Invité'), findsWidgets);
+        // Assert - should have "Guest" somewhere
+        expect(find.text('Guest'), findsWidgets);
       });
 
       testWidgets('should display avatar placeholder', (tester) async {
@@ -76,7 +76,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
 
         // Assert
-        expect(find.text('Vous organisez un mariage ?'), findsOneWidget);
+        expect(find.text('Are you planning a wedding?'), findsOneWidget);
       });
 
       testWidgets('should display upgrade button', (tester) async {
@@ -84,7 +84,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
 
         // Assert
-        expect(find.text('Passer en compte Mariée'), findsOneWidget);
+        expect(find.text('Upgrade to Bride account'), findsOneWidget);
       });
 
       testWidgets('should display celebration icon', (tester) async {
@@ -103,7 +103,7 @@ void main() {
         ));
 
         // Act
-        await tester.tap(find.text('Passer en compte Mariée'));
+        await tester.tap(find.text('Upgrade to Bride account'));
         await tester.pump();
 
         // Assert
@@ -117,7 +117,7 @@ void main() {
         // Assert - button exists but is disabled (null onPressed)
         final button = tester.widget<ElevatedButton>(
           find.ancestor(
-            of: find.text('Passer en compte Mariée'),
+            of: find.text('Upgrade to Bride account'),
             matching: find.byType(ElevatedButton),
           ),
         );
@@ -131,7 +131,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
 
         // Assert
-        expect(find.text('Se déconnecter'), findsOneWidget);
+        expect(find.text('Log out'), findsOneWidget);
       });
 
       testWidgets('logout button should call callback', (tester) async {
@@ -142,7 +142,7 @@ void main() {
         ));
 
         // Act
-        await tester.tap(find.text('Se déconnecter'));
+        await tester.tap(find.text('Log out'));
         await tester.pump();
 
         // Assert

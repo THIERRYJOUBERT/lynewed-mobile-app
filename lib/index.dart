@@ -74,3 +74,23 @@ export '/features/my_wedding/presentation/pages/my_wedding_page.dart'
     show MyWeddingPage;
 export '/features/weddings_hub_pro/presentation/pages/weddings_hub_pro_page.dart'
     show WeddingsHubProPage;
+
+// Guest feature - Clean Architecture pages
+export '/features/guest/presentation/pages/guest_home_page.dart'
+    show GuestHomePage;
+export '/features/guest/presentation/pages/guest_album_page.dart'
+    show GuestAlbumPage;
+export '/features/guest/presentation/pages/guest_messages_page.dart'
+    show GuestMessagesPage;
+export '/features/guest/presentation/pages/guest_settings_page.dart'
+    show GuestSettingsPage;
+export '/features/guest/presentation/pages/guest_sign_in_page.dart'
+    show GuestSignInPage;
+export '/features/guest/presentation/pages/guest_sign_up_page.dart'
+    show GuestSignUpPage;
+export '/features/guest/presentation/pages/guest_forgot_password_page.dart'
+    show GuestForgotPasswordPage;
+
+// Auth feature - Guest join flow
+export '/features/auth/presentation/pages/join_wedding_page.dart'
+    show JoinWeddingPage;

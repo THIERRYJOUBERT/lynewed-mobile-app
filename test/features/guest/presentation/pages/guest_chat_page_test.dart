@@ -23,9 +23,9 @@ void main() {
           (tester) async {
         await tester.pumpWidget(buildTestWidget());
 
-        expect(find.text('Groupe du mariage'), findsOneWidget);
+        expect(find.text('Wedding group'), findsOneWidget);
         expect(
-          find.textContaining('Le chat sera disponible'),
+          find.textContaining('Chat will be available'),
           findsOneWidget,
         );
       });

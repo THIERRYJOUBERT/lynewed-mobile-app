@@ -1,8 +1,18 @@
 # TRACKING - EPIC-09-INVITATIONS
 
-> Status : ✅ COMPLETE
-> Stories : 12/12 completees
-> Derniere MAJ : 2026-01-30
+> Status : 🔶 PARTIAL
+> Stories : 12/12 (stories spec completes - UI a finaliser)
+> Derniere MAJ : 2026-02-02 (fix Edge Function send-wedding-invitation)
+
+---
+
+## Etat Actuel
+
+| Composant | Status | Notes |
+|-----------|--------|-------|
+| **Auth Guest** | ✅ 100% | Login, join wedding, deep links fonctionnels |
+| **Interface Guest** | ⏳ A completer | Album, Chat, Profil pages a finaliser |
+| **Interface Bride** | ⏳ A creer | Gestion invites (envoi depuis app, suivi) |
 
 ---
 
@@ -13,6 +23,8 @@
 | 2026-01-28 | Epic cree - Systeme d'invitations guests (APP-03) |
 | 2026-01-29 | Stories S01-S06, S10, S12 completees |
 | 2026-01-30 | Stories S07-S09, S11 completees - Epic 100% |
+| 2026-02-02 | **Corrections Auth Guest** - 9 bugs fixes (session post-epic) |
+| 2026-02-02 | **Fix Edge Function** - send-wedding-invitation corrigee et testee |
 
 ---
 
@@ -55,6 +67,18 @@
 | 2026-01-30 | InvitationFailure constructor error | Changed to positional super parameter | ✅ |
 | 2026-01-30 | Test timer pending | Used Completer pattern | ✅ |
 | 2026-01-30 | Supabase RPC mock complexity | Simplified tests to validate result types | ✅ |
+| 2026-02-02 | roleFromString() ignorait 'guest' | Ajoute case 'guest' dans switch | ✅ |
+| 2026-02-02 | StartupGate ne redirige pas guest | Ajoute redirection → GuestHomePage | ✅ |
+| 2026-02-02 | UserRole.guest manquant dans enum | Deja present, verifie OK | ✅ |
+| 2026-02-02 | Exhaustiveness switch dans actions.dart | Ajoute case UserRole.guest → null | ✅ |
+| 2026-02-02 | Guests pouvaient login sur pages bride/pro | Ajoute filtre + blocage avec message | ✅ |
+| 2026-02-02 | Back button GuestSignInPage → AuthWelcome | Corrige navigation → JoinWeddingPage | ✅ |
+| 2026-02-02 | Padding bottom pages guest insuffisant | Ajoute SizedBox(height: 32.0) | ✅ |
+| 2026-02-02 | Lien "Already have account?" manquant | Ajoute sur JoinWeddingPage | ✅ |
+| 2026-02-02 | full_name non enregistre a inscription | Ajoute update profiles.full_name | ✅ |
+| 2026-02-02 | Edge Function permission denied wedding_guests | Fonctions SECURITY DEFINER + RLS policies | ✅ |
+| 2026-02-02 | QR code generation failed (canvas) | Utilisation API externe qrserver.com | ✅ |
+| 2026-02-02 | Resend domain not verified (lynewed.app) | Utilisation domaine verifie lynewed.com | ✅ |
 
 ---
 
@@ -142,7 +166,7 @@
 | Edge Functions | 1 |
 | Triggers SQL | 1 |
 | RLS Policies | 4 |
-| Migrations Supabase | 5 |
+| Migrations Supabase | 8 |
 
 ---
 
@@ -177,6 +201,171 @@
 
 ---
 
+## Session 2026-02-02 : Corrections Auth Guest
+
+### Description
+
+Session de debug post-implementation pour corriger les problemes d'authentification
+des utilisateurs guest decouverts lors des tests manuels.
+
+### Problemes Identifies et Resolus
+
+#### 1. roleFromString() ignorait le role 'guest'
+
+**Fichier**: `lib/custom_code/actions/load_initial_session_data.dart` (ligne 21-31)
+
+**Probleme**: La fonction `roleFromString()` ne contenait pas de case pour 'guest',
+ce qui faisait que les guests etaient reconnus comme 'bride' par defaut.
+
+**Solution**: Ajout du case 'guest' avant le default:
+```dart
+UserRole roleFromString(String? s) {
+  switch (s) {
+    case 'professional':
+      return UserRole.professional;
+    case 'guest':
+      return UserRole.guest;
+    case 'bride':
+    default:
+      return UserRole.bride;
+  }
+}
+```
+
+#### 2. StartupGate ne gerait pas le role guest
+
+**Fichier**: `lib/pages/auth/startup_gate/startup_gate_widget.dart` (lignes 117-122)
+
+**Probleme**: Apres le login, les guests n'etaient pas rediriges vers GuestHomePage
+mais suivaient le flow bride/pro standard.
+
+**Solution**: Ajout d'une redirection specifique pour les guests:
+```dart
+// Handle guest role - redirect to GuestHomePage
+if (FFAppState().currentUserRole == UserRole.guest) {
+  if (!mounted) return;
+  context.goNamedAuth(GuestHomePage.routeName, context.mounted);
+  return;
+}
+```
+
+#### 3. Switch exhaustiveness dans actions.dart
+
+**Fichier**: `lib/actions/actions.dart` (lignes 105-116)
+
+**Probleme**: La fonction `_convertUserRole()` ne gerait pas `UserRole.guest`,
+causant des warnings de non-exhaustiveness.
+
+**Solution**: Ajout du case guest retournant null (guests ne participent pas au chat Pro-Bride):
+```dart
+chat_enums.UserRole? _convertUserRole(UserRole? role) {
+  if (role == null) return null;
+  switch (role) {
+    case UserRole.bride:
+      return chat_enums.UserRole.bride;
+    case UserRole.professional:
+      return chat_enums.UserRole.professional;
+    case UserRole.guest:
+      // Guests don't participate in Pro-Bride chat, return null
+      return null;
+  }
+}
+```
+
+#### 4. Guests pouvaient login via pages bride/pro
+
+**Fichiers**:
+- `lib/pages/auth/sign_in_email_page/sign_in_email_page_widget.dart`
+- `lib/pages/auth/sign_in_email_page_pro/sign_in_email_page_pro_widget.dart`
+
+**Probleme**: Un guest pouvait se connecter via les pages de login bride ou pro,
+ce qui causait des comportements inattendus.
+
+**Solution**: Ajout d'un filtre apres login pour verifier le role et bloquer avec message:
+- Si role == guest sur page bride: erreur + redirection vers JoinWeddingPage
+- Si role == guest sur page pro: erreur + redirection vers JoinWeddingPage
+
+#### 5. Navigation back GuestSignInPage incorrecte
+
+**Fichier**: `lib/features/guest/presentation/pages/guest_sign_in_page.dart`
+
+**Probleme**: Le bouton back ramenait vers AuthWelcomePage au lieu de JoinWeddingPage.
+
+**Solution**: Modification du onPressed du back button pour naviguer vers JoinWeddingPage.
+
+#### 6. Padding bottom insuffisant sur pages guest
+
+**Fichiers**:
+- `lib/features/guest/presentation/pages/guest_sign_in_page.dart`
+- `lib/features/guest/presentation/pages/guest_sign_up_page.dart`
+- `lib/features/guest/presentation/pages/guest_forgot_password_page.dart`
+
+**Probleme**: Contenu trop proche du bas de l'ecran sur certains appareils.
+
+**Solution**: Ajout de `SizedBox(height: 32.0)` en bas du contenu.
+
+#### 7. Lien "Already have account?" manquant
+
+**Fichier**: `lib/features/auth/presentation/pages/join_wedding_page.dart`
+
+**Probleme**: Pas de moyen pour un guest existant de se connecter depuis JoinWeddingPage.
+
+**Solution**: Ajout d'un TextButton "Already have an account? Sign in" qui navigue vers GuestSignInPage.
+
+#### 8. full_name non enregistre a l'inscription
+
+**Fichier**: `lib/features/auth/data/repositories/guest_repository_impl.dart` (lignes 46-50)
+
+**Probleme**: Le trigger Supabase ne copiait pas first_name vers full_name,
+laissant le profil guest sans nom affiche.
+
+**Solution**: Ajout d'un update explicite apres creation du compte:
+```dart
+// 2. Update profile with full_name (trigger doesn't copy first_name)
+await _supabaseClient
+    .from('profiles')
+    .update({'full_name': firstName})
+    .eq('id', userModel.id);
+```
+
+### Fichiers Modifies (Session 2026-02-02)
+
+| Fichier | Modification |
+|---------|--------------|
+| `lib/custom_code/actions/load_initial_session_data.dart` | Ajout case 'guest' dans roleFromString() |
+| `lib/pages/auth/startup_gate/startup_gate_widget.dart` | Ajout redirection guest → GuestHomePage |
+| `lib/actions/actions.dart` | Ajout case UserRole.guest dans _convertUserRole() |
+| `lib/pages/auth/sign_in_email_page/sign_in_email_page_widget.dart` | Filtre role guest + blocage |
+| `lib/pages/auth/sign_in_email_page_pro/sign_in_email_page_pro_widget.dart` | Filtre role guest + blocage |
+| `lib/features/guest/presentation/pages/guest_sign_in_page.dart` | Fix back navigation + padding |
+| `lib/features/guest/presentation/pages/guest_sign_up_page.dart` | Ajout padding bottom |
+| `lib/features/guest/presentation/pages/guest_forgot_password_page.dart` | Ajout padding bottom |
+| `lib/features/auth/presentation/pages/join_wedding_page.dart` | Ajout lien "Already have account?" |
+| `lib/features/auth/data/repositories/guest_repository_impl.dart` | Update profiles.full_name |
+
+---
+
+## Ce qui reste a implementer (Post-MVP)
+
+### Interface Guest (3 onglets)
+
+| Onglet | Status | Description |
+|--------|--------|-------------|
+| **Album** | Placeholder | Photos/videos personnelles du guest - UI present, upload a connecter |
+| **Chat** | Connecte | Groupe de discussion du mariage - temps reel via ChatDetailsPage |
+| **Profil** | Partiel | Infos affichees, "Passer en compte Mariee" fonctionnel |
+
+### Interface Bride - Gestion invites
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Liste des guests | Existant | Via wedding_guests existante |
+| Generation QR codes | A faire | QR dynamique dans l'app (actuellement via email) |
+| Generation deep links | A faire | Lien partageable depuis l'app |
+| Revocation invitation | A faire | Supprimer/bloquer un guest |
+
+---
+
 ## Retrospective
 
 ### Ce qui a bien marche
@@ -196,3 +385,101 @@
 - Utiliser `ChatDetailsPage` avec `isWeddingTeamChat: true` permet une integration rapide
 - `FFAppState` comme `ChangeNotifier` permet d'ecouter les changements de compteur facilement
 - Les sealed classes Dart sont excellentes pour les result types des use cases
+
+---
+
+## Session 2026-02-02 : Fix Edge Function send-wedding-invitation
+
+### Description
+
+Debug et correction de l'Edge Function `send-wedding-invitation` qui retournait
+une erreur 404 "guest_not_found" avec "permission denied for table wedding_guests".
+
+### Problemes Identifies et Resolus
+
+#### 1. RLS bloque l'acces a wedding_guests
+
+**Probleme**: La table `wedding_guests` a RLS active avec une seule politique pour `{public}`
+qui exige `auth.uid() = bride_profile_id`. Le `service_role` aurait du bypasser RLS
+(car `rolbypassrls = true`) mais le client Supabase JS ne fonctionnait pas correctement.
+
+**Solution**: Creation de fonctions `SECURITY DEFINER` qui s'executent avec les privileges
+du owner (postgres) et bypassent RLS de maniere fiable:
+
+```sql
+-- Migration: create_send_invitation_function
+CREATE OR REPLACE FUNCTION public.get_guest_for_invitation(
+  p_guest_id UUID,
+  p_wedding_id UUID
+) RETURNS TABLE (...) SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.mark_guest_invited(
+  p_guest_id UUID
+) RETURNS VOID SECURITY DEFINER;
+```
+
+**Migrations appliquees**:
+- `add_service_role_policy_wedding_guests` - Politiques RLS pour service_role (backup)
+- `create_send_invitation_function` - Fonctions SECURITY DEFINER
+- `fix_get_guest_for_invitation_function` - Fix type VARCHAR pour status
+
+#### 2. QR Code generation echoue (canvas element)
+
+**Probleme**: La librairie `qrcode` (npm) necessite un element canvas qui n'est pas
+disponible dans l'environnement Deno des Edge Functions.
+
+**Erreur**: `You need to specify a canvas element`
+
+**Solution**: Utilisation d'une API externe gratuite pour generer les QR codes:
+```typescript
+function generateQRCodeUrl(data: string): string {
+  const encoded = encodeURIComponent(data);
+  return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encoded}`;
+}
+```
+
+#### 3. Domaine Resend non verifie
+
+**Probleme**: Le domaine `lynewed.app` n'est pas verifie sur Resend, bloquant l'envoi
+d'emails depuis `noreply@lynewed.app`.
+
+**Erreur**: `The lynewed.app domain is not verified`
+
+**Solution**: Utilisation du domaine verifie `lynewed.com`:
+```typescript
+from: "Lynewed <noreply@lynewed.com>"  // Au lieu de lynewed.app
+```
+
+### Edge Function Finale (v13)
+
+**Fonctionnalites**:
+- Utilise `rpc('get_guest_for_invitation')` pour bypass RLS
+- QR code via API externe qrserver.com
+- Email via domaine verifie lynewed.com
+- Mise a jour statut via `rpc('mark_guest_invited')`
+
+**Test reussi**:
+```bash
+curl -X POST ".../send-wedding-invitation" \
+  -d '{"guest_id": "...", "wedding_id": "..."}'
+
+# Response:
+{"success":true,"email_id":"d05728e5-92ed-431d-8801-70e03fabce55",
+ "status":"invited","message":"Invitation sent to leoberthet1@gmail.com"}
+```
+
+### Fichiers Modifies/Crees (Session 2026-02-02 - Edge Function)
+
+| Element | Type | Description |
+|---------|------|-------------|
+| `send-wedding-invitation` v13 | Edge Function | Version corrigee deployee |
+| `add_service_role_policy_wedding_guests` | Migration | Politiques RLS service_role |
+| `create_send_invitation_function` | Migration | Fonctions SECURITY DEFINER |
+| `fix_get_guest_for_invitation_function` | Migration | Fix type retour VARCHAR |
+
+### Lecons Apprises
+
+- Le `service_role` bypass RLS theoriquement, mais en pratique les fonctions
+  `SECURITY DEFINER` sont plus fiables pour les Edge Functions
+- Les libs npm utilisant canvas (qrcode, jimp, etc.) ne fonctionnent pas dans Deno
+- Toujours verifier quel domaine est verifie sur Resend avant deploiement

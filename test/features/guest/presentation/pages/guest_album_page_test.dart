@@ -23,7 +23,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
 
         // Assert
-        expect(find.text('Mes photos et vidéos'), findsOneWidget);
+        expect(find.text('Your Wedding Memories'), findsOneWidget);
       });
 
       testWidgets('should display empty state message', (tester) async {
@@ -31,38 +31,44 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
 
         // Assert
-        expect(find.text('Ajoutez vos photos du mariage !'), findsOneWidget);
+        expect(
+          find.textContaining('Photos and videos you capture'),
+          findsOneWidget,
+        );
       });
 
-      testWidgets('should display add button', (tester) async {
+      testWidgets('should display FAB', (tester) async {
         // Arrange & Act
         await tester.pumpWidget(buildTestWidget());
 
         // Assert
-        expect(find.text('Ajouter photo/vidéo'), findsOneWidget);
-        expect(find.byIcon(Icons.add_photo_alternate), findsOneWidget);
+        expect(find.byType(FloatingActionButton), findsOneWidget);
+        expect(find.byIcon(Icons.add), findsOneWidget);
       });
 
-      testWidgets('should display photo library icon', (tester) async {
+      testWidgets('should display photo library outlined icon', (tester) async {
         // Arrange & Act
         await tester.pumpWidget(buildTestWidget());
 
         // Assert
-        expect(find.byIcon(Icons.photo_library), findsOneWidget);
+        expect(find.byIcon(Icons.photo_library_outlined), findsOneWidget);
       });
     });
 
     group('Interaction', () {
-      testWidgets('add button should show snackbar (placeholder)', (tester) async {
+      testWidgets('FAB should show snackbar (placeholder)', (tester) async {
         // Arrange
         await tester.pumpWidget(buildTestWidget());
 
         // Act
-        await tester.tap(find.text('Ajouter photo/vidéo'));
+        await tester.tap(find.byType(FloatingActionButton));
         await tester.pump();
 
         // Assert
-        expect(find.text('Cette fonctionnalité arrive bientôt !'), findsOneWidget);
+        expect(
+          find.text('Photo upload coming in next update!'),
+          findsOneWidget,
+        );
       });
     });
   });

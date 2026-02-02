@@ -1,4 +1,4 @@
-/// Album page for guests (placeholder).
+/// Album page for guests.
 ///
 /// Displays the guest's personal album with photos and videos.
 /// Full implementation will be in EPIC-10.
@@ -8,56 +8,70 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/design/design.dart';
 
-/// Placeholder album page for guests.
+/// Album page for guests.
 ///
-/// Shows empty state with option to add photos/videos.
-/// Will be fully implemented in EPIC-10 (Photos/Videos).
+/// Shows elegant empty state with FAB for future photo upload.
+/// Full grid implementation will be added in EPIC-10 (Photos/Videos).
 class GuestAlbumPage extends StatelessWidget {
   /// Creates a guest album page.
   const GuestAlbumPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(LynewedSpacing.lg),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.photo_library,
-            size: 80,
-            color: LynewedColors.textSecondary,
+    // For EPIC-09: Always show empty state
+    // EPIC-10 will add: _isLoading, _media list, _buildMediaGrid()
+    return Stack(
+      children: [
+        // Empty state content
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.photo_library_outlined,
+                size: 64,
+                color: LynewedColors.gray300,
+              ),
+              SizedBox(height: LynewedSpacing.lg),
+              Text(
+                'Your Wedding Memories',
+                style: LynewedTextStyles.titleSmall.copyWith(
+                  color: LynewedColors.textPrimary,
+                ),
+              ),
+              SizedBox(height: LynewedSpacing.sm),
+              Text(
+                'Photos and videos you capture\nwill appear here',
+                style: LynewedTextStyles.bodySmall.copyWith(
+                  color: LynewedColors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
-          SizedBox(height: LynewedSpacing.lg),
-          Text(
-            'Mes photos et vidéos',
-            style: LynewedTextStyles.headlineSmall.copyWith(
-              color: LynewedColors.textPrimary,
-            ),
-          ),
-          SizedBox(height: LynewedSpacing.sm),
-          Text(
-            'Ajoutez vos photos du mariage !',
-            style: LynewedTextStyles.bodyMedium.copyWith(
-              color: LynewedColors.textSecondary,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: LynewedSpacing.xxl),
-          ElevatedButton.icon(
+        ),
+
+        // FAB for adding photos (placeholder for EPIC-10)
+        Positioned(
+          right: 0,
+          bottom: 0,
+          child: FloatingActionButton(
             onPressed: () {
-              // TODO: EPIC-10 implementation
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Cette fonctionnalité arrive bientôt !'),
+                  content: Text('Photo upload coming in next update!'),
+                  behavior: SnackBarBehavior.floating,
                 ),
               );
             },
-            icon: const Icon(Icons.add_photo_alternate),
-            label: const Text('Ajouter photo/vidéo'),
+            backgroundColor: LynewedColors.primary,
+            child: Icon(
+              Icons.add,
+              color: LynewedColors.background,
+            ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

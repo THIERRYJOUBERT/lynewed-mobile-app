@@ -56,12 +56,12 @@ void main() {
         expect(find.byIcon(Icons.chat_bubble_outline), findsOneWidget);
       });
 
-      testWidgets('should display Profil tab', (tester) async {
+      testWidgets('should display Profile tab', (tester) async {
         // Arrange & Act
         await tester.pumpWidget(buildTestWidget());
 
         // Assert
-        expect(find.text('Profil'), findsOneWidget);
+        expect(find.text('Profile'), findsOneWidget);
         expect(find.byIcon(Icons.person_outline), findsOneWidget);
       });
     });
@@ -93,7 +93,7 @@ void main() {
         expect(find.byIcon(Icons.chat_bubble), findsOneWidget);
       });
 
-      testWidgets('should highlight Profil tab when index is 2', (tester) async {
+      testWidgets('should highlight Profile tab when index is 2', (tester) async {
         // Arrange & Act
         await tester.pumpWidget(buildTestWidget(currentIndex: 2));
 
@@ -102,7 +102,7 @@ void main() {
           find.byType(BottomNavigationBar),
         );
         expect(navBar.currentIndex, 2);
-        // Active icon for Profil
+        // Active icon for Profile
         expect(find.byIcon(Icons.person), findsOneWidget);
       });
     });
@@ -185,7 +185,7 @@ void main() {
         expect(tappedIndex, 1);
       });
 
-      testWidgets('should call onTap when Profil tab is tapped', (tester) async {
+      testWidgets('should call onTap when Profile tab is tapped', (tester) async {
         // Arrange
         int? tappedIndex;
         await tester.pumpWidget(buildTestWidget(
@@ -194,7 +194,7 @@ void main() {
         ));
 
         // Act
-        await tester.tap(find.text('Profil'));
+        await tester.tap(find.text('Profile'));
         await tester.pump();
 
         // Assert

@@ -12,11 +12,11 @@ import '../../../../core/design/design.dart';
 import '../../../../core/services/unread_counter_service.dart';
 import '../../../../flutter_flow/flutter_flow_util.dart';
 import '../../../auth/domain/usecases/upgrade_to_bride.dart';
-import '../widgets/guest_nav_bar.dart';
+import '../widgets/guest_nav_bar_v2.dart';
 import '../widgets/upgrade_confirmation_dialog.dart';
 import 'guest_album_page.dart';
-import 'guest_chat_page.dart';
-import 'guest_profile_page.dart';
+import 'guest_messages_page.dart';
+import 'guest_settings_page.dart';
 
 /// Main home page for guest users.
 ///
@@ -51,7 +51,6 @@ class GuestHomePage extends StatefulWidget {
 class _GuestHomePageState extends State<GuestHomePage> {
   int _currentIndex = 0;
   String? _brideName;
-  String? _chatRoomId;
   String? _guestName;
   String? _guestEmail;
   bool _isLoading = true;
@@ -61,7 +60,6 @@ class _GuestHomePageState extends State<GuestHomePage> {
   void initState() {
     super.initState();
     _brideName = widget.brideName;
-    _chatRoomId = widget.chatRoomId;
     _loadGuestInfo();
     _initializeUnreadCounter();
   }
@@ -130,17 +128,8 @@ class _GuestHomePageState extends State<GuestHomePage> {
           final wedding = guestInfo['weddings'] as Map<String, dynamic>;
           final brideProfile = wedding['profiles'] as Map<String, dynamic>?;
 
-          // Get chat room
-          final chatRoom = await Supabase.instance.client
-              .from('chat_rooms')
-              .select('id')
-              .eq('wedding_id', wedding['id'])
-              .eq('type', 'wedding_team')
-              .maybeSingle();
-
           setState(() {
-            _brideName = brideProfile?['first_name'] as String? ?? 'La mariée';
-            _chatRoomId = chatRoom?['id'] as String?;
+            _brideName = brideProfile?['first_name'] as String? ?? 'The bride';
           });
         }
       }
@@ -196,7 +185,7 @@ class _GuestHomePageState extends State<GuestHomePage> {
       case UpgradeSuccessful():
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Bienvenue ! Vous pouvez maintenant créer votre mariage.'),
+            content: Text('Welcome! You can now create your wedding.'),
             backgroundColor: Colors.green,
           ),
         );
@@ -205,7 +194,7 @@ class _GuestHomePageState extends State<GuestHomePage> {
       case NotAGuest():
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Vous n\'êtes pas un invité.'),
+            content: const Text('You are not a guest.'),
             backgroundColor: LynewedColors.error,
           ),
         );
@@ -223,17 +212,17 @@ class _GuestHomePageState extends State<GuestHomePage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Se déconnecter'),
-        content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
+        title: const Text('Log out'),
+        content: const Text('Are you sure you want to log out?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuler'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(
-              'Déconnecter',
+              'Log out',
               style: TextStyle(color: LynewedColors.error),
             ),
           ),
@@ -264,7 +253,7 @@ class _GuestHomePageState extends State<GuestHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Mariage de ${_brideName ?? "..."}',
+          "${_brideName ?? '...'}'s Wedding",
           style: LynewedTextStyles.titleMedium.copyWith(
             color: LynewedColors.textPrimary,
           ),
@@ -278,8 +267,8 @@ class _GuestHomePageState extends State<GuestHomePage> {
         index: _currentIndex,
         children: [
           const GuestAlbumPage(),
-          GuestChatPage(chatRoomId: _chatRoomId),
-          GuestProfilePage(
+          const GuestMessagesPage(),
+          GuestSettingsPage(
             guestName: _guestName,
             email: _guestEmail,
             onUpgradeToBride: _handleUpgradeToBride,
@@ -287,7 +276,7 @@ class _GuestHomePageState extends State<GuestHomePage> {
           ),
         ],
       ),
-      bottomNavigationBar: GuestNavBar(
+      bottomNavigationBar: GuestNavBarV2(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
         unreadCount: _unreadCount,

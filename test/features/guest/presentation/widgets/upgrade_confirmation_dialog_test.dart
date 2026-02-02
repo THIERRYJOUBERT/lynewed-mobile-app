@@ -33,7 +33,7 @@ void main() {
         await tester.tap(find.text('Show Dialog'));
         await tester.pumpAndSettle();
 
-        expect(find.text('Passer en compte Mariée'), findsOneWidget);
+        expect(find.text('Upgrade to Bride account'), findsOneWidget);
       });
 
       testWidgets('should display warning message', (tester) async {
@@ -42,7 +42,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.textContaining('cette action est irréversible'),
+          find.textContaining('this action is irreversible'),
           findsOneWidget,
         );
       });
@@ -53,7 +53,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.textContaining('Vous conserverez vos photos'),
+          find.textContaining('Your photos and account will be preserved'),
           findsOneWidget,
         );
       });
@@ -63,7 +63,7 @@ void main() {
         await tester.tap(find.text('Show Dialog'));
         await tester.pumpAndSettle();
 
-        expect(find.text('Annuler'), findsOneWidget);
+        expect(find.text('Cancel'), findsOneWidget);
       });
 
       testWidgets('should display confirm button', (tester) async {
@@ -71,7 +71,7 @@ void main() {
         await tester.tap(find.text('Show Dialog'));
         await tester.pumpAndSettle();
 
-        expect(find.text('Je confirme'), findsOneWidget);
+        expect(find.text('I confirm'), findsOneWidget);
       });
 
       testWidgets('should display warning icon', (tester) async {
@@ -89,9 +89,9 @@ void main() {
         await tester.tap(find.text('Show Dialog'));
         await tester.pumpAndSettle();
 
-        expect(find.text('Passer en compte Mariée'), findsOneWidget);
+        expect(find.text('Upgrade to Bride account'), findsOneWidget);
 
-        await tester.tap(find.text('Annuler'));
+        await tester.tap(find.text('Cancel'));
         await tester.pumpAndSettle();
 
         expect(find.text('Passer en compte Mariée'), findsNothing);
@@ -106,7 +106,7 @@ void main() {
         await tester.tap(find.text('Show Dialog'));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Je confirme'));
+        await tester.tap(find.text('I confirm'));
         await tester.pumpAndSettle();
 
         expect(confirmCalled, isTrue);
