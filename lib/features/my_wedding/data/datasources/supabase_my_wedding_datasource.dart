@@ -1622,8 +1622,7 @@ class SupabaseMyWeddingDatasource {
             guest_user_id,
             created_at,
             profiles!guest_albums_guest_user_id_fkey (
-              first_name,
-              last_name,
+              full_name,
               avatar_url
             ),
             guest_media (

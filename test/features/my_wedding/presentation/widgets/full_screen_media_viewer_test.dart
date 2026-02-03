@@ -22,7 +22,7 @@ void main() {
       expect(find.byIcon(Icons.download_rounded), findsOneWidget);
     });
 
-    testWidgets('displays video placeholder', (tester) async {
+    testWidgets('displays video player loading state', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: FullScreenMediaViewer(
@@ -32,10 +32,12 @@ void main() {
         ),
       );
 
-      // Should show video icon
-      expect(find.byIcon(Icons.videocam_rounded), findsOneWidget);
-      // Should show placeholder text
-      expect(find.text('Video playback coming soon'), findsOneWidget);
+      // Should show loading indicator while video initializes
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      // Should have close button
+      expect(find.byIcon(Icons.close), findsOneWidget);
+      // Should have download button
+      expect(find.byIcon(Icons.download_rounded), findsOneWidget);
     });
 
     testWidgets('displays caption when provided', (tester) async {

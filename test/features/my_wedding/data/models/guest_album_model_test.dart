@@ -31,8 +31,7 @@ void main() {
           'guest_user_id': 'guest-789',
           'created_at': '2026-06-15T10:30:00.000Z',
           'profiles': {
-            'first_name': 'Alice',
-            'last_name': 'Smith',
+            'full_name': 'Alice Smith',
             'avatar_url': 'https://example.com/avatar.jpg',
           },
           'photo_count': 5,
@@ -69,15 +68,14 @@ void main() {
         expect(model.guestAvatarUrl, isNull);
       });
 
-      test('should build guest name from first name only', () {
+      test('should use full_name directly', () {
         final json = {
           'id': 'album-123',
           'wedding_id': 'wedding-456',
           'guest_user_id': 'guest-789',
           'created_at': '2026-06-15T10:30:00.000Z',
           'profiles': {
-            'first_name': 'Alice',
-            'last_name': null,
+            'full_name': 'Alice',
           },
           'photo_count': 0,
           'video_count': 0,
@@ -88,15 +86,14 @@ void main() {
         expect(model.guestName, 'Alice');
       });
 
-      test('should build guest name from last name only', () {
+      test('should trim whitespace from full_name', () {
         final json = {
           'id': 'album-123',
           'wedding_id': 'wedding-456',
           'guest_user_id': 'guest-789',
           'created_at': '2026-06-15T10:30:00.000Z',
           'profiles': {
-            'first_name': null,
-            'last_name': 'Smith',
+            'full_name': '  Alice Smith  ',
           },
           'photo_count': 0,
           'video_count': 0,
@@ -104,18 +101,35 @@ void main() {
 
         final model = GuestAlbumModel.fromJson(json);
 
-        expect(model.guestName, 'Smith');
+        expect(model.guestName, 'Alice Smith');
       });
 
-      test('should fallback to Guest when names are empty', () {
+      test('should fallback to Guest when full_name is empty', () {
         final json = {
           'id': 'album-123',
           'wedding_id': 'wedding-456',
           'guest_user_id': 'guest-789',
           'created_at': '2026-06-15T10:30:00.000Z',
           'profiles': {
-            'first_name': '',
-            'last_name': '',
+            'full_name': '',
+          },
+          'photo_count': 0,
+          'video_count': 0,
+        };
+
+        final model = GuestAlbumModel.fromJson(json);
+
+        expect(model.guestName, 'Guest');
+      });
+
+      test('should fallback to Guest when full_name is null', () {
+        final json = {
+          'id': 'album-123',
+          'wedding_id': 'wedding-456',
+          'guest_user_id': 'guest-789',
+          'created_at': '2026-06-15T10:30:00.000Z',
+          'profiles': {
+            'full_name': null,
           },
           'photo_count': 0,
           'video_count': 0,

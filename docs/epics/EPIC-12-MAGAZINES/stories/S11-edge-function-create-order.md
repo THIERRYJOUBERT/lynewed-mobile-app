@@ -80,7 +80,7 @@ Feature: Magazine order creation webhook
 ### Edge Function Implementation
 
 ```typescript
-// supabase/functions/magazine-order-webhook/index.ts
+// supabase/functions/magazine-webhook-v2/index.ts
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
@@ -291,7 +291,7 @@ Deno.serve(async (req) => {
 
 ```bash
 # Configure webhook in Stripe Dashboard or CLI
-stripe listen --forward-to https://hekyovgnovhfhmkpfrna.supabase.co/functions/v1/magazine-order-webhook
+stripe listen --forward-to https://hekyovgnovhfhmkpfrna.supabase.co/functions/v1/magazine-webhook-v2
 
 # Events to listen:
 # - checkout.session.completed
@@ -301,7 +301,7 @@ stripe listen --forward-to https://hekyovgnovhfhmkpfrna.supabase.co/functions/v1
 
 | Fichier | Action |
 |---------|--------|
-| `supabase/functions/magazine-order-webhook/index.ts` | Nouveau |
+| `supabase/functions/magazine-webhook-v2/index.ts` | Nouveau |
 | `supabase/functions/create-magazine-checkout/index.ts` | Nouveau (S10) |
 
 ## Tests

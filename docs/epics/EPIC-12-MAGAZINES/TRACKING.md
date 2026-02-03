@@ -27,7 +27,7 @@
 | S08 | UI Selection magazine | ✅ Done | 5 | Claude | Reorderable grid + cubit (91 tests) |
 | S09 | UI Preview magazine + Format selection | ✅ Done | 8 | Claude | 4 formats, cover, layouts (115 tests) |
 | S10 | Checkout Stripe + FedEx | ✅ Done | 5 | Claude | Address form, shipping, payment (141 tests) |
-| S11 | Edge Function webhook | ✅ Done | 5 | Claude | magazine-order-webhook deployed |
+| S11 | Edge Function webhook | ✅ Done | 5 | Claude | magazine-webhook-v2 deployed |
 | S12 | CGVU magazine | ✅ Done | 2 | Claude | Dialog + acceptance tracking (25 tests) |
 
 **Total Points** : 49
@@ -76,7 +76,7 @@ S01 ──► S02 ──► S03 ──► S10 ──► S11
 | 2026-02-03 | S03 Done | Tables magazine_orders + magazine_order_items creees avec RLS + CASCADE |
 | 2026-02-03 | S05 Done | Multi-select gallery avec action bar (selection_action_bar.dart, photo_tile.dart, gallery_grid.dart) |
 | 2026-02-03 | S07 Done | Share gallery: photo_shares table, SharePhotosWithGuestsUseCase, UnsharePhotosUseCase, ShareGalleryDialog, SharedBadge |
-| 2026-02-03 | S11 Done | Edge Function magazine-order-webhook: creates orders, snapshots photos, clears selections, sends notification |
+| 2026-02-03 | S11 Done | Edge Function magazine-webhook-v2: creates orders, snapshots photos, clears selections, sends notification |
 | 2026-02-03 | S06 Done | UI Actions: ToggleFavoriteUseCase, HideMediaUseCase, DeleteMediaUseCase + dialogs (78 tests) |
 | 2026-02-03 | S08 Done | Magazine Selection: ReorderablePhotoGrid, MagazineSelectionCubit, drag-drop reordering (91 tests) |
 | 2026-02-03 | S09 Done | Magazine Preview: 4 format selector, cover, layouts (single/double/mosaic), page navigation (115 tests) |

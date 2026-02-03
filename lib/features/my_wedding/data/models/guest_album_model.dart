@@ -30,8 +30,7 @@ class GuestAlbumModel extends GuestAlbum {
   ///   "guest_user_id": "user-id",
   ///   "created_at": "2026-01-01T00:00:00Z",
   ///   "profiles": {
-  ///     "first_name": "Alice",
-  ///     "last_name": "Smith",
+  ///     "full_name": "Alice Smith",
   ///     "avatar_url": "https://..."
   ///   },
   ///   "photo_count": 5,
@@ -57,13 +56,11 @@ class GuestAlbumModel extends GuestAlbum {
 
   /// Builds the guest's display name from profile data.
   ///
-  /// Combines first_name and last_name, falling back to "Guest" if empty.
+  /// Uses full_name from profiles table, falling back to "Guest" if empty.
   static String _buildGuestName(Map<String, dynamic>? profile) {
     if (profile == null) return 'Guest';
 
-    final firstName = profile['first_name'] as String? ?? '';
-    final lastName = profile['last_name'] as String? ?? '';
-    final fullName = '$firstName $lastName'.trim();
+    final fullName = (profile['full_name'] as String? ?? '').trim();
 
     return fullName.isEmpty ? 'Guest' : fullName;
   }

@@ -1952,7 +1952,7 @@ By scrolling to the bottom and checking the box below, you confirm you have read
 | `send-scheduled-notifications` | pg_cron (1 min) | Envoie rappels programmés |
 | `send-wedding-invitation` | HTTP | Envoie email invitation |
 | `create-magazine-checkout` | HTTP | Crée session Stripe Checkout pour magazine |
-| `magazine-order-webhook` | Webhook Stripe | Crée commande après paiement |
+| `magazine-webhook-v2` | Webhook Stripe | Crée commande après paiement |
 | `stripe-webhook` | Webhook Stripe | Gère tous events Stripe |
 | `fedex-webhook` | Webhook FedEx | Gère tracking events |
 

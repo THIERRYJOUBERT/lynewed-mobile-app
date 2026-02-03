@@ -6,6 +6,7 @@ library;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 
 import '/core/design/design.dart';
 import '../../data/datasources/download_data_source_impl.dart';
@@ -71,10 +72,81 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
   bool _isDownloading = false;
   double _downloadProgress = 0.0;
 
+  // Video player state
+  VideoPlayerController? _videoController;
+  bool _isVideoInitialized = false;
+  bool _isVideoPlaying = false;
+  bool _showControls = true;
+
   @override
   void initState() {
     super.initState();
     _downloadUseCase = DownloadMediaUseCase(DownloadDataSourceImpl());
+
+    if (widget.isVideo) {
+      _initializeVideoPlayer();
+    }
+  }
+
+  Future<void> _initializeVideoPlayer() async {
+    _videoController = VideoPlayerController.networkUrl(
+      Uri.parse(widget.imageUrl),
+    );
+
+    try {
+      await _videoController!.initialize();
+      _videoController!.addListener(_videoListener);
+      if (mounted) {
+        setState(() {
+          _isVideoInitialized = true;
+        });
+        // Auto-play the video
+        _videoController!.play();
+      }
+    } catch (e) {
+      // Video failed to load - keep showing error state
+      if (mounted) {
+        setState(() {
+          _isVideoInitialized = false;
+        });
+      }
+    }
+  }
+
+  void _videoListener() {
+    if (!mounted) return;
+
+    final isPlaying = _videoController?.value.isPlaying ?? false;
+    if (isPlaying != _isVideoPlaying) {
+      setState(() {
+        _isVideoPlaying = isPlaying;
+      });
+    }
+  }
+
+  void _togglePlayPause() {
+    if (_videoController == null || !_isVideoInitialized) return;
+
+    setState(() {
+      if (_isVideoPlaying) {
+        _videoController!.pause();
+      } else {
+        _videoController!.play();
+      }
+    });
+  }
+
+  void _toggleControls() {
+    setState(() {
+      _showControls = !_showControls;
+    });
+  }
+
+  @override
+  void dispose() {
+    _videoController?.removeListener(_videoListener);
+    _videoController?.dispose();
+    super.dispose();
   }
 
   Future<void> _downloadMedia() async {
@@ -141,7 +213,8 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
-        onTap: () => Navigator.pop(context),
+        // Only close on tap for photos, videos have their own controls
+        onTap: widget.isVideo ? null : () => Navigator.pop(context),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -149,7 +222,7 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
             InteractiveViewer(
               child: Center(
                 child: widget.isVideo
-                    ? _buildVideoPlaceholder()
+                    ? _buildVideoPlayer()
                     : CachedNetworkImage(
                         imageUrl: widget.imageUrl,
                         fit: BoxFit.contain,
@@ -234,31 +307,129 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
     );
   }
 
-  Widget _buildVideoPlaceholder() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(
-          Icons.videocam_rounded,
-          color: Colors.white54,
-          size: 64,
+  Widget _buildVideoPlayer() {
+    if (!_isVideoInitialized || _videoController == null) {
+      // Loading state
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
         ),
-        const SizedBox(height: 16),
-        Text(
-          'Video playback coming soon',
-          style: LynewedTextStyles.bodyMedium.copyWith(
-            color: Colors.white54,
+      );
+    }
+
+    return GestureDetector(
+      onTap: _toggleControls,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Video
+          AspectRatio(
+            aspectRatio: _videoController!.value.aspectRatio,
+            child: VideoPlayer(_videoController!),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Tap download to save',
-          style: LynewedTextStyles.bodySmall.copyWith(
-            color: Colors.white38,
-          ),
-        ),
-      ],
+
+          // Play/Pause overlay
+          if (_showControls)
+            GestureDetector(
+              onTap: _togglePlayPause,
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  _isVideoPlaying
+                      ? Icons.pause_rounded
+                      : Icons.play_arrow_rounded,
+                  color: Colors.white,
+                  size: 48,
+                ),
+              ),
+            ),
+
+          // Progress bar at bottom
+          if (_showControls)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: _buildVideoProgressBar(),
+            ),
+        ],
+      ),
     );
+  }
+
+  Widget _buildVideoProgressBar() {
+    final duration = _videoController!.value.duration;
+    final position = _videoController!.value.position;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.transparent,
+            Colors.black.withValues(alpha: 0.7),
+          ],
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Slider
+          SliderTheme(
+            data: SliderThemeData(
+              trackHeight: 3,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+              activeTrackColor: LynewedColors.primary,
+              inactiveTrackColor: Colors.white.withValues(alpha: 0.3),
+              thumbColor: LynewedColors.primary,
+            ),
+            child: Slider(
+              value: position.inMilliseconds.toDouble(),
+              min: 0,
+              max: duration.inMilliseconds.toDouble().clamp(1, double.infinity),
+              onChanged: (value) {
+                _videoController!.seekTo(Duration(milliseconds: value.toInt()));
+              },
+            ),
+          ),
+          // Time labels
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _formatDuration(position),
+                  style: LynewedTextStyles.labelSmall.copyWith(
+                    color: Colors.white70,
+                  ),
+                ),
+                Text(
+                  _formatDuration(duration),
+                  style: LynewedTextStyles.labelSmall.copyWith(
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDuration(Duration duration) {
+    final minutes = duration.inMinutes;
+    final seconds = duration.inSeconds % 60;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 
   Widget _buildActionButton({
