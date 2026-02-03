@@ -35,6 +35,7 @@ import 'inspirations_page.dart';
 import 'guests_page.dart';
 import 'guest_albums_page.dart';
 import 'wedding_groups_page.dart';
+import 'magazine_selection_page.dart';
 
 /// My Wedding Page - Main page for brides to manage their wedding
 ///
@@ -76,6 +77,9 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
 
   // Guests preview data
   List<WeddingGuest> _guests = [];
+
+  // Magazine preview data
+  List<MagazineSelection> _magazineSelections = [];
 
   @override
   void initState() {
@@ -122,7 +126,7 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
   Future<void> _loadWeddingTeamData() async {
     if (_wedding == null) return;
 
-    // Load team chat info, active team members, events, expenses, albums and guests in parallel
+    // Load team chat info, active team members, events, expenses, albums, guests and magazine in parallel
     final results = await Future.wait([
       _repository.getWeddingTeamChat(weddingId: _wedding!.id),
       _repository.getActiveWeddingTeam(weddingId: _wedding!.id),
@@ -130,6 +134,7 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
       _repository.getWeddingExpenses(weddingId: _wedding!.id),
       _repository.getInspirationAlbums(weddingId: _wedding!.id),
       _repository.getWeddingGuests(weddingId: _wedding!.id),
+      _repository.getMagazineSelections(weddingId: _wedding!.id),
     ]);
 
     final chatResult = results[0] as RepositoryResult<WeddingTeamChatInfo?>;
@@ -138,6 +143,7 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
     final expensesResult = results[3] as RepositoryResult<List<WeddingExpense>>;
     final albumsResult = results[4] as RepositoryResult<List<InspirationAlbum>>;
     final guestsResult = results[5] as RepositoryResult<List<WeddingGuest>>;
+    final magazineResult = results[6] as RepositoryResult<List<MagazineSelection>>;
 
     if (chatResult.isSuccess) {
       _teamChatInfo = chatResult.data;
@@ -174,6 +180,10 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
 
     if (guestsResult.isSuccess) {
       _guests = guestsResult.data ?? [];
+    }
+
+    if (magazineResult.isSuccess) {
+      _magazineSelections = magazineResult.data ?? [];
     }
   }
 
@@ -320,6 +330,9 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
                 const SizedBox(height: 30.0),
                 // Guests Section
                 _buildGuestsSection(),
+                const SizedBox(height: 30.0),
+                // Magazine Section
+                _buildMagazineSection(),
                 const SizedBox(height: 30.0),
                 // Note for Pros Section
                 _buildNoteForProsSection(),
@@ -1756,6 +1769,128 @@ Or scan the QR code in the app.
     );
   }
 
+  /// Magazine Section - Create photo magazines from wedding photos
+  Widget _buildMagazineSection() {
+    final hasSelections = _magazineSelections.isNotEmpty;
+    final selectionCount = _magazineSelections.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('MAGAZINE', style: LynewedTextStyles.sectionTitle),
+            GestureDetector(
+              onTap: _openMagazineSelectionPage,
+              child: Text(
+                'View all',
+                style: LynewedTextStyles.labelLarge.copyWith(
+                  color: LynewedColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4.0),
+        Text(
+          hasSelections
+              ? '$selectionCount photo${selectionCount > 1 ? 's' : ''} selected'
+              : 'Create a photo magazine from your wedding',
+          style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
+        ),
+        const SizedBox(height: 10.0),
+        if (hasSelections)
+          GestureDetector(
+            onTap: _openMagazineSelectionPage,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: LynewedColors.surface,
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: LynewedColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4.0),
+                    ),
+                    child: const Icon(
+                      Icons.auto_stories_outlined,
+                      color: LynewedColors.primary,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12.0),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '$selectionCount photo${selectionCount > 1 ? 's' : ''} selected',
+                          style: LynewedTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 2.0),
+                        Text(
+                          'Tap to preview or order',
+                          style: LynewedTextStyles.bodySmall.copyWith(
+                            color: LynewedColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right,
+                    color: LynewedColors.textSecondary,
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          GestureDetector(
+            onTap: _openMagazineSelectionPage,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20.0),
+              decoration: BoxDecoration(
+                color: LynewedColors.surface,
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              child: Column(
+                children: [
+                  const Icon(
+                    Icons.auto_stories_outlined,
+                    size: 32.0,
+                    color: LynewedColors.gray300,
+                  ),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    'No photos selected yet',
+                    style: LynewedTextStyles.bodyMedium.copyWith(
+                      color: LynewedColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 12.0),
+                  LynewedButton(
+                    text: 'Select Photos',
+                    onPressed: _openMagazineSelectionPage,
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   /// Note for Pros Section
   Widget _buildNoteForProsSection() {
     final hasNote = _wedding!.noteForPros != null && _wedding!.noteForPros!.isNotEmpty;
@@ -1960,6 +2095,20 @@ Or scan the QR code in the app.
         builder: (context) => GuestAlbumsPage(weddingId: _wedding!.id),
       ),
     );
+  }
+
+  void _openMagazineSelectionPage() {
+    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+    if (currentUserId == null || _wedding == null) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => MagazineSelectionPage(
+          weddingId: _wedding!.id,
+          userId: currentUserId,
+        ),
+      ),
+    ).then((_) => _loadWedding());
   }
 
   Future<void> _openProDetails(String profileId) async {
