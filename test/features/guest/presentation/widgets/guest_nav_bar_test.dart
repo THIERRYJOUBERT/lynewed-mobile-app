@@ -1,0 +1,160 @@
+/// Tests for GuestNavBar widget.
+///
+/// Verifies the guest navigation bar including:
+/// - 3 tabs display
+/// - Tab selection
+/// - Icon states
+library;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:lynewed_beta/features/guest/presentation/widgets/guest_nav_bar.dart';
+
+void main() {
+  group('GuestNavBar', () {
+    Widget buildTestWidget({
+      int currentIndex = 0,
+      ValueChanged<int>? onTap,
+    }) {
+      return MaterialApp(
+        home: Scaffold(
+          bottomNavigationBar: GuestNavBar(
+            currentIndex: currentIndex,
+            onTap: onTap ?? (_) {},
+          ),
+        ),
+      );
+    }
+
+    group('Basic rendering', () {
+      testWidgets('should display exactly 3 tabs', (tester) async {
+        // Arrange & Act
+        await tester.pumpWidget(buildTestWidget());
+
+        // Assert
+        final navBar = tester.widget<BottomNavigationBar>(
+          find.byType(BottomNavigationBar),
+        );
+        expect(navBar.items.length, 3);
+      });
+
+      testWidgets('should display Album tab', (tester) async {
+        // Arrange & Act
+        await tester.pumpWidget(buildTestWidget());
+
+        // Assert
+        expect(find.text('Album'), findsOneWidget);
+        expect(find.byIcon(Icons.photo_library), findsOneWidget);
+      });
+
+      testWidgets('should display Chat tab', (tester) async {
+        // Arrange & Act
+        await tester.pumpWidget(buildTestWidget());
+
+        // Assert
+        expect(find.text('Chat'), findsOneWidget);
+        expect(find.byIcon(Icons.chat_bubble_outline), findsOneWidget);
+      });
+
+      testWidgets('should display Profil tab', (tester) async {
+        // Arrange & Act
+        await tester.pumpWidget(buildTestWidget());
+
+        // Assert
+        expect(find.text('Profil'), findsOneWidget);
+        expect(find.byIcon(Icons.person_outline), findsOneWidget);
+      });
+    });
+
+    group('Tab selection', () {
+      testWidgets('should highlight Album tab when index is 0', (tester) async {
+        // Arrange & Act
+        await tester.pumpWidget(buildTestWidget(currentIndex: 0));
+
+        // Assert
+        final navBar = tester.widget<BottomNavigationBar>(
+          find.byType(BottomNavigationBar),
+        );
+        expect(navBar.currentIndex, 0);
+        // Active icon for Album
+        expect(find.byIcon(Icons.photo_library), findsOneWidget);
+      });
+
+      testWidgets('should highlight Chat tab when index is 1', (tester) async {
+        // Arrange & Act
+        await tester.pumpWidget(buildTestWidget(currentIndex: 1));
+
+        // Assert
+        final navBar = tester.widget<BottomNavigationBar>(
+          find.byType(BottomNavigationBar),
+        );
+        expect(navBar.currentIndex, 1);
+        // Active icon for Chat
+        expect(find.byIcon(Icons.chat_bubble), findsOneWidget);
+      });
+
+      testWidgets('should highlight Profil tab when index is 2', (tester) async {
+        // Arrange & Act
+        await tester.pumpWidget(buildTestWidget(currentIndex: 2));
+
+        // Assert
+        final navBar = tester.widget<BottomNavigationBar>(
+          find.byType(BottomNavigationBar),
+        );
+        expect(navBar.currentIndex, 2);
+        // Active icon for Profil
+        expect(find.byIcon(Icons.person), findsOneWidget);
+      });
+    });
+
+    group('Tab interaction', () {
+      testWidgets('should call onTap when Album tab is tapped', (tester) async {
+        // Arrange
+        int? tappedIndex;
+        await tester.pumpWidget(buildTestWidget(
+          currentIndex: 1, // Start on Chat
+          onTap: (index) => tappedIndex = index,
+        ));
+
+        // Act
+        await tester.tap(find.text('Album'));
+        await tester.pump();
+
+        // Assert
+        expect(tappedIndex, 0);
+      });
+
+      testWidgets('should call onTap when Chat tab is tapped', (tester) async {
+        // Arrange
+        int? tappedIndex;
+        await tester.pumpWidget(buildTestWidget(
+          currentIndex: 0, // Start on Album
+          onTap: (index) => tappedIndex = index,
+        ));
+
+        // Act
+        await tester.tap(find.text('Chat'));
+        await tester.pump();
+
+        // Assert
+        expect(tappedIndex, 1);
+      });
+
+      testWidgets('should call onTap when Profil tab is tapped', (tester) async {
+        // Arrange
+        int? tappedIndex;
+        await tester.pumpWidget(buildTestWidget(
+          currentIndex: 0, // Start on Album
+          onTap: (index) => tappedIndex = index,
+        ));
+
+        // Act
+        await tester.tap(find.text('Profil'));
+        await tester.pump();
+
+        // Assert
+        expect(tappedIndex, 2);
+      });
+    });
+  });
+}
