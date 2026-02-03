@@ -296,6 +296,45 @@ auth, chat, content, dashboard, feed, **guest**, home, map, my_wedding, notifica
 
 ---
 
+## Design System UI (OBLIGATOIRE)
+
+> **TOUJOURS** utiliser ces composants pour garantir la cohérence visuelle.
+
+### Composants Réutilisables (`lib/core/design/`)
+
+| Widget | Usage |
+|--------|-------|
+| `LynewedButton` | Boutons (primary, secondary, text) |
+| `LynewedTextField` | Champs de saisie |
+| `LynewedChip` | Chips sélectionnables |
+| `LynewedSheet` | Base pour bottom sheets |
+| `LynewedSlider` / `LynewedRangeSlider` | Sliders |
+| `LynewedIconButton` | Boutons icône |
+| `LynewedSectionTitle` | Titres de sections |
+
+**Import standard** : `import '/core/design/design.dart';`
+
+### Écrans de Référence
+
+| Type | Fichiers de référence |
+|------|----------------------|
+| **Sheets formulaire** | `report_user_sheet.dart`, `create_album_sheet.dart` |
+| **Sheets actions** | `conversation_actions_sheet.dart` |
+| **Pages liste** | `messages_page.dart`, `notifications_page.dart` |
+| **Pages galerie** | `album_detail_page.dart` |
+| **Pages navigation** | `guest_home_page.dart`, `my_wedding_page.dart` |
+
+### Règles Obligatoires
+
+1. **TOUJOURS** utiliser `Lynewed*` widgets (jamais Material brut)
+2. **TOUJOURS** utiliser `LynewedColors` et `LynewedTextStyles`
+3. **TOUJOURS** respecter espacements : 30px inter-section, 10px label→contenu
+4. **TOUJOURS** s'inspirer des écrans de référence
+
+> Voir `.claude/rules/ui-design-system.md` pour détails complets.
+
+---
+
 ## Index Rapide
 
 | Besoin | Où chercher |
@@ -306,6 +345,7 @@ auth, chat, content, dashboard, feed, **guest**, home, map, my_wedding, notifica
 | Décisions architecture | `docs/decisions/INDEX.md` |
 | Architecture workflows | `.claude/context/SYSTEM.md` |
 | Règles techniques | `.claude/rules/` |
+| **Design System UI** | `.claude/rules/ui-design-system.md` |
 | Epics et Stories | `docs/epics/` |
 | Design System | `docs/App/DESIGN_SYSTEM.md` |
 

@@ -8,13 +8,23 @@
 
 Les subagents lancés via Task peuvent utiliser l'outil **Skill** pour invoquer les workflows du projet. Cela leur donne accès à des capacités avancées :
 
-| Workflow | Skill Name | Arguments | Capacité |
-|----------|------------|-----------|----------|
-| `/dev-story` | `dev-story` | `{story_id} --auto` | TDD, Review, Commit |
-| `/debug` | `debug` | `--auto {symptom}` | Investigation scientifique |
-| `/oneshot` | `oneshot` | `--auto {description}` | Dev rapide APEX |
-| `/exploration:explore` | `exploration:explore` | `{topic}` | Multi-agent exploration |
-| Mode Plan | `EnterPlanMode` (tool) | - | Planification structurée |
+| Workflow | Skill Name | Mode Standard | Mode DEEP |
+|----------|------------|---------------|-----------|
+| `/dev-story` | `dev-story` | `{story_id} --auto` | `{story_id} --deep` |
+| `/debug` | `debug` | `--auto {symptom}` | `--auto {symptom}` |
+| `/oneshot` | `oneshot` | `--auto {description}` | `--auto {description}` |
+| `/exploration:explore` | `exploration:explore` | `{topic}` | `{topic}` |
+| Mode Plan | `EnterPlanMode` (tool) | Occasionnel | **OBLIGATOIRE** |
+
+### Mode DEEP vs Standard
+
+| Aspect | Standard | DEEP |
+|--------|----------|------|
+| Iterations | Max 5 puis escalade | Illimitées jusqu'à perfection |
+| Design System | Mentionné | VÉRIFIÉ explicitement |
+| Plan Mode | Occasionnel | OBLIGATOIRE avant chaque story |
+| Tolérance | Accepte MINEUR | ZERO manquement |
+| Vérification | Tests + analyze | Tests + analyze + DS check |
 
 ---
 
@@ -79,12 +89,31 @@ Task:
 5. Review adversariale
 6. Commit automatique
 
-**Output typique:**
+**Mode DEEP (`--deep`):**
+- Itération ILLIMITÉE jusqu'à perfection
+- Vérification Design System EXPLICITE
+- Double review + checklist exhaustive
+- ZERO manquement toléré
+- Rapport détaillé avec compliance DS
+
+**Output typique (standard):**
 ```
 Status: COMPLETE
 Critères: 5/5 satisfaits
 Tests: 12 passants
 Warnings: 0
+```
+
+**Output typique (DEEP):**
+```
+Status: COMPLETE
+Critères: 5/5 satisfaits
+Tests: 12 passants
+Warnings: 0
+Design System: 100% conforme
+- LynewedButton: 5 occurrences ✅
+- LynewedColors: Aucune violation ✅
+Iterations: 3 (perfection atteinte)
 ```
 
 ---

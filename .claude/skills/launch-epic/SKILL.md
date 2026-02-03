@@ -1,13 +1,13 @@
 ---
 name: launch-epic
-description: "Lancer un Epic complet avec coordination chef. Ex: /launch-epic EPIC-01 --mode=autonomous"
+description: "Lancer un Epic complet avec coordination chef. Ex: /launch-epic EPIC-01 --mode=autonomous --deep"
 model: opus
-argument-hint: "[EPIC-ID] [--mode=supervised|autonomous]"
+argument-hint: "[EPIC-ID] [--mode=supervised|autonomous] [--deep]"
 disable-model-invocation: false
-allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion, TodoWrite, Skill
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task, AskUserQuestion, TodoWrite, Skill, EnterPlanMode, ExitPlanMode
 ---
 
-# /launch-epic v3
+# /launch-epic v4
 
 Tu es le **Chef d'Epic** - tu coordonnes, orchestres et valides l'implémentation d'un Epic complet via des subagents spécialisés.
 
@@ -19,26 +19,59 @@ Tu es le **Chef d'Epic** - tu coordonnes, orchestres et valides l'implémentatio
 |------|-----------------|-------|
 | **supervised** | Interactif, décisions utilisateur | Travail collaboratif agile |
 | **autonomous** | 100% automatique via Task agents | L'utilisateur lance et attend le résultat |
+| **autonomous --deep** | **NOUVEAU** Chef Opus critique + verification approfondie | Qualite PARFAITE garantie |
+
+### Mode DEEP (--deep)
+
+Le mode `--deep` transforme le Chef en **garant de la qualite absolue** :
+
+- **Plan Mode obligatoire** avant chaque story
+- **Verification approfondie** apres chaque sub-agent
+- **Iteration jusqu'a perfection** - relance si qualite insuffisante
+- **Design System verifie** explicitement
+- **Coordination inter-agents** via fichier partage
+- **Zero tolerance** pour les manquements
 
 ---
 
-## NOUVEAUTÉS v3 - Orchestration Task
+## NOUVEAUTÉS v4 - Mode DEEP + Orchestration Task
+
+### Mode DEEP: Chef Opus Garant de Qualite
+
+Le mode `--deep` active un comportement de supervision rigoureuse :
+
+```
+autonomous         → Delegation simple, verification post-completion
+autonomous --deep  → Chef critique, Plan Mode, verification approfondie
+```
+
+**Caracteristiques DEEP:**
+
+| Aspect | Standard | DEEP |
+|--------|----------|------|
+| Supervision | Delegation simple | Chef Opus critique |
+| Sub-agents | `/dev-story --auto` | `/dev-story --deep` |
+| Verification | Post-completion | Avant ET apres chaque story |
+| Plan Mode | Occasionnel | Systematique avant chaque story |
+| Design System | Mentionne | VERIFIE explicitement |
+| Tolerance erreurs | 5 tentatives | 3 tentatives puis escalade |
+| Coordination | Independante | Fichier COORDINATION.md partage |
 
 ### Subagents Disponibles pour le Mode Autonomous
 
 Les subagents peuvent maintenant utiliser les **workflows réels** du projet :
 
-| Workflow | Quand l'utiliser | Invocation |
-|----------|------------------|------------|
-| `/dev-story --auto` | Implémenter une story formelle | Skill tool dans le subagent |
-| `/debug --auto` | Quand un bug est détecté pendant l'implémentation | Skill tool dans le subagent |
-| `/oneshot --auto` | Pour des tâches rapides hors scope story | Skill tool dans le subagent |
-| `/exploration:explore` | Pour comprendre le contexte avant d'agir | Skill tool dans le subagent |
-| `EnterPlanMode` | Pour planifier une implémentation complexe | Tool direct |
+| Workflow | Mode Standard | Mode DEEP |
+|----------|--------------|-----------|
+| `/dev-story` | `--auto` | `--deep` (iteration jusqu'a perfection) |
+| `/debug` | `--auto` | `--auto` (meme comportement) |
+| `/oneshot` | `--auto` | `--auto` (meme comportement) |
+| `/exploration:explore` | Standard | Standard |
+| `EnterPlanMode` | Occasionnel | **OBLIGATOIRE** avant chaque story |
 
 ### Modèle par Défaut
 
-**Tous les subagents utilisent `model: opus`** sauf si explicitement spécifié autrement.
+**Tous les subagents utilisent `model: opus`** - JAMAIS Sonnet pour l'implementation.
 
 ---
 
@@ -57,11 +90,21 @@ Les subagents peuvent maintenant utiliser les **workflows réels** du projet :
 ## Arguments
 
 ```
-$ARGUMENTS → EPIC-ID + MODE
-Ex: "EPIC-01 --mode=supervised" → EPIC-ID=EPIC-01, MODE=supervised
-Ex: "EPIC-01 --mode=autonomous" → EPIC-ID=EPIC-01, MODE=autonomous
+$ARGUMENTS → EPIC-ID + MODE + [DEEP]
+Ex: "EPIC-01 --mode=supervised" → EPIC-ID=EPIC-01, MODE=supervised, DEEP=false
+Ex: "EPIC-01 --mode=autonomous" → EPIC-ID=EPIC-01, MODE=autonomous, DEEP=false
+Ex: "EPIC-01 --mode=autonomous --deep" → EPIC-ID=EPIC-01, MODE=autonomous, DEEP=true
+Ex: "EPIC-01 --auto --deep" → EPIC-ID=EPIC-01, MODE=autonomous, DEEP=true
 Default MODE si non spécifié: supervised
+Default DEEP si non spécifié: false
 ```
+
+### Alias
+
+| Alias | Equivalent |
+|-------|------------|
+| `--auto` | `--mode=autonomous` |
+| `--auto --deep` | `--mode=autonomous --deep` |
 
 ---
 
@@ -70,12 +113,15 @@ Default MODE si non spécifié: supervised
 | Variable | Type | Description |
 |----------|------|-------------|
 | `{epic_id}` | string | ID de l'Epic (ex: EPIC-01) |
-| `{mode}` | enum | supervised ou autonomous |
+| `{mode}` | enum | supervised, autonomous, ou autonomous-deep |
+| `{deep}` | boolean | Mode DEEP active (verification approfondie) |
 | `{epic_path}` | string | Chemin vers l'Epic (docs/epics/{epic_id}/) |
 | `{stories}` | array | Liste des stories à implémenter |
 | `{current_story}` | object | Story en cours d'implémentation |
 | `{completed_stories}` | array | Stories terminées avec succès |
 | `{active_agents}` | array | Agents Task en cours d'exécution |
+| `{coordination_file}` | string | (DEEP) Chemin vers COORDINATION.md |
+| `{quality_report}` | object | (DEEP) Rapport qualite global |
 
 ---
 
@@ -83,7 +129,7 @@ Default MODE si non spécifié: supervised
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    /launch-epic v3 WORKFLOW                      │
+│                    /launch-epic v4 WORKFLOW                      │
 │                                                                  │
 │  00. INIT        → Parse args, charger contexte, vérifier       │
 │       ↓           (ERROR HANDLING inclus)                        │
@@ -94,11 +140,14 @@ Default MODE si non spécifié: supervised
 │  │  supervised?  ─────────────► step-01-supervised.md     │    │
 │  │                                                         │    │
 │  │  autonomous?  ─────────────► step-02-autonomous.md     │    │
-│  │                              (NEW: Task-based)          │    │
+│  │                              (Task-based standard)      │    │
+│  │                                                         │    │
+│  │  autonomous --deep? ───────► step-02-autonomous-deep.md│    │
+│  │                              (NEW v4: Chef Opus critique)    │
 │  └─────────────────────────────────────────────────────────┘    │
 │                              │                                   │
 │                              ▼                                   │
-│  03. REVIEW      → Review adversariale (commun aux 2 modes)     │
+│  03. REVIEW      → Review adversariale (commun aux 3 modes)     │
 │       ↓                                                          │
 │                                                                  │
 │  04. FINALIZE    → Rapport final, validation Epic               │
@@ -118,16 +167,42 @@ Default MODE si non spécifié: supervised
 |------|---------|---------|
 | 00 | [steps/step-00-init.md](steps/step-00-init.md) | Initialisation, validation, error handling |
 | 01 | [steps/step-01-supervised.md](steps/step-01-supervised.md) | Workflow interactif avec utilisateur |
-| 02 | [steps/step-02-autonomous.md](steps/step-02-autonomous.md) | **NEW v3**: Orchestration Task-based |
+| 02 | [steps/step-02-autonomous.md](steps/step-02-autonomous.md) | Orchestration Task-based standard |
+| 02-deep | [steps/step-02-autonomous-deep.md](steps/step-02-autonomous-deep.md) | **NEW v4**: Chef Opus critique + verification approfondie |
 | 03 | [steps/step-03-review.md](steps/step-03-review.md) | Review adversariale (commun) |
 | 04 | [steps/step-04-finalize.md](steps/step-04-finalize.md) | Finalisation Epic et rapport |
 | 05 | (inline) | Finalization intelligente (sync/doc selon mode) |
 
 ---
 
-## Key Patterns v3
+## Key Patterns v4
 
-### Orchestration Task-Based
+### Mode DEEP - Chef Opus Critique
+
+En mode `--deep`, le Chef Opus suit ce cycle pour chaque story :
+
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│                    CYCLE STORY DEEP (Chef Opus)                             │
+│                                                                             │
+│  A. PLAN MODE ──► EnterPlanMode AVANT delegation                            │
+│       │          Analyser story, preparer instructions enrichies            │
+│       ↓                                                                     │
+│  B. DELEGATE ──► Task sub-agent avec /dev-story --deep                      │
+│       │          Instructions precises du Chef                              │
+│       ↓                                                                     │
+│  C. VERIFY ────► Verification OBJECTIVE du Chef                             │
+│       │          - Tous AC satisfaits ?                                     │
+│       │          - Design System respecte ?                                 │
+│       │          - Tests passants ?                                         │
+│       ↓                                                                     │
+│  D. DECIDE ────► PARFAIT → Next story                                       │
+│                  INSUFFISANT → Relancer avec corrections                    │
+│                  (Max 3 iterations puis escalade)                           │
+└────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Orchestration Task-Based (Standard)
 
 Le Chef d'Epic utilise l'outil **Task** pour déléguer :
 

@@ -3,11 +3,13 @@ name: dev-story
 description: "Implementer une story avec TDD strict Red-Green-Refactor. Utiliser pour developper une story validee."
 model: opus
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, AskUserQuestion, TodoWrite, Skill
-argument-hint: "<story-id> [--mode=supervised|auto]"
+argument-hint: "<story-id> [--mode=supervised|auto] [--deep]"
 ---
 
 <objective>
 Implementer une story formelle avec qualite APEX (TDD, Review Adversariale, Self-Healing). Charge le fichier story, explore le contexte, planifie l'implementation, et execute avec rigueur. Documente l'implementation dans un dossier story dedie.
+
+**Mode DEEP**: Iteration JUSQU'A PERFECTION avec verification Design System explicite.
 </objective>
 
 <critical_rule>
@@ -48,17 +50,33 @@ Implementer une story formelle avec qualite APEX (TDD, Review Adversariale, Self
 |------|------|----------|
 | **SUPERVISED** | default | Checkpoint after PLAN (user validates before coding) |
 | **AUTO** | `--auto` | 100% autonomous after step-00 (no plan checkpoint) |
+| **AUTO DEEP** | `--auto --deep` ou `--deep` | **NEW** Iteration JUSQU'A PERFECTION |
 
-**Note**: Both modes maintain same quality standards (TDD, Review, 0 warnings).
+### Mode DEEP (--deep)
+
+Le mode `--deep` active une execution ultra-rigoureuse :
+
+| Aspect | Standard | DEEP |
+|--------|----------|------|
+| **Iterations** | Max 5 puis escalade | Illimitees jusqu'a perfection |
+| **Design System** | Mentionne | VERIFIE explicitement |
+| **Self-critique** | Review adversariale | Double review + checklist exhaustive |
+| **Tolerance** | Accepte MINEUR | ZERO manquement tolere |
+| **Verification** | Tests + analyze | Tests + analyze + Design System check |
+
+**CRITIQUE**: En mode DEEP, on NE TERMINE JAMAIS avec des problemes non corriges.
+
+**Note**: All modes maintain same quality standards (TDD, Review, 0 warnings). Mode DEEP adds perfection guarantee.
 </modes>
 
 <state_variables>
 | Variable | Type | Description |
 |----------|------|-------------|
 | {story_id} | string | Story identifier (e.g., STORY-01-01) |
-| {mode} | enum | auto or supervised (default: supervised) |
+| {mode} | enum | auto, supervised, or deep (default: supervised) |
+| {deep} | boolean | Mode DEEP active (iteration jusqu'a perfection) |
 | {story_path} | string | Path to story file |
-| {story_folder} | string | Path to story docs folder (NEW) |
+| {story_folder} | string | Path to story docs folder |
 | {story_content} | object | Parsed story (criteria, files, tests) |
 | {patterns_found} | array | Existing patterns in codebase |
 | {files_impacted} | array | Files to create/modify |
@@ -67,6 +85,7 @@ Implementer une story formelle avec qualite APEX (TDD, Review Adversariale, Self
 | {code_written} | array | Files created/modified |
 | {tests_written} | array | Tests written (TDD) |
 | {review_results} | object | Review Adversariale results |
+| {design_system_compliance} | object | (DEEP) Design System verification results |
 | {validation_status} | enum | PASS or FAIL |
 | {commit_hash} | string | Hash of final commit |
 </state_variables>
@@ -82,10 +101,13 @@ Load `steps/step-00-load.md`
 | 01 | step-01-explore.md | 3 Sonnet agents parallel exploration | ✓ Context collected |
 | 02 | step-02-plan.md | Generate TDD plan + checkpoint (if supervised) | ✓ Plan complete |
 | 03 | step-03-execute.md | APEX Engine: TDD + Review Adversariale | ✓ Code + tests + review |
+| 03-deep | step-03-execute-deep.md | **NEW** APEX DEEP: Iteration jusqu'a perfection | ✓ PARFAIT ou continuer |
 | 04 | step-04-verify.md | Final validation (tests + analyze) | ✓ All pass |
 | 05 | step-05-commit.md | Finalization + story status + TRACKING update | ✓ Commit + tracking updated |
 | 06 | step-06-document.md | Create story documentation folder | ✓ Story docs created |
 | 07 | (inline) | Finalization intelligente | Propose sync selon mode |
+
+**Note**: En mode DEEP, utiliser `step-03-execute-deep.md` au lieu de `step-03-execute.md`.
 </step_files>
 
 <execution_rules>
@@ -96,11 +118,13 @@ Load `steps/step-00-load.md`
 5. **Mode-Conditional Checkpoint**: step-02 has checkpoint ONLY in SUPERVISED mode
 6. **TDD Cycle**: RED → GREEN → REFACTOR for each acceptance criterion
 7. **VALIDATE before EXAMINE**: Technical validation BEFORE Review Adversariale
-8. **Self-Healing**: Max 5 attempts with learning between each
+8. **Self-Healing**: Max 5 attempts (standard) or UNLIMITED (deep)
 9. **Story Tracking**: Update story status and TRACKING.md at completion
 10. **/commit Integration**: Always finalize via /commit skill
 11. **Story Documentation**: Create story folder with implementation.md
 12. **Intelligent Finalization**: After docs, propose sync based on mode
+13. **DEEP Mode Step Selection**: Use step-03-execute-deep.md when --deep flag present
+14. **Design System Verification (DEEP)**: Explicit check of `.claude/rules/ui-design-system.md` compliance
 </execution_rules>
 
 <story_documentation_structure>
@@ -167,6 +191,12 @@ docs/epics/EPIC-XX/stories/
 ✅ Commit created with proper message
 ✅ Story documentation folder created with implementation.md
 ✅ No debug code or TODOs left behind
+
+**DEEP Mode Additional Criteria:**
+✅ Design System 100% compliant (verified explicitly)
+✅ No Material widgets where Lynewed* exists
+✅ No hardcoded Colors/TextStyle
+✅ PERFECTION achieved (0 issues after iterations)
 </success_criteria>
 
 <failure_modes>

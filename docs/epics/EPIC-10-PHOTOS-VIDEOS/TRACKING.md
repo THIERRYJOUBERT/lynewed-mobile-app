@@ -1,8 +1,8 @@
 # TRACKING - EPIC-10-PHOTOS-VIDEOS
 
-> Status : 🔵 Draft
-> Stories : 0/10 completees
-> Derniere MAJ : 2026-01-28
+> Status : 🟢 Ready
+> Stories : 0/8 completees
+> Derniere MAJ : 2026-02-03
 
 ---
 
@@ -11,6 +11,7 @@
 | Date | Evenement |
 |------|-----------|
 | 2026-01-28 | Epic cree - Projet Photo & Video (APP-04) |
+| 2026-02-03 | Epic revise - Simplification (10→8 stories, suppression opt-in/logs/print_ready) |
 | - | - |
 
 ---
@@ -19,90 +20,71 @@
 
 | Story | Status | Assignee | Date Start | Date Done | Notes |
 |-------|--------|----------|------------|-----------|-------|
-| S01 - Enrichir album_images | 🔵 Todo | - | - | - | Base pour videos et legendes |
-| S02 - Creer guest_albums | 🔵 Todo | - | - | - | Depend EPIC-06 S01 (enum guest) |
-| S03 - Creer guest_media | 🔵 Todo | - | - | - | Depend S02 |
-| S04 - Creer gallery_access_logs | 🔵 Todo | - | - | - | Independant |
-| S05 - Upload video validation | 🔵 Todo | - | - | - | Depend S01 |
-| S06 - Saisie legendes | 🔵 Todo | - | - | - | Depend S01 |
-| S07 - Toggle shared_with_bride | 🔵 Todo | - | - | - | Depend S02, S03 |
-| S08 - Vue bride albums guests | 🔵 Todo | - | - | - | Depend S02, S03 |
-| S09 - Telechargement HQ + zip | 🔵 Todo | - | - | - | Depend S01-S03 |
-| S10 - Flag print_ready | 🔵 Todo | - | - | - | Depend S01, S03 |
+| S01 - Enrichir album_images | 🔵 Todo | - | - | - | +media_type, caption, duration, file_size |
+| S02 - Creer guest_albums | 🔵 Todo | - | - | - | 1 album/guest/wedding, RLS bride voit tout |
+| S03 - Creer guest_media | 🔵 Todo | - | - | - | Depend S02, contraintes fichiers |
+| S04 - UI Upload bride (video) | 🔵 Todo | - | - | - | Depend S01, video support |
+| S05 - UI Caption input | 🔵 Todo | - | - | - | Depend S01, CaptionInputWidget |
+| S06 - UI Upload guest | 🔵 Todo | - | - | - | Depend S02+S03+S05, GuestAlbumPage |
+| S07 - UI Bride vue guests | 🔵 Todo | - | - | - | Depend S02+S03, GuestAlbumsPage |
+| S08 - Download media | 🔵 Todo | - | - | - | Depend S01-S03, single+zip |
 
 ---
 
-## Problemes Rencontres
-
-| Date | Probleme | Resolution | Status |
-|------|----------|------------|--------|
-| - | *Aucun pour l'instant* | - | - |
-
----
-
-## Decisions Techniques
+## Decisions Techniques (2026-02-03)
 
 | Date | Decision | Contexte | Impact |
 |------|----------|----------|--------|
-| 2026-01-28 | Limites: 20MB photo, 500MB/10min video | PRD Section 6 | Balance qualite/stockage |
-| 2026-01-28 | Caption max 500 chars | PRD Section 6 | UX concise |
-| 2026-01-28 | shared_with_bride opt-in (default FALSE) | Privacy by design | Guest doit explicitement partager |
-| 2026-01-28 | Zip generation serveur pour gros fichiers | Performance | Edge Function recommandee |
-| 2026-01-28 | print_ready visible mais desactive | Anticipation futur | Prepare infrastructure |
+| 2026-02-03 | Reutiliser bucket `wedding-albums` | Pas de creation manuelle | Structure: {wedding_id}/guests/{user_id}/ |
+| 2026-02-03 | Pas d'opt-in partage guest→bride | Simplicite UX | Bride voit tout automatiquement |
+| 2026-02-03 | Suppression gallery_access_logs | Pas necessaire V1 | Moins de complexite |
+| 2026-02-03 | Suppression print_ready | Futur | Focus sur core features |
+| 2026-02-03 | 8 stories au lieu de 10 | Simplification | S07 toggle + S10 print_ready supprimes |
 
 ---
 
 ## Ce qui reste pour 100%
 
-### Database (Stories S01-S04)
+### Database (Stories S01-S03)
 
 - [ ] S01: Colonne media_type sur album_images
-- [ ] S01: Colonne caption sur album_images
+- [ ] S01: Colonne caption sur album_images (max 500)
 - [ ] S01: Colonnes duration_seconds, file_size_bytes sur album_images
-- [ ] S01: Colonne print_ready sur album_images
-- [ ] S01: Check constraints (media_type, caption length)
+- [ ] S01: Check constraints
 - [ ] S02: Table guest_albums avec UNIQUE(wedding_id, guest_user_id)
-- [ ] S02: Index idx_guest_albums_wedding_shared
 - [ ] S02: RLS "Guest manages own album"
-- [ ] S02: RLS "Bride views shared albums"
+- [ ] S02: RLS "Bride views all albums"
 - [ ] S03: Table guest_media avec FK vers guest_albums
-- [ ] S03: Contraintes media_type et caption_length
+- [ ] S03: Contraintes media_type, caption, duration, file_size
 - [ ] S03: RLS "Guest manages own media"
-- [ ] S03: RLS "Bride views shared media"
-- [ ] S04: Table gallery_access_logs avec index
-- [ ] S04: RLS service_role only
+- [ ] S03: RLS "Bride views all media"
 
-### Flutter (Stories S05-S10)
+### Flutter (Stories S04-S08)
 
-- [ ] S05: VideoPicker avec validation duree/taille
-- [ ] S05: Thumbnail generation automatique
-- [ ] S05: Progress indicator upload
-- [ ] S05: Gestion erreurs (trop long, trop gros, format invalide)
-- [ ] S06: CaptionInputWidget avec compteur 500 chars
-- [ ] S06: Preview caption sur media
-- [ ] S06: Edition caption post-upload
-- [ ] S07: ShareToggleWidget avec confirmation dialog
-- [ ] S07: Log share_enabled/share_disabled dans gallery_access_logs
-- [ ] S08: GuestAlbumsPage pour bride
-- [ ] S08: GuestAlbumCard avec nom guest et count
-- [ ] S08: Grille medias dans album guest
-- [ ] S08: Lecture video inline
-- [ ] S09: Download single file (photo/video)
-- [ ] S09: Download multiple avec zip generation
-- [ ] S09: Progress indicator download
-- [ ] S09: Log download/download_zip dans gallery_access_logs
-- [ ] S10: PrintReadyBadge (disabled avec "Coming soon")
-- [ ] S10: Toggle print_ready sur medias
+- [ ] S04: Support video dans AlbumDetailPage
+- [ ] S04: Validation duree ≤ 10min, taille ≤ 500MB
+- [ ] S04: Thumbnail generation video
+- [ ] S04: Progress indicator upload
+- [ ] S05: CaptionInputWidget avec compteur 500 chars
+- [ ] S05: Integration dans flow upload
+- [ ] S06: GuestAlbumPage fonctionnel (grille + FAB)
+- [ ] S06: Auto-creation album guest
+- [ ] S06: Caption input integre
+- [ ] S07: GuestAlbumsPage (liste albums guests)
+- [ ] S07: Navigation vers detail album
+- [ ] S07: Empty state
+- [ ] S08: Download single file
+- [ ] S08: Download multiple avec zip
+- [ ] S08: Progress indicator download
 
-### Tests
+### Tests & Qualite
 
 - [ ] Tests unitaires migrations SQL
-- [ ] Tests RLS policies (guest isolation)
+- [ ] Tests RLS policies
 - [ ] Tests unitaires use cases Flutter
-- [ ] Tests widget video picker
-- [ ] Tests widget caption input
-- [ ] flutter analyze --fatal-infos passe
-- [ ] Validation sur branche Supabase avant production
+- [ ] Tests widgets (upload, caption, download)
+- [ ] flutter analyze --fatal-infos = 0
+- [ ] UI coherente Design System
 
 ---
 
@@ -110,66 +92,50 @@
 
 | Metrique | Valeur |
 |----------|--------|
-| Stories totales | 10 |
+| Stories totales | 8 |
 | Stories completees | 0 |
-| Migrations SQL | 4 |
-| Nouvelles tables | 3 (guest_albums, guest_media, gallery_access_logs) |
+| Migrations SQL | 3 |
+| Nouvelles tables | 2 (guest_albums, guest_media) |
 | Tables modifiees | 1 (album_images) |
-| RLS Policies nouvelles | 5 |
-| Use cases Flutter | ~8 (estimes) |
-| Widgets Flutter | ~10 (estimes) |
-| Tests a ajouter | ~30 (estimes) |
-| Temps estime | 1.5 jours |
+| RLS Policies nouvelles | 4 |
+| Use cases Flutter | ~6 |
+| Widgets Flutter | ~4 |
+| Tests a ajouter | ~25 |
+| Temps estime | 1 jour |
 
 ---
 
-## Dependances Inter-Stories
+## Dependances
+
+### Internes (EPIC-10)
 
 ```
-S01 (album_images enrichi)
-  |
-  +---> S05 (upload video) -----> S06 (legendes)
-  |
-  +---> S10 (print_ready partial)
-
-S02 (guest_albums) ---> S03 (guest_media)
-  |                       |
-  +-------+-------+-------+
-          |
-          v
-        S07 (toggle share) ---> S08 (bride view)
-
-S04 (gallery_access_logs) --- INDEPENDANT mais utilise par S07, S09
-
-S09 (download) --- Depend de S01-S03 complets
+S01 ───┬─► S04 ─► S05
+       │
+S02 ──►S03 ──┬─► S06
+             ├─► S07
+             └─► S08
 ```
 
----
+### Inter-Epics
 
-## Dependances Inter-Epics
-
-| Epic | Dependance | Status | Impact |
-|------|------------|--------|--------|
-| EPIC-06-PREREQUISITES | Bucket wedding-media | 🔵 Draft | BLOQUANT pour storage |
-| EPIC-06-PREREQUISITES | Enum userRole 'guest' | 🔵 Draft | BLOQUANT pour S02-S03 |
-| EPIC-09-GUESTS (APP-03) | Systeme guest complet | ⏳ A creer | Integration albums |
+| Epic | Dependance | Status |
+|------|------------|--------|
+| EPIC-06 | Enum userRole 'guest' | ✅ COMPLETE |
+| EPIC-09 | Systeme guest complet | ✅ COMPLETE |
+| EPIC-12 | Utilise guest_media | ⏳ Apres EPIC-10 |
 
 ---
 
 ## Checklist Pre-Production
 
-Avant de merger les migrations en production:
-
-- [ ] EPIC-06 complete (bucket wedding-media existe)
-- [ ] EPIC-09 en cours (systeme guest valide)
-- [ ] Toutes les migrations testees sur branche Supabase
+- [ ] Migrations testees sur branche Supabase
 - [ ] Rollback teste pour chaque migration
-- [ ] Pas de donnees perdues lors des tests
-- [ ] RLS policies validees avec tests (guest isolation)
+- [ ] RLS policies validees (bride voit guests)
+- [ ] Upload video teste (500MB, 10min, formats)
+- [ ] UI coherente avec screens de reference
 - [ ] Aucun warning flutter analyze
-- [ ] Upload video teste avec fichiers limites (500MB, 10min)
 - [ ] Documentation a jour
-- [ ] Backup production fait avant migration
 
 ---
 
