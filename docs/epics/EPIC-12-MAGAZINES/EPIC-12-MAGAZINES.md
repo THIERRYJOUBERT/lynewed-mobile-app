@@ -1,9 +1,11 @@
 # EPIC-12-MAGAZINES
 
 > Resume : Permettre aux brides de commander des magazines photo imprimes a partir de leur galerie et des photos guests
-> Status : 🔵 Draft
+> Status : ✅ COMPLETE
 > Domaine : Features / E-commerce / Media
 > Cree le : 2026-01-29
+> MAJ : 2026-02-03
+> Completed : 2026-02-03
 
 ---
 
@@ -107,56 +109,97 @@ Le MCP Stripe est connecté au **compte officiel Lynewed** (mode test activé). 
 
 **Ces produits sont pour le CRM - NE PAS TOUCHER.**
 
-#### Produits à créer pour cet Epic
+#### Produits à créer pour cet Epic (MAJ 2026-02-03)
 
-Utiliser le MCP Stripe pour créer :
+> **IMPORTANT** : Pricing confirmé par Thierry le 3 février 2026 - 4 formats magazine
+
+Utiliser le MCP Stripe pour créer **4 produits magazine** (prix TTC hors livraison) :
+
+| Format | Taille | Spreads | Prix TTC | Prix (cents USD) |
+|--------|--------|---------|----------|------------------|
+| **GUEST EDITION** | 21×30 cm | 20 | $29 | 2900 |
+| **ICONIC** | 21×30 cm | 40 | $59 | 5900 |
+| **MEMORY** | 21×30 cm | 60 | $69 | 6900 |
+| **COLLECTOR** | 25×32 cm | 60 | $89 | 8900 |
+
+> Note: Prix arrondis en USD (source Thierry: 27€, 54€, 64.80€, 85€ - conversion ~1.08)
 
 ```
-1. Produit Magazine:
+1. Produit Magazine GUEST EDITION:
    mcp__stripe__create_product:
-   - name: "Lynewed Wedding Magazine"
-   - description: "Custom printed wedding photo magazine - 50 pages max"
+   - name: "Lynewed Magazine - GUEST EDITION"
+   - description: "Magazine photo mariage 21x30cm - 20 spreads"
 
-2. Prix Magazine (base):
    mcp__stripe__create_price:
-   - product: [ID créé ci-dessus]
-   - unit_amount: 4900 (49.00 USD)
+   - product: [ID créé]
+   - unit_amount: 2900
    - currency: "usd"
 
-3. Prix Shipping Domestic:
+2. Produit Magazine ICONIC:
+   mcp__stripe__create_product:
+   - name: "Lynewed Magazine - ICONIC"
+   - description: "Magazine photo mariage 21x30cm - 40 spreads"
+
    mcp__stripe__create_price:
-   - product: [Créer produit "Magazine Shipping"]
-   - unit_amount: 1500 (15.00 USD)
+   - product: [ID créé]
+   - unit_amount: 5900
    - currency: "usd"
 
-4. Prix Shipping International:
+3. Produit Magazine MEMORY:
+   mcp__stripe__create_product:
+   - name: "Lynewed Magazine - MEMORY"
+   - description: "Magazine photo mariage 21x30cm - 60 spreads"
+
    mcp__stripe__create_price:
-   - product: [même produit shipping]
-   - unit_amount: 3500 (35.00 USD)
+   - product: [ID créé]
+   - unit_amount: 6900
    - currency: "usd"
+
+4. Produit Magazine COLLECTOR:
+   mcp__stripe__create_product:
+   - name: "Lynewed Magazine - COLLECTOR"
+   - description: "Magazine photo mariage 25x32cm - 60 spreads (grand format)"
+
+   mcp__stripe__create_price:
+   - product: [ID créé]
+   - unit_amount: 8900
+   - currency: "usd"
+
+5. Prix Shipping (calculé par FedEx au checkout):
+   Note: Les frais de port sont calculés dynamiquement via FedEx API
+   Pas de prix fixe shipping à créer dans Stripe
 ```
+
+> **Note** : Les frais de livraison seront calculés par FedEx au checkout (voir API FedEx dans CLAUDE.md)
 
 ### Dependances
 
 | Dependance | Epic | Status | Impact si non fait |
 |------------|------|--------|-------------------|
-| Tables guest_albums, guest_media | EPIC-10-PHOTOS-VIDEOS | ⏳ Draft | **BLOQUANT S04-S08** - Photos guests non disponibles |
-| Stripe Integration | EPIC-11-STRIPE | ⏳ Draft | **BLOQUANT S10-S11** - Paiement impossible |
-| Table cgvu_acceptances | EPIC-11-STRIPE (S04) | ⏳ Draft | **BLOQUANT S12** - CGVU tracking impossible |
-| Bucket wedding-media | EPIC-06-PREREQUISITES | 🟡 Partial | Stockage photos - créer via Dashboard |
-| Table app_config (pricing) | À créer | ❌ Manquant | Prix hardcodé au lieu de configurable |
+| Tables guest_albums, guest_media | EPIC-10-PHOTOS-VIDEOS | ✅ COMPLETE | Photos guests disponibles |
+| Stripe Integration | EPIC-11-STRIPE | ✅ COMPLETE | Paiement disponible |
+| Table cgvu_acceptances | EPIC-11-STRIPE | ✅ COMPLETE | CGVU tracking disponible |
+| Bucket wedding-albums | EPIC-06-PREREQUISITES | ✅ COMPLETE | Stockage photos (structure: {wedding_id}/guests/{user_id}/) |
+| API FedEx | - | ✅ Configuré | Calcul frais de port dynamique |
 
-> ⚠️ **ORDRE D'EXÉCUTION STRICT** :
-> 1. EPIC-10 S01-S03 (tables guest_albums, guest_media)
-> 2. EPIC-11 (Stripe + cgvu_acceptances)
-> 3. EPIC-12 (Magazines)
+> ✅ **PRÉREQUIS SATISFAITS** : EPIC-10 et EPIC-11 sont complets. EPIC-12 peut démarrer immédiatement.
+
+### Décisions Techniques (MAJ 2026-02-03)
+
+| Decision | Choix | Raison |
+|----------|-------|--------|
+| **Pas d'opt-in partage guest→bride** | Automatique | Bride voit tous les albums guests automatiquement (EPIC-10) |
+| **4 formats magazine** | Pricing différencié | GUEST EDITION ($29), ICONIC ($59), MEMORY ($69), COLLECTOR ($89) |
+| **Devise** | USD | Standard e-commerce international |
+| **Frais de port** | FedEx dynamique | Calculés au checkout via FedEx API |
+| **Bucket storage** | wedding-albums | Réutilisation bucket existant |
 
 ### Piliers Techniques Concernes
 
 | Pilier | Implication pour cet Epic |
 |--------|---------------------------|
 | **Supabase Database** | Tables magazine_orders, magazine_order_items, photo_favorites |
-| **Supabase Storage** | Lecture photos depuis wedding-media bucket |
+| **Supabase Storage** | Lecture photos depuis wedding-albums bucket |
 | **Flutter/Dart** | UI galerie, preview magazine, checkout |
 | **Stripe** | Paiement magazine + frais port |
 | **Admin Panel** | Gestion commandes (hors scope app - CRM Tom) |
@@ -218,6 +261,7 @@ Utiliser le MCP Stripe pour créer :
 │  │  shipping_phone VARCHAR(50)                                          │   │
 │  │                                                                      │   │
 │  │  -- Magazine details                                                 │   │
+│  │  magazine_format VARCHAR(30) NOT NULL ← 'guest_edition'|'iconic'|'memory'|'collector' │
 │  │  magazine_title VARCHAR(255)  ← "Jessica & Kyle"                    │   │
 │  │  magazine_date DATE                                                  │   │
 │  │  photo_count INTEGER                                                 │   │
@@ -271,20 +315,53 @@ Utiliser le MCP Stripe pour créer :
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Prix Magazine (Config Admin)
+### Prix Magazine (Config Admin - MAJ 2026-02-03)
 
 ```sql
--- Configuration prix magazine (administrable)
+-- Configuration prix magazine (4 formats - confirmé Thierry 03/02/2026)
 INSERT INTO app_config (key, value) VALUES
 ('magazine_pricing', '{
-  "base_price_cents": 4900,
   "currency": "USD",
-  "max_photos": 50,
-  "shipping_flat_cents": 1500,
-  "shipping_international_cents": 3500
+  "formats": [
+    {
+      "id": "guest_edition",
+      "name": "GUEST EDITION",
+      "size": "21x30cm",
+      "spreads": 20,
+      "price_cents": 2900,
+      "max_photos": 20
+    },
+    {
+      "id": "iconic",
+      "name": "ICONIC",
+      "size": "21x30cm",
+      "spreads": 40,
+      "price_cents": 5900,
+      "max_photos": 40
+    },
+    {
+      "id": "memory",
+      "name": "MEMORY",
+      "size": "21x30cm",
+      "spreads": 60,
+      "price_cents": 6900,
+      "max_photos": 60
+    },
+    {
+      "id": "collector",
+      "name": "COLLECTOR",
+      "size": "25x32cm",
+      "spreads": 60,
+      "price_cents": 8900,
+      "max_photos": 60
+    }
+  ],
+  "shipping_provider": "fedex_dynamic"
 }')
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 ```
+
+**Note** : Les frais de port sont calculés dynamiquement via FedEx API au checkout.
 
 ### Pages Layouts (Preview)
 
@@ -676,11 +753,14 @@ Feature: Guest media status for bride control
     Then the photo should still be visible to the guest
 ```
 
+**Note (MAJ 2026-02-03)** : Pas de `shared_with_bride` - tout est automatiquement visible (decision EPIC-10).
+
 **Migration SQL** :
 
 ```sql
--- Migration: 20260129100004_add_status_to_guest_media
+-- Migration: 20260203_add_status_to_guest_media
 -- Description: Add status column for bride hide/delete control
+-- Note: No shared_with_bride - all guest albums are automatically visible (EPIC-10)
 
 ALTER TABLE guest_media
   ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'active' NOT NULL;
@@ -690,9 +770,9 @@ ALTER TABLE guest_media
   CHECK (status IN ('active', 'hidden_by_bride', 'deleted_by_bride'));
 
 -- Update RLS policy for bride to filter by status
-DROP POLICY IF EXISTS "Bride views shared media" ON guest_media;
+DROP POLICY IF EXISTS "Bride views all media" ON guest_media;
 
-CREATE POLICY "Bride views shared media"
+CREATE POLICY "Bride views active guest media"
 ON guest_media FOR SELECT
 TO authenticated
 USING (
@@ -701,7 +781,20 @@ USING (
     SELECT 1 FROM guest_albums ga
     JOIN weddings w ON w.id = ga.wedding_id
     WHERE ga.id = guest_media.album_id
-    AND ga.shared_with_bride = TRUE
+    AND w.bride_profile_id = auth.uid()
+  )
+);
+
+-- Policy for bride to view hidden/deleted (for management)
+CREATE POLICY "Bride views hidden guest media"
+ON guest_media FOR SELECT
+TO authenticated
+USING (
+  status IN ('hidden_by_bride', 'deleted_by_bride')
+  AND EXISTS (
+    SELECT 1 FROM guest_albums ga
+    JOIN weddings w ON w.id = ga.wedding_id
+    WHERE ga.id = guest_media.album_id
     AND w.bride_profile_id = auth.uid()
   )
 );
@@ -715,17 +808,14 @@ USING (
     SELECT 1 FROM guest_albums ga
     JOIN weddings w ON w.id = ga.wedding_id
     WHERE ga.id = guest_media.album_id
-    AND ga.shared_with_bride = TRUE
     AND w.bride_profile_id = auth.uid()
   )
 )
 WITH CHECK (
-  -- Can only change status column
   EXISTS (
     SELECT 1 FROM guest_albums ga
     JOIN weddings w ON w.id = ga.wedding_id
     WHERE ga.id = guest_media.album_id
-    AND ga.shared_with_bride = TRUE
     AND w.bride_profile_id = auth.uid()
   )
 );

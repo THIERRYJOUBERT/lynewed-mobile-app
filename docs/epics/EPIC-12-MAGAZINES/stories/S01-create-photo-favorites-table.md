@@ -1,9 +1,10 @@
 # S01 - Create photo_favorites Table
 
 > **Epic** : EPIC-12-MAGAZINES
-> **Status** : 🔵 Draft
+> **Status** : ✅ Done
 > **Estimation** : 2 points (S)
 > **Domaine** : Database
+> **Date completion** : 2026-02-03
 
 ---
 
@@ -98,12 +99,30 @@ DROP TABLE IF EXISTS photo_favorites;
 
 ## Tests
 
-- [ ] Table creee avec colonnes correctes
-- [ ] Contrainte UNIQUE fonctionne
-- [ ] RLS bloque acces cross-user
-- [ ] Index performant sur user_id
+- [x] Table creee avec colonnes correctes
+- [x] Contrainte UNIQUE fonctionne
+- [x] RLS bloque acces cross-user
+- [x] Index performant sur user_id
 
 ## Notes
 
 - media_type permet de supporter album_images ET guest_media
 - media_id est un UUID generique (pas de FK pour flexibilite)
+
+## Implementation (2026-02-03)
+
+Migration appliquee avec succes via MCP Supabase:
+- **Migration name**: `create_photo_favorites`
+- **Project ID**: `hekyovgnovhfhmkpfrna`
+
+### Verifications effectuees
+
+| Element | Status |
+|---------|--------|
+| Table photo_favorites | ✅ Creee |
+| Colonnes (id, user_id, media_type, media_id, created_at) | ✅ OK |
+| Contrainte UNIQUE uq_photo_favorites | ✅ OK |
+| Contrainte CHECK chk_photo_favorites_type | ✅ OK |
+| Index idx_photo_favorites_user | ✅ OK |
+| RLS enabled | ✅ OK |
+| Policy "User manages own favorites" | ✅ OK |

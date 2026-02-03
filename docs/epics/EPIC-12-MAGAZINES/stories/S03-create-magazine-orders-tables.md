@@ -4,6 +4,7 @@
 > **Status** : 🔵 Draft
 > **Estimation** : 5 points (M)
 > **Domaine** : Database
+> **MAJ** : 2026-02-03
 
 ---
 
@@ -11,10 +12,15 @@
 
 Creer les tables `magazine_orders` et `magazine_order_items` pour stocker les commandes de magazines avec snapshot des photos au moment de la commande.
 
+## Note Importante (MAJ 2026-02-03)
+
+> **Colonne `magazine_format` ajoutée** - 4 formats disponibles avec prix différents.
+> Les formats sont: `guest_edition`, `iconic`, `memory`, `collector`
+
 ## Dependances
 
 - S02 (magazine_selections)
-- EPIC-11 (Stripe integration conceptuelle)
+- EPIC-11 ✅ COMPLETE (Stripe integration)
 
 ## Criteres d'Acceptance (Gherkin)
 
@@ -85,6 +91,7 @@ CREATE TABLE IF NOT EXISTS magazine_orders (
   shipping_phone VARCHAR(50),
 
   -- Magazine details
+  magazine_format VARCHAR(30) NOT NULL,  -- guest_edition, iconic, memory, collector
   magazine_title VARCHAR(255) NOT NULL,
   magazine_date DATE,
   photo_count INTEGER NOT NULL,
@@ -106,6 +113,9 @@ CREATE TABLE IF NOT EXISTS magazine_orders (
 
   CONSTRAINT chk_magazine_order_status CHECK (
     status IN ('pending', 'paid', 'in_production', 'shipped', 'delivered', 'cancelled')
+  ),
+  CONSTRAINT chk_magazine_format CHECK (
+    magazine_format IN ('guest_edition', 'iconic', 'memory', 'collector')
   )
 );
 

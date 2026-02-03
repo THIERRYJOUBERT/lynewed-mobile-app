@@ -17,13 +17,13 @@
 | Epic | PRD | Titre | Status | Stories | Est. |
 |------|-----|-------|--------|---------|------|
 | **EPIC-06** | APP-00 | Prerequisites Migration | 🟢 DONE | 6 | 0.5j |
-| **EPIC-07** | APP-01 | Reviews (Avis clients) | 🔵 DRAFT | 9 | 0.5j |
+| **EPIC-07** | APP-01 | Reviews (Avis clients) | 🟢 DONE | 9 | 0.5j |
 | **EPIC-08** | APP-02 | Reminders (Rappels RDV) | 🔵 DRAFT | 8 | 0.5j |
-| **EPIC-09** | APP-03 | Invitations (Guests) | 🔵 DRAFT | 12 | 2j |
-| **EPIC-10** | APP-04 | Photos/Videos | 🔵 DRAFT | 10 | 1.5j |
-| **EPIC-11** | APP-05 | Stripe Integration | 🔵 DRAFT | 12 | 1j |
-| **EPIC-12** | APP-06 | Magazines Photo | 🔵 DRAFT | 12 | 1.5j |
-| **EPIC-13** | APP-07 | Map Filters | 🔵 DRAFT | 9 | 1j |
+| **EPIC-09** | APP-03 | Invitations (Guests) | 🟢 DONE | 12 | 2j |
+| **EPIC-10** | APP-04 | Photos/Videos | 🟢 DONE | 10 | 1.5j |
+| **EPIC-11** | APP-05 | Stripe Integration | 🟢 DONE | 12 | 1j |
+| **EPIC-12** | APP-06 | Magazines Photo | 🟢 DONE | 12 | 1.5j |
+| **EPIC-13** | APP-07 | Map Filters | 🟢 DONE | 9 | 1j |
 | **EPIC-14** | APP-08 | Marketplace | 🔵 DRAFT | 26 | 7j |
 
 **Total Mission 2026** : 106 stories, 15 jours estimés, 4500€
@@ -53,9 +53,9 @@ Migration des prerequis techniques CRITIQUES déployée en production :
 
 ---
 
-### EPIC-07: Reviews (APP-01) 🔵
+### EPIC-07: Reviews (APP-01) 🟢
 
-**Statut**: DRAFT | **Dépendances**: Aucune
+**Statut**: DONE (2026-01-29) | **Dépendances**: Aucune
 **Stories**: 9 | **Estimation**: 0.5 jour
 
 Systeme d'avis clients interne Lynewed :
@@ -79,9 +79,9 @@ Notifications de rappel RDV :
 
 ---
 
-### EPIC-09: Invitations (APP-03) 🔵
+### EPIC-09: Invitations (APP-03) 🟢
 
-**Statut**: DRAFT | **Dépendances**: EPIC-06 (S01-S05)
+**Statut**: DONE (2026-02-02) | **Dépendances**: EPIC-06 (S01-S05)
 **Stories**: 12 | **Estimation**: 2 jours
 
 Systeme d'invitations guests :
@@ -92,9 +92,9 @@ Systeme d'invitations guests :
 
 ---
 
-### EPIC-10: Photos/Videos (APP-04) 🔵
+### EPIC-10: Photos/Videos (APP-04) 🟢
 
-**Statut**: DRAFT | **Dépendances**: EPIC-06 (S06)
+**Statut**: DONE (2026-02-03) | **Dépendances**: EPIC-06 (S06)
 **Stories**: 10 | **Estimation**: 1.5 jours
 
 Projet Photo & Video :
@@ -105,9 +105,9 @@ Projet Photo & Video :
 
 ---
 
-### EPIC-11: Stripe Integration (APP-05) 🔵
+### EPIC-11: Stripe Integration (APP-05) 🟢
 
-**Statut**: DRAFT | **Dépendances**: Aucune
+**Statut**: DONE (2026-01-29) | **Dépendances**: Aucune
 **Stories**: 12 | **Estimation**: 1 jour
 
 Integration Stripe complete :
@@ -118,29 +118,25 @@ Integration Stripe complete :
 
 ---
 
-### EPIC-12: Magazines Photo (APP-06) 🔵
+### EPIC-12: Magazines Photo (APP-06) 🟢
 
-**Statut**: DRAFT | **Dépendances**: EPIC-06 → EPIC-10 → EPIC-11 (ordre strict)
+**Statut**: DONE (2026-02-03) | **Dépendances**: EPIC-06 → EPIC-10 → EPIC-11 (ordre strict)
 **Stories**: 12 | **Estimation**: 1.5 jours
-
-> ⚠️ **BLOQUANTS IDENTIFIÉS** (Challenge Deep 2026-01-29):
-> - S04-S08 nécessitent EPIC-10 S01-S03 (tables guest_albums, guest_media)
-> - S10-S12 nécessitent EPIC-11 (Stripe + table cgvu_acceptances)
-> - Table `app_config` pour prix dynamique non créée
 
 Commande de magazines photo imprimés :
 - Galerie avec sélection (favoris, masquer, supprimer)
 - Partage galerie avec guests
-- Preview mockup magazine (couverture + pages)
+- Preview mockup magazine (couverture + pages, 4 formats)
 - Checkout Stripe avec adresse livraison
+- Edge Function webhook: create-magazine-checkout + magazine-webhook-v2
 - Fulfillment manuel par Thierry (pas d'API imprimeur V1)
-- CGVU acceptance avec scroll obligatoire + logging
+- CGVU acceptance avec scroll obligatoire + logging (593+ tests)
 
 ---
 
-### EPIC-13: Map Filters (APP-07) 🔵
+### EPIC-13: Map Filters (APP-07) 🟢
 
-**Statut**: DRAFT | **Dépendances**: EPIC-07 (minRating)
+**Statut**: DONE (2026-01-30) | **Dépendances**: EPIC-07 (minRating)
 **Stories**: 9 | **Estimation**: 1 jour
 
 Filtres Map additionnels :
@@ -229,6 +225,9 @@ ORDRE D'EXECUTION RECOMMANDE :
 | 2026-01-29 | **Migration Reels → Magazines** : EPIC-12-REELS supprimé, EPIC-12-MAGAZINES créé (12 stories) |
 | 2026-01-29 | **Challenge Deep EPIC-12** : 20 findings (5 HIGH, 7 MEDIUM, 8 LOW), score 71%→89% |
 | 2026-01-29 | Corrections : validation metadata Stripe, dépendances documentées, cgvu_acceptances requis |
+| 2026-02-03 | **EPIC-10 TERMINÉ** : Photos/Videos (10/10 stories) |
+| 2026-02-03 | **EPIC-12 TERMINÉ** : Magazines Photo (12/12 stories, 593+ tests) |
+| 2026-02-03 | Corrections sécurité EPIC-12: prix server-side, signed URL 30j, session ID validation |
 
 ---
 

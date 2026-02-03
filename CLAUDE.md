@@ -77,6 +77,10 @@ Ce projet utilise une **methodologie structuree** avec des workflows, des agents
 | `stripe_accounts` | 0 | Comptes Stripe Connect (EPIC-11) |
 | `purchases` | 0 | Achats/transactions (EPIC-11) |
 | `stripe_events` | 0 | Events Stripe webhook (EPIC-11) |
+| `magazine_orders` | 0 | Commandes magazines (EPIC-12) |
+| `magazine_order_items` | 0 | Items commandes magazines (EPIC-12) |
+| `magazine_selections` | 0 | Sélections photos magazine (EPIC-12) |
+| `photo_favorites` | 0 | Favoris photos (EPIC-12) |
 
 ## Commandes
 
@@ -270,6 +274,8 @@ auth, chat, content, dashboard, feed, **guest**, home, map, my_wedding, notifica
 | EPIC-07 | Reviews (Avis clients) | ✅ COMPLETE (2026-01-29) |
 | EPIC-09 | Invitations (Guests) | ✅ COMPLETE (2026-02-02) |
 | EPIC-10 | Photos & Videos | ✅ COMPLETE (2026-02-03) |
+| EPIC-12 | Magazines Photo | ✅ COMPLETE (2026-02-03) |
+| EPIC-12 | Magazines Photo | ✅ COMPLETE (2026-02-03) |
 | EPIC-11 | Stripe Integration | ✅ COMPLETE (2026-01-29) |
 | EPIC-13 | Map Filters | ✅ COMPLETE (2026-01-30) |
 
@@ -289,7 +295,7 @@ auth, chat, content, dashboard, feed, **guest**, home, map, my_wedding, notifica
 | EPIC-09 | APP-03 | Invitations (Guests) | 12 | ✅ DONE |
 | EPIC-10 | APP-04 | Photos/Videos | 8 | ✅ DONE |
 | EPIC-11 | APP-05 | Stripe Integration | 12 | ✅ DONE |
-| EPIC-12 | APP-06 | Magazines Photo | 12 | 1.5j |
+| EPIC-12 | APP-06 | Magazines Photo | 12 | ✅ DONE |
 | EPIC-13 | APP-07 | Map Filters | 9 | ✅ DONE |
 | EPIC-14 | APP-08 | Marketplace | 26 | 7j |
 
