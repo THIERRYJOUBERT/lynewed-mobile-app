@@ -14,6 +14,7 @@ class MediaPickerSheet extends StatelessWidget {
     super.key,
     required this.onPhotoSelected,
     required this.onVideoSelected,
+    this.onMultipleSelected,
   });
 
   /// Callback when Photo option is selected
@@ -22,11 +23,15 @@ class MediaPickerSheet extends StatelessWidget {
   /// Callback when Video option is selected
   final VoidCallback onVideoSelected;
 
+  /// Callback when Multiple option is selected (optional)
+  final VoidCallback? onMultipleSelected;
+
   /// Shows the media picker sheet as a modal bottom sheet
   static Future<void> show({
     required BuildContext context,
     required VoidCallback onPhotoSelected,
     required VoidCallback onVideoSelected,
+    VoidCallback? onMultipleSelected,
   }) {
     return showModalBottomSheet<void>(
       context: context,
@@ -35,6 +40,7 @@ class MediaPickerSheet extends StatelessWidget {
       builder: (context) => MediaPickerSheet(
         onPhotoSelected: onPhotoSelected,
         onVideoSelected: onVideoSelected,
+        onMultipleSelected: onMultipleSelected,
       ),
     );
   }
@@ -47,6 +53,19 @@ class MediaPickerSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Multiple media option (if callback provided)
+          if (onMultipleSelected != null) ...[
+            _MediaOption(
+              icon: Icons.photo_library_outlined,
+              label: 'Multiple',
+              subtitle: 'Select multiple photos & videos',
+              onTap: () {
+                Navigator.pop(context);
+                onMultipleSelected!();
+              },
+            ),
+            const SizedBox(height: 12),
+          ],
           _MediaOption(
             icon: Icons.photo_camera_outlined,
             label: 'Photo',

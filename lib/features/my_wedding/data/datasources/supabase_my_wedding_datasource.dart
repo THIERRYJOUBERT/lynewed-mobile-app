@@ -1862,7 +1862,7 @@ class SupabaseMyWeddingDatasource {
   /// Add photos to the magazine selection.
   ///
   /// Assigns positions starting from the current max position + 1.
-  /// Returns the number of photos successfully added.
+  /// Returns the number of photos successfully added (excludes duplicates).
   Future<int> addToMagazine({
     required String weddingId,
     required String userId,
@@ -1872,8 +1872,15 @@ class SupabaseMyWeddingDatasource {
     if (mediaItems.isEmpty) return 0;
 
     try {
+      // Get current count before adding
+      final countBeforeResponse = await _client
+          .from('magazine_selections')
+          .select('id')
+          .eq('wedding_id', weddingId);
+      final countBefore = (countBeforeResponse as List).length;
+
       // Get current max position
-      final countResponse = await _client
+      final maxPosResponse = await _client
           .from('magazine_selections')
           .select('position')
           .eq('wedding_id', weddingId)
@@ -1882,14 +1889,30 @@ class SupabaseMyWeddingDatasource {
           .maybeSingle();
 
       int startPosition = 1;
-      if (countResponse != null) {
-        startPosition = (countResponse['position'] as int) + 1;
+      if (maxPosResponse != null) {
+        startPosition = (maxPosResponse['position'] as int) + 1;
       }
 
-      // Check if adding would exceed limit
-      final currentCount = startPosition - 1;
-      if (currentCount + mediaItems.length > maxPhotos) {
-        throw Exception('Would exceed maximum $maxPhotos photos');
+      // Check if adding would exceed limit (worst case: all are new)
+      if (countBefore + mediaItems.length > maxPhotos) {
+        // Check how many are actually new
+        final existingIds = <String>{};
+        for (final item in mediaItems) {
+          final existing = await _client
+              .from('magazine_selections')
+              .select('id')
+              .eq('wedding_id', weddingId)
+              .eq('media_type', item.mediaType)
+              .eq('media_id', item.mediaId)
+              .maybeSingle();
+          if (existing != null) {
+            existingIds.add(item.mediaId);
+          }
+        }
+        final newCount = mediaItems.length - existingIds.length;
+        if (countBefore + newCount > maxPhotos) {
+          throw Exception('Would exceed maximum $maxPhotos photos');
+        }
       }
 
       // Build insert data with positions
@@ -1905,12 +1928,24 @@ class SupabaseMyWeddingDatasource {
         });
       }
 
-      // Insert all at once
-      await _client.from('magazine_selections').insert(insertData);
+      // Insert all at once, ignoring duplicates (upsert with ignoreDuplicates)
+      await _client.from('magazine_selections').upsert(
+        insertData,
+        onConflict: 'wedding_id,media_type,media_id',
+        ignoreDuplicates: true,
+      );
+
+      // Get count after to determine how many were actually added
+      final countAfterResponse = await _client
+          .from('magazine_selections')
+          .select('id')
+          .eq('wedding_id', weddingId);
+      final countAfter = (countAfterResponse as List).length;
+      final actuallyAdded = countAfter - countBefore;
 
       SecureLogger.info(
-          'addToMagazine: Added ${mediaItems.length} photos starting at position $startPosition');
-      return mediaItems.length;
+          'addToMagazine: Added $actuallyAdded of ${mediaItems.length} photos (${mediaItems.length - actuallyAdded} duplicates ignored)');
+      return actuallyAdded;
     } catch (e) {
       SecureLogger.error('addToMagazine error: $e');
       rethrow;
@@ -2043,6 +2078,194 @@ class SupabaseMyWeddingDatasource {
           'clearMagazineSelections: Cleared all selections for wedding $weddingId');
     } catch (e) {
       SecureLogger.error('clearMagazineSelections error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get thumbnail URL for an album image.
+  ///
+  /// Returns the thumbnail_url if available, otherwise falls back to image_url.
+  Future<String?> getAlbumImageThumbnail({required String imageId}) async {
+    try {
+      final response = await _client
+          .from('album_images')
+          .select('thumbnail_url, image_url')
+          .eq('id', imageId)
+          .maybeSingle();
+
+      if (response == null) return null;
+      return (response['thumbnail_url'] as String?) ??
+          (response['image_url'] as String?);
+    } catch (e) {
+      SecureLogger.error('getAlbumImageThumbnail error: $e');
+      return null;
+    }
+  }
+
+  /// Get thumbnail URL for guest media.
+  ///
+  /// Returns the thumbnail_url if available, otherwise falls back to media_url.
+  Future<String?> getGuestMediaThumbnail({required String mediaId}) async {
+    try {
+      final response = await _client
+          .from('guest_media')
+          .select('thumbnail_url, media_url')
+          .eq('id', mediaId)
+          .maybeSingle();
+
+      if (response == null) return null;
+      return (response['thumbnail_url'] as String?) ??
+          (response['media_url'] as String?);
+    } catch (e) {
+      SecureLogger.error('getGuestMediaThumbnail error: $e');
+      return null;
+    }
+  }
+
+  /// Get all photos available for magazine picker.
+  ///
+  /// Returns photos from both guest albums and inspiration albums,
+  /// with already-selected photos marked.
+  Future<List<PickerMediaSection>> getAllPhotosForMagazinePicker({
+    required String weddingId,
+  }) async {
+    try {
+      // 1. Get existing magazine selections to mark already-selected items
+      final selectionsResponse = await _client
+          .from('magazine_selections')
+          .select('media_type, media_id')
+          .eq('wedding_id', weddingId);
+      final selectedIds = <String, Set<String>>{};
+      for (final row in selectionsResponse as List) {
+        final mediaType = row['media_type'] as String;
+        final mediaId = row['media_id'] as String;
+        selectedIds.putIfAbsent(mediaType, () => <String>{}).add(mediaId);
+      }
+
+      final sections = <PickerMediaSection>[];
+
+      // 2. Get guest albums with their media
+      final guestAlbumsResponse = await _client.from('guest_albums').select('''
+            id,
+            wedding_id,
+            guest_user_id,
+            created_at,
+            profiles!guest_albums_guest_user_id_fkey (
+              full_name,
+              avatar_url
+            ),
+            guest_media (
+              id,
+              media_url,
+              thumbnail_url,
+              media_type,
+              created_at
+            )
+          ''').eq('wedding_id', weddingId).order('created_at', ascending: false);
+
+      final guestGroups = <PickerMediaGroup>[];
+      for (final albumRow in guestAlbumsResponse as List) {
+        final albumId = albumRow['id'] as String;
+        final profile = albumRow['profiles'] as Map<String, dynamic>?;
+        final guestName = profile?['full_name'] as String? ?? 'Guest';
+        final avatarUrl = profile?['avatar_url'] as String?;
+        final mediaList = albumRow['guest_media'] as List? ?? [];
+
+        if (mediaList.isEmpty) continue;
+
+        final items = <PickerMediaItem>[];
+        for (final mediaRow in mediaList) {
+          final mediaMap = mediaRow as Map<String, dynamic>;
+          final mediaId = mediaMap['id'] as String;
+          final isSelected =
+              selectedIds['guest_media']?.contains(mediaId) ?? false;
+          items.add(PickerMediaItem.fromGuestMedia(
+            mediaMap,
+            guestName: guestName,
+            albumId: albumId,
+            isAlreadySelected: isSelected,
+          ));
+        }
+
+        guestGroups.add(PickerMediaGroup(
+          id: albumId,
+          name: guestName,
+          avatarUrl: avatarUrl,
+          items: items,
+        ));
+      }
+
+      if (guestGroups.isNotEmpty) {
+        final totalPhotos =
+            guestGroups.fold<int>(0, (sum, g) => sum + g.count);
+        sections.add(PickerMediaSection(
+          title: 'Guest Albums',
+          subtitle: '$totalPhotos photos from ${guestGroups.length} guests',
+          groups: guestGroups,
+        ));
+      }
+
+      // 3. Get inspiration albums with their images
+      final inspirationAlbumsResponse =
+          await _client.from('inspiration_albums').select('''
+            id,
+            name,
+            cover_image_url,
+            album_images (
+              id,
+              image_url,
+              thumbnail_url,
+              media_type,
+              created_at
+            )
+          ''').eq('wedding_id', weddingId).order('sort_order', ascending: true);
+
+      final inspirationGroups = <PickerMediaGroup>[];
+      for (final albumRow in inspirationAlbumsResponse as List) {
+        final albumId = albumRow['id'] as String;
+        final albumName = albumRow['name'] as String? ?? 'Album';
+        final coverUrl = albumRow['cover_image_url'] as String?;
+        final imagesList = albumRow['album_images'] as List? ?? [];
+
+        if (imagesList.isEmpty) continue;
+
+        final items = <PickerMediaItem>[];
+        for (final imageRow in imagesList) {
+          final imageMap = imageRow as Map<String, dynamic>;
+          final imageId = imageMap['id'] as String;
+          final isSelected =
+              selectedIds['album_image']?.contains(imageId) ?? false;
+          items.add(PickerMediaItem.fromAlbumImage(
+            imageMap,
+            albumName: albumName,
+            albumId: albumId,
+            isAlreadySelected: isSelected,
+          ));
+        }
+
+        inspirationGroups.add(PickerMediaGroup(
+          id: albumId,
+          name: albumName,
+          avatarUrl: coverUrl,
+          items: items,
+        ));
+      }
+
+      if (inspirationGroups.isNotEmpty) {
+        final totalPhotos =
+            inspirationGroups.fold<int>(0, (sum, g) => sum + g.count);
+        sections.add(PickerMediaSection(
+          title: 'Inspiration Albums',
+          subtitle: '$totalPhotos photos from ${inspirationGroups.length} albums',
+          groups: inspirationGroups,
+        ));
+      }
+
+      SecureLogger.info(
+          'getAllPhotosForMagazinePicker: Found ${sections.length} sections for wedding $weddingId');
+      return sections;
+    } catch (e) {
+      SecureLogger.error('getAllPhotosForMagazinePicker error: $e');
       rethrow;
     }
   }

@@ -91,9 +91,23 @@ class MagazineSelectionCubit extends Cubit<MagazineSelectionState> {
     if (result.isSuccess) {
       // Reload to get the new photos with positions
       await loadSelections();
-      emit(state.copyWith(
-        successMessage: '${result.data} photo${result.data != 1 ? 's' : ''} added to magazine',
-      ));
+      final added = result.data ?? 0;
+      final requested = mediaItems.length;
+      final duplicates = requested - added;
+
+      String message;
+      if (added == 0 && duplicates > 0) {
+        message = duplicates == 1
+            ? 'Photo already in magazine'
+            : 'All $duplicates photos already in magazine';
+      } else if (duplicates > 0) {
+        message = '$added photo${added != 1 ? 's' : ''} added'
+            ' ($duplicates already in magazine)';
+      } else {
+        message = '$added photo${added != 1 ? 's' : ''} added to magazine';
+      }
+
+      emit(state.copyWith(successMessage: message));
       return true;
     } else {
       emit(state.copyWith(

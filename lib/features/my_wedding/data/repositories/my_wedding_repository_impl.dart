@@ -930,6 +930,44 @@ class MyWeddingRepositoryImpl implements MyWeddingRepository {
     }
   }
 
+  @override
+  Future<RepositoryResult<String?>> getAlbumImageThumbnail({
+    required String imageId,
+  }) async {
+    try {
+      final url = await _datasource.getAlbumImageThumbnail(imageId: imageId);
+      return RepositoryResult.success(url);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get album image thumbnail: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<String?>> getGuestMediaThumbnail({
+    required String mediaId,
+  }) async {
+    try {
+      final url = await _datasource.getGuestMediaThumbnail(mediaId: mediaId);
+      return RepositoryResult.success(url);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get guest media thumbnail: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<List<PickerMediaSection>>> getAllPhotosForMagazinePicker({
+    required String weddingId,
+  }) async {
+    try {
+      final sections = await _datasource.getAllPhotosForMagazinePicker(
+        weddingId: weddingId,
+      );
+      return RepositoryResult.success(sections);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get photos for picker: $e');
+    }
+  }
+
   // ========== PHOTO SHARES ==========
 
   @override

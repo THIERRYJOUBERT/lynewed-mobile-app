@@ -1,7 +1,7 @@
 /// Guest Albums Page for brides to view guest albums.
 ///
 /// Lists all guest albums from the wedding with navigation to detail view.
-/// Supports downloading media from guest albums.
+/// Tapping a media opens full-screen viewer with download capability.
 library;
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -11,11 +11,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '/core/design/design.dart';
 import '/features/guest/domain/entities/guest_media.dart';
-import '../../data/datasources/download_data_source_impl.dart';
 import '../../data/repositories/my_wedding_repository_impl.dart';
 import '../../domain/entities/guest_album.dart';
-import '../../domain/usecases/download_media_use_case.dart';
-import '../widgets/download_button.dart';
+import '../widgets/full_screen_media_viewer.dart';
 import '../widgets/guest_album_card.dart';
 
 /// Page displaying all guest albums for the bride.
@@ -247,7 +245,6 @@ class _GuestAlbumDetailPage extends StatefulWidget {
 }
 
 class _GuestAlbumDetailPageState extends State<_GuestAlbumDetailPage> {
-  late DownloadMediaUseCase _downloadUseCase;
   bool _isLoading = true;
   String? _error;
   List<GuestMedia> _media = [];
@@ -255,7 +252,6 @@ class _GuestAlbumDetailPageState extends State<_GuestAlbumDetailPage> {
   @override
   void initState() {
     super.initState();
-    _downloadUseCase = DownloadMediaUseCase(DownloadDataSourceImpl());
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _loadMedia();
     });
@@ -507,92 +503,16 @@ class _GuestAlbumDetailPageState extends State<_GuestAlbumDetailPage> {
   }
 
   void _openMediaViewer(GuestMedia media) {
-    // Show options sheet with download option
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: LynewedColors.surface,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: LynewedColors.gray300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(Icons.download_rounded, color: LynewedColors.textPrimary),
-              title: Text(
-                media.isVideo ? 'Download Video' : 'Download Photo',
-                style: LynewedTextStyles.bodyMedium,
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _downloadMedia(media);
-              },
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Downloads a single media item.
-  Future<void> _downloadMedia(GuestMedia media) async {
-    // Build the storage URL
+    // Build the full storage URL for the viewer
     final storageUrl = '$_bucketBaseUrl${media.storagePath}';
 
-    // Show download progress dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => DownloadProgressDialog(
-        progress: 0.0,
-        message: media.isVideo ? 'Downloading video...' : 'Downloading photo...',
-      ),
-    );
-
-    final result = await _downloadUseCase.downloadSingle(
-      storageUrl: storageUrl,
+    // Open full-screen viewer (download button is built into the viewer)
+    FullScreenMediaViewer.show(
+      context,
+      imageUrl: storageUrl,
+      isVideo: media.isVideo,
       fileName: media.storagePath.split('/').last,
-    );
-
-    if (!mounted) return;
-
-    // Close progress dialog
-    Navigator.of(context).pop();
-
-    result.fold(
-      onSuccess: (file) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              media.isVideo ? 'Video downloaded' : 'Photo downloaded',
-              style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
-            ),
-            backgroundColor: LynewedColors.success,
-          ),
-        );
-      },
-      onFailure: (failure) {
-        showDialog(
-          context: context,
-          builder: (ctx) => RetryDownloadDialog(
-            message: failure.message,
-            onCancel: () => Navigator.pop(ctx),
-            onRetry: () {
-              Navigator.pop(ctx);
-              _downloadMedia(media);
-            },
-          ),
-        );
-      },
+      caption: media.caption,
     );
   }
 }

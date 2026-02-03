@@ -9,11 +9,14 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '/core/design/design.dart';
 import '../../data/repositories/my_wedding_repository_impl.dart';
+import '../../domain/entities/entities.dart';
 import '../../domain/entities/magazine_selection.dart';
 import '../../domain/repositories/my_wedding_repository.dart';
 import '../bloc/magazine_selection_cubit.dart';
 import '../bloc/magazine_selection_state.dart';
+import '../sheets/magazine_photo_picker_sheet.dart';
 import '../widgets/reorderable_magazine_grid.dart';
+import 'magazine_preview_page.dart';
 
 /// Page for managing magazine photo selection.
 class MagazineSelectionPage extends StatefulWidget {
@@ -22,8 +25,8 @@ class MagazineSelectionPage extends StatefulWidget {
     super.key,
     required this.weddingId,
     required this.userId,
-    this.onNavigateToGallery,
-    this.onNavigateToPreview,
+    required this.weddingTitle,
+    required this.weddingDate,
   });
 
   /// The wedding ID for this magazine.
@@ -32,11 +35,11 @@ class MagazineSelectionPage extends StatefulWidget {
   /// The current user ID.
   final String userId;
 
-  /// Callback to navigate to gallery for adding photos.
-  final VoidCallback? onNavigateToGallery;
+  /// Wedding title for the magazine cover.
+  final String weddingTitle;
 
-  /// Callback to navigate to magazine preview.
-  final VoidCallback? onNavigateToPreview;
+  /// Wedding date for the magazine cover.
+  final DateTime weddingDate;
 
   @override
   State<MagazineSelectionPage> createState() => _MagazineSelectionPageState();
@@ -70,16 +73,15 @@ class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
 
   /// Gets the thumbnail URL for a media item.
   Future<String?> _getThumbnailUrl(String mediaType, String mediaId) async {
-    // For album_images, query the album_images table
-    // For guest_media, query the guest_media table
     try {
       if (mediaType == 'album_image') {
-        // Simplified implementation - in production, we'd have a
-        // direct lookup method. The URL comes from the selection data.
-        return null;
+        final result =
+            await _repository.getAlbumImageThumbnail(imageId: mediaId);
+        return result.data;
       } else if (mediaType == 'guest_media') {
-        // Similar for guest media
-        return null;
+        final result =
+            await _repository.getGuestMediaThumbnail(mediaId: mediaId);
+        return result.data;
       }
       return null;
     } catch (e) {
@@ -110,6 +112,35 @@ class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
             child: const Text('Clear All'),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Opens the photo picker sheet to add more photos.
+  void _openPhotoPicker(MagazineSelectionState state) {
+    MagazinePhotoPickerSheet.show(
+      context,
+      weddingId: widget.weddingId,
+      userId: widget.userId,
+      currentCount: state.count,
+      maxPhotos: state.maxPhotos,
+      onPhotosAdded: (count) {
+        // Reload selections to show newly added photos
+        _cubit.loadSelections();
+      },
+    );
+  }
+
+  /// Opens the magazine preview page.
+  void _openMagazinePreview(MagazineSelectionState state) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => MagazinePreviewPage(
+          photos: state.photos,
+          weddingTitle: widget.weddingTitle,
+          weddingDate: widget.weddingDate,
+          onNavigateBack: () => Navigator.pop(context),
+        ),
       ),
     );
   }
@@ -197,9 +228,7 @@ class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
           // Preview button
           if (state.canPreview)
             TextButton(
-              onPressed: state.isLoading || widget.onNavigateToPreview == null
-                  ? null
-                  : widget.onNavigateToPreview,
+              onPressed: state.isLoading ? null : () => _openMagazinePreview(state),
               child: Text(
                 'Preview',
                 style: LynewedTextStyles.labelLarge.copyWith(
@@ -250,7 +279,7 @@ class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
     }
 
     if (state.isEmpty) {
-      return _buildEmptyState();
+      return _buildEmptyState(state);
     }
 
     return Stack(
@@ -287,7 +316,7 @@ class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(MagazineSelectionState state) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -307,7 +336,7 @@ class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Select photos from your gallery to create your wedding magazine',
+              'Select photos from your albums to create your wedding magazine',
               style: LynewedTextStyles.bodyMedium.copyWith(
                 color: LynewedColors.textSecondary,
               ),
@@ -315,8 +344,8 @@ class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
             ),
             const SizedBox(height: 32),
             LynewedButton(
-              text: 'Add from Gallery',
-              onPressed: widget.onNavigateToGallery,
+              text: 'Select Photos',
+              onPressed: () => _openPhotoPicker(state),
               width: double.infinity,
               icon: Icons.add_photo_alternate_outlined,
             ),
@@ -351,7 +380,7 @@ class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
           if (state.canAddMore) ...[
             LynewedButton(
               text: 'Add more photos',
-              onPressed: widget.onNavigateToGallery,
+              onPressed: () => _openPhotoPicker(state),
               type: LynewedButtonType.secondary,
               width: double.infinity,
               icon: Icons.add_photo_alternate_outlined,
@@ -361,7 +390,7 @@ class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
           // Create magazine button
           LynewedButton(
             text: 'Create Magazine',
-            onPressed: widget.onNavigateToPreview,
+            onPressed: () => _openMagazinePreview(state),
             width: double.infinity,
             icon: Icons.arrow_forward,
           ),
@@ -378,6 +407,8 @@ class MagazineSelectionSheet extends StatelessWidget {
     super.key,
     required this.weddingId,
     required this.userId,
+    required this.weddingTitle,
+    required this.weddingDate,
     this.maxPhotos = MagazineSelection.maxPhotosCollector,
   });
 
@@ -387,6 +418,12 @@ class MagazineSelectionSheet extends StatelessWidget {
   /// The current user ID.
   final String userId;
 
+  /// Wedding title for magazine cover.
+  final String weddingTitle;
+
+  /// Wedding date for magazine cover.
+  final DateTime weddingDate;
+
   /// Maximum photos allowed.
   final int maxPhotos;
 
@@ -395,6 +432,8 @@ class MagazineSelectionSheet extends StatelessWidget {
     BuildContext context, {
     required String weddingId,
     required String userId,
+    required String weddingTitle,
+    required DateTime weddingDate,
     int maxPhotos = MagazineSelection.maxPhotosCollector,
   }) {
     return showModalBottomSheet<void>(
@@ -408,6 +447,8 @@ class MagazineSelectionSheet extends StatelessWidget {
       builder: (context) => MagazineSelectionSheet(
         weddingId: weddingId,
         userId: userId,
+        weddingTitle: weddingTitle,
+        weddingDate: weddingDate,
         maxPhotos: maxPhotos,
       ),
     );
@@ -424,7 +465,8 @@ class MagazineSelectionSheet extends StatelessWidget {
         return MagazineSelectionPage(
           weddingId: weddingId,
           userId: userId,
-          onNavigateToGallery: () => Navigator.pop(context),
+          weddingTitle: weddingTitle,
+          weddingDate: weddingDate,
         );
       },
     );

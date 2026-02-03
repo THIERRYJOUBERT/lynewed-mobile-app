@@ -20,13 +20,13 @@
 | **EPIC-07** | APP-01 | Reviews (Avis clients) | 🟢 DONE | 9 | 0.5j |
 | **EPIC-08** | APP-02 | Reminders (Rappels RDV) | 🔵 DRAFT | 8 | 0.5j |
 | **EPIC-09** | APP-03 | Invitations (Guests) | 🟢 DONE | 12 | 2j |
-| **EPIC-10** | APP-04 | Photos/Videos | 🟢 DONE | 10 | 1.5j |
+| **EPIC-10** | APP-04 | Photos/Videos | 🟢 DONE | 8 | 1.5j |
 | **EPIC-11** | APP-05 | Stripe Integration | 🟢 DONE | 12 | 1j |
 | **EPIC-12** | APP-06 | Magazines Photo | 🟢 DONE | 12 | 1.5j |
 | **EPIC-13** | APP-07 | Map Filters | 🟢 DONE | 9 | 1j |
 | **EPIC-14** | APP-08 | Marketplace | 🔵 DRAFT | 26 | 7j |
 
-**Total Mission 2026** : 106 stories, 15 jours estimés, 4500€
+**Total Mission 2026** : 104 stories, 15 jours estimés, 4500€
 
 ---
 
@@ -95,13 +95,14 @@ Systeme d'invitations guests :
 ### EPIC-10: Photos/Videos (APP-04) 🟢
 
 **Statut**: DONE (2026-02-03) | **Dépendances**: EPIC-06 (S06)
-**Stories**: 10 | **Estimation**: 1.5 jours
+**Stories**: 8 (simplification 10→8) | **Estimation**: 1.5 jours
 
 Projet Photo & Video :
-- Upload videos (max 10min, 500MB)
-- Legendes sur medias
-- Album guest separe
-- Partage opt-in avec bride
+- Upload videos (max 10min, 500MB) + multi-upload
+- Legendes sur medias + timestamps relatifs
+- Album guest separe + auto-creation
+- Thumbnails video automatiques + info panel viewer
+- Bride voit tous albums guests (pas d'opt-in)
 
 ---
 

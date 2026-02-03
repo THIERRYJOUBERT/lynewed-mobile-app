@@ -20,6 +20,7 @@ import 'download_button.dart';
 /// - Tap to close
 /// - Download button with progress
 /// - Dark background for immersive viewing
+/// - Info panel with caption and metadata
 class FullScreenMediaViewer extends StatefulWidget {
   /// Creates a full-screen media viewer.
   const FullScreenMediaViewer({
@@ -28,6 +29,9 @@ class FullScreenMediaViewer extends StatefulWidget {
     this.isVideo = false,
     this.fileName,
     this.caption,
+    this.createdAt,
+    this.durationSeconds,
+    this.fileSizeBytes,
   });
 
   /// The URL of the media to display.
@@ -42,6 +46,15 @@ class FullScreenMediaViewer extends StatefulWidget {
   /// Optional caption to display.
   final String? caption;
 
+  /// When the media was uploaded.
+  final DateTime? createdAt;
+
+  /// Video duration in seconds.
+  final int? durationSeconds;
+
+  /// File size in bytes.
+  final int? fileSizeBytes;
+
   /// Shows the viewer as a full-screen route.
   static void show(
     BuildContext context, {
@@ -49,6 +62,9 @@ class FullScreenMediaViewer extends StatefulWidget {
     bool isVideo = false,
     String? fileName,
     String? caption,
+    DateTime? createdAt,
+    int? durationSeconds,
+    int? fileSizeBytes,
   }) {
     Navigator.push(
       context,
@@ -58,6 +74,9 @@ class FullScreenMediaViewer extends StatefulWidget {
           isVideo: isVideo,
           fileName: fileName,
           caption: caption,
+          createdAt: createdAt,
+          durationSeconds: durationSeconds,
+          fileSizeBytes: fileSizeBytes,
         ),
       ),
     );
@@ -71,12 +90,22 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
   late DownloadMediaUseCase _downloadUseCase;
   bool _isDownloading = false;
   double _downloadProgress = 0.0;
+  bool _showInfoPanel = false;
 
   // Video player state
   VideoPlayerController? _videoController;
   bool _isVideoInitialized = false;
   bool _isVideoPlaying = false;
+  bool _isBuffering = false;
+  bool _hasVideoError = false;
   bool _showControls = true;
+
+  /// Whether there is any info to show in the panel.
+  bool get _hasInfoToShow =>
+      (widget.caption != null && widget.caption!.isNotEmpty) ||
+      widget.createdAt != null ||
+      widget.durationSeconds != null ||
+      widget.fileSizeBytes != null;
 
   @override
   void initState() {
@@ -114,13 +143,38 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
   }
 
   void _videoListener() {
-    if (!mounted) return;
+    if (!mounted || _videoController == null) return;
 
-    final isPlaying = _videoController?.value.isPlaying ?? false;
+    final value = _videoController!.value;
+
+    // Check for errors
+    if (value.hasError && !_hasVideoError) {
+      setState(() {
+        _hasVideoError = true;
+      });
+      return;
+    }
+
+    // Update buffering state
+    final isBuffering = value.isBuffering;
+    if (isBuffering != _isBuffering) {
+      setState(() {
+        _isBuffering = isBuffering;
+      });
+    }
+
+    // Update playing state
+    final isPlaying = value.isPlaying;
     if (isPlaying != _isVideoPlaying) {
       setState(() {
         _isVideoPlaying = isPlaying;
       });
+    }
+
+    // Force rebuild to update progress bar and time display
+    // This ensures the slider and time labels stay in sync
+    if (value.isInitialized) {
+      setState(() {});
     }
   }
 
@@ -252,6 +306,18 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
                   // Spacer for balance
                   const SizedBox(width: 44),
                   const Spacer(),
+                  // Info button (if there's info to show)
+                  if (_hasInfoToShow) ...[
+                    _buildActionButton(
+                      onTap: () => setState(() => _showInfoPanel = !_showInfoPanel),
+                      child: Icon(
+                        _showInfoPanel ? Icons.info : Icons.info_outline,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                   // Download button
                   _buildActionButton(
                     onTap: _isDownloading ? null : _downloadMedia,
@@ -277,29 +343,13 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
               ),
             ),
 
-            // Caption at bottom if provided
-            if (widget.caption != null && widget.caption!.isNotEmpty)
+            // Info panel at bottom
+            if (_showInfoPanel && _hasInfoToShow)
               Positioned(
-                bottom: MediaQuery.of(context).padding.bottom + 24,
-                left: 24,
-                right: 24,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.7),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    widget.caption!,
-                    style: LynewedTextStyles.bodyMedium.copyWith(
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: _buildInfoPanel(),
               ),
           ],
         ),
@@ -307,9 +357,162 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
     );
   }
 
+  Widget _buildInfoPanel() {
+    return Container(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 16,
+        bottom: MediaQuery.of(context).padding.bottom + 16,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.transparent,
+            Colors.black.withValues(alpha: 0.8),
+          ],
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Caption
+          if (widget.caption != null && widget.caption!.isNotEmpty) ...[
+            Text(
+              widget.caption!,
+              style: LynewedTextStyles.bodyMedium.copyWith(
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // Metadata row
+          Row(
+            children: [
+              // Timestamp
+              if (widget.createdAt != null) ...[
+                Icon(
+                  Icons.access_time,
+                  color: Colors.white70,
+                  size: 14,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _formatDateTime(widget.createdAt!),
+                  style: LynewedTextStyles.labelSmall.copyWith(
+                    color: Colors.white70,
+                  ),
+                ),
+                const SizedBox(width: 16),
+              ],
+
+              // Duration (for videos)
+              if (widget.durationSeconds != null) ...[
+                Icon(
+                  Icons.videocam_outlined,
+                  color: Colors.white70,
+                  size: 14,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _formatDurationSeconds(widget.durationSeconds!),
+                  style: LynewedTextStyles.labelSmall.copyWith(
+                    color: Colors.white70,
+                  ),
+                ),
+                const SizedBox(width: 16),
+              ],
+
+              // File size
+              if (widget.fileSizeBytes != null) ...[
+                Icon(
+                  Icons.sd_storage_outlined,
+                  color: Colors.white70,
+                  size: 14,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _formatFileSize(widget.fileSizeBytes!),
+                  style: LynewedTextStyles.labelSmall.copyWith(
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inDays == 0) {
+      // Today - show time
+      final hour = dateTime.hour.toString().padLeft(2, '0');
+      final minute = dateTime.minute.toString().padLeft(2, '0');
+      return 'Today at $hour:$minute';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} days ago';
+    } else {
+      final months = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      ];
+      return '${months[dateTime.month - 1]} ${dateTime.day}, ${dateTime.year}';
+    }
+  }
+
+  String _formatDurationSeconds(int seconds) {
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '$minutes:${secs.toString().padLeft(2, '0')}';
+  }
+
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) {
+      return '$bytes B';
+    } else if (bytes < 1024 * 1024) {
+      return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    } else {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
+  }
+
   Widget _buildVideoPlayer() {
+    // Error state
+    if (_hasVideoError) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              color: Colors.white54,
+              size: 64,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Failed to load video',
+              style: LynewedTextStyles.bodyMedium.copyWith(
+                color: Colors.white54,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Loading state
     if (!_isVideoInitialized || _videoController == null) {
-      // Loading state
       return const Center(
         child: CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -328,8 +531,14 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
             child: VideoPlayer(_videoController!),
           ),
 
-          // Play/Pause overlay
-          if (_showControls)
+          // Buffering indicator
+          if (_isBuffering)
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+            ),
+
+          // Play/Pause overlay (hide when buffering)
+          if (_showControls && !_isBuffering)
             GestureDetector(
               onTap: _togglePlayPause,
               child: Container(
@@ -366,6 +575,10 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
     final duration = _videoController!.value.duration;
     final position = _videoController!.value.position;
 
+    // Clamp position to valid range to prevent slider errors
+    final maxMs = duration.inMilliseconds.toDouble();
+    final posMs = position.inMilliseconds.toDouble().clamp(0.0, maxMs > 0 ? maxMs : 1.0);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -392,11 +605,12 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
               thumbColor: LynewedColors.primary,
             ),
             child: Slider(
-              value: position.inMilliseconds.toDouble(),
+              value: posMs,
               min: 0,
-              max: duration.inMilliseconds.toDouble().clamp(1, double.infinity),
+              max: maxMs > 0 ? maxMs : 1.0,
               onChanged: (value) {
-                _videoController!.seekTo(Duration(milliseconds: value.toInt()));
+                final seekPosition = Duration(milliseconds: value.toInt());
+                _videoController!.seekTo(seekPosition);
               },
             ),
           ),

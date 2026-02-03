@@ -40,7 +40,7 @@ void main() {
       expect(find.byIcon(Icons.download_rounded), findsOneWidget);
     });
 
-    testWidgets('displays caption when provided', (tester) async {
+    testWidgets('displays info button and caption when provided', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: FullScreenMediaViewer(
@@ -50,10 +50,21 @@ void main() {
         ),
       );
 
+      // Info button should be visible when there's a caption
+      expect(find.byIcon(Icons.info_outline), findsOneWidget);
+
+      // Caption not visible initially (info panel hidden by default)
+      expect(find.text('Beautiful sunset'), findsNothing);
+
+      // Tap info button to show panel
+      await tester.tap(find.byIcon(Icons.info_outline));
+      await tester.pump();
+
+      // Caption should now be visible
       expect(find.text('Beautiful sunset'), findsOneWidget);
     });
 
-    testWidgets('hides caption when null', (tester) async {
+    testWidgets('hides info button when no info available', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: FullScreenMediaViewer(
@@ -62,8 +73,9 @@ void main() {
         ),
       );
 
-      // No caption text visible
-      expect(find.textContaining('Beautiful'), findsNothing);
+      // No info button when no caption/metadata
+      expect(find.byIcon(Icons.info_outline), findsNothing);
+      expect(find.byIcon(Icons.info), findsNothing);
     });
 
     testWidgets('close button pops navigation', (tester) async {
@@ -128,6 +140,14 @@ void main() {
 
       // Should display the viewer
       expect(find.byType(FullScreenMediaViewer), findsOneWidget);
+
+      // Info button should be visible
+      expect(find.byIcon(Icons.info_outline), findsOneWidget);
+
+      // Tap info to show caption
+      await tester.tap(find.byIcon(Icons.info_outline));
+      await tester.pump();
+
       expect(find.text('Test caption'), findsOneWidget);
     });
   });

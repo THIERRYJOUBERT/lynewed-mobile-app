@@ -33,6 +33,7 @@ abstract class GuestAlbumRepository {
   /// - [mediaType]: 'photo' or 'video'
   /// - [caption]: Optional caption (max 500 chars)
   /// - [durationSeconds]: Video duration for validation
+  /// - [thumbnailPath]: Local path to thumbnail image (for videos)
   /// - [onProgress]: Upload progress callback (0.0 to 1.0)
   ///
   /// Returns the created media ID on success.
@@ -42,6 +43,7 @@ abstract class GuestAlbumRepository {
     required String mediaType,
     String? caption,
     int? durationSeconds,
+    String? thumbnailPath,
     void Function(double)? onProgress,
   });
 

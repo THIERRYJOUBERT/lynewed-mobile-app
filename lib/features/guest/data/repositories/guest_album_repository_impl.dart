@@ -71,6 +71,7 @@ class GuestAlbumRepositoryImpl implements GuestAlbumRepository {
     required String mediaType,
     String? caption,
     int? durationSeconds,
+    String? thumbnailPath,
     void Function(double)? onProgress,
   }) async {
     try {
@@ -102,6 +103,33 @@ class GuestAlbumRepositoryImpl implements GuestAlbumRepository {
             ),
           );
 
+      onProgress?.call(0.5);
+
+      // Upload thumbnail if provided (for videos)
+      String? uploadedThumbnailPath;
+      if (thumbnailPath != null) {
+        final thumbFile = File(thumbnailPath);
+        if (await thumbFile.exists()) {
+          final thumbFilename = 'thumb_$timestamp.jpg';
+          uploadedThumbnailPath = '$weddingId/guests/$userId/$thumbFilename';
+
+          try {
+            await _client.storage.from(_storageBucket).upload(
+                  uploadedThumbnailPath,
+                  thumbFile,
+                  fileOptions: const FileOptions(
+                    cacheControl: '3600',
+                    upsert: false,
+                  ),
+                );
+          } catch (e) {
+            // Thumbnail upload failed - continue without it
+            SecureLogger.warning('Thumbnail upload failed: $e');
+            uploadedThumbnailPath = null;
+          }
+        }
+      }
+
       onProgress?.call(0.7);
 
       // Get file size
@@ -112,6 +140,7 @@ class GuestAlbumRepositoryImpl implements GuestAlbumRepository {
         'album_id': albumId,
         'media_type': mediaType,
         'storage_path': storagePath,
+        'thumbnail_path': uploadedThumbnailPath,
         'caption': caption,
         'duration_seconds': durationSeconds,
         'file_size_bytes': fileSizeBytes,

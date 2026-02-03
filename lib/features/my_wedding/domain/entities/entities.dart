@@ -14,5 +14,6 @@ export 'guest_album.dart';
 export 'magazine_format.dart';
 export 'magazine_page.dart';
 export 'magazine_selection.dart';
+export 'picker_media_item.dart';
 export 'photo_share.dart';
 export 'shipping_address.dart';

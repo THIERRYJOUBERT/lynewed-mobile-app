@@ -496,6 +496,28 @@ abstract class MyWeddingRepository {
     required String weddingId,
   });
 
+  /// Get thumbnail URL for an album image.
+  ///
+  /// Returns the thumbnail_url if available, otherwise falls back to image_url.
+  Future<RepositoryResult<String?>> getAlbumImageThumbnail({
+    required String imageId,
+  });
+
+  /// Get thumbnail URL for guest media.
+  ///
+  /// Returns the thumbnail_url if available, otherwise falls back to media_url.
+  Future<RepositoryResult<String?>> getGuestMediaThumbnail({
+    required String mediaId,
+  });
+
+  /// Get all photos available for magazine picker.
+  ///
+  /// Returns photos grouped by source (guest albums, inspiration albums),
+  /// with already-selected photos marked.
+  Future<RepositoryResult<List<PickerMediaSection>>> getAllPhotosForMagazinePicker({
+    required String weddingId,
+  });
+
   // ========== PHOTO SHARES ==========
 
   /// Share photos/videos with wedding guests.

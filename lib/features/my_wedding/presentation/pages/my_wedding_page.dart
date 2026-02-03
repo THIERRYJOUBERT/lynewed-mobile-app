@@ -36,6 +36,7 @@ import 'guests_page.dart';
 import 'guest_albums_page.dart';
 import 'wedding_groups_page.dart';
 import 'magazine_selection_page.dart';
+import '../sheets/magazine_photo_picker_sheet.dart';
 
 /// My Wedding Page - Main page for brides to manage their wedding
 ///
@@ -310,32 +311,42 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Wedding Team Section
-                _buildWeddingTeamSection(),
-                const SizedBox(height: 30.0),
-                // Groups Section
-                _buildGroupsSection(),
-                const SizedBox(height: 30.0),
+                // ========== PLANNING ==========
                 // Agenda Section
                 _buildAgendaSection(),
                 const SizedBox(height: 30.0),
                 // Budget Section
                 _buildBudgetSection(),
                 const SizedBox(height: 30.0),
-                // Inspirations Section
-                _buildInspirationsSection(),
+
+                // ========== PEOPLE & COMMUNICATION ==========
+                // Wedding Team Section
+                _buildWeddingTeamSection(),
                 const SizedBox(height: 30.0),
-                // Invite Code Section
-                _buildInviteCodeSection(),
+                // Groups Section
+                _buildGroupsSection(),
                 const SizedBox(height: 30.0),
                 // Guests Section
                 _buildGuestsSection(),
                 const SizedBox(height: 30.0),
+                // Note for Pros Section
+                _buildNoteForProsSection(),
+                const SizedBox(height: 30.0),
+
+                // ========== MEDIA & ALBUMS ==========
+                // Inspirations Section
+                _buildInspirationsSection(),
+                const SizedBox(height: 30.0),
+                // Guest Albums Section
+                _buildGuestAlbumsSection(),
+                const SizedBox(height: 30.0),
                 // Magazine Section
                 _buildMagazineSection(),
                 const SizedBox(height: 30.0),
-                // Note for Pros Section
-                _buildNoteForProsSection(),
+
+                // ========== SHARING ==========
+                // Invite Code Section
+                _buildInviteCodeSection(),
                 const SizedBox(height: 20.0),
               ],
             ),
@@ -1362,35 +1373,6 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 8.0),
-              GestureDetector(
-                onTap: _openGuestAlbumsPage,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: LynewedColors.gray200),
-                    borderRadius: BorderRadius.circular(4.0),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.photo_album_outlined,
-                        size: 18.0,
-                        color: LynewedColors.textSecondary,
-                      ),
-                      const SizedBox(width: 8.0),
-                      Text(
-                        'View Guest Albums',
-                        style: LynewedTextStyles.labelLarge.copyWith(
-                          color: LynewedColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ],
           )
         else
@@ -1420,6 +1402,91 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
               ),
             ),
           ),
+      ],
+    );
+  }
+
+  /// Guest Albums Section - separate section for guest album access
+  Widget _buildGuestAlbumsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('GUEST ALBUMS', style: LynewedTextStyles.sectionTitle),
+            GestureDetector(
+              onTap: _openGuestAlbumsPage,
+              child: Text(
+                'View all',
+                style: LynewedTextStyles.labelLarge.copyWith(
+                  color: LynewedColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4.0),
+        Text(
+          'Photos and videos from your guests',
+          style: LynewedTextStyles.bodySmall.copyWith(
+            color: LynewedColors.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 10.0),
+        GestureDetector(
+          onTap: _openGuestAlbumsPage,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: LynewedColors.surface,
+              borderRadius: BorderRadius.circular(4.0),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: LynewedColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                  child: const Icon(
+                    Icons.photo_album_outlined,
+                    color: LynewedColors.primary,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12.0),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Guest Albums',
+                        style: LynewedTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 2.0),
+                      Text(
+                        'View photos shared by guests',
+                        style: LynewedTextStyles.bodySmall.copyWith(
+                          color: LynewedColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right,
+                  color: LynewedColors.textSecondary,
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -1881,7 +1948,7 @@ Or scan the QR code in the app.
                   const SizedBox(height: 12.0),
                   LynewedButton(
                     text: 'Select Photos',
-                    onPressed: _openMagazineSelectionPage,
+                    onPressed: _openMagazinePhotoPicker,
                   ),
                 ],
               ),
@@ -2106,9 +2173,31 @@ Or scan the QR code in the app.
         builder: (context) => MagazineSelectionPage(
           weddingId: _wedding!.id,
           userId: currentUserId,
+          weddingTitle: _wedding!.name ?? 'My Wedding',
+          weddingDate: _wedding!.eventDate ?? DateTime.now(),
         ),
       ),
     ).then((_) => _loadWedding());
+  }
+
+  void _openMagazinePhotoPicker() {
+    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+    if (currentUserId == null || _wedding == null) return;
+
+    MagazinePhotoPickerSheet.show(
+      context,
+      weddingId: _wedding!.id,
+      userId: currentUserId,
+      currentCount: _magazineSelections.length,
+      onPhotosAdded: (count) {
+        _loadWedding(); // Refresh to update magazine selection count
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$count photo${count > 1 ? 's' : ''} added to magazine'),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _openProDetails(String profileId) async {

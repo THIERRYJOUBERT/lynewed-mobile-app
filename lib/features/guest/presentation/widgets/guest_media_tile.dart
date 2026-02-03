@@ -15,6 +15,7 @@ import '../../domain/entities/guest_media.dart';
 /// Shows:
 /// - Thumbnail image for photos and videos
 /// - Play icon overlay for videos
+/// - Timestamp badge showing upload time
 /// - Supports tap and long-press gestures
 class GuestMediaTile extends StatelessWidget {
   /// Creates a guest media tile.
@@ -23,6 +24,7 @@ class GuestMediaTile extends StatelessWidget {
     required this.media,
     this.onTap,
     this.onLongPress,
+    this.showTimestamp = true,
   });
 
   /// The media to display.
@@ -33,6 +35,9 @@ class GuestMediaTile extends StatelessWidget {
 
   /// Callback when the tile is long-pressed.
   final VoidCallback? onLongPress;
+
+  /// Whether to show timestamp badge.
+  final bool showTimestamp;
 
   /// Storage bucket base URL.
   String get _bucketBaseUrl {
@@ -103,6 +108,28 @@ class GuestMediaTile extends StatelessWidget {
                 ),
               ),
             ),
+
+          // Timestamp badge
+          if (showTimestamp)
+            Positioned(
+              left: 4,
+              bottom: 4,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  _formatRelativeTime(media.createdAt),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -122,5 +149,30 @@ class GuestMediaTile extends StatelessWidget {
 
     // Use main storage path
     return '$baseUrl${media.storagePath}';
+  }
+
+  /// Formats a DateTime as relative time string.
+  String _formatRelativeTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inMinutes < 1) {
+      return 'Just now';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d ago';
+    } else {
+      // Format as "Jan 15"
+      final months = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      ];
+      return '${months[dateTime.month - 1]} ${dateTime.day}';
+    }
   }
 }
