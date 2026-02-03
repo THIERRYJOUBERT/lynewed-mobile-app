@@ -1693,4 +1693,358 @@ class SupabaseMyWeddingDatasource {
       rethrow;
     }
   }
+
+  // ========== PHOTO SHARES ==========
+
+  /// Share photos/videos with wedding guests.
+  ///
+  /// Creates share records for the given media items.
+  /// Uses upsert to handle duplicates gracefully.
+  Future<int> sharePhotosWithGuests({
+    required String weddingId,
+    required List<ShareMediaItem> mediaItems,
+  }) async {
+    final userId = _currentUserId;
+    if (userId == null) {
+      throw Exception('No authenticated user');
+    }
+
+    if (mediaItems.isEmpty) return 0;
+
+    try {
+      // Build insert data for all media items
+      final insertData = mediaItems
+          .map((item) => {
+                'wedding_id': weddingId,
+                'media_type': item.mediaType,
+                'media_id': item.mediaId,
+                'shared_by': userId,
+              })
+          .toList();
+
+      // Use upsert with ON CONFLICT DO NOTHING equivalent
+      await _client.from('photo_shares').upsert(
+            insertData,
+            onConflict: 'wedding_id,media_type,media_id',
+            ignoreDuplicates: true,
+          );
+
+      SecureLogger.info(
+          'sharePhotosWithGuests: Shared ${mediaItems.length} items for wedding $weddingId');
+      return mediaItems.length;
+    } catch (e) {
+      SecureLogger.error('sharePhotosWithGuests error: $e');
+      rethrow;
+    }
+  }
+
+  /// Remove share records for photos/videos.
+  ///
+  /// Returns the number of shares removed.
+  Future<int> unsharePhotos({
+    required String weddingId,
+    required List<ShareMediaItem> mediaItems,
+  }) async {
+    final userId = _currentUserId;
+    if (userId == null) {
+      throw Exception('No authenticated user');
+    }
+
+    if (mediaItems.isEmpty) return 0;
+
+    try {
+      int deletedCount = 0;
+
+      // Delete each share record individually (Supabase doesn't support
+      // batch delete with complex conditions)
+      for (final item in mediaItems) {
+        final result = await _client
+            .from('photo_shares')
+            .delete()
+            .eq('wedding_id', weddingId)
+            .eq('media_type', item.mediaType)
+            .eq('media_id', item.mediaId)
+            .eq('shared_by', userId)
+            .select('id');
+
+        deletedCount += (result as List).length;
+      }
+
+      SecureLogger.info(
+          'unsharePhotos: Removed $deletedCount shares for wedding $weddingId');
+      return deletedCount;
+    } catch (e) {
+      SecureLogger.error('unsharePhotos error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get all shared media IDs for a wedding.
+  ///
+  /// Returns a set of media IDs that have been shared.
+  Future<Set<String>> getSharedMediaIds({required String weddingId}) async {
+    try {
+      final response = await _client
+          .from('photo_shares')
+          .select('media_id')
+          .eq('wedding_id', weddingId);
+
+      final ids = (response as List)
+          .map((row) => row['media_id'] as String)
+          .toSet();
+
+      SecureLogger.info(
+          'getSharedMediaIds: Found ${ids.length} shared media for wedding $weddingId');
+      return ids;
+    } catch (e) {
+      SecureLogger.error('getSharedMediaIds error: $e');
+      rethrow;
+    }
+  }
+
+  /// Check if a specific media item is shared.
+  Future<bool> isMediaShared({
+    required String weddingId,
+    required String mediaId,
+    required String mediaType,
+  }) async {
+    try {
+      final response = await _client
+          .from('photo_shares')
+          .select('id')
+          .eq('wedding_id', weddingId)
+          .eq('media_id', mediaId)
+          .eq('media_type', mediaType)
+          .maybeSingle();
+
+      return response != null;
+    } catch (e) {
+      SecureLogger.error('isMediaShared error: $e');
+      rethrow;
+    }
+  }
+
+  // ========== MAGAZINE SELECTIONS ==========
+
+  /// Get all magazine selections for a wedding.
+  ///
+  /// Returns selections ordered by position with thumbnail URLs from joined tables.
+  Future<List<MagazineSelection>> getMagazineSelections({
+    required String weddingId,
+  }) async {
+    try {
+      // Query magazine_selections and get the thumbnail URL from the source table
+      final response = await _client.from('magazine_selections').select('''
+            id,
+            wedding_id,
+            user_id,
+            media_type,
+            media_id,
+            position,
+            created_at
+          ''').eq('wedding_id', weddingId).order('position', ascending: true);
+
+      final selections = <MagazineSelection>[];
+
+      for (final row in response as List) {
+        // For now, create without thumbnail - UI will load thumbnails separately
+        selections.add(MagazineSelection.fromJson(row));
+      }
+
+      SecureLogger.info(
+          'getMagazineSelections: Found ${selections.length} selections');
+      return selections;
+    } catch (e) {
+      SecureLogger.error('getMagazineSelections error: $e');
+      rethrow;
+    }
+  }
+
+  /// Add photos to the magazine selection.
+  ///
+  /// Assigns positions starting from the current max position + 1.
+  /// Returns the number of photos successfully added.
+  Future<int> addToMagazine({
+    required String weddingId,
+    required String userId,
+    required List<MagazineMediaItem> mediaItems,
+    int maxPhotos = 60,
+  }) async {
+    if (mediaItems.isEmpty) return 0;
+
+    try {
+      // Get current max position
+      final countResponse = await _client
+          .from('magazine_selections')
+          .select('position')
+          .eq('wedding_id', weddingId)
+          .order('position', ascending: false)
+          .limit(1)
+          .maybeSingle();
+
+      int startPosition = 1;
+      if (countResponse != null) {
+        startPosition = (countResponse['position'] as int) + 1;
+      }
+
+      // Check if adding would exceed limit
+      final currentCount = startPosition - 1;
+      if (currentCount + mediaItems.length > maxPhotos) {
+        throw Exception('Would exceed maximum $maxPhotos photos');
+      }
+
+      // Build insert data with positions
+      final insertData = <Map<String, dynamic>>[];
+      for (var i = 0; i < mediaItems.length; i++) {
+        final item = mediaItems[i];
+        insertData.add({
+          'wedding_id': weddingId,
+          'user_id': userId,
+          'media_type': item.mediaType,
+          'media_id': item.mediaId,
+          'position': startPosition + i,
+        });
+      }
+
+      // Insert all at once
+      await _client.from('magazine_selections').insert(insertData);
+
+      SecureLogger.info(
+          'addToMagazine: Added ${mediaItems.length} photos starting at position $startPosition');
+      return mediaItems.length;
+    } catch (e) {
+      SecureLogger.error('addToMagazine error: $e');
+      rethrow;
+    }
+  }
+
+  /// Remove a photo from the magazine selection.
+  ///
+  /// Also recompacts positions so there are no gaps.
+  Future<void> removeFromMagazine({
+    required String selectionId,
+    required String weddingId,
+  }) async {
+    try {
+      // Get the position of the item being removed
+      final itemResponse = await _client
+          .from('magazine_selections')
+          .select('position')
+          .eq('id', selectionId)
+          .single();
+
+      final removedPosition = itemResponse['position'] as int;
+
+      // Delete the item
+      await _client.from('magazine_selections').delete().eq('id', selectionId);
+
+      // Recompact positions: decrement all positions greater than removed
+      await _client.rpc('recompact_magazine_positions', params: {
+        'p_wedding_id': weddingId,
+        'p_removed_position': removedPosition,
+      });
+
+      SecureLogger.info(
+          'removeFromMagazine: Removed selection $selectionId from position $removedPosition');
+    } catch (e) {
+      // If RPC doesn't exist, do manual recompact
+      if (e.toString().contains('function') ||
+          e.toString().contains('does not exist')) {
+        await _recompactPositionsManually(weddingId);
+        SecureLogger.info(
+            'removeFromMagazine: Used manual recompact for $selectionId');
+      } else {
+        SecureLogger.error('removeFromMagazine error: $e');
+        rethrow;
+      }
+    }
+  }
+
+  /// Manual recompact positions when RPC is not available.
+  Future<void> _recompactPositionsManually(String weddingId) async {
+    try {
+      // Get all selections ordered by position
+      final response = await _client
+          .from('magazine_selections')
+          .select('id, position')
+          .eq('wedding_id', weddingId)
+          .order('position', ascending: true);
+
+      // Update each position sequentially
+      var newPosition = 1;
+      for (final row in response as List) {
+        if (row['position'] != newPosition) {
+          await _client
+              .from('magazine_selections')
+              .update({'position': newPosition}).eq('id', row['id'] as String);
+        }
+        newPosition++;
+      }
+    } catch (e) {
+      SecureLogger.error('_recompactPositionsManually error: $e');
+      rethrow;
+    }
+  }
+
+  /// Reorder photos in the magazine.
+  ///
+  /// Moves the photo at oldIndex to newIndex and shifts others.
+  Future<void> reorderMagazine({
+    required String weddingId,
+    required int oldIndex,
+    required int newIndex,
+  }) async {
+    if (oldIndex == newIndex) return;
+
+    try {
+      // Get all selections ordered by position
+      final response = await _client
+          .from('magazine_selections')
+          .select('id, position')
+          .eq('wedding_id', weddingId)
+          .order('position', ascending: true);
+
+      final items = (response as List).toList();
+      if (oldIndex >= items.length || newIndex >= items.length) {
+        throw Exception('Invalid index');
+      }
+
+      // Reorder in memory
+      final movedItem = items.removeAt(oldIndex);
+      items.insert(newIndex, movedItem);
+
+      // Update all positions
+      for (var i = 0; i < items.length; i++) {
+        final expectedPosition = i + 1;
+        if (items[i]['position'] != expectedPosition) {
+          await _client
+              .from('magazine_selections')
+              .update({'position': expectedPosition}).eq(
+                  'id', items[i]['id'] as String);
+        }
+      }
+
+      SecureLogger.info(
+          'reorderMagazine: Moved from index $oldIndex to $newIndex');
+    } catch (e) {
+      SecureLogger.error('reorderMagazine error: $e');
+      rethrow;
+    }
+  }
+
+  /// Clear all magazine selections for a wedding.
+  Future<void> clearMagazineSelections({required String weddingId}) async {
+    try {
+      await _client
+          .from('magazine_selections')
+          .delete()
+          .eq('wedding_id', weddingId);
+
+      SecureLogger.info(
+          'clearMagazineSelections: Cleared all selections for wedding $weddingId');
+    } catch (e) {
+      SecureLogger.error('clearMagazineSelections error: $e');
+      rethrow;
+    }
+  }
 }

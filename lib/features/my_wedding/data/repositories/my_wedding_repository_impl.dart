@@ -847,4 +847,150 @@ class MyWeddingRepositoryImpl implements MyWeddingRepository {
       return RepositoryResult.failure('Failed to get album media: $e');
     }
   }
+
+  // ========== MAGAZINE SELECTIONS ==========
+
+  @override
+  Future<RepositoryResult<List<MagazineSelection>>> getMagazineSelections({
+    required String weddingId,
+  }) async {
+    try {
+      final selections = await _datasource.getMagazineSelections(
+        weddingId: weddingId,
+      );
+      return RepositoryResult.success(selections);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get magazine selections: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<int>> addToMagazine({
+    required String weddingId,
+    required String userId,
+    required List<MagazineMediaItem> mediaItems,
+    int maxPhotos = 60,
+  }) async {
+    try {
+      final count = await _datasource.addToMagazine(
+        weddingId: weddingId,
+        userId: userId,
+        mediaItems: mediaItems,
+        maxPhotos: maxPhotos,
+      );
+      return RepositoryResult.success(count);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to add to magazine: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<void>> removeFromMagazine({
+    required String selectionId,
+    required String weddingId,
+  }) async {
+    try {
+      await _datasource.removeFromMagazine(
+        selectionId: selectionId,
+        weddingId: weddingId,
+      );
+      return const RepositoryResult.success(null);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to remove from magazine: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<void>> reorderMagazine({
+    required String weddingId,
+    required int oldIndex,
+    required int newIndex,
+  }) async {
+    try {
+      await _datasource.reorderMagazine(
+        weddingId: weddingId,
+        oldIndex: oldIndex,
+        newIndex: newIndex,
+      );
+      return const RepositoryResult.success(null);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to reorder magazine: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<void>> clearMagazineSelections({
+    required String weddingId,
+  }) async {
+    try {
+      await _datasource.clearMagazineSelections(weddingId: weddingId);
+      return const RepositoryResult.success(null);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to clear magazine: $e');
+    }
+  }
+
+  // ========== PHOTO SHARES ==========
+
+  @override
+  Future<RepositoryResult<int>> sharePhotosWithGuests({
+    required String weddingId,
+    required List<ShareMediaItem> mediaItems,
+  }) async {
+    try {
+      final count = await _datasource.sharePhotosWithGuests(
+        weddingId: weddingId,
+        mediaItems: mediaItems,
+      );
+      return RepositoryResult.success(count);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to share photos: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<int>> unsharePhotos({
+    required String weddingId,
+    required List<ShareMediaItem> mediaItems,
+  }) async {
+    try {
+      final count = await _datasource.unsharePhotos(
+        weddingId: weddingId,
+        mediaItems: mediaItems,
+      );
+      return RepositoryResult.success(count);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to unshare photos: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<Set<String>>> getSharedMediaIds({
+    required String weddingId,
+  }) async {
+    try {
+      final ids = await _datasource.getSharedMediaIds(weddingId: weddingId);
+      return RepositoryResult.success(ids);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get shared media IDs: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<bool>> isMediaShared({
+    required String weddingId,
+    required String mediaId,
+    required String mediaType,
+  }) async {
+    try {
+      final isShared = await _datasource.isMediaShared(
+        weddingId: weddingId,
+        mediaId: mediaId,
+        mediaType: mediaType,
+      );
+      return RepositoryResult.success(isShared);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to check if media is shared: $e');
+    }
+  }
 }

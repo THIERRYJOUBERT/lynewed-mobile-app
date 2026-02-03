@@ -2,6 +2,7 @@
 ///
 /// Represents an image or video uploaded from gallery to an inspiration album.
 /// Supports both photos and videos with metadata like duration and file size.
+/// Includes favorite and hidden status for gallery filtering.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -19,6 +20,8 @@ class AlbumImage {
     this.caption,
     this.durationSeconds,
     this.fileSizeBytes,
+    this.isFavorite = false,
+    this.isHidden = false,
   });
 
   /// UUID of the album image
@@ -48,6 +51,12 @@ class AlbumImage {
   /// File size in bytes
   final int? fileSizeBytes;
 
+  /// Whether this media is marked as favorite
+  final bool isFavorite;
+
+  /// Whether this media is hidden
+  final bool isHidden;
+
   /// Returns true if this is a video
   bool get isVideo => mediaType == 'video';
 
@@ -68,6 +77,8 @@ class AlbumImage {
       caption: json['caption'] as String?,
       durationSeconds: json['duration_seconds'] as int?,
       fileSizeBytes: json['file_size_bytes'] as int?,
+      isFavorite: json['is_favorite'] as bool? ?? false,
+      isHidden: json['is_hidden'] as bool? ?? false,
     );
   }
 
@@ -80,6 +91,8 @@ class AlbumImage {
       'caption': caption,
       'duration_seconds': durationSeconds,
       'file_size_bytes': fileSizeBytes,
+      'is_favorite': isFavorite,
+      'is_hidden': isHidden,
     };
   }
 

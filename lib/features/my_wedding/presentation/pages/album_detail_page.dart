@@ -21,6 +21,7 @@ import '../../data/repositories/my_wedding_repository_impl.dart';
 import '../../domain/entities/entities.dart';
 import '../../domain/repositories/my_wedding_repository.dart';
 import '../../domain/usecases/download_media_use_case.dart';
+import '../bloc/magazine_selection_cubit.dart';
 import '../widgets/download_button.dart';
 import '../widgets/media_picker_sheet.dart';
 
@@ -123,7 +124,7 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
     );
   }
 
-  /// Builds the FAB for downloading selected media.
+  /// Builds the FAB for selected media actions.
   Widget? _buildSelectionFab() {
     if (!_isSelectionMode || _selectedMediaIds.isEmpty) {
       return null;
@@ -146,15 +147,132 @@ class _AlbumDetailPageState extends State<AlbumDetailPage> {
       );
     }
 
-    return FloatingActionButton.extended(
-      onPressed: _downloadSelected,
-      backgroundColor: LynewedColors.primary,
-      icon: const Icon(Icons.download_rounded, color: Colors.white),
-      label: Text(
-        'Download ${_selectedMediaIds.length}',
-        style: const TextStyle(color: Colors.white),
+    // Show action buttons row for selection
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Add to Magazine button
+          FloatingActionButton.extended(
+            heroTag: 'magazine',
+            onPressed: () => _addToMagazine(),
+            backgroundColor: LynewedColors.surface,
+            foregroundColor: LynewedColors.textPrimary,
+            icon: const Icon(Icons.auto_stories_outlined),
+            label: const Text('Magazine'),
+          ),
+          const SizedBox(width: 12),
+          // Download button
+          FloatingActionButton.extended(
+            heroTag: 'download',
+            onPressed: _downloadSelected,
+            backgroundColor: LynewedColors.primary,
+            icon: const Icon(Icons.download_rounded, color: Colors.white),
+            label: Text(
+              'Download ${_selectedMediaIds.length}',
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  /// Adds selected photos to the magazine.
+  Future<void> _addToMagazine() async {
+    if (_selectedMediaIds.isEmpty) return;
+
+    final supabase = Supabase.instance.client;
+    final userId = supabase.auth.currentUser?.id;
+
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'You must be logged in to add photos to magazine',
+            style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
+          ),
+          backgroundColor: LynewedColors.error,
+        ),
+      );
+      return;
+    }
+
+    // Get selected images with their URLs
+    final selectedImages = _uploadedImages
+        .where((img) => _selectedMediaIds.contains(img.id))
+        .toList();
+
+    if (selectedImages.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'No photos selected',
+            style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
+          ),
+          backgroundColor: LynewedColors.error,
+        ),
+      );
+      return;
+    }
+
+    // Create a temporary cubit to add photos
+    final cubit = MagazineSelectionCubit(
+      weddingId: widget.album.weddingId,
+      userId: userId,
+      getThumbnailUrl: (_, __) async => null,
+    );
+
+    // Load existing selections first
+    await cubit.loadSelections();
+
+    // Prepare media items to add
+    final mediaItems = selectedImages.map((img) => MagazineMediaItem(
+          mediaType: 'album_image',
+          mediaId: img.id,
+          thumbnailUrl: img.thumbnailUrl ?? img.imageUrl,
+        ));
+
+    // Add to magazine
+    await cubit.addPhotos(mediaItems.toList());
+
+    // Check result
+    final state = cubit.state;
+
+    if (state.errorMessage != null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              state.errorMessage!,
+              style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
+            ),
+            backgroundColor: LynewedColors.error,
+          ),
+        );
+      }
+    } else {
+      // Exit selection mode
+      setState(() {
+        _isSelectionMode = false;
+        _selectedMediaIds.clear();
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${selectedImages.length} photo${selectedImages.length != 1 ? 's' : ''} added to magazine',
+              style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
+            ),
+            backgroundColor: LynewedColors.success,
+          ),
+        );
+      }
+    }
+
+    await cubit.close();
   }
 
   /// Toggles selection mode on/off.

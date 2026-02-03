@@ -75,6 +75,27 @@ class RepositoryResult<T> {
   bool get isFailure => error != null;
 }
 
+/// Media item to add to magazine.
+///
+/// Contains the media type and ID for adding to magazine_selections.
+class MagazineMediaItem {
+  /// Creates a magazine media item.
+  const MagazineMediaItem({
+    required this.mediaType,
+    required this.mediaId,
+    this.thumbnailUrl,
+  });
+
+  /// Type of media: 'album_image' or 'guest_media'.
+  final String mediaType;
+
+  /// UUID of the source media.
+  final String mediaId;
+
+  /// Optional thumbnail URL for display.
+  final String? thumbnailUrl;
+}
+
 /// My Wedding Repository Interface
 abstract class MyWeddingRepository {
   /// Get the current user's wedding overview
@@ -431,6 +452,99 @@ abstract class MyWeddingRepository {
   Future<RepositoryResult<List<GuestMedia>>> getGuestAlbumMedia({
     required String albumId,
   });
+
+  // ========== MAGAZINE SELECTIONS ==========
+
+  /// Get all magazine selections for a wedding.
+  ///
+  /// Returns selections ordered by position.
+  Future<RepositoryResult<List<MagazineSelection>>> getMagazineSelections({
+    required String weddingId,
+  });
+
+  /// Add photos to the magazine selection.
+  ///
+  /// Assigns positions starting from the current max position + 1.
+  /// Returns the number of photos successfully added.
+  /// Fails if adding would exceed the maximum limit.
+  Future<RepositoryResult<int>> addToMagazine({
+    required String weddingId,
+    required String userId,
+    required List<MagazineMediaItem> mediaItems,
+    int maxPhotos = 60,
+  });
+
+  /// Remove a photo from the magazine selection.
+  ///
+  /// Also recompacts positions so there are no gaps.
+  Future<RepositoryResult<void>> removeFromMagazine({
+    required String selectionId,
+    required String weddingId,
+  });
+
+  /// Reorder photos in the magazine.
+  ///
+  /// Moves the photo at oldPosition to newPosition and shifts others.
+  Future<RepositoryResult<void>> reorderMagazine({
+    required String weddingId,
+    required int oldIndex,
+    required int newIndex,
+  });
+
+  /// Clear all magazine selections for a wedding.
+  Future<RepositoryResult<void>> clearMagazineSelections({
+    required String weddingId,
+  });
+
+  // ========== PHOTO SHARES ==========
+
+  /// Share photos/videos with wedding guests.
+  ///
+  /// Creates share records for the given media items.
+  /// Duplicate shares are silently ignored (upsert behavior).
+  /// Returns the number of shares created.
+  Future<RepositoryResult<int>> sharePhotosWithGuests({
+    required String weddingId,
+    required List<ShareMediaItem> mediaItems,
+  });
+
+  /// Remove share records for photos/videos.
+  ///
+  /// Returns the number of shares removed.
+  Future<RepositoryResult<int>> unsharePhotos({
+    required String weddingId,
+    required List<ShareMediaItem> mediaItems,
+  });
+
+  /// Get all shared media IDs for a wedding.
+  ///
+  /// Returns a set of media IDs that have been shared.
+  Future<RepositoryResult<Set<String>>> getSharedMediaIds({
+    required String weddingId,
+  });
+
+  /// Check if a specific media item is shared.
+  Future<RepositoryResult<bool>> isMediaShared({
+    required String weddingId,
+    required String mediaId,
+    required String mediaType,
+  });
+}
+
+/// Item to share with guests.
+class ShareMediaItem {
+  const ShareMediaItem({
+    required this.mediaId,
+    required this.mediaType,
+  });
+
+  final String mediaId;
+  final String mediaType; // 'album_image' or 'guest_media'
+
+  Map<String, dynamic> toJson() => {
+        'media_id': mediaId,
+        'media_type': mediaType,
+      };
 }
 
 /// Contacted professional for invitation
