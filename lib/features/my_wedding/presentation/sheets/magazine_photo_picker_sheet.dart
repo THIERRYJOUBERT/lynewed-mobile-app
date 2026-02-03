@@ -181,12 +181,36 @@ class _MagazinePhotoPickerSheetState extends State<MagazinePhotoPickerSheet> {
   }
 
   List<PickerMediaSection> get _filteredSections {
-    if (_filter == 'all') return _sections;
-    return _sections.where((s) {
-      if (_filter == 'guest') return s.title.contains('Guest');
-      if (_filter == 'inspiration') return s.title.contains('Inspiration');
-      return true;
-    }).toList();
+    var sections = _sections;
+
+    // Filter by source type
+    if (_filter == 'guest') {
+      sections = sections.where((s) => s.title.contains('Guest')).toList();
+    } else if (_filter == 'inspiration') {
+      sections = sections.where((s) => s.title.contains('Inspiration')).toList();
+    }
+
+    // Filter out videos (photos only for magazine)
+    return sections.map((section) {
+      final filteredGroups = section.groups.map((group) {
+        final photosOnly = group.items.where((item) => !item.isVideo).toList();
+        return PickerMediaGroup(
+          id: group.id,
+          name: group.name,
+          avatarUrl: group.avatarUrl,
+          items: photosOnly,
+        );
+      }).where((g) => g.items.isNotEmpty).toList();
+
+      final totalPhotos = filteredGroups.fold<int>(0, (sum, g) => sum + g.count);
+      final sourceLabel = section.title.contains('Guest') ? 'guests' : 'albums';
+
+      return PickerMediaSection(
+        title: section.title,
+        subtitle: '$totalPhotos photos from ${filteredGroups.length} $sourceLabel',
+        groups: filteredGroups,
+      );
+    }).where((s) => s.groups.isNotEmpty).toList();
   }
 
   @override
@@ -488,7 +512,7 @@ class _MagazinePhotoPickerSheetState extends State<MagazinePhotoPickerSheet> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isAlreadyInMagazine
-                    ? LynewedColors.gray300
+                    ? Colors.green  // Green for already in magazine
                     : isSelected
                         ? LynewedColors.primary
                         : Colors.white.withValues(alpha: 0.8),
@@ -512,9 +536,9 @@ class _MagazinePhotoPickerSheetState extends State<MagazinePhotoPickerSheet> {
     return Container(
       padding: EdgeInsets.fromLTRB(
         20,
-        12,
+        8,
         20,
-        12 + MediaQuery.of(context).padding.bottom,
+        8 + MediaQuery.of(context).padding.bottom,
       ),
       decoration: BoxDecoration(
         color: LynewedColors.surface,

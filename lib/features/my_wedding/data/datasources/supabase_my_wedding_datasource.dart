@@ -2104,18 +2104,21 @@ class SupabaseMyWeddingDatasource {
 
   /// Get thumbnail URL for guest media.
   ///
-  /// Returns the thumbnail_url if available, otherwise falls back to media_url.
+  /// Returns the full public URL for the thumbnail or storage path.
   Future<String?> getGuestMediaThumbnail({required String mediaId}) async {
     try {
       final response = await _client
           .from('guest_media')
-          .select('thumbnail_url, media_url')
+          .select('thumbnail_path, storage_path')
           .eq('id', mediaId)
           .maybeSingle();
 
       if (response == null) return null;
-      return (response['thumbnail_url'] as String?) ??
-          (response['media_url'] as String?);
+      final path = (response['thumbnail_path'] as String?) ??
+          (response['storage_path'] as String?);
+      if (path == null) return null;
+      // Convert storage path to full public URL
+      return _client.storage.from('wedding-albums').getPublicUrl(path);
     } catch (e) {
       SecureLogger.error('getGuestMediaThumbnail error: $e');
       return null;
@@ -2156,8 +2159,8 @@ class SupabaseMyWeddingDatasource {
             ),
             guest_media (
               id,
-              media_url,
-              thumbnail_url,
+              storage_path,
+              thumbnail_path,
               media_type,
               created_at
             )
@@ -2175,10 +2178,23 @@ class SupabaseMyWeddingDatasource {
 
         final items = <PickerMediaItem>[];
         for (final mediaRow in mediaList) {
-          final mediaMap = mediaRow as Map<String, dynamic>;
+          final mediaMap = Map<String, dynamic>.from(mediaRow as Map);
           final mediaId = mediaMap['id'] as String;
           final isSelected =
               selectedIds['guest_media']?.contains(mediaId) ?? false;
+
+          // Convert storage paths to full URLs for guest_media
+          final thumbnailPath = mediaMap['thumbnail_path'] as String?;
+          final storagePath = mediaMap['storage_path'] as String?;
+          if (thumbnailPath != null) {
+            mediaMap['thumbnail_url'] =
+                _client.storage.from('wedding-albums').getPublicUrl(thumbnailPath);
+          }
+          if (storagePath != null) {
+            mediaMap['storage_url'] =
+                _client.storage.from('wedding-albums').getPublicUrl(storagePath);
+          }
+
           items.add(PickerMediaItem.fromGuestMedia(
             mediaMap,
             guestName: guestName,
@@ -2216,7 +2232,7 @@ class SupabaseMyWeddingDatasource {
               image_url,
               thumbnail_url,
               media_type,
-              created_at
+              uploaded_at
             )
           ''').eq('wedding_id', weddingId).order('sort_order', ascending: true);
 

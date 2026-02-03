@@ -57,11 +57,15 @@ class PickerMediaItem {
     required bool isAlreadySelected,
   }) {
     final mediaType = json['media_type'] as String?;
+    // Use full URLs (thumbnail_url/storage_url) built by datasource,
+    // fallback to paths for backwards compatibility
     return PickerMediaItem(
       id: json['id'] as String,
       mediaType: 'guest_media',
       thumbnailUrl: (json['thumbnail_url'] as String?) ??
-          (json['media_url'] as String?) ??
+          (json['storage_url'] as String?) ??
+          (json['thumbnail_path'] as String?) ??
+          (json['storage_path'] as String?) ??
           '',
       sourceName: guestName,
       sourceType: 'guest',
@@ -80,6 +84,10 @@ class PickerMediaItem {
     required bool isAlreadySelected,
   }) {
     final mediaType = json['media_type'] as String?;
+    // album_images uses 'uploaded_at' not 'created_at'
+    final dateString = (json['uploaded_at'] as String?) ??
+        (json['created_at'] as String?) ??
+        DateTime.now().toIso8601String();
     return PickerMediaItem(
       id: json['id'] as String,
       mediaType: 'album_image',
@@ -89,7 +97,7 @@ class PickerMediaItem {
       sourceName: albumName,
       sourceType: 'inspiration',
       sourceId: albumId,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: DateTime.parse(dateString),
       isVideo: mediaType == 'video',
       isAlreadySelected: isAlreadySelected,
     );

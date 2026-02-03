@@ -83,6 +83,10 @@ S01 ──► S02 ──► S03 ──► S10 ──► S11
 | 2026-02-03 | S10 Done | Checkout: ShippingAddressForm, OrderSummaryCard, Stripe integration, FedEx V1 fixed rates (141 tests) |
 | 2026-02-03 | S12 Done | CGVU: MagazineCgvuDialog, AcceptCgvuUseCase, audit trail (25 tests) |
 | 2026-02-03 | **EPIC COMPLETE** | 12/12 stories, 593+ tests, 0 warnings, flutter analyze OK |
+| 2026-02-03 | Bug Fix | Magazine Picker: PostgrestException column created_at (utilisait uploaded_at) |
+| 2026-02-03 | Bug Fix | Magazine Picker: Guest images non affichées (paths vs URLs storage) |
+| 2026-02-03 | Bug Fix | Magazine Selection/Preview: Guest thumbnails non chargées (getGuestMediaThumbnail) |
+| 2026-02-03 | UI Fix | Magazine Picker: Filtrage vidéos (photos only), cercle vert already-selected, padding réduit |
 
 ## Notes
 
