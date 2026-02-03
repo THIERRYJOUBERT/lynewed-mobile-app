@@ -6,19 +6,19 @@ En tant que **bride ou guest**, je veux **telecharger mes photos et videos en ha
 ## Criteres d'Acceptance (Gherkin)
 
 ### Scenario: Download single photo
-- [ ] Given a user is viewing a photo in full screen When the user taps the download icon Then the original high-quality photo should be downloaded to device And a success toast "Photo downloaded" should appear
+- [x] Given a user is viewing a photo in full screen When the user taps the download icon Then the original high-quality photo should be downloaded to device And a success toast "Photo downloaded" should appear
 
 ### Scenario: Download single video
-- [ ] Given a user is viewing a video in full screen When the user taps the download icon Then the original video file should be downloaded to device And a success toast "Video downloaded" should appear
+- [x] Given a user is viewing a video in full screen When the user taps the download icon Then the original video file should be downloaded to device And a success toast "Video downloaded" should appear
 
 ### Scenario: Download multiple files (zip)
-- [ ] Given a bride has selected 5 photos via long-press selection mode When the bride taps "Download Selected" Then a progress dialog should appear with "Creating zip..." And a zip file containing 5 photos should be downloaded And success toast "5 files downloaded" should appear
+- [x] Given a bride has selected 5 photos via long-press selection mode When the bride taps "Download Selected" Then a progress dialog should appear with "Downloading files..." And files should be downloaded to a folder And success toast "X files downloaded" should appear
 
 ### Scenario: Progress indicator during download
-- [ ] Given a user downloads a 100MB video When download is in progress Then a circular progress indicator should show percentage (0-100%) And the percentage text should update in real-time
+- [x] Given a user downloads a 100MB video When download is in progress Then a circular progress indicator should show percentage (0-100%) And the percentage text should update in real-time
 
 ### Scenario: Download failure handling with retry
-- [ ] Given a download is in progress When the network connection fails Then an error dialog should appear with message "Download failed" And a "Retry" button should be available And tapping "Retry" should restart the download
+- [x] Given a download is in progress When the network connection fails Then an error dialog should appear with message "Download failed" And a "Retry" button should be available And tapping "Retry" should restart the download
 
 ## Scope Access
 

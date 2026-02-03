@@ -20,6 +20,10 @@ void main() {
         expect(image.imageUrl, 'https://example.com/image.jpg');
         expect(image.thumbnailUrl, isNull);
         expect(image.uploadedAt, isNull);
+        expect(image.mediaType, 'photo'); // Default value
+        expect(image.caption, isNull);
+        expect(image.durationSeconds, isNull);
+        expect(image.fileSizeBytes, isNull);
       });
 
       test('should create AlbumImage with all optional fields', () {
@@ -30,10 +34,54 @@ void main() {
           imageUrl: 'https://example.com/image.jpg',
           thumbnailUrl: 'https://example.com/thumb.jpg',
           uploadedAt: uploadedAt,
+          mediaType: 'video',
+          caption: 'Wedding venue tour',
+          durationSeconds: 120,
+          fileSizeBytes: 52428800,
         );
 
         expect(image.thumbnailUrl, 'https://example.com/thumb.jpg');
         expect(image.uploadedAt, uploadedAt);
+        expect(image.mediaType, 'video');
+        expect(image.caption, 'Wedding venue tour');
+        expect(image.durationSeconds, 120);
+        expect(image.fileSizeBytes, 52428800);
+      });
+
+      test('should have isVideo getter return true for video mediaType', () {
+        const image = AlbumImage(
+          id: 'image-123',
+          albumId: 'album-456',
+          imageUrl: 'https://example.com/video.mp4',
+          mediaType: 'video',
+        );
+
+        expect(image.isVideo, true);
+        expect(image.isPhoto, false);
+      });
+
+      test('should have isPhoto getter return true for photo mediaType', () {
+        const image = AlbumImage(
+          id: 'image-123',
+          albumId: 'album-456',
+          imageUrl: 'https://example.com/image.jpg',
+          mediaType: 'photo',
+        );
+
+        expect(image.isVideo, false);
+        expect(image.isPhoto, true);
+      });
+
+      test('should default to photo mediaType', () {
+        const image = AlbumImage(
+          id: 'image-123',
+          albumId: 'album-456',
+          imageUrl: 'https://example.com/image.jpg',
+        );
+
+        expect(image.mediaType, 'photo');
+        expect(image.isPhoto, true);
+        expect(image.isVideo, false);
       });
     });
 
@@ -49,6 +97,10 @@ void main() {
           'image_url': 'https://example.com/image.jpg',
           'thumbnail_url': 'https://example.com/thumb.jpg',
           'uploaded_at': '2025-01-24T10:00:00Z',
+          'media_type': 'photo',
+          'caption': 'Beautiful venue',
+          'duration_seconds': null,
+          'file_size_bytes': 1048576,
         };
 
         final image = AlbumImage.fromJson(json);
@@ -60,6 +112,33 @@ void main() {
         expect(image.uploadedAt?.year, 2025);
         expect(image.uploadedAt?.month, 1);
         expect(image.uploadedAt?.day, 24);
+        expect(image.mediaType, 'photo');
+        expect(image.caption, 'Beautiful venue');
+        expect(image.durationSeconds, isNull);
+        expect(image.fileSizeBytes, 1048576);
+      });
+
+      test('should parse video with all fields', () {
+        final json = {
+          'id': 'video-123',
+          'album_id': 'album-456',
+          'image_url': 'https://example.com/video.mp4',
+          'thumbnail_url': 'https://example.com/thumb.jpg',
+          'uploaded_at': '2025-01-24T10:00:00Z',
+          'media_type': 'video',
+          'caption': 'Venue tour',
+          'duration_seconds': 120,
+          'file_size_bytes': 52428800,
+        };
+
+        final image = AlbumImage.fromJson(json);
+
+        expect(image.id, 'video-123');
+        expect(image.mediaType, 'video');
+        expect(image.isVideo, true);
+        expect(image.caption, 'Venue tour');
+        expect(image.durationSeconds, 120);
+        expect(image.fileSizeBytes, 52428800);
       });
 
       test('should parse image with minimal fields', () {
@@ -76,6 +155,10 @@ void main() {
         expect(image.imageUrl, 'https://example.com/image.jpg');
         expect(image.thumbnailUrl, isNull);
         expect(image.uploadedAt, isNull);
+        expect(image.mediaType, 'photo'); // Default
+        expect(image.caption, isNull);
+        expect(image.durationSeconds, isNull);
+        expect(image.fileSizeBytes, isNull);
       });
 
       test('should handle null thumbnail_url', () {
@@ -103,6 +186,19 @@ void main() {
 
         expect(image.uploadedAt, isNull);
       });
+
+      test('should default media_type to photo when null', () {
+        final json = {
+          'id': 'image-123',
+          'album_id': 'album-456',
+          'image_url': 'https://example.com/image.jpg',
+          'media_type': null,
+        };
+
+        final image = AlbumImage.fromJson(json);
+
+        expect(image.mediaType, 'photo');
+      });
     });
 
     // ==============================================================
@@ -116,6 +212,10 @@ void main() {
           albumId: 'album-456',
           imageUrl: 'https://example.com/image.jpg',
           thumbnailUrl: 'https://example.com/thumb.jpg',
+          mediaType: 'video',
+          caption: 'Tour video',
+          durationSeconds: 180,
+          fileSizeBytes: 104857600,
         );
 
         final json = image.toJson();
@@ -123,6 +223,10 @@ void main() {
         expect(json['album_id'], 'album-456');
         expect(json['image_url'], 'https://example.com/image.jpg');
         expect(json['thumbnail_url'], 'https://example.com/thumb.jpg');
+        expect(json['media_type'], 'video');
+        expect(json['caption'], 'Tour video');
+        expect(json['duration_seconds'], 180);
+        expect(json['file_size_bytes'], 104857600);
         // id and uploaded_at are not serialized (auto-generated by DB)
         expect(json.containsKey('id'), false);
         expect(json.containsKey('uploaded_at'), false);
@@ -138,6 +242,10 @@ void main() {
         final json = image.toJson();
 
         expect(json['thumbnail_url'], isNull);
+        expect(json['media_type'], 'photo');
+        expect(json['caption'], isNull);
+        expect(json['duration_seconds'], isNull);
+        expect(json['file_size_bytes'], isNull);
       });
     });
 

@@ -9,8 +9,6 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lynewed_beta/core/core.dart';
-import 'package:lynewed_beta/features/auth/domain/entities/entities.dart';
 import 'package:lynewed_beta/features/auth/domain/repositories/guest_repository.dart';
 import 'package:lynewed_beta/features/auth/domain/usecases/create_guest_account.dart';
 import 'package:lynewed_beta/features/auth/presentation/pages/guest_signup_page.dart';

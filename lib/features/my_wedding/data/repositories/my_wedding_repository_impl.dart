@@ -3,6 +3,7 @@
 /// Implements MyWeddingRepository using SupabaseMyWeddingDatasource.
 library;
 
+import '/features/guest/domain/entities/guest_media.dart';
 import '../../domain/entities/entities.dart';
 import '../../domain/repositories/my_wedding_repository.dart';
 import '../datasources/supabase_my_wedding_datasource.dart';
@@ -230,6 +231,32 @@ class MyWeddingRepositoryImpl implements MyWeddingRepository {
       return RepositoryResult.success(image);
     } catch (e) {
       return RepositoryResult.failure('Failed to upload image: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<AlbumImage>> uploadAlbumMedia({
+    required String albumId,
+    required String mediaUrl,
+    required String mediaType,
+    String? thumbnailUrl,
+    String? caption,
+    int? durationSeconds,
+    int? fileSizeBytes,
+  }) async {
+    try {
+      final media = await _datasource.uploadAlbumMedia(
+        albumId: albumId,
+        mediaUrl: mediaUrl,
+        mediaType: mediaType,
+        thumbnailUrl: thumbnailUrl,
+        caption: caption,
+        durationSeconds: durationSeconds,
+        fileSizeBytes: fileSizeBytes,
+      );
+      return RepositoryResult.success(media);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to upload $mediaType: $e');
     }
   }
 
@@ -792,6 +819,32 @@ class MyWeddingRepositoryImpl implements MyWeddingRepository {
       return RepositoryResult.success(count);
     } catch (e) {
       return RepositoryResult.failure('Failed to send bulk invitations: $e');
+    }
+  }
+
+  // ========== GUEST ALBUMS (BRIDE VIEW) ==========
+
+  @override
+  Future<RepositoryResult<List<GuestAlbum>>> getGuestAlbums({
+    required String weddingId,
+  }) async {
+    try {
+      final albums = await _datasource.getGuestAlbums(weddingId: weddingId);
+      return RepositoryResult.success(albums);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get guest albums: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<List<GuestMedia>>> getGuestAlbumMedia({
+    required String albumId,
+  }) async {
+    try {
+      final media = await _datasource.getGuestAlbumMedia(albumId: albumId);
+      return RepositoryResult.success(media);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get album media: $e');
     }
   }
 }

@@ -269,6 +269,7 @@ auth, chat, content, dashboard, feed, **guest**, home, map, my_wedding, notifica
 | EPIC-06 | Prerequisites | ✅ COMPLETE (2026-01-29) |
 | EPIC-07 | Reviews (Avis clients) | ✅ COMPLETE (2026-01-29) |
 | EPIC-09 | Invitations (Guests) | ✅ COMPLETE (2026-02-02) |
+| EPIC-10 | Photos & Videos | ✅ COMPLETE (2026-02-03) |
 | EPIC-11 | Stripe Integration | ✅ COMPLETE (2026-01-29) |
 | EPIC-13 | Map Filters | ✅ COMPLETE (2026-01-30) |
 
@@ -286,7 +287,7 @@ auth, chat, content, dashboard, feed, **guest**, home, map, my_wedding, notifica
 | EPIC-07 | APP-01 | Reviews (Avis clients) | 9 | ✅ DONE |
 | EPIC-08 | APP-02 | Reminders (Rappels RDV) | 8 | 0.5j |
 | EPIC-09 | APP-03 | Invitations (Guests) | 12 | ✅ DONE |
-| EPIC-10 | APP-04 | Photos/Videos | 10 | 1.5j |
+| EPIC-10 | APP-04 | Photos/Videos | 8 | ✅ DONE |
 | EPIC-11 | APP-05 | Stripe Integration | 12 | ✅ DONE |
 | EPIC-12 | APP-06 | Magazines Photo | 12 | 1.5j |
 | EPIC-13 | APP-07 | Map Filters | 9 | ✅ DONE |

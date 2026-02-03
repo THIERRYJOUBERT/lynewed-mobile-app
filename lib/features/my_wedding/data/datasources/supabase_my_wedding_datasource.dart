@@ -5,9 +5,11 @@
 library;
 
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '/features/guest/domain/entities/guest_media.dart';
 import '/utils/secure_logger.dart';
 import '../../domain/entities/entities.dart';
 import '../../domain/repositories/my_wedding_repository.dart';
+import '../models/guest_album_model.dart';
 
 /// Supabase datasource for My Wedding operations
 class SupabaseMyWeddingDatasource {
@@ -559,6 +561,41 @@ class SupabaseMyWeddingDatasource {
       return AlbumImage.fromJson(response);
     } catch (e) {
       SecureLogger.error('uploadAlbumImage error: $e');
+      rethrow;
+    }
+  }
+
+  /// Upload media (photo or video) to an album
+  ///
+  /// For videos, include thumbnailUrl, durationSeconds, and fileSizeBytes.
+  Future<AlbumImage> uploadAlbumMedia({
+    required String albumId,
+    required String mediaUrl,
+    required String mediaType,
+    String? thumbnailUrl,
+    String? caption,
+    int? durationSeconds,
+    int? fileSizeBytes,
+  }) async {
+    try {
+      final response = await _client
+          .from('album_images')
+          .insert({
+            'album_id': albumId,
+            'image_url': mediaUrl,
+            'thumbnail_url': thumbnailUrl,
+            'media_type': mediaType,
+            'caption': caption,
+            'duration_seconds': durationSeconds,
+            'file_size_bytes': fileSizeBytes,
+          })
+          .select()
+          .single();
+
+      SecureLogger.info('uploadAlbumMedia: Added $mediaType to album $albumId');
+      return AlbumImage.fromJson(response);
+    } catch (e) {
+      SecureLogger.error('uploadAlbumMedia error: $e');
       rethrow;
     }
   }
@@ -1564,6 +1601,95 @@ class SupabaseMyWeddingDatasource {
       return count;
     } catch (e) {
       SecureLogger.error('sendBulkInvitations error: $e');
+      rethrow;
+    }
+  }
+
+  // ========== GUEST ALBUMS (BRIDE VIEW) ==========
+
+  /// Get all guest albums for a wedding.
+  ///
+  /// Returns albums with photo/video counts and first thumbnail.
+  /// Albums are ordered by creation date (newest first).
+  Future<List<GuestAlbum>> getGuestAlbums({required String weddingId}) async {
+    try {
+      // Query guest_albums with joined profile and media counts
+      final response = await _client
+          .from('guest_albums')
+          .select('''
+            id,
+            wedding_id,
+            guest_user_id,
+            created_at,
+            profiles!guest_albums_guest_user_id_fkey (
+              first_name,
+              last_name,
+              avatar_url
+            ),
+            guest_media (
+              id,
+              media_type,
+              thumbnail_path,
+              storage_path
+            )
+          ''')
+          .eq('wedding_id', weddingId)
+          .order('created_at', ascending: false);
+
+      final albums = (response as List).map((json) {
+        final mediaList = json['guest_media'] as List? ?? [];
+        final photoCount = mediaList.where((m) => m['media_type'] == 'photo').length;
+        final videoCount = mediaList.where((m) => m['media_type'] == 'video').length;
+
+        // Get thumbnail from first media (prefer photos)
+        String? thumbnailUrl;
+        if (mediaList.isNotEmpty) {
+          final firstMedia = mediaList.first;
+          final thumbnailPath = firstMedia['thumbnail_path'] as String?;
+          final storagePath = firstMedia['storage_path'] as String?;
+
+          // Build full URL for thumbnail
+          if (thumbnailPath != null || storagePath != null) {
+            final path = thumbnailPath ?? storagePath;
+            thumbnailUrl = _client.storage.from('wedding-albums').getPublicUrl(path!);
+          }
+        }
+
+        return GuestAlbumModel.fromJson({
+          ...json,
+          'photo_count': photoCount,
+          'video_count': videoCount,
+          'thumbnail_url': thumbnailUrl,
+        });
+      }).toList();
+
+      SecureLogger.info('getGuestAlbums: Found ${albums.length} albums for wedding $weddingId');
+      return albums;
+    } catch (e) {
+      SecureLogger.error('getGuestAlbums error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get all media for a specific guest album.
+  ///
+  /// Returns media ordered by creation date (newest first).
+  Future<List<GuestMedia>> getGuestAlbumMedia({required String albumId}) async {
+    try {
+      final response = await _client
+          .from('guest_media')
+          .select()
+          .eq('album_id', albumId)
+          .order('created_at', ascending: false);
+
+      final media = (response as List)
+          .map((json) => GuestMedia.fromJson(json as Map<String, dynamic>))
+          .toList();
+
+      SecureLogger.info('getGuestAlbumMedia: Found ${media.length} media for album $albumId');
+      return media;
+    } catch (e) {
+      SecureLogger.error('getGuestAlbumMedia error: $e');
       rethrow;
     }
   }

@@ -7,12 +7,12 @@ En tant que **bride ou guest**, je veux **ajouter une legende facultative a mes 
 
 ## Criteres d'Acceptance (Gherkin)
 
-- [ ] Given a CaptionInputWidget is displayed When I type text Then a character counter should show the current count (e.g., "45/500")
-- [ ] Given I am typing in the caption field When I reach 500 characters Then I should not be able to type more characters
-- [ ] Given a CaptionInputWidget is displayed When I leave the field empty Then the upload should still be allowed (caption is optional)
-- [ ] Given I have typed 450+ characters When I continue typing Then the counter should turn orange as a warning
-- [ ] Given a CaptionInputWidget When rendered Then it should use LynewedTextField from the Design System
-- [ ] Given a CaptionInputWidget with a hint When rendered Then the hint text should be "Add a caption..." in English
+- [x] Given a CaptionInputWidget is displayed When I type text Then a character counter should show the current count (e.g., "45/500")
+- [x] Given I am typing in the caption field When I reach 500 characters Then I should not be able to type more characters
+- [x] Given a CaptionInputWidget is displayed When I leave the field empty Then the upload should still be allowed (caption is optional)
+- [x] Given I have typed 450+ characters When I continue typing Then the counter should turn orange as a warning
+- [x] Given a CaptionInputWidget When rendered Then it should use LynewedTextField from the Design System
+- [x] Given a CaptionInputWidget with a hint When rendered Then the hint text should be "Add a caption..." in English
 
 ## Fichiers Concernes
 
@@ -151,17 +151,17 @@ CaptionInputWidget(
 | 500 | `error` (rouge) | w600 (bold) |
 
 ## Definition of Done
-- [ ] CaptionInputWidget cree avec tous les parametres
-- [ ] Compteur de caracteres visible et mis a jour en temps reel
-- [ ] Limite de 500 caracteres appliquee (ne peut pas depasser)
-- [ ] Compteur orange a partir de 450 caracteres
-- [ ] Compteur rouge a 500 caracteres
-- [ ] Legende optionnelle (champ vide accepte)
-- [ ] Utilise LynewedTextField du Design System
-- [ ] Hint text en anglais "Add a caption..."
-- [ ] Tests unitaires pour le widget
-- [ ] `flutter analyze --fatal-infos` passe
-- [ ] `flutter test` passe
+- [x] CaptionInputWidget cree avec tous les parametres
+- [x] Compteur de caracteres visible et mis a jour en temps reel
+- [x] Limite de 500 caracteres appliquee (ne peut pas depasser)
+- [x] Compteur orange a partir de 450 caracteres
+- [x] Compteur rouge a 500 caracteres
+- [x] Legende optionnelle (champ vide accepte)
+- [x] Utilise LynewedTextField du Design System
+- [x] Hint text en anglais "Add a caption..."
+- [x] Tests unitaires pour le widget (22 tests)
+- [x] `flutter analyze --fatal-infos` passe
+- [x] `flutter test` passe
 
 ## Estimation
 **Points** : 2

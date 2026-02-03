@@ -5,6 +5,7 @@
 library;
 
 import '../entities/entities.dart';
+import '/features/guest/domain/entities/guest_media.dart';
 export '../entities/wedding_team_chat_info.dart';
 
 /// Onboarding data for creating/updating a wedding
@@ -165,6 +166,20 @@ abstract class MyWeddingRepository {
     required String albumId,
     required String imageUrl,
     String? thumbnailUrl,
+  });
+
+  /// Upload media (photo or video) to an album
+  ///
+  /// For videos, include thumbnailUrl, durationSeconds, and fileSizeBytes.
+  /// For photos, mediaType defaults to 'photo' and video fields can be null.
+  Future<RepositoryResult<AlbumImage>> uploadAlbumMedia({
+    required String albumId,
+    required String mediaUrl,
+    required String mediaType,
+    String? thumbnailUrl,
+    String? caption,
+    int? durationSeconds,
+    int? fileSizeBytes,
   });
 
   /// Delete an image from an album
@@ -397,6 +412,24 @@ abstract class MyWeddingRepository {
   /// Send bulk invitations to all pending guests with email
   Future<RepositoryResult<int>> sendBulkInvitations({
     required String weddingId,
+  });
+
+  // ========== GUEST ALBUMS (BRIDE VIEW) ==========
+
+  /// Get all guest albums for a wedding.
+  ///
+  /// Returns albums with photo/video counts and first thumbnail.
+  /// RLS ensures only the bride of this wedding can access.
+  /// Albums are ordered by creation date (newest first).
+  Future<RepositoryResult<List<GuestAlbum>>> getGuestAlbums({
+    required String weddingId,
+  });
+
+  /// Get all media for a specific guest album.
+  ///
+  /// Returns media ordered by creation date (newest first).
+  Future<RepositoryResult<List<GuestMedia>>> getGuestAlbumMedia({
+    required String albumId,
   });
 }
 

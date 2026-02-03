@@ -33,6 +33,7 @@ import 'agenda_page.dart';
 import 'budget_page.dart';
 import 'inspirations_page.dart';
 import 'guests_page.dart';
+import 'guest_albums_page.dart';
 import 'wedding_groups_page.dart';
 
 /// My Wedding Page - Main page for brides to manage their wedding
@@ -1348,6 +1349,35 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 8.0),
+              GestureDetector(
+                onTap: _openGuestAlbumsPage,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: LynewedColors.gray200),
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.photo_album_outlined,
+                        size: 18.0,
+                        color: LynewedColors.textSecondary,
+                      ),
+                      const SizedBox(width: 8.0),
+                      Text(
+                        'View Guest Albums',
+                        style: LynewedTextStyles.labelLarge.copyWith(
+                          color: LynewedColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           )
         else
@@ -1922,6 +1952,14 @@ Or scan the QR code in the app.
         builder: (context) => GuestsPage(weddingId: _wedding!.id),
       ),
     ).then((_) => _loadWedding());
+  }
+
+  void _openGuestAlbumsPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => GuestAlbumsPage(weddingId: _wedding!.id),
+      ),
+    );
   }
 
   Future<void> _openProDetails(String profileId) async {
