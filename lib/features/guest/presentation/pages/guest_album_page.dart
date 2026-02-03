@@ -18,6 +18,7 @@ import '/features/my_wedding/data/datasources/download_data_source_impl.dart';
 import '/features/my_wedding/domain/usecases/download_media_use_case.dart';
 import '/features/my_wedding/presentation/widgets/caption_input_widget.dart';
 import '/features/my_wedding/presentation/widgets/download_button.dart';
+import '/features/my_wedding/presentation/widgets/full_screen_media_viewer.dart';
 import '/features/my_wedding/presentation/widgets/media_picker_sheet.dart';
 import '../../data/repositories/guest_album_repository_impl.dart';
 import '../../domain/entities/guest_media.dart';
@@ -229,36 +230,33 @@ class _GuestAlbumPageState extends State<GuestAlbumPage> {
   }
 
   /// Shows the upload preview sheet with caption input.
+  ///
+  /// The sheet manages its own TextEditingController internally to avoid
+  /// lifecycle issues when dismissed.
   Future<_UploadPreviewResult?> _showUploadPreview({
     required File file,
     required bool isVideo,
   }) async {
-    final captionController = TextEditingController();
-
     final result = await showModalBottomSheet<_UploadPreviewResult>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _UploadPreviewSheet(
+      builder: (sheetContext) => _UploadPreviewSheet(
         file: file,
         isVideo: isVideo,
-        captionController: captionController,
-        onConfirm: () {
+        onConfirm: (caption) {
           Navigator.pop(
-            context,
+            sheetContext,
             _UploadPreviewResult(
-              caption: captionController.text.isEmpty
-                  ? null
-                  : captionController.text,
+              caption: caption,
               durationSeconds: null, // Not tracking for now
             ),
           );
         },
-        onCancel: () => Navigator.pop(context),
+        onCancel: () => Navigator.pop(sheetContext),
       ),
     );
 
-    captionController.dispose();
     return result;
   }
 
@@ -330,16 +328,19 @@ class _GuestAlbumPageState extends State<GuestAlbumPage> {
 
   /// Handles tapping on a media item.
   void _onMediaTap(GuestMedia media) {
-    // TODO: Navigate to full-screen viewer
-    // For now, show a placeholder message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          media.isVideo ? 'Video viewer coming soon!' : 'Photo viewer coming soon!',
-          style: LynewedTextStyles.bodySmall.copyWith(color: Colors.white),
-        ),
-        behavior: SnackBarBehavior.floating,
-      ),
+    // Build the storage URL for the media
+    final supabase = Supabase.instance.client;
+    final storageUrl = supabase.storage
+        .from('wedding-albums')
+        .getPublicUrl(media.storagePath);
+
+    // Open full-screen viewer
+    FullScreenMediaViewer.show(
+      context,
+      imageUrl: storageUrl,
+      isVideo: media.isVideo,
+      fileName: media.storagePath.split('/').last,
+      caption: media.caption,
     );
   }
 
@@ -644,20 +645,47 @@ class _UploadPreviewResult {
 }
 
 /// Upload preview sheet with file preview and caption input.
-class _UploadPreviewSheet extends StatelessWidget {
+///
+/// This is a StatefulWidget that manages its own TextEditingController
+/// to avoid lifecycle issues when the sheet is dismissed.
+class _UploadPreviewSheet extends StatefulWidget {
   const _UploadPreviewSheet({
     required this.file,
     required this.isVideo,
-    required this.captionController,
     required this.onConfirm,
     required this.onCancel,
   });
 
   final File file;
   final bool isVideo;
-  final TextEditingController captionController;
-  final VoidCallback onConfirm;
+
+  /// Called when user confirms upload. Provides the caption text.
+  final ValueChanged<String?> onConfirm;
   final VoidCallback onCancel;
+
+  @override
+  State<_UploadPreviewSheet> createState() => _UploadPreviewSheetState();
+}
+
+class _UploadPreviewSheetState extends State<_UploadPreviewSheet> {
+  late final TextEditingController _captionController;
+
+  @override
+  void initState() {
+    super.initState();
+    _captionController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _captionController.dispose();
+    super.dispose();
+  }
+
+  void _handleConfirm() {
+    final caption = _captionController.text.isEmpty ? null : _captionController.text;
+    widget.onConfirm(caption);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -693,18 +721,18 @@ class _UploadPreviewSheet extends StatelessWidget {
 
               // Title
               Text(
-                isVideo ? 'Upload Video' : 'Upload Photo',
+                widget.isVideo ? 'Upload Video' : 'Upload Photo',
                 style: LynewedTextStyles.sheetTitle,
               ),
               const SizedBox(height: 20),
 
               // Preview (for photos only, videos would need thumbnail)
-              if (!isVideo)
+              if (!widget.isVideo)
                 Center(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Image.file(
-                      file,
+                      widget.file,
                       height: 200,
                       fit: BoxFit.cover,
                     ),
@@ -742,7 +770,7 @@ class _UploadPreviewSheet extends StatelessWidget {
 
               // Caption input using CaptionInputWidget
               CaptionInputWidget(
-                controller: captionController,
+                controller: _captionController,
                 label: 'Caption (optional)',
               ),
               const SizedBox(height: 24),
@@ -753,7 +781,7 @@ class _UploadPreviewSheet extends StatelessWidget {
                   Expanded(
                     child: LynewedButton(
                       text: 'Cancel',
-                      onPressed: onCancel,
+                      onPressed: widget.onCancel,
                       type: LynewedButtonType.secondary,
                     ),
                   ),
@@ -761,7 +789,7 @@ class _UploadPreviewSheet extends StatelessWidget {
                   Expanded(
                     child: LynewedButton(
                       text: 'Upload',
-                      onPressed: onConfirm,
+                      onPressed: _handleConfirm,
                     ),
                   ),
                 ],
