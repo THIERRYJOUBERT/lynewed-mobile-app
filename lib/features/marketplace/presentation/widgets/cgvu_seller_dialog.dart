@@ -152,13 +152,14 @@ class _CgvuSellerDialogState extends State<CgvuSellerDialog> {
               style: LynewedTextStyles.sheetTitle,
             ),
           ),
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(false),
+          LynewedIconButton(
             icon: const Icon(
               Icons.close,
               size: 24,
               color: LynewedColors.gray300,
             ),
+            onPressed: () => Navigator.of(context).pop(false),
+            buttonSize: 40,
           ),
         ],
       ),

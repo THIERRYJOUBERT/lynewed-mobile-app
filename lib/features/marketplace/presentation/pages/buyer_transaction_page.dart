@@ -136,7 +136,9 @@ class _BuyerTransactionPageState extends State<BuyerTransactionPage> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(color: LynewedColors.primary),
+      );
     }
 
     if (_errorMessage != null) {

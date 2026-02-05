@@ -59,10 +59,14 @@ class TrackingTimelineWidget extends StatelessWidget {
         ),
         const Spacer(),
         if (onRefresh != null)
-          IconButton(
-            icon: const Icon(Icons.refresh, size: 20),
+          LynewedIconButton(
+            icon: const Icon(
+              Icons.refresh,
+              size: 20,
+              color: LynewedColors.textSecondary,
+            ),
             onPressed: onRefresh,
-            color: LynewedColors.textSecondary,
+            buttonSize: 40,
           ),
       ],
     );

@@ -6,7 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 
-import '/backend/supabase/supabase.dart';
+import '/auth/supabase_auth/auth_util.dart';
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
 import '../../domain/entities/marketplace_listing.dart';
@@ -37,8 +37,8 @@ class ListingDetailPage extends StatefulWidget {
   /// Creates a listing detail page.
   const ListingDetailPage({
     required this.listingId,
-    this.repository,
     this.currentUserId,
+    this.repository,
     super.key,
   });
 
@@ -51,7 +51,7 @@ class ListingDetailPage extends StatefulWidget {
   /// Optional repository override for testing.
   final MarketplaceRepository? repository;
 
-  /// Optional current user ID override for testing.
+  /// The current authenticated user's ID. Falls back to [currentUserUid] if not provided.
   final String? currentUserId;
 
   @override
@@ -62,6 +62,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
   late final MarketplaceRepository _repository;
 
   bool _isLoading = true;
+  bool _isProcessing = false;
   String? _errorMessage;
   MarketplaceListing? _listing;
   SellerProfile? _seller;
@@ -292,23 +293,19 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
   }
 
   void _openCheckout() {
-    if (_listing == null) return;
+    if (_listing == null || _isProcessing) return;
+    setState(() => _isProcessing = true);
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => CheckoutPage(listing: _listing!),
       ),
-    );
+    ).then((_) {
+      if (mounted) setState(() => _isProcessing = false);
+    });
   }
 
-  /// Returns the current user ID, preferring the test override.
-  String? get _currentUserId {
-    if (widget.currentUserId != null) return widget.currentUserId;
-    try {
-      return SupaFlow.client.auth.currentUser?.id;
-    } catch (_) {
-      return null;
-    }
-  }
+  /// Returns the current user ID.
+  String get _currentUserId => widget.currentUserId ?? currentUserUid;
 
   /// Whether the current user is the seller of this listing.
   bool get _isCurrentUserSeller =>

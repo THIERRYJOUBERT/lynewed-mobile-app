@@ -4,8 +4,10 @@
 /// offer count badges, and navigation to listing/transaction details.
 library;
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
+import '/auth/supabase_auth/auth_util.dart';
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
 import '../../domain/entities/marketplace_listing.dart';
@@ -47,6 +49,7 @@ String? _filterToStatus(String filter) {
 class SellerDashboardPage extends StatefulWidget {
   /// Creates the seller dashboard page.
   const SellerDashboardPage({
+    this.currentUserId,
     this.repository,
     this.transactionRepository,
     this.offerRepository,
@@ -54,6 +57,9 @@ class SellerDashboardPage extends StatefulWidget {
     this.onTransactionTap,
     super.key,
   });
+
+  /// The current authenticated user's ID. Falls back to [currentUserUid] if not provided.
+  final String? currentUserId;
 
   /// Optional repository override for testing.
   final MarketplaceRepository? repository;
@@ -78,6 +84,8 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   late final MarketplaceRepository _repository;
   late final MarketplaceTransactionRepository _transactionRepository;
   late final MarketplaceOfferRepository _offerRepository;
+
+  String get _userId => widget.currentUserId ?? currentUserUid;
 
   bool _isLoading = true;
   String? _errorMessage;
@@ -185,11 +193,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
 
   /// Finds the transaction for a reserved listing.
   MarketplaceTransaction? _findTransactionForListing(String listingId) {
-    try {
-      return _sales.firstWhere((tx) => tx.listingId == listingId);
-    } catch (_) {
-      return null;
-    }
+    return _sales.firstWhereOrNull((tx) => tx.listingId == listingId);
   }
 
   void _onListingTap(MarketplaceListing listing) {
@@ -217,7 +221,10 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     } else {
       Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (_) => ListingDetailPage(listingId: listing.id),
+          builder: (_) => ListingDetailPage(
+                listingId: listing.id,
+                currentUserId: _userId,
+              ),
         ),
       );
     }
@@ -226,7 +233,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   void _onCreateListing() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => const CreateListingPage(),
+        builder: (_) => CreateListingPage(userId: _userId),
       ),
     );
   }
@@ -236,10 +243,12 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
     return Scaffold(
       backgroundColor: LynewedColors.background,
       floatingActionButton: (!_isLoading && _errorMessage == null)
-          ? FloatingActionButton(
+          ? LynewedIconButton(
+              icon: const Icon(Icons.add, color: LynewedColors.textOnDark, size: 24),
               onPressed: _onCreateListing,
-              backgroundColor: LynewedColors.primary,
-              child: const Icon(Icons.add, color: LynewedColors.textOnDark),
+              buttonSize: 56,
+              fillColor: LynewedColors.primary,
+              borderRadius: 28,
             )
           : null,
       body: SafeArea(

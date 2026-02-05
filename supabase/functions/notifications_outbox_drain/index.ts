@@ -157,6 +157,14 @@ const EVENT_TO_NOTIFICATION_TYPE = {
   videoIncoming: "videoIncoming",
   // wedPublished: SUPPRIMÉ - Géré par send-broadcast-notification (Admin Panel)
   // replayPublished: SUPPRIMÉ - Géré par send-broadcast-notification (Admin Panel)
+
+  // --- MARKETPLACE EVENTS ---
+  marketplace_item_sold: "marketplaceItemSold",
+  marketplace_order_confirmed: "marketplaceOrderConfirmed",
+  marketplace_offer_expired: "marketplaceOfferExpired",
+  marketplace_label_ready: "marketplaceLabelReady",
+  marketplace_tracking_update: "marketplaceTrackingUpdate",
+  marketplace_payment_succeeded: "marketplacePaymentSucceeded",
 };
 const I18N_TEMPLATES = {
   chatMessage: {
@@ -235,6 +243,72 @@ const I18N_TEMPLATES = {
     body: (ctx, locale)=>locale === "fr"
       ? `Le mariage de ${ctx.bride_name || "une mariée"} a été annulé.`
       : `${ctx.bride_name || "A bride"}'s wedding has been cancelled.`
+  },
+
+  // --- MARKETPLACE EVENTS ---
+  marketplaceItemSold: {
+    title: {
+      en: "Item Sold!",
+      fr: "Article vendu !"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `Votre article "${ctx.listing_title || "article"}" a été vendu.`
+      : `Your item "${ctx.listing_title || "item"}" has been sold.`
+  },
+  marketplaceOrderConfirmed: {
+    title: {
+      en: "Order Confirmed",
+      fr: "Commande confirmée"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `Votre achat de "${ctx.listing_title || "article"}" est confirmé.`
+      : `Your purchase of "${ctx.listing_title || "item"}" is confirmed.`
+  },
+  marketplaceOfferExpired: {
+    title: {
+      en: "Offer Expired",
+      fr: "Offre expirée"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `Votre offre sur "${ctx.listing_title || "article"}" a expiré.`
+      : `Your offer on "${ctx.listing_title || "item"}" has expired.`
+  },
+  marketplaceLabelReady: {
+    title: {
+      en: "Shipping Label Ready",
+      fr: "Étiquette d'envoi prête"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `L'étiquette FedEx pour "${ctx.listing_title || "article"}" est prête. Numéro: ${ctx.tracking_number || ""}`
+      : `FedEx label for "${ctx.listing_title || "item"}" is ready. Tracking: ${ctx.tracking_number || ""}`
+  },
+  marketplaceTrackingUpdate: {
+    title: {
+      en: "Shipping Update",
+      fr: "Mise à jour livraison"
+    },
+    body: (ctx, locale)=> {
+      const statusLabels = {
+        shipped: locale === "fr" ? "expédié" : "shipped",
+        in_transit: locale === "fr" ? "en transit" : "in transit",
+        out_for_delivery: locale === "fr" ? "en cours de livraison" : "out for delivery",
+        delivered: locale === "fr" ? "livré" : "delivered",
+        exception: locale === "fr" ? "problème de livraison" : "delivery exception",
+      };
+      const label = statusLabels[ctx.status] || ctx.status;
+      return locale === "fr"
+        ? `Votre colis est ${label}.`
+        : `Your package is ${label}.`;
+    }
+  },
+  marketplacePaymentSucceeded: {
+    title: {
+      en: "Payment Received",
+      fr: "Paiement reçu"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `Paiement reçu pour "${ctx.listing_title || "article"}".`
+      : `Payment received for "${ctx.listing_title || "item"}".`
   },
 };
 // --- HELPERS DB ---
@@ -698,6 +772,87 @@ async function processWeddingEvent(ev) {
   console.log(`[processWeddingEvent] ${eventType}: ${actions.inApp.length} in-app, ${actions.push.length} push`);
   return actions;
 }
+// --- MARKETPLACE EVENT PROCESSOR ---
+// Handles all marketplace notification events generically
+// The payload from Edge Functions already contains: recipient_id, title, body, and context fields
+async function processMarketplaceEvent(ev) {
+  const actions = {
+    inApp: [],
+    push: []
+  };
+
+  const type = EVENT_TO_NOTIFICATION_TYPE[ev.event_type];
+  if (!type) {
+    console.log(`[processMarketplaceEvent] Unknown type for event_type: ${ev.event_type}`);
+    return actions;
+  }
+
+  const payload = ev.payload || {};
+  const recipientId = payload.recipient_id;
+  if (!recipientId) {
+    console.warn(`[processMarketplaceEvent] Missing recipient_id for ${ev.event_type}`);
+    return actions;
+  }
+
+  const setting = await getNotificationSetting(recipientId, type);
+  if (!setting.in_app && !setting.push) return actions;
+
+  const locale = await getUserLocale(recipientId);
+  const tmpl = I18N_TEMPLATES[type];
+  if (!tmpl) {
+    console.warn(`[processMarketplaceEvent] No template for ${type}`);
+    return actions;
+  }
+
+  // Build context from payload for i18n templates
+  const ctx = {
+    listing_title: payload.listing_title,
+    tracking_number: payload.tracking_number,
+    status: payload.status,
+  };
+
+  const title = tmpl.title[locale] || tmpl.title.en;
+  const body = tmpl.body(ctx, locale);
+
+  // Build in-app notification payload (keep relevant IDs for navigation)
+  const notifPayload = {};
+  if (payload.transaction_id) notifPayload.transaction_id = payload.transaction_id;
+  if (payload.listing_id) notifPayload.listing_id = payload.listing_id;
+  if (payload.tracking_number) notifPayload.tracking_number = payload.tracking_number;
+  if (payload.label_url) notifPayload.label_url = payload.label_url;
+  if (payload.status) notifPayload.status = payload.status;
+
+  if (setting.in_app) {
+    actions.inApp.push({
+      profile_id: recipientId,
+      type,
+      payload: notifPayload
+    });
+  }
+
+  if (setting.push) {
+    const tokens = await getDeviceTokens(recipientId);
+    const pushData = {
+      type,
+      ...Object.fromEntries(
+        Object.entries(notifPayload).map(([k, v]) => [k, v == null ? "" : String(v)])
+      )
+    };
+    tokens.forEach((t) => actions.push.push({
+      token: t.token,
+      platform: t.platform,
+      title,
+      body,
+      isHighPriority: false,
+      ttlSeconds: 300,
+      data: pushData
+    }));
+  }
+
+  console.log(`[processMarketplaceEvent] ${ev.event_type}: ${actions.inApp.length} in-app, ${actions.push.length} push`);
+  return actions;
+}
+
 async function markProcessed(id) {
   const { error } = await supabase.from("notifications_outbox").update({
     processed_at: new Date().toISOString(),
@@ -752,7 +907,17 @@ async function processEvent(ev) {
     case "wedding_cancelled":
       actions = await processWeddingEvent(ev);
       break;
-      
+
+    // --- MARKETPLACE EVENTS ---
+    case "marketplace_item_sold":
+    case "marketplace_order_confirmed":
+    case "marketplace_offer_expired":
+    case "marketplace_label_ready":
+    case "marketplace_tracking_update":
+    case "marketplace_payment_succeeded":
+      actions = await processMarketplaceEvent(ev);
+      break;
+
     default:
       console.warn(`Unknown event_type: ${ev.event_type}`);
       return { inApp: 0, push: 0 };
@@ -763,12 +928,13 @@ async function processEvent(ev) {
   // Ajouter notification_id aux payloads push
   const notificationIdMap = new Map(createdNotifications.map(n => [n.profile_id, n.id]));
   actions.push.forEach(pushAction => {
-    const recipientId = actions.inApp.find(ia => 
-      ia.payload.room_id === pushAction.data.room_id || 
+    const recipientId = actions.inApp.find(ia =>
+      ia.payload.room_id === pushAction.data.room_id ||
       ia.payload.request_id === pushAction.data.request_id ||
       ia.payload.video_session_id === pushAction.data.video_session_id ||
       ia.payload.bride_profile_id === pushAction.data.bride_profile_id ||
-      ia.payload.article_id === pushAction.data.article_id
+      ia.payload.article_id === pushAction.data.article_id ||
+      ia.payload.transaction_id === pushAction.data.transaction_id
     )?.profile_id;
     
     if (recipientId && notificationIdMap.has(recipientId)) {

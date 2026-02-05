@@ -347,13 +347,14 @@ class _MarketplaceFeedPageState extends State<MarketplaceFeedPage> {
           Stack(
             clipBehavior: Clip.none,
             children: [
-              IconButton(
-                onPressed: _openFilterSheet,
+              LynewedIconButton(
                 icon: const Icon(
                   Icons.tune,
                   color: LynewedColors.textPrimary,
+                  size: 22,
                 ),
-                tooltip: 'Filters',
+                onPressed: _openFilterSheet,
+                buttonSize: 40,
               ),
               if (_currentFilter.hasActiveFilters)
                 Positioned(

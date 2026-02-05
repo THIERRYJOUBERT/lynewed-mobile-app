@@ -127,7 +127,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
     });
 
     try {
-      // Construct the seller's address from listing city/country.
+      // TODO(marketplace): Seller address should come from the listing's
+      // shipping_from_address field or the seller's profile address for
+      // accurate FedEx rate calculation. Currently using partial listing data.
       final fromAddress = ShippingAddress(
         streetLines: const [''],
         city: widget.listing.city ?? '',
@@ -402,7 +404,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   Widget _buildReviewStep() {
     final shippingCents = _selectedRate?.rateCents ?? 0;
-    final platformFeeCents = (_itemPriceCents * 0.1).round();
+    final platformFeeCents = _itemPriceCents ~/ 10;
     final totalCents = _itemPriceCents + shippingCents;
 
     return OrderSummaryWidget(

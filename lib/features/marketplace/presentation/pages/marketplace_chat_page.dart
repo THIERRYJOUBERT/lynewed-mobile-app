@@ -8,9 +8,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '/auth/supabase_auth/auth_util.dart';
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
-import '../../../../backend/supabase/supabase.dart';
 import '../../domain/entities/marketplace_message.dart';
 import '../../domain/repositories/marketplace_chat_repository.dart';
 import '../widgets/chat_bubble_widget.dart';
@@ -29,9 +29,9 @@ class MarketplaceChatPage extends StatefulWidget {
   const MarketplaceChatPage({
     required this.listingId,
     required this.otherUserId,
+    this.currentUserId,
     this.listingTitle,
     this.repository,
-    this.currentUserId,
     super.key,
   });
 
@@ -50,8 +50,7 @@ class MarketplaceChatPage extends StatefulWidget {
   /// Optional repository override for testing.
   final MarketplaceChatRepository? repository;
 
-  /// Optional current user ID override for testing.
-  /// Falls back to SupaFlow.client.auth.currentUser.id in production.
+  /// The current authenticated user's ID. Falls back to [currentUserUid] if not provided.
   final String? currentUserId;
 
   @override
@@ -68,15 +67,7 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
   bool _isLoading = true;
   String? _error;
 
-  String? get _currentUserId {
-    if (widget.currentUserId != null) return widget.currentUserId;
-    try {
-      return SupaFlow.client.auth.currentUser?.id;
-    } catch (_) {
-      // SupaFlow not initialized (e.g. in tests without Supabase setup).
-      return null;
-    }
-  }
+  String get _currentUserId => widget.currentUserId ?? currentUserUid;
 
   @override
   void initState() {
@@ -112,7 +103,7 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
 
   void _subscribeToNewMessages() {
     final currentUserId = _currentUserId;
-    if (currentUserId == null) return;
+    if (currentUserId.isEmpty) return;
 
     _realtimeSubscription = _repository
         .subscribeToMessages(

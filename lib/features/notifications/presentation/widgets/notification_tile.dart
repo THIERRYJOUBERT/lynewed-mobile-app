@@ -193,6 +193,24 @@ class NotificationTile extends StatelessWidget {
         return Icons.celebration_outlined;
       case NotificationType.replayPublished:
         return Icons.play_circle_outline;
+      case NotificationType.marketplaceNewOffer:
+        return Icons.local_offer_outlined;
+      case NotificationType.marketplaceOfferAccepted:
+        return Icons.thumb_up_outlined;
+      case NotificationType.marketplaceOfferRejected:
+        return Icons.thumb_down_outlined;
+      case NotificationType.marketplaceItemSold:
+        return Icons.sell_outlined;
+      case NotificationType.marketplaceOrderConfirmed:
+        return Icons.receipt_long_outlined;
+      case NotificationType.marketplaceLabelCreated:
+        return Icons.label_outlined;
+      case NotificationType.marketplacePackageShipped:
+        return Icons.local_shipping_outlined;
+      case NotificationType.marketplacePackageDelivered:
+        return Icons.inventory_2_outlined;
+      case NotificationType.marketplaceTransactionComplete:
+        return Icons.check_circle_outline;
     }
   }
 
@@ -212,6 +230,24 @@ class NotificationTile extends StatelessWidget {
         return 'Wedding of the Week';
       case NotificationType.replayPublished:
         return 'New Replay';
+      case NotificationType.marketplaceNewOffer:
+        return 'New offer received';
+      case NotificationType.marketplaceOfferAccepted:
+        return 'Offer accepted';
+      case NotificationType.marketplaceOfferRejected:
+        return 'Offer declined';
+      case NotificationType.marketplaceItemSold:
+        return 'Item sold';
+      case NotificationType.marketplaceOrderConfirmed:
+        return 'Order confirmed';
+      case NotificationType.marketplaceLabelCreated:
+        return 'Shipping label created';
+      case NotificationType.marketplacePackageShipped:
+        return 'Package shipped';
+      case NotificationType.marketplacePackageDelivered:
+        return 'Package delivered';
+      case NotificationType.marketplaceTransactionComplete:
+        return 'Transaction complete';
     }
   }
 

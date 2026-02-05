@@ -14,6 +14,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
+import '/auth/supabase_auth/auth_util.dart';
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
 import '../../data/sizes_data.dart';
@@ -37,9 +38,9 @@ class CreateListingPage extends StatefulWidget {
   /// Creates the listing page.
   const CreateListingPage({
     super.key,
+    this.userId,
     this.repository,
     this.checkStripeStatusUseCase,
-    this.userId,
   });
 
   /// Route name for navigation.
@@ -54,7 +55,7 @@ class CreateListingPage extends StatefulWidget {
   /// Optional stripe status use case override for testing.
   final CheckStripeStatusUseCase? checkStripeStatusUseCase;
 
-  /// Optional user ID override for testing.
+  /// The current authenticated user's ID. Falls back to [currentUserUid] if not provided.
   final String? userId;
 
   @override
@@ -185,7 +186,7 @@ class CreateListingPageState extends State<CreateListingPage> {
     });
 
     try {
-      final userId = widget.userId ?? 'current-user';
+      final userId = widget.userId ?? currentUserUid;
 
       final listing = MarketplaceListing(
         id: '',
@@ -275,7 +276,7 @@ class CreateListingPageState extends State<CreateListingPage> {
       }
 
       // 4. Create listing first (to get the ID)
-      final userId = widget.userId ?? 'current-user';
+      final userId = widget.userId ?? currentUserUid;
       final listing = MarketplaceListing(
         id: '',
         sellerId: userId,
@@ -340,7 +341,7 @@ class CreateListingPageState extends State<CreateListingPage> {
   }
 
   Future<bool> _checkStripe() async {
-    final userId = widget.userId ?? 'current-user';
+    final userId = widget.userId ?? currentUserUid;
     try {
       final isReady = await _checkStripeStatusUseCase(userId);
       if (!isReady && mounted) {
@@ -435,10 +436,7 @@ class CreateListingPageState extends State<CreateListingPage> {
       padding: const EdgeInsets.fromLTRB(8, 20, 20, 12),
       child: Row(
         children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          ),
+          LynewedComponentStyles.backButton(context),
           const SizedBox(width: 4),
           Expanded(
             child: Text(

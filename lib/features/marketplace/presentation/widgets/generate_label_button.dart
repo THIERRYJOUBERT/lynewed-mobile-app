@@ -102,7 +102,7 @@ class _GenerateLabelButtonState extends State<GenerateLabelButton> {
           const Center(
             child: Padding(
               padding: EdgeInsets.all(16),
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(color: LynewedColors.primary),
             ),
           )
         else if (_errorMessage != null) ...[

@@ -145,10 +145,7 @@ class _StripeSetupPageState extends State<StripeSetupPage> {
       padding: const EdgeInsets.fromLTRB(8, 20, 20, 12),
       child: Row(
         children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          ),
+          LynewedComponentStyles.backButton(context),
           const SizedBox(width: 4),
           Expanded(
             child: Text(
@@ -157,9 +154,10 @@ class _StripeSetupPageState extends State<StripeSetupPage> {
             ),
           ),
           if (!_isLoading)
-            IconButton(
-              onPressed: _loadAccount,
+            LynewedIconButton(
               icon: const Icon(Icons.refresh, size: 20),
+              onPressed: _loadAccount,
+              buttonSize: 40,
             ),
         ],
       ),
@@ -168,7 +166,9 @@ class _StripeSetupPageState extends State<StripeSetupPage> {
 
   Widget _buildContent() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(color: LynewedColors.primary),
+      );
     }
 
     return SingleChildScrollView(
@@ -239,7 +239,7 @@ class _StripeSetupPageState extends State<StripeSetupPage> {
           width: double.infinity,
           child: _isSettingUp
               ? const Center(
-                  child: CircularProgressIndicator(),
+                  child: CircularProgressIndicator(color: LynewedColors.primary),
                 )
               : LynewedButton(
                   text: 'Setup Payments',

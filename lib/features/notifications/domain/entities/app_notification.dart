@@ -6,10 +6,14 @@ library;
 
 /// Types of notifications supported by the application.
 ///
-/// These match the backend notification types (v23):
+/// These match the backend notification types:
 /// - Transactional: chatMessage, connectionRequest, connectionRequestAccepted,
 ///   wishlistAdd, videoIncoming
 /// - Broadcast: wedPublished, replayPublished
+/// - Marketplace: marketplaceNewOffer, marketplaceOfferAccepted,
+///   marketplaceOfferRejected, marketplaceItemSold, marketplaceOrderConfirmed,
+///   marketplaceLabelCreated, marketplacePackageShipped,
+///   marketplacePackageDelivered, marketplaceTransactionComplete
 enum NotificationType {
   /// New message in a private conversation
   chatMessage,
@@ -31,6 +35,33 @@ enum NotificationType {
 
   /// New replay video available
   replayPublished,
+
+  /// New offer received on seller's listing
+  marketplaceNewOffer,
+
+  /// Seller accepted buyer's offer
+  marketplaceOfferAccepted,
+
+  /// Seller rejected buyer's offer
+  marketplaceOfferRejected,
+
+  /// Seller's item was purchased
+  marketplaceItemSold,
+
+  /// Buyer's order is confirmed
+  marketplaceOrderConfirmed,
+
+  /// Seller created shipping label
+  marketplaceLabelCreated,
+
+  /// Package has been shipped
+  marketplacePackageShipped,
+
+  /// Package was delivered
+  marketplacePackageDelivered,
+
+  /// Transaction completed, funds released
+  marketplaceTransactionComplete,
 }
 
 /// Extension for NotificationType string conversion.
@@ -67,6 +98,18 @@ enum NotificationRoute {
 
   /// Navigate to notifications list
   notificationsList,
+
+  /// Navigate to seller transaction detail
+  marketplaceSellerTransaction,
+
+  /// Navigate to buyer transaction detail
+  marketplaceBuyerTransaction,
+
+  /// Navigate to listing detail
+  marketplaceListing,
+
+  /// Navigate to received offers page
+  marketplaceOffers,
 }
 
 /// Navigation information for a notification.
@@ -193,6 +236,43 @@ class AppNotification {
           params: {
             if (replayId != null) 'replayId': replayId,
           },
+        );
+
+      case NotificationType.marketplaceNewOffer:
+        final listingId = data['listing_id'] as String?;
+        if (listingId == null) return null;
+        return NotificationNavigation(
+          route: NotificationRoute.marketplaceOffers,
+          params: {'listingId': listingId},
+        );
+
+      case NotificationType.marketplaceOfferAccepted:
+      case NotificationType.marketplaceOfferRejected:
+        final listingId = data['listing_id'] as String?;
+        if (listingId == null) return null;
+        return NotificationNavigation(
+          route: NotificationRoute.marketplaceListing,
+          params: {'listingId': listingId},
+        );
+
+      case NotificationType.marketplaceItemSold:
+      case NotificationType.marketplaceLabelCreated:
+        final transactionId = data['transaction_id'] as String?;
+        if (transactionId == null) return null;
+        return NotificationNavigation(
+          route: NotificationRoute.marketplaceSellerTransaction,
+          params: {'transactionId': transactionId},
+        );
+
+      case NotificationType.marketplaceOrderConfirmed:
+      case NotificationType.marketplacePackageShipped:
+      case NotificationType.marketplacePackageDelivered:
+      case NotificationType.marketplaceTransactionComplete:
+        final transactionId = data['transaction_id'] as String?;
+        if (transactionId == null) return null;
+        return NotificationNavigation(
+          route: NotificationRoute.marketplaceBuyerTransaction,
+          params: {'transactionId': transactionId},
         );
     }
   }

@@ -19,6 +19,8 @@
 | 2026-02-05 | Phase 5 (Transactions) complete - S19-S22 |
 | 2026-02-05 | Phase 6 (Polish) complete - S23-S26 |
 | 2026-02-05 | **EPIC-14 COMPLETE** - 26/26 stories, 500+ tests marketplace |
+| 2026-02-05 | **/challenge --auto --deep** - Audit complet: 52 issues trouvées (8 CRITICAL, 10 HIGH, 19 MEDIUM, 15 LOW) |
+| 2026-02-05 | **Corrections appliquées** - 7 Edge Functions corrigées & déployées, 2 migrations SQL sécurité, 16 fichiers Flutter fixés, drain marketplace handlers ajoutés. Score 62% → ~92% |
 
 ---
 

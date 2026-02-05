@@ -38,7 +38,7 @@ Future<void> handleNotificationRedirection(
     return;
   }
 
-  // Marquer la notification comme lue si notification_id est présent
+  // Mark the notification as read if notification_id is present
   final notificationId = data['notification_id'] as String?;
   if (notificationId != null && notificationId.isNotEmpty) {
     try {
@@ -62,9 +62,9 @@ Future<void> handleNotificationRedirection(
       {
         SecureLogger.info('🎥 videoIncoming case triggered!');
         
-        // ⚠️ Logique robuste:
-        // 1) Si un video_session_id est fourni dans le payload, tenter d'ouvrir CETTE session en priorité
-        // 2) Sinon (ou si non valide), récupérer la dernière session récente du receveur
+        // Robust logic:
+        // 1) If a video_session_id is provided in the payload, try to open THAT session first
+        // 2) Otherwise (or if not valid), fetch the most recent session for the receiver
         try {
           final client = SupaFlow.client;
           final currentUserId = client.auth.currentUser?.id;
@@ -73,7 +73,7 @@ Future<void> handleNotificationRedirection(
             SecureLogger.error('User not authenticated');
             return;
           }
-          // 1) Tentative par video_session_id exact (si présent dans le payload)
+          // 1) Attempt by exact video_session_id (if present in the payload)
           String? selectedSessionId;
           String? selectedChannelName;
           String? selectedStatus;
@@ -88,7 +88,7 @@ Future<void> handleNotificationRedirection(
                 .maybeSingle();
 
             if (exact != null) {
-              // Vérifier que c'est bien pour l'utilisateur courant
+              // Verify the session belongs to the current user
               final receiverId = (exact['receiver_id'] as String?) ?? '';
               if (receiverId == currentUserId) {
                 final createdAtStr = exact['created_at'] as String?;
@@ -114,7 +114,7 @@ Future<void> handleNotificationRedirection(
             }
           }
 
-          // 2) Fallback: dernière session du receveur (pending/accepted/missed), sans filtre de temps fragile
+          // 2) Fallback: latest session for the receiver (pending/accepted/missed), without fragile time filter
           if (selectedSessionId == null || selectedChannelName == null) {
             final fallback = await client
                 .from('video_sessions')
@@ -148,7 +148,7 @@ Future<void> handleNotificationRedirection(
           final currentStatus = selectedStatus ?? 'pending';
           SecureLogger.info('Final session selected: $sessionId, status: $currentStatus, channel: $channelName');
           
-          // Vérifier que la session n'est pas déjà "completed" (initiateur a raccroché)
+          // Verify the session is not already "completed" (initiator hung up)
           if (currentStatus == 'completed') {
             SecureLogger.warning('Session already completed by initiator');
             if (!context.mounted) return;
@@ -220,14 +220,14 @@ Future<void> handleNotificationRedirection(
 
     case 'chatMessage':
       {
-        // chatMessage: Ouvrir la conversation directement
+        // chatMessage: Open the conversation directly
         final roomId = (data['room_id'] as String?) ?? '';
         final senderProfileId = (data['sender_profile_id'] as String?) ?? '';
         
         if (roomId.isNotEmpty) {
           SecureLogger.info('💬 chatMessage: Opening ChatDetailsPage with room_id=$roomId, sender=$senderProfileId');
           
-          // Récupérer les infos du sender pour afficher dans le header
+          // Fetch sender info for the header display
           String? senderFullName;
           String? senderAvatarUrl;
           
@@ -248,8 +248,8 @@ Future<void> handleNotificationRedirection(
               SecureLogger.warning('chatMessage: Failed to load sender info: $e');
             }
           }
-          
-          // Marquer toutes les notifications non lues pour cette room comme lues
+
+          // Mark all unread notifications for this room as read
           await _markRoomNotificationsAsRead(roomId);
           
           router.pushNamed(
@@ -281,7 +281,7 @@ Future<void> handleNotificationRedirection(
 
     case 'connectionRequest':
       {
-        // connectionRequest: Pour les Brides - ouvrir ChatDetailsPage en mode demande de contact
+        // connectionRequest: For Brides - open ChatDetailsPage in contact request review mode
         final requestId = (data['request_id'] as String?) ?? '';
         final senderProfileId = (data['sender_profile_id'] as String?) ?? '';
         SecureLogger.info('📩 connectionRequest: request_id=$requestId, sender=$senderProfileId');
@@ -297,7 +297,7 @@ Future<void> handleNotificationRedirection(
         }
         
         try {
-          // Récupérer les détails de la demande et du Pro
+          // Fetch request details and Pro info
           final requestData = await SupaFlow.client
               .from('connection_requests')
               .select('id, initial_message, pro_profile_id, status')
@@ -317,7 +317,7 @@ Future<void> handleNotificationRedirection(
           final proProfileId = requestData['pro_profile_id'] as String?;
           final initialMessage = requestData['initial_message'] as String?;
           
-          // Récupérer les infos du Pro
+          // Fetch Pro profile info
           String? proFullName;
           String? proAvatarUrl;
           if (proProfileId != null) {
@@ -332,12 +332,12 @@ Future<void> handleNotificationRedirection(
           
           if (!context.mounted) return;
           
-          // Naviguer vers ChatDetailsPage en mode demande de contact
-          // roomId vide car pas encore de room, pendingRequestId pour le mode review
+          // Navigate to ChatDetailsPage in contact request review mode
+          // Empty roomId since no room exists yet, pendingRequestId enables review mode
           router.pushNamed(
             'ChatDetailsPage',
             queryParameters: {
-              'roomId': '', // Pas de room encore
+              'roomId': '', // No room yet
               'pendingRequestId': requestId,
               'viewerIsReviewer': 'true',
               'otherProfileId': proProfileId ?? '',
@@ -366,14 +366,14 @@ Future<void> handleNotificationRedirection(
 
     case 'connectionRequestAccepted':
       {
-        // connectionRequestAccepted: Pour les Pros - ouvrir la conversation si room_id disponible
+        // connectionRequestAccepted: For Pros - open conversation if room_id is available
         final roomId = (data['room_id'] as String?) ?? '';
-        // Le payload contient sender_profile_id (la Bride qui a accepté)
+        // Payload contains sender_profile_id (the Bride who accepted)
         final senderProfileId = (data['sender_profile_id'] as String?) ?? '';
         SecureLogger.info('✅ connectionRequestAccepted: room_id=$roomId, sender=$senderProfileId');
         
         if (roomId.isNotEmpty) {
-          // Récupérer les infos de la personne qui a accepté (Bride)
+          // Fetch info about the person who accepted (Bride)
           String? senderFullName;
           String? senderAvatarUrl;
           
@@ -394,8 +394,8 @@ Future<void> handleNotificationRedirection(
               SecureLogger.warning('connectionRequestAccepted: Failed to load sender info: $e');
             }
           }
-          
-          // Marquer toutes les notifications non lues pour cette room comme lues
+
+          // Mark all unread notifications for this room as read
           await _markRoomNotificationsAsRead(roomId);
           
           router.pushNamed(
@@ -415,7 +415,7 @@ Future<void> handleNotificationRedirection(
             },
           );
         } else {
-          // Fallback vers la page Messages
+          // Fallback to Messages page
           if (userRole == UserRole.professional) {
             router.pushNamed('MessagesPro');
           } else {
@@ -427,54 +427,96 @@ Future<void> handleNotificationRedirection(
 
     case 'wishlistAdd':
       {
-        // wishlistAdd: Pour les Pros Ultimate - aller vers le Dashboard Pro
-        // Le bride_profile_id est dans le payload pour référence future (afficher la bride qui a ajouté)
+        // wishlistAdd: For Ultimate Pros - navigate to Pro Dashboard
+        // bride_profile_id is in payload for future reference (display the bride who added)
         final brideProfileId = (data['bride_profile_id'] as String?) ?? '';
         SecureLogger.info('💖 wishlistAdd: bride_profile_id=$brideProfileId');
         
-        // Naviguer vers le Dashboard Pro où la wishlist est visible
+        // Navigate to Pro Dashboard where the wishlist is visible
         router.pushNamed('DashboardPro');
         break;
       }
 
     case 'wedPublished':
       {
-        // wedPublished: Nouveau Wedding of the Week - ouvrir la page dédiée
+        // wedPublished: New Wedding of the Week - open the dedicated page
         final link = (data['link'] as String?) ?? '';
         final referenceId = (data['reference_id'] as String?) ?? '';
         SecureLogger.info('💒 wedPublished: reference_id=$referenceId, link=$link');
         
-        // Naviguer vers la page Wedding of the Week
+        // Navigate to the Wedding of the Week page
         router.pushNamed('WeddingOfTheWeek');
         break;
       }
 
     case 'replayPublished':
       {
-        // replayPublished: Nouveau Replay disponible - ouvrir la page Replays
+        // replayPublished: New Replay available - open the Replays page
         final link = (data['link'] as String?) ?? '';
         final referenceId = (data['reference_id'] as String?) ?? '';
         SecureLogger.info('🎬 replayPublished: reference_id=$referenceId, link=$link');
         
-        // Naviguer vers la page des Replays
+        // Navigate to the Replays page
         router.pushNamed('ContentReplay');
         break;
       }
 
-    // connectionRequestDeclined: SUPPRIMÉ - Le backend ne notifie plus les refus
-    // professionalAlert: CODE MORT - Jamais déclenché
-    // professionalAlertReminder24h: CODE MORT - Jamais déclenché
-    // weddingPinMatch: CODE MORT - Concept obsolète
+    // === MARKETPLACE NOTIFICATIONS (EPIC-14) ===
+    case 'marketplaceNewOffer':
+      {
+        final listingId = data['listing_id'] as String?;
+        if (listingId != null) {
+          router.push('/marketplace/offers/received?listingId=$listingId');
+        }
+      }
+      break;
+
+    case 'marketplaceOfferAccepted':
+    case 'marketplaceOfferRejected':
+      {
+        final listingId = data['listing_id'] as String?;
+        if (listingId != null) {
+          router.push('/marketplace/listing?listingId=$listingId');
+        }
+      }
+      break;
+
+    case 'marketplaceItemSold':
+    case 'marketplaceLabelCreated':
+      {
+        final transactionId = data['transaction_id'] as String?;
+        if (transactionId != null) {
+          router.push('/marketplace/transaction?transactionId=$transactionId');
+        }
+      }
+      break;
+
+    case 'marketplaceOrderConfirmed':
+    case 'marketplacePackageShipped':
+    case 'marketplacePackageDelivered':
+    case 'marketplaceTransactionComplete':
+      {
+        final transactionId = data['transaction_id'] as String?;
+        if (transactionId != null) {
+          router.push('/marketplace/purchase?transactionId=$transactionId');
+        }
+      }
+      break;
+
+    // connectionRequestDeclined: REMOVED - Backend no longer notifies on rejections
+    // professionalAlert: DEAD CODE - Never triggered
+    // professionalAlertReminder24h: DEAD CODE - Never triggered
+    // weddingPinMatch: DEAD CODE - Obsolete concept
 
     // === WEDDING EVENTS (Sprint 3.1) ===
     case 'weddingProAdded':
       {
-        // Pro reçoit une notification qu'il a été ajouté à un mariage
-        // Naviguer vers Weddings Hub Pro (la page de détail n'est pas accessible par route)
+        // Pro receives notification they were added to a wedding
+        // Navigate to Weddings Hub Pro (detail page is not accessible by route)
         final weddingId = (data['wedding_id'] as String?) ?? '';
         SecureLogger.info('💒 weddingProAdded: wedding_id=$weddingId');
         
-        // Naviguer vers Weddings Hub + ouvrir automatiquement le bon mariage
+        // Navigate to Weddings Hub and auto-open the correct wedding
         router.pushNamed(
           WeddingsHubProPage.routeName,
           queryParameters: {
@@ -486,8 +528,8 @@ Future<void> handleNotificationRedirection(
 
     case 'weddingProExcluded':
       {
-        // Pro reçoit une notification qu'il a été exclu d'un mariage
-        // Pas d'action nécessaire, juste informer - naviguer vers Weddings Hub
+        // Pro receives notification they were excluded from a wedding
+        // No action needed, just inform - navigate to Weddings Hub
         final weddingId = (data['wedding_id'] as String?) ?? '';
         SecureLogger.info('💒 weddingProExcluded: wedding_id=$weddingId');
         
@@ -497,14 +539,14 @@ Future<void> handleNotificationRedirection(
 
     case 'weddingProLeft':
       {
-        // Bride reçoit une notification qu'un pro a quitté son mariage
-        // Naviguer vers ProDetails pour voir le profil du pro qui est parti
+        // Bride receives notification that a pro has left their wedding
+        // Navigate to ProDetails to view the profile of the pro who left
         final weddingId = (data['wedding_id'] as String?) ?? '';
         final proProfileId = (data['pro_profile_id'] as String?) ?? '';
         SecureLogger.info('💒 weddingProLeft: wedding_id=$weddingId, pro_profile_id=$proProfileId');
         
         if (proProfileId.isNotEmpty) {
-          // Récupérer les infos du pro pour naviguer vers ProDetails
+          // Fetch pro info to navigate to ProDetails
           try {
             final proData = await SupaFlow.client
                 .from('profiles')
@@ -513,7 +555,7 @@ Future<void> handleNotificationRedirection(
                 .maybeSingle();
             
             if (proData != null && context.mounted) {
-              // Construire ProDetailsStruct minimal pour la navigation
+              // Build minimal ProDetailsStruct for navigation
               final proDetails = ProDetailsStruct(
                 proProfileId: proData['id'] as String?,
                 fullName: proData['full_name'] as String?,
@@ -533,15 +575,15 @@ Future<void> handleNotificationRedirection(
           }
         }
         
-        // Fallback: naviguer vers My Wedding page
+        // Fallback: navigate to My Wedding page
         router.pushNamed(MyWeddingPage.routeName);
         break;
       }
 
     case 'weddingCancelled':
       {
-        // Pro reçoit une notification qu'un mariage a été annulé
-        // Naviguer vers Weddings Hub Pro
+        // Pro receives notification that a wedding was cancelled
+        // Navigate to Weddings Hub Pro
         final weddingId = (data['wedding_id'] as String?) ?? '';
         SecureLogger.info('💒 weddingCancelled: wedding_id=$weddingId');
         
@@ -551,8 +593,8 @@ Future<void> handleNotificationRedirection(
 
     case 'broadcast':
       {
-        // Broadcast générique depuis Admin Panel - utiliser le deep link
-        // Pour les annonces qui ne sont pas wedPublished ou replayPublished
+        // Generic broadcast from Admin Panel - use the deep link
+        // For announcements that are not wedPublished or replayPublished
         final link = (data['link'] as String?) ?? '';
         SecureLogger.info('📢 broadcast: link=$link');
         
@@ -560,7 +602,7 @@ Future<void> handleNotificationRedirection(
           if (!context.mounted) return;
           _handleDeepLink(context, router, link, userRole);
         } else {
-          // Fallback vers home si pas de deep link
+          // Fallback to home if no deep link
           if (userRole == UserRole.professional) {
             router.pushNamed('DashboardProWidget');
           } else {
@@ -573,7 +615,7 @@ Future<void> handleNotificationRedirection(
     default:
       {
         SecureLogger.warning('Unknown notification type: $type');
-        // Fallback vers la page d'accueil appropriée
+        // Fallback to the appropriate home page
         if (userRole == UserRole.professional) {
           router.pushNamed('DashboardProWidget');
         } else {
@@ -584,16 +626,17 @@ Future<void> handleNotificationRedirection(
   }
 }
 
-/// Gère les deep links au format lynewed://[page]
-/// Utilisé par les notifications broadcast de l'Admin Panel
-/// Marque toutes les notifications non lues pour une room comme lues
+/// Handles deep links in the format lynewed://[page]
+/// Used by broadcast notifications from the Admin Panel
+
+/// Marks all unread notifications for a room as read
 Future<void> _markRoomNotificationsAsRead(String roomId) async {
   try {
     final client = SupaFlow.client;
     final currentUserId = client.auth.currentUser?.id;
     if (currentUserId == null) return;
     
-    // Récupérer les notifications non lues pour cette room
+    // Fetch unread notifications for this room
     final notifications = await client
         .from('notifications')
         .select('id')
@@ -603,7 +646,7 @@ Future<void> _markRoomNotificationsAsRead(String roomId) async {
     
     if ((notifications as List).isEmpty) return;
     
-    // Marquer chaque notification comme lue
+    // Mark each notification as read
     for (final notif in notifications) {
       final notifId = notif['id'] as String?;
       if (notifId != null) {
@@ -632,8 +675,8 @@ void _handleDeepLink(
   final page = uri.host.toLowerCase();
   SecureLogger.info('🔗 Deep link page: $page');
   
-  // Mapping des deep links vers les routes Flutter
-  // Définis dans l'Admin Panel (voir GUIDE_EQUIPE_APP_MOBILE.md)
+  // Deep link to Flutter route mapping
+  // Defined in the Admin Panel (see GUIDE_EQUIPE_APP_MOBILE.md)
   switch (page) {
     case 'home':
       if (userRole == UserRole.professional) {

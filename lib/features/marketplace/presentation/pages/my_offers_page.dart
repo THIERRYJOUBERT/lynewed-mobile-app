@@ -113,12 +113,14 @@ class _MyOffersPageState extends State<MyOffersPage> {
       appBar: AppBar(
         backgroundColor: LynewedColors.background,
         elevation: 0,
-        leading: IconButton(
+        leading: LynewedIconButton(
           icon: const Icon(
             Icons.arrow_back,
             color: LynewedColors.textPrimary,
+            size: 22,
           ),
           onPressed: () => Navigator.pop(context),
+          buttonSize: 40,
         ),
         title: Text(
           'My Offers',

@@ -42,7 +42,7 @@ class NotificationsPage extends StatelessWidget {
                   final state = notifier.state;
 
                   if (state is NotificationsLoading) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(child: CircularProgressIndicator(color: LynewedColors.primary));
                   }
 
                   if (state is NotificationsError) {
@@ -57,7 +57,7 @@ class NotificationsPage extends StatelessWidget {
                   }
 
                   // Initial state - show loading
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator(color: LynewedColors.primary));
                 },
               ),
             ),
@@ -72,15 +72,8 @@ class NotificationsPage extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: const Icon(
-              Icons.chevron_left,
-              size: 28,
-              color: LynewedColors.textPrimary,
-            ),
-          ),
-          const SizedBox(width: 12),
+          LynewedComponentStyles.backButton(context),
+          const SizedBox(width: 4),
           Expanded(
             child: Text(
               'NOTIFICATIONS',
@@ -148,9 +141,10 @@ class NotificationsPage extends StatelessWidget {
               style: LynewedTextStyles.bodyLarge,
             ),
             const SizedBox(height: 8),
-            TextButton(
+            LynewedButton(
+              text: 'Retry',
+              type: LynewedButtonType.ghost,
               onPressed: () => notifier.loadNotifications(),
-              child: const Text('Retry'),
             ),
           ],
         ),
@@ -272,6 +266,46 @@ class NotificationsPage extends StatelessWidget {
 
       case NotificationRoute.notificationsList:
         // Already on notifications page, do nothing
+        break;
+
+      case NotificationRoute.marketplaceSellerTransaction:
+        final transactionId = nav.params['transactionId'] as String?;
+        if (transactionId != null) {
+          Navigator.of(context).pushNamed(
+            '/marketplace/transaction',
+            arguments: {'transactionId': transactionId},
+          );
+        }
+        break;
+
+      case NotificationRoute.marketplaceBuyerTransaction:
+        final transactionId = nav.params['transactionId'] as String?;
+        if (transactionId != null) {
+          Navigator.of(context).pushNamed(
+            '/marketplace/purchase',
+            arguments: {'transactionId': transactionId},
+          );
+        }
+        break;
+
+      case NotificationRoute.marketplaceListing:
+        final listingId = nav.params['listingId'] as String?;
+        if (listingId != null) {
+          Navigator.of(context).pushNamed(
+            '/marketplace/listing',
+            arguments: {'listingId': listingId},
+          );
+        }
+        break;
+
+      case NotificationRoute.marketplaceOffers:
+        final listingId = nav.params['listingId'] as String?;
+        if (listingId != null) {
+          Navigator.of(context).pushNamed(
+            '/marketplace/offers',
+            arguments: {'listingId': listingId},
+          );
+        }
         break;
     }
   }

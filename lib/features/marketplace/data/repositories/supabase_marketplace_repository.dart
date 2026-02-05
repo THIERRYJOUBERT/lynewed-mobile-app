@@ -195,15 +195,15 @@ class SupabaseMarketplaceRepository implements MarketplaceRepository {
   Future<int> getListingsCount({String? category}) async {
     var query = _client
         .from('marketplace_listings')
-        .select('id')
+        .select()
         .eq('status', 'active');
 
     if (category != null) {
       query = query.eq('category', category);
     }
 
-    final response = await query;
-    return (response as List<dynamic>).length;
+    final response = await query.count(CountOption.exact);
+    return response.count;
   }
 
   @override

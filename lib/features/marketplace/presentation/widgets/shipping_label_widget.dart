@@ -85,8 +85,9 @@ class ShippingLabelWidget extends StatelessWidget {
                     ),
                   ),
                 ),
-                IconButton(
+                LynewedIconButton(
                   icon: const Icon(Icons.copy, size: 18),
+                  buttonSize: 36,
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: trackingNumber));
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -96,12 +97,6 @@ class ShippingLabelWidget extends StatelessWidget {
                       ),
                     );
                   },
-                  tooltip: 'Copy tracking number',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 36,
-                    minHeight: 36,
-                  ),
                 ),
               ],
             ),
