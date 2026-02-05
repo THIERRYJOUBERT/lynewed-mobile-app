@@ -14,9 +14,13 @@ import '../../domain/usecases/check_stripe_status_use_case.dart';
 import '../../domain/usecases/setup_stripe_connect_use_case.dart';
 import '../widgets/stripe_status_widget.dart';
 
-/// Deep link URLs for Stripe Connect return flow.
-const _returnUrl = 'lynewed://stripe-connect-return?success=true';
-const _refreshUrl = 'lynewed://stripe-connect-return?error=refresh_required';
+/// HTTPS URLs for Stripe Connect return flow.
+/// Stripe requires HTTP(S) URLs for accountLinks — custom schemes are rejected.
+/// The edge function serves a redirect page that deep-links back into the app.
+const _returnUrl =
+    'https://hekyovgnovhfhmkpfrna.supabase.co/functions/v1/stripe-connect-return?success=true';
+const _refreshUrl =
+    'https://hekyovgnovhfhmkpfrna.supabase.co/functions/v1/stripe-connect-return?error=refresh_required';
 
 /// Page for managing Stripe Connect payment setup.
 ///
@@ -68,7 +72,7 @@ class _StripeSetupPageState extends State<StripeSetupPage> {
     });
 
     try {
-      final account = await widget.checkStatusUseCase.getAccount(widget.userId);
+      final account = await widget.checkStatusUseCase.syncAndGetAccount(widget.userId);
       if (mounted) {
         setState(() {
           _account = account;

@@ -79,7 +79,7 @@ Deno.serve(async (req: Request) => {
       .from('stripe_accounts')
       .select('stripe_account_id, onboarding_complete')
       .eq('user_id', body.user_id)
-      .single();
+      .maybeSingle();
 
     let stripeAccountId: string;
 

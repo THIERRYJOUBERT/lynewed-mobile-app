@@ -560,6 +560,87 @@ void main() {
       });
     });
 
+    group('seller action bar', () {
+      testWidgets(
+          'should show Edit Draft button for draft listing when user is seller',
+          (tester) async {
+        setupSuccessfulMocks(
+          listing: _createListing(
+            sellerId: 'current-user',
+            status: 'draft',
+          ),
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: ListingDetailPage(
+              listingId: 'listing-1',
+              repository: mockRepository,
+              currentUserId: 'current-user',
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Edit Draft'), findsOneWidget);
+        expect(find.text('View Offers'), findsNothing);
+      });
+
+      testWidgets(
+          'should show View Offers and Edit buttons for active listing when user is seller',
+          (tester) async {
+        setupSuccessfulMocks(
+          listing: _createListing(
+            sellerId: 'current-user',
+            status: 'active',
+          ),
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: ListingDetailPage(
+              listingId: 'listing-1',
+              repository: mockRepository,
+              currentUserId: 'current-user',
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('View Offers'), findsOneWidget);
+        expect(find.text('Edit'), findsOneWidget);
+        expect(find.text('Edit Draft'), findsNothing);
+      });
+
+      testWidgets(
+          'should show buyer action buttons when user is NOT the seller',
+          (tester) async {
+        setupSuccessfulMocks(
+          listing: _createListing(
+            sellerId: 'other-seller',
+            status: 'active',
+          ),
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: ListingDetailPage(
+              listingId: 'listing-1',
+              repository: mockRepository,
+              currentUserId: 'current-user',
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Make Offer'), findsOneWidget);
+        expect(find.text('Buy Now'), findsOneWidget);
+        expect(find.text('Edit Draft'), findsNothing);
+        expect(find.text('View Offers'), findsNothing);
+        expect(find.text('Edit'), findsNothing);
+      });
+    });
+
     group('back navigation', () {
       testWidgets('should show back button', (tester) async {
         setupSuccessfulMocks();

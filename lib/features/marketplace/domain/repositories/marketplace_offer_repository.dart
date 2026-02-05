@@ -5,6 +5,7 @@
 library;
 
 import '../entities/marketplace_offer.dart';
+import '../entities/offer_display_model.dart';
 
 /// Abstract repository for marketplace offers.
 ///
@@ -31,18 +32,21 @@ abstract class MarketplaceOfferRepository {
   /// Withdraw a pending offer (buyer action).
   Future<void> withdrawOffer(String offerId);
 
-  /// Get all offers for a listing (seller view).
+  /// Get a specific offer by its ID.
+  Future<MarketplaceOffer> getOfferById(String offerId);
+
+  /// Get all offers for a listing (seller view) with buyer profile info.
   ///
   /// Ordered by creation date, newest first.
-  Future<List<MarketplaceOffer>> getOffersForListing(String listingId);
+  Future<List<OfferDisplayModel>> getOffersForListing(String listingId);
 
   /// Check if current user has a pending offer on a listing.
   ///
   /// Returns the pending offer or null if none exists.
   Future<MarketplaceOffer?> getPendingOfferForListing(String listingId);
 
-  /// Get current user's offers across all listings (buyer view).
+  /// Get current user's offers across all listings (buyer view) with listing info.
   ///
   /// Ordered by creation date, newest first.
-  Future<List<MarketplaceOffer>> getMyOffers();
+  Future<List<OfferDisplayModel>> getMyOffers();
 }

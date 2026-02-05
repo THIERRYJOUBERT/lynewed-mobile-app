@@ -24,7 +24,7 @@
 | **EPIC-11** | APP-05 | Stripe Integration | 🟢 DONE | 12 | 1j |
 | **EPIC-12** | APP-06 | Magazines Photo | 🟢 DONE | 12 | 1.5j |
 | **EPIC-13** | APP-07 | Map Filters | 🟢 DONE | 9 | 1j |
-| **EPIC-14** | APP-08 | Marketplace | 🔵 DRAFT | 26 | 7j |
+| **EPIC-14** | APP-08 | Marketplace | 🟢 DONE | 26 | 7j |
 
 **Total Mission 2026** : 104 stories, 15 jours estimés, 4500€
 
@@ -148,16 +148,18 @@ Filtres Map additionnels :
 
 ---
 
-### EPIC-14: Marketplace (APP-08) 🔵
+### EPIC-14: Marketplace (APP-08) 🟢
 
-**Statut**: DRAFT | **Dépendances**: EPIC-06, EPIC-11, EPIC-13
-**Stories**: 26 | **Estimation**: 7 jours
+**Statut**: DONE (2026-02-05) | **Dépendances**: EPIC-06, EPIC-11, EPIC-13
+**Stories**: 26 | **Estimation**: 7 jours | **Durée réelle**: ~2 jours
 
 Marketplace Robes & Chaussures :
 - 7 tables (listings, photos, offers, transactions, messages, fedex_events, cgvu_acceptances)
 - Stripe Connect 10% commission
 - FedEx worldwide shipping
 - Nouvel onglet navbar bride
+- Offres intégrées dans le chat (style Vinted)
+- 763+ tests marketplace
 
 ---
 
@@ -229,6 +231,9 @@ ORDRE D'EXECUTION RECOMMANDE :
 | 2026-02-03 | **EPIC-10 TERMINÉ** : Photos/Videos (10/10 stories) |
 | 2026-02-03 | **EPIC-12 TERMINÉ** : Magazines Photo (12/12 stories, 593+ tests) |
 | 2026-02-03 | Corrections sécurité EPIC-12: prix server-side, signed URL 30j, session ID validation |
+| 2026-02-05 | **EPIC-14 TERMINÉ** : Marketplace (26/26 stories, 763+ tests) |
+| 2026-02-05 | Challenge audit EPIC-14 : 52 issues (8 CRITICAL, 10 HIGH), score 62%→92% |
+| 2026-02-05 | Post-challenge: intégration offres↔chat style Vinted (offer/system messages, navigation) |
 
 ---
 

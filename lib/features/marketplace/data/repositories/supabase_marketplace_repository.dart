@@ -90,14 +90,22 @@ class SupabaseMarketplaceRepository implements MarketplaceRepository {
 
     final response = await _client
         .from('marketplace_listings')
-        .select()
+        .select('*, marketplace_photos(storage_path, position)')
         .eq('seller_id', userId)
         .order('created_at', ascending: false);
 
     return (response as List<dynamic>)
         .cast<Map<String, dynamic>>()
-        .map(MarketplaceListing.fromJson)
-        .toList();
+        .map((json) {
+      final listing = MarketplaceListing.fromJson(json);
+      if (listing.coverPhotoStoragePath != null) {
+        final publicUrl = _client.storage
+            .from('marketplace-listings')
+            .getPublicUrl(listing.coverPhotoStoragePath!);
+        return listing.copyWith(coverPhotoStoragePath: publicUrl);
+      }
+      return listing;
+    }).toList();
   }
 
   @override
@@ -211,7 +219,7 @@ class SupabaseMarketplaceRepository implements MarketplaceRepository {
     // Query profiles table for seller name and avatar.
     final profileResponse = await _client
         .from('profiles')
-        .select('id, display_name, photo_url')
+        .select('id, full_name, avatar_url')
         .eq('id', sellerId)
         .maybeSingle();
 
@@ -234,8 +242,8 @@ class SupabaseMarketplaceRepository implements MarketplaceRepository {
 
     return SellerProfile.fromJson({
       'id': profileResponse['id'] as String,
-      'name': profileResponse['display_name'] as String? ?? 'Unknown',
-      'avatar_url': profileResponse['photo_url'] as String?,
+      'name': profileResponse['full_name'] as String? ?? 'Unknown',
+      'avatar_url': profileResponse['avatar_url'] as String?,
       'listings_count': listingsCount,
     });
   }
@@ -310,6 +318,14 @@ class SupabaseMarketplaceRepository implements MarketplaceRepository {
       }
       return listing;
     }).toList();
+  }
+
+  @override
+  Future<void> deleteListing(String id) async {
+    await _client.from('marketplace_listings').update({
+      'status': 'deleted',
+      'updated_at': DateTime.now().toIso8601String(),
+    }).eq('id', id);
   }
 
   @override

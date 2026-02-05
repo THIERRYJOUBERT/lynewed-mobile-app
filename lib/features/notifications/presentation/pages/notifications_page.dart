@@ -307,6 +307,20 @@ class NotificationsPage extends StatelessWidget {
           );
         }
         break;
+
+      case NotificationRoute.marketplaceChat:
+        final listingId = nav.params['listingId'] as String?;
+        final otherUserId = nav.params['otherUserId'] as String?;
+        if (listingId != null && otherUserId != null) {
+          Navigator.of(context).pushNamed(
+            '/marketplace/chat',
+            arguments: {
+              'listingId': listingId,
+              'otherUserId': otherUserId,
+            },
+          );
+        }
+        break;
     }
   }
 }

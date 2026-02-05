@@ -30,4 +30,9 @@ abstract class StripeConnectRepository {
   ///
   /// Returns true only if the account exists and `charges_enabled` is true.
   Future<bool> isSellerReady(String userId);
+
+  /// Syncs the Stripe account status from the Stripe API.
+  ///
+  /// Fetches fresh data from Stripe and updates the local DB record.
+  Future<void> syncStripeAccount();
 }

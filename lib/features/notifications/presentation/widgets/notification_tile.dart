@@ -211,6 +211,8 @@ class NotificationTile extends StatelessWidget {
         return Icons.inventory_2_outlined;
       case NotificationType.marketplaceTransactionComplete:
         return Icons.check_circle_outline;
+      case NotificationType.marketplaceNewMessage:
+        return Icons.chat_outlined;
     }
   }
 
@@ -248,6 +250,8 @@ class NotificationTile extends StatelessWidget {
         return 'Package delivered';
       case NotificationType.marketplaceTransactionComplete:
         return 'Transaction complete';
+      case NotificationType.marketplaceNewMessage:
+        return 'New marketplace message';
     }
   }
 

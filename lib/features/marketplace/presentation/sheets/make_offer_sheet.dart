@@ -5,9 +5,11 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
+import '../../domain/repositories/marketplace_chat_repository.dart';
 import '../../domain/repositories/marketplace_offer_repository.dart';
 
 /// Bottom sheet for making an offer on a marketplace listing.
@@ -21,7 +23,9 @@ class MakeOfferSheet extends StatefulWidget {
     required this.listingId,
     required this.listingTitle,
     required this.listingPriceCents,
+    required this.sellerId,
     this.repository,
+    this.chatRepository,
     super.key,
   });
 
@@ -34,8 +38,14 @@ class MakeOfferSheet extends StatefulWidget {
   /// Listed price in cents for display.
   final int listingPriceCents;
 
+  /// The seller's user ID (for creating conversation).
+  final String sellerId;
+
   /// Optional repository override for testing.
   final MarketplaceOfferRepository? repository;
+
+  /// Optional chat repository override for testing.
+  final MarketplaceChatRepository? chatRepository;
 
   @override
   State<MakeOfferSheet> createState() => _MakeOfferSheetState();
@@ -43,6 +53,7 @@ class MakeOfferSheet extends StatefulWidget {
 
 class _MakeOfferSheetState extends State<MakeOfferSheet> {
   late final MarketplaceOfferRepository _repository;
+  late final MarketplaceChatRepository _chatRepository;
   final _amountController = TextEditingController();
   final _messageController = TextEditingController();
   bool _isLoading = false;
@@ -52,6 +63,8 @@ class _MakeOfferSheetState extends State<MakeOfferSheet> {
     super.initState();
     _repository =
         widget.repository ?? sl<MarketplaceOfferRepository>();
+    _chatRepository =
+        widget.chatRepository ?? sl<MarketplaceChatRepository>();
   }
 
   @override
@@ -66,7 +79,7 @@ class _MakeOfferSheetState extends State<MakeOfferSheet> {
   }
 
   Future<void> _submitOffer() async {
-    final amountText = _amountController.text.trim();
+    final amountText = _amountController.text.trim().replaceAll(',', '.');
     final amount = double.tryParse(amountText);
 
     if (amount == null || amount <= 0) {
@@ -92,11 +105,24 @@ class _MakeOfferSheetState extends State<MakeOfferSheet> {
       final amountCents = (amount * 100).round();
       final message = _messageController.text.trim();
 
-      await _repository.createOffer(
+      final offer = await _repository.createOffer(
         listingId: widget.listingId,
         amountCents: amountCents,
         message: message.isNotEmpty ? message : null,
       );
+
+      // Send offer message in the chat conversation.
+      try {
+        await _chatRepository.sendOfferMessage(
+          listingId: widget.listingId,
+          receiverId: widget.sellerId,
+          offerId: offer.id,
+          amountCents: amountCents,
+          message: message.isNotEmpty ? message : null,
+        );
+      } catch (_) {
+        // Non-critical: offer is created even if chat message fails.
+      }
 
       if (!mounted) return;
       Navigator.pop(context, true);
@@ -136,11 +162,6 @@ class _MakeOfferSheetState extends State<MakeOfferSheet> {
     return LynewedSheet(
       title: 'Make an Offer',
       onClose: () => Navigator.pop(context),
-      bottomAction: LynewedButton(
-        text: _isLoading ? 'Sending...' : 'Send Offer',
-        onPressed: _isLoading ? null : _submitOffer,
-        isLoading: _isLoading,
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -164,6 +185,9 @@ class _MakeOfferSheetState extends State<MakeOfferSheet> {
             hint: 'Enter amount',
             keyboardType:
                 const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+            ],
           ),
 
           SizedBox(height: LynewedSpacing.formSectionGap),
@@ -184,6 +208,18 @@ class _MakeOfferSheetState extends State<MakeOfferSheet> {
             'This offer will expire in 48 hours',
             style: LynewedTextStyles.bodySmall.copyWith(
               color: LynewedColors.textSecondary,
+            ),
+          ),
+
+          SizedBox(height: LynewedSpacing.formSectionGap),
+
+          // Submit button.
+          SizedBox(
+            width: double.infinity,
+            child: LynewedButton(
+              text: _isLoading ? 'Sending...' : 'Send Offer',
+              onPressed: _isLoading ? null : _submitOffer,
+              isLoading: _isLoading,
             ),
           ),
         ],

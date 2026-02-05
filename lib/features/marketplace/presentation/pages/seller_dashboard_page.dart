@@ -12,11 +12,15 @@ import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
 import '../../domain/entities/marketplace_listing.dart';
 import '../../domain/entities/marketplace_transaction.dart';
+import '../../domain/repositories/marketplace_chat_repository.dart';
 import '../../domain/repositories/marketplace_offer_repository.dart';
 import '../../domain/repositories/marketplace_repository.dart';
 import '../../domain/repositories/marketplace_transaction_repository.dart';
+import '../../domain/usecases/check_stripe_status_use_case.dart';
+import '../../domain/usecases/setup_stripe_connect_use_case.dart';
 import 'create_listing_page.dart';
 import 'listing_detail_page.dart';
+import 'stripe_setup_page.dart';
 import 'transaction_detail_page.dart';
 
 /// Status filter options for the seller dashboard.
@@ -53,6 +57,7 @@ class SellerDashboardPage extends StatefulWidget {
     this.repository,
     this.transactionRepository,
     this.offerRepository,
+    this.chatRepository,
     this.onListingTap,
     this.onTransactionTap,
     super.key,
@@ -70,6 +75,9 @@ class SellerDashboardPage extends StatefulWidget {
   /// Optional offer repository override for testing.
   final MarketplaceOfferRepository? offerRepository;
 
+  /// Optional chat repository override for testing.
+  final MarketplaceChatRepository? chatRepository;
+
   /// Optional callback when a listing is tapped (for testing).
   final void Function(String listingId)? onListingTap;
 
@@ -84,6 +92,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   late final MarketplaceRepository _repository;
   late final MarketplaceTransactionRepository _transactionRepository;
   late final MarketplaceOfferRepository _offerRepository;
+  late final MarketplaceChatRepository _chatRepository;
 
   String get _userId => widget.currentUserId ?? currentUserUid;
 
@@ -92,6 +101,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
   List<MarketplaceListing> _listings = [];
   List<MarketplaceTransaction> _sales = [];
   Map<String, int> _pendingOfferCounts = {};
+  Map<String, int> _unreadMessageCounts = {};
   String _selectedFilter = 'All';
 
   @override
@@ -102,6 +112,8 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
         widget.transactionRepository ?? sl<MarketplaceTransactionRepository>();
     _offerRepository =
         widget.offerRepository ?? sl<MarketplaceOfferRepository>();
+    _chatRepository =
+        widget.chatRepository ?? sl<MarketplaceChatRepository>();
     _loadData();
   }
 
@@ -132,7 +144,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
             final offers =
                 await _offerRepository.getOffersForListing(listing.id);
             final pendingCount =
-                offers.where((o) => o.status == 'pending').length;
+                offers.where((o) => o.offer.status == 'pending').length;
             if (pendingCount > 0) {
               offerCounts[listing.id] = pendingCount;
             }
@@ -142,11 +154,26 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
         }),
       );
 
+      // Load unread message counts per listing.
+      final messageCounts = <String, int>{};
+      try {
+        final conversations = await _chatRepository.getConversations();
+        for (final conv in conversations) {
+          if (conv.unreadCount > 0) {
+            messageCounts[conv.listingId] =
+                (messageCounts[conv.listingId] ?? 0) + conv.unreadCount;
+          }
+        }
+      } catch (_) {
+        // Silently handle message count loading errors.
+      }
+
       if (!mounted) return;
       setState(() {
         _listings = listings;
         _sales = sales;
         _pendingOfferCounts = offerCounts;
+        _unreadMessageCounts = messageCounts;
         _isLoading = false;
       });
     } catch (e) {
@@ -264,7 +291,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 20, 20, 12),
+      padding: const EdgeInsets.fromLTRB(8, 20, 12, 12),
       child: Row(
         children: [
           LynewedComponentStyles.backButton(context),
@@ -275,7 +302,29 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
               style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 20),
             ),
           ),
+          LynewedIconButton(
+            icon: const Icon(
+              Icons.account_balance_outlined,
+              color: LynewedColors.textPrimary,
+              size: 22,
+            ),
+            onPressed: _openPaymentSetup,
+            buttonSize: 40,
+          ),
         ],
+      ),
+    );
+  }
+
+  void _openPaymentSetup() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => StripeSetupPage(
+          userId: _userId,
+          email: currentUserEmail,
+          setupUseCase: sl<SetupStripeConnectUseCase>(),
+          checkStatusUseCase: sl<CheckStripeStatusUseCase>(),
+        ),
       ),
     );
   }
@@ -445,6 +494,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
 
   Widget _buildListingTile(MarketplaceListing listing) {
     final pendingOffers = _pendingOfferCounts[listing.id] ?? 0;
+    final unreadMessages = _unreadMessageCounts[listing.id] ?? 0;
     final transaction = listing.status == 'reserved'
         ? _findTransactionForListing(listing.id)
         : null;
@@ -557,6 +607,39 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
                                 'Generate Label',
                                 style: LynewedTextStyles.labelSmall.copyWith(
                                   color: LynewedColors.warning,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      if (unreadMessages > 0) ...[
+                        if (pendingOffers > 0 || showGenerateLabel)
+                          const SizedBox(width: 8),
+                        Container(
+                          key: Key('message-badge-${listing.id}'),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: LynewedColors.info.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.chat_bubble_outline,
+                                size: 14,
+                                color: LynewedColors.info,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$unreadMessages',
+                                style: LynewedTextStyles.labelSmall.copyWith(
+                                  color: LynewedColors.info,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),

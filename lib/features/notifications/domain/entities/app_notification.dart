@@ -62,6 +62,9 @@ enum NotificationType {
 
   /// Transaction completed, funds released
   marketplaceTransactionComplete,
+
+  /// New message in a marketplace conversation
+  marketplaceNewMessage,
 }
 
 /// Extension for NotificationType string conversion.
@@ -110,6 +113,9 @@ enum NotificationRoute {
 
   /// Navigate to received offers page
   marketplaceOffers,
+
+  /// Navigate to marketplace chat page
+  marketplaceChat,
 }
 
 /// Navigation information for a notification.
@@ -273,6 +279,15 @@ class AppNotification {
         return NotificationNavigation(
           route: NotificationRoute.marketplaceBuyerTransaction,
           params: {'transactionId': transactionId},
+        );
+
+      case NotificationType.marketplaceNewMessage:
+        final listingId = data['listing_id'] as String?;
+        final senderId = data['sender_profile_id'] as String?;
+        if (listingId == null || senderId == null) return null;
+        return NotificationNavigation(
+          route: NotificationRoute.marketplaceChat,
+          params: {'listingId': listingId, 'otherUserId': senderId},
         );
     }
   }

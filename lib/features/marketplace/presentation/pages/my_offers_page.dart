@@ -8,10 +8,10 @@ import 'package:flutter/material.dart';
 
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
-import '../../domain/entities/marketplace_offer.dart';
 import '../../domain/entities/offer_display_model.dart';
 import '../../domain/repositories/marketplace_offer_repository.dart';
 import '../widgets/offer_card.dart';
+import 'marketplace_chat_page.dart';
 
 /// Page showing all offers made by the current user.
 ///
@@ -30,6 +30,9 @@ class MyOffersPage extends StatefulWidget {
   /// Route name for navigation.
   static const String routeName = 'MyOffers';
 
+  /// Route path for navigation.
+  static const String routePath = '/myOffers';
+
   /// Optional repository override for testing.
   final MarketplaceOfferRepository? repository;
 
@@ -42,7 +45,7 @@ class _MyOffersPageState extends State<MyOffersPage> {
 
   bool _isLoading = true;
   String? _errorMessage;
-  List<MarketplaceOffer> _offers = [];
+  List<OfferDisplayModel> _offers = [];
 
   @override
   void initState() {
@@ -214,19 +217,35 @@ class _MyOffersPageState extends State<MyOffersPage> {
     );
   }
 
+  void _openChat(OfferDisplayModel model) {
+    final sellerId = model.sellerId;
+    if (sellerId == null) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => MarketplaceChatPage(
+          listingId: model.offer.listingId,
+          otherUserId: sellerId,
+          listingTitle: model.listingTitle,
+          otherUserName: model.sellerName,
+          otherUserAvatarUrl: model.sellerAvatarUrl,
+        ),
+      ),
+    );
+  }
+
   Widget _buildOffersList() {
     return ListView.builder(
       itemCount: _offers.length,
       itemBuilder: (context, index) {
-        final offer = _offers[index];
+        final model = _offers[index];
         return OfferCard(
-          model: OfferDisplayModel(
-            offer: offer,
-          ),
+          model: model,
           viewMode: OfferCardViewMode.buyer,
-          onWithdraw: offer.isPending
-              ? () => _withdrawOffer(offer.id)
+          onWithdraw: model.offer.isPending
+              ? () => _withdrawOffer(model.offer.id)
               : null,
+          onTap: () => _openChat(model),
         );
       },
     );

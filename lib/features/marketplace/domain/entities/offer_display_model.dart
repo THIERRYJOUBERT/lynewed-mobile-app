@@ -21,6 +21,10 @@ class OfferDisplayModel {
     this.buyerAvatarUrl,
     this.listingTitle,
     this.listingPriceCents,
+    this.listingCoverUrl,
+    this.sellerId,
+    this.sellerName,
+    this.sellerAvatarUrl,
   });
 
   /// The underlying marketplace offer.
@@ -38,6 +42,18 @@ class OfferDisplayModel {
   /// Listing price in cents (for comparison with offer amount).
   final int? listingPriceCents;
 
+  /// Listing cover photo URL.
+  final String? listingCoverUrl;
+
+  /// Seller user ID (for navigation to chat).
+  final String? sellerId;
+
+  /// Seller display name.
+  final String? sellerName;
+
+  /// Seller avatar URL.
+  final String? sellerAvatarUrl;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -47,7 +63,8 @@ class OfferDisplayModel {
           buyerName == other.buyerName &&
           buyerAvatarUrl == other.buyerAvatarUrl &&
           listingTitle == other.listingTitle &&
-          listingPriceCents == other.listingPriceCents;
+          listingPriceCents == other.listingPriceCents &&
+          sellerId == other.sellerId;
 
   @override
   int get hashCode => Object.hash(
@@ -56,6 +73,7 @@ class OfferDisplayModel {
         buyerAvatarUrl,
         listingTitle,
         listingPriceCents,
+        sellerId,
       );
 
   @override

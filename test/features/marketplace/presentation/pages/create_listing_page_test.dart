@@ -109,10 +109,11 @@ void main() {
         expect(find.byType(ConditionSelectorWidget), findsOneWidget);
       });
 
-      testWidgets('should display Country field', (tester) async {
+      testWidgets('should display Country dropdown', (tester) async {
         await tester.pumpWidget(buildPage());
 
         expect(find.text('Country'), findsOneWidget);
+        expect(find.byType(DropdownButtonFormField<String>), findsOneWidget);
       });
 
       testWidgets('should display Save Draft and Publish buttons',
@@ -189,19 +190,19 @@ void main() {
         expect(find.text('Title must be at least 3 characters'), findsOneWidget);
       });
 
-      testWidgets('should show error for invalid price', (tester) async {
+      testWidgets('should show error for price below minimum', (tester) async {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
         await tester.enterText(
           find.widgetWithText(TextFormField, 'Enter price in dollars'),
-          '-5',
+          '0.5',
         );
 
         await tester.tap(find.text('Publish'));
         await tester.pumpAndSettle();
 
-        expect(find.text('Enter a valid price greater than 0'), findsOneWidget);
+        expect(find.text('Price must be at least \$1'), findsOneWidget);
       });
 
       testWidgets('should show error for country when empty', (tester) async {
@@ -269,7 +270,7 @@ void main() {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        // Fill some text fields but skip category/condition/size
+        // Fill some text fields but skip category/condition/size/country
         await tester.enterText(
           find.widgetWithText(TextFormField, 'E.g., Vera Wang Gemma Wedding Dress'),
           'Test Listing Title Here',
@@ -277,10 +278,6 @@ void main() {
         await tester.enterText(
           find.widgetWithText(TextFormField, 'Enter price in dollars'),
           '500',
-        );
-        await tester.enterText(
-          find.widgetWithText(TextFormField, 'E.g., France, United States'),
-          'France',
         );
 
         // Tap Publish - should fail because photo count < 5 and no selections
@@ -507,8 +504,16 @@ void main() {
     test('validatePrice returns error for too large', () {
       final state = CreateListingPageState();
       expect(
-        state.validatePrice('1000000'),
-        'Price must be less than \$1,000,000',
+        state.validatePrice('100001'),
+        'Price must be less than \$100,000',
+      );
+    });
+
+    test('validatePrice returns error for price below minimum', () {
+      final state = CreateListingPageState();
+      expect(
+        state.validatePrice('0.5'),
+        'Price must be at least \$1',
       );
     });
 
@@ -516,6 +521,14 @@ void main() {
       final state = CreateListingPageState();
       expect(state.validatePrice('500'), isNull);
       expect(state.validatePrice('99.99'), isNull);
+      expect(state.validatePrice('1'), isNull);
+      expect(state.validatePrice('100000'), isNull);
+    });
+
+    test('validatePrice supports comma as decimal separator', () {
+      final state = CreateListingPageState();
+      expect(state.validatePrice('99,99'), isNull);
+      expect(state.validatePrice('1500,50'), isNull);
     });
 
     test('validateCountry returns error for empty', () {
@@ -527,6 +540,275 @@ void main() {
     test('validateCountry returns null for valid', () {
       final state = CreateListingPageState();
       expect(state.validateCountry('France'), isNull);
+    });
+  });
+
+  group('Edit mode', () {
+    late MarketplaceListing existingListing;
+
+    setUp(() {
+      existingListing = MarketplaceListing(
+        id: 'existing-id',
+        sellerId: 'test-user-123',
+        title: 'Vera Wang Bridal Gown',
+        description: 'Gorgeous gown, worn once.',
+        category: 'dress',
+        priceCents: 45000,
+        designerBrand: 'Vera Wang',
+        size: 'M',
+        condition: 'excellent',
+        sleeveLength: 'long',
+        country: 'France',
+        status: 'draft',
+        createdAt: DateTime(2025, 1, 1),
+        updatedAt: DateTime(2025, 1, 1),
+      );
+    });
+
+    Widget buildEditPage() {
+      return MaterialApp(
+        home: CreateListingPage(
+          repository: mockRepository,
+          checkStripeStatusUseCase: mockCheckStripe,
+          userId: 'test-user-123',
+          existingListing: existingListing,
+        ),
+      );
+    }
+
+    testWidgets('should display "Edit Listing" title in edit mode',
+        (tester) async {
+      await tester.pumpWidget(buildEditPage());
+
+      expect(find.text('Edit Listing'), findsOneWidget);
+      expect(find.text('Create Listing'), findsNothing);
+    });
+
+    testWidgets('should pre-fill title from existing listing',
+        (tester) async {
+      await tester.pumpWidget(buildEditPage());
+
+      expect(
+        find.widgetWithText(TextFormField, 'Vera Wang Bridal Gown'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('should pre-fill price from existing listing',
+        (tester) async {
+      await tester.pumpWidget(buildEditPage());
+
+      expect(
+        find.widgetWithText(TextFormField, '450.00'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('should pre-fill description from existing listing',
+        (tester) async {
+      await tester.pumpWidget(buildEditPage());
+
+      expect(
+        find.widgetWithText(TextFormField, 'Gorgeous gown, worn once.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('should call updateListing instead of createListing on save draft',
+        (tester) async {
+      final updatedListing = existingListing.copyWith(
+        title: 'Vera Wang Bridal Gown',
+      );
+
+      when(() => mockRepository.updateListing(any(), any()))
+          .thenAnswer((_) async => updatedListing);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: ElevatedButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CreateListingPage(
+                      repository: mockRepository,
+                      checkStripeStatusUseCase: mockCheckStripe,
+                      userId: 'test-user-123',
+                      existingListing: existingListing,
+                    ),
+                  ),
+                ),
+                child: const Text('Open'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Save as Draft'));
+      await tester.pumpAndSettle();
+
+      verify(() => mockRepository.updateListing('existing-id', any()))
+          .called(1);
+      verifyNever(() => mockRepository.createListing(any()));
+    });
+
+    testWidgets('should show "Save as Draft" and "Update" buttons in edit mode',
+        (tester) async {
+      await tester.pumpWidget(buildEditPage());
+
+      expect(find.text('Save as Draft'), findsOneWidget);
+      expect(find.text('Update'), findsOneWidget);
+      expect(find.text('Save Draft'), findsNothing);
+      expect(find.text('Publish'), findsNothing);
+    });
+
+    testWidgets('should show delete button in header in edit mode',
+        (tester) async {
+      await tester.pumpWidget(buildEditPage());
+
+      expect(find.byKey(const Key('delete-listing-button')), findsOneWidget);
+      expect(find.byIcon(Icons.delete_outline), findsOneWidget);
+    });
+
+    testWidgets('should not show delete button in create mode',
+        (tester) async {
+      await tester.pumpWidget(buildPage());
+
+      expect(find.byKey(const Key('delete-listing-button')), findsNothing);
+    });
+
+    testWidgets('should show confirmation dialog when delete is tapped',
+        (tester) async {
+      await tester.pumpWidget(buildEditPage());
+
+      await tester.tap(find.byKey(const Key('delete-listing-button')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Delete Listing'), findsOneWidget);
+      expect(find.text('Cancel'), findsOneWidget);
+      expect(find.text('Delete'), findsOneWidget);
+    });
+
+    testWidgets('should call deleteListing when delete is confirmed',
+        (tester) async {
+      when(() => mockRepository.deleteListing(any()))
+          .thenAnswer((_) async {});
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: ElevatedButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CreateListingPage(
+                      repository: mockRepository,
+                      checkStripeStatusUseCase: mockCheckStripe,
+                      userId: 'test-user-123',
+                      existingListing: existingListing,
+                    ),
+                  ),
+                ),
+                child: const Text('Open'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('delete-listing-button')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+
+      verify(() => mockRepository.deleteListing('existing-id')).called(1);
+    });
+
+    testWidgets('should not delete when cancel is tapped in dialog',
+        (tester) async {
+      await tester.pumpWidget(buildEditPage());
+
+      await tester.tap(find.byKey(const Key('delete-listing-button')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      verifyNever(() => mockRepository.deleteListing(any()));
+    });
+  });
+
+  group('Draft photo upload', () {
+    testWidgets(
+        'should call uploadListingPhotos and saveListingPhotos after creating draft',
+        (tester) async {
+      // This test verifies the photo upload flow is invoked in _saveDraft.
+      // Since PhotoUploadWidget uses platform image picker, we only test
+      // the mock interactions when _photos is empty (no photos selected).
+      final createdListing = MarketplaceListing(
+        id: 'new-id',
+        sellerId: 'test-user-123',
+        title: 'Untitled Draft',
+        category: 'dress',
+        priceCents: 0,
+        condition: 'new',
+        country: 'Unknown',
+        status: 'draft',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      when(() => mockRepository.createListing(any()))
+          .thenAnswer((_) async => createdListing);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: ElevatedButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CreateListingPage(
+                      repository: mockRepository,
+                      checkStripeStatusUseCase: mockCheckStripe,
+                      userId: 'test-user-123',
+                    ),
+                  ),
+                ),
+                child: const Text('Open'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Save Draft'));
+      await tester.pumpAndSettle();
+
+      // With no photos selected, only createListing is called.
+      verify(() => mockRepository.createListing(any())).called(1);
+      // uploadListingPhotos should NOT be called (no photos).
+      verifyNever(
+        () => mockRepository.uploadListingPhotos(
+          listingId: any(named: 'listingId'),
+          photoBytes: any(named: 'photoBytes'),
+          fileNames: any(named: 'fileNames'),
+        ),
+      );
     });
   });
 
@@ -549,6 +831,10 @@ void main() {
 
     test('categoryOptions has 2 options', () {
       expect(categoryOptions, hasLength(2));
+    });
+
+    test('countryOptions has 15 options', () {
+      expect(countryOptions, hasLength(15));
     });
 
     test('getSizesForCategory returns dress sizes for dress', () {

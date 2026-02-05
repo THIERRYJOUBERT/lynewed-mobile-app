@@ -134,6 +134,16 @@ class NotificationTypesConfig {
       visibleForPro: true,
     ),
     
+    // marketplaceNewMessage - Both roles (sellers AND buyers can receive messages)
+    NotificationTypeConfig(
+      type: 'marketplaceNewMessage',
+      titleKey: 'Marketplace messages',
+      descriptionBrideKey: 'Get notified when someone messages you about a marketplace listing.',
+      descriptionProKey: 'Get notified when someone messages you about a marketplace listing.',
+      visibleForBride: true,
+      visibleForPro: true,
+    ),
+
     // === NOTIFICATIONS BROADCAST (Admin Panel) ===
     
     // wedPublished - Wedding of the Week - Tous les utilisateurs

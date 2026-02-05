@@ -273,12 +273,14 @@ void main() {
         final message = createMessage();
         final json = message.toJson();
 
+        // Must include base fields + message_type (always present).
         final expectedKeys = {
           'listing_id',
           'sender_id',
           'receiver_id',
           'content',
           'is_read',
+          'message_type',
         };
 
         expect(json.keys.toSet(), expectedKeys);

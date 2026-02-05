@@ -357,6 +357,7 @@ void main() {
       expect(types, contains('connectionRequestAccepted'));
       expect(types, contains('wishlistAdd'));
       expect(types, contains('videoIncoming'));
+      expect(types, contains('marketplaceNewMessage'));
       expect(types, contains('wedPublished'));
       expect(types, contains('replayPublished'));
     });
@@ -372,10 +373,11 @@ void main() {
         role: UserRole.bride,
       );
 
-      // chatMessage, connectionRequest, videoIncoming, wedPublished, replayPublished should be visible
+      // chatMessage, connectionRequest, videoIncoming, marketplaceNewMessage, wedPublished, replayPublished should be visible
       expect(types.any((c) => c.type == 'chatMessage'), true);
       expect(types.any((c) => c.type == 'connectionRequest'), true);
       expect(types.any((c) => c.type == 'videoIncoming'), true);
+      expect(types.any((c) => c.type == 'marketplaceNewMessage'), true);
       expect(types.any((c) => c.type == 'wedPublished'), true);
       expect(types.any((c) => c.type == 'replayPublished'), true);
 
@@ -395,6 +397,7 @@ void main() {
       expect(types.any((c) => c.type == 'connectionRequest'), true);
       expect(types.any((c) => c.type == 'connectionRequestAccepted'), true);
       expect(types.any((c) => c.type == 'videoIncoming'), true);
+      expect(types.any((c) => c.type == 'marketplaceNewMessage'), true);
 
       // wishlistAdd requires Ultimate tier, so should not be visible for trial
       expect(types.any((c) => c.type == 'wishlistAdd'), false);

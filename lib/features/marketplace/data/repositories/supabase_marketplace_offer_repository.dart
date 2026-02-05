@@ -6,6 +6,7 @@ library;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/entities/marketplace_offer.dart';
+import '../../domain/entities/offer_display_model.dart';
 import '../../domain/repositories/marketplace_offer_repository.dart';
 
 /// Supabase-backed implementation of [MarketplaceOfferRepository].
@@ -129,17 +130,35 @@ class SupabaseMarketplaceOfferRepository
   }
 
   @override
-  Future<List<MarketplaceOffer>> getOffersForListing(String listingId) async {
+  Future<MarketplaceOffer> getOfferById(String offerId) async {
     final response = await _client
         .from('marketplace_offers')
         .select()
+        .eq('id', offerId)
+        .single();
+
+    return MarketplaceOffer.fromJson(response);
+  }
+
+  @override
+  Future<List<OfferDisplayModel>> getOffersForListing(String listingId) async {
+    // Fetch offers with buyer profile info via join.
+    final response = await _client
+        .from('marketplace_offers')
+        .select('*, profiles!marketplace_offers_buyer_id_fkey(display_name, photo_url)')
         .eq('listing_id', listingId)
         .order('created_at', ascending: false);
 
-    return (response as List<dynamic>)
-        .cast<Map<String, dynamic>>()
-        .map(MarketplaceOffer.fromJson)
-        .toList();
+    return (response as List<dynamic>).map((row) {
+      final json = row as Map<String, dynamic>;
+      final profile = json['profiles'] as Map<String, dynamic>?;
+      final offer = MarketplaceOffer.fromJson(json);
+      return OfferDisplayModel(
+        offer: offer,
+        buyerName: profile?['display_name'] as String?,
+        buyerAvatarUrl: profile?['photo_url'] as String?,
+      );
+    }).toList();
   }
 
   @override
@@ -160,18 +179,55 @@ class SupabaseMarketplaceOfferRepository
   }
 
   @override
-  Future<List<MarketplaceOffer>> getMyOffers() async {
+  Future<List<OfferDisplayModel>> getMyOffers() async {
     final buyerId = _currentUserId;
 
+    // Fetch offers with listing info via join.
     final response = await _client
         .from('marketplace_offers')
-        .select()
+        .select('*, marketplace_listings!inner(id, title, price_cents, seller_id)')
         .eq('buyer_id', buyerId)
         .order('created_at', ascending: false);
 
-    return (response as List<dynamic>)
-        .cast<Map<String, dynamic>>()
-        .map(MarketplaceOffer.fromJson)
-        .toList();
+    if ((response as List).isEmpty) return [];
+
+    // Collect seller IDs for batch profile fetch.
+    final sellerIds = <String>{};
+    for (final row in response) {
+      final listing = row['marketplace_listings'] as Map<String, dynamic>?;
+      if (listing != null && listing['seller_id'] != null) {
+        sellerIds.add(listing['seller_id'] as String);
+      }
+    }
+
+    // Batch-fetch seller profiles.
+    final profilesMap = <String, Map<String, dynamic>>{};
+    if (sellerIds.isNotEmpty) {
+      final profiles = await _client
+          .from('profiles')
+          .select('id, display_name, photo_url')
+          .inFilter('id', sellerIds.toList());
+      for (final p in profiles as List) {
+        final profile = p as Map<String, dynamic>;
+        profilesMap[profile['id'] as String] = profile;
+      }
+    }
+
+    return response.map((row) {
+      final json = row;
+      final listing = json['marketplace_listings'] as Map<String, dynamic>?;
+      final offer = MarketplaceOffer.fromJson(json);
+      final sellerId = listing?['seller_id'] as String?;
+      final sellerProfile = sellerId != null ? profilesMap[sellerId] : null;
+
+      return OfferDisplayModel(
+        offer: offer,
+        listingTitle: listing?['title'] as String?,
+        listingPriceCents: listing?['price_cents'] as int?,
+        sellerId: sellerId,
+        sellerName: sellerProfile?['display_name'] as String?,
+        sellerAvatarUrl: sellerProfile?['photo_url'] as String?,
+      );
+    }).toList();
   }
 }

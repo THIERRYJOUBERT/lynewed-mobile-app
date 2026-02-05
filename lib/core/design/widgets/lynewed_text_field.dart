@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../design.dart';
 
 class LynewedTextField extends StatelessWidget {
@@ -21,6 +22,7 @@ class LynewedTextField extends StatelessWidget {
     this.textInputAction,
     this.onEditingComplete,
     this.focusNode,
+    this.inputFormatters,
   });
 
   final TextEditingController controller;
@@ -40,6 +42,7 @@ class LynewedTextField extends StatelessWidget {
   final TextInputAction? textInputAction;
   final VoidCallback? onEditingComplete;
   final FocusNode? focusNode;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +75,7 @@ class LynewedTextField extends StatelessWidget {
           readOnly: readOnly,
           onTap: onTap,
           focusNode: focusNode,
+          inputFormatters: inputFormatters,
           textInputAction: textInputAction ?? (maxLines > 1 ? TextInputAction.newline : TextInputAction.done),
           onEditingComplete: onEditingComplete ?? () => FocusScope.of(context).unfocus(),
           style: LynewedTextStyles.bodyMedium.copyWith(

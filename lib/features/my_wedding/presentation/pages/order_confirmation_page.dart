@@ -30,111 +30,117 @@ class OrderConfirmationPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: LynewedColors.background,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const Spacer(),
-              // Success icon
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: LynewedColors.success.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.check_circle_outline,
-                  color: LynewedColors.success,
-                  size: 80,
-                ),
-              ),
-              const SizedBox(height: 32),
-              // Title
-              Text(
-                'Order Confirmed!',
-                style: LynewedTextStyles.headlineMedium.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              // Description
-              Text(
-                'Thank you for your order. Your wedding magazine is being prepared and will be shipped to your address soon.',
-                style: LynewedTextStyles.bodyMedium.copyWith(
-                  color: LynewedColors.textSecondary,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              // Order details card
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: LynewedColors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: LynewedColors.border),
-                ),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildDetailRow(
-                      'Order Status',
-                      'Confirmed',
-                      valueColor: LynewedColors.success,
-                    ),
-                    if (orderId != null && orderId!.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      _buildDetailRow(
-                        'Order ID',
-                        _formatOrderId(orderId!),
+                    // Success icon
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: LynewedColors.success.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
                       ),
-                    ],
-                    const SizedBox(height: 12),
-                    _buildDetailRow(
-                      'Session',
-                      _truncateSessionId(sessionId),
+                      child: const Icon(
+                        Icons.check_circle_outline,
+                        color: LynewedColors.success,
+                        size: 80,
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    const Divider(color: LynewedColors.border),
-                    const SizedBox(height: 16),
-                    // What's next section
+                    const SizedBox(height: 32),
+                    // Title
                     Text(
-                      'What\'s Next?',
-                      style: LynewedTextStyles.titleSmall,
+                      'Order Confirmed!',
+                      style: LynewedTextStyles.headlineMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 12),
-                    _buildStep(
-                      1,
-                      'Production',
-                      'Your magazine will be printed within 3-5 business days.',
+                    const SizedBox(height: 16),
+                    // Description
+                    Text(
+                      'Thank you for your order. Your wedding magazine is being prepared and will be shipped to your address soon.',
+                      style: LynewedTextStyles.bodyMedium.copyWith(
+                        color: LynewedColors.textSecondary,
+                        height: 1.5,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 8),
-                    _buildStep(
-                      2,
-                      'Shipping',
-                      'You\'ll receive a tracking number via email once shipped.',
-                    ),
-                    const SizedBox(height: 8),
-                    _buildStep(
-                      3,
-                      'Delivery',
-                      'Estimated delivery: 5-10 business days after shipping.',
+                    const SizedBox(height: 32),
+                    // Order details card
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: LynewedColors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: LynewedColors.border),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildDetailRow(
+                            'Order Status',
+                            'Confirmed',
+                            valueColor: LynewedColors.success,
+                          ),
+                          if (orderId != null && orderId!.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            _buildDetailRow(
+                              'Order ID',
+                              _formatOrderId(orderId!),
+                            ),
+                          ],
+                          const SizedBox(height: 12),
+                          _buildDetailRow(
+                            'Session',
+                            _truncateSessionId(sessionId),
+                          ),
+                          const SizedBox(height: 16),
+                          const Divider(color: LynewedColors.border),
+                          const SizedBox(height: 16),
+                          // What's next section
+                          Text(
+                            'What\'s Next?',
+                            style: LynewedTextStyles.titleSmall,
+                          ),
+                          const SizedBox(height: 12),
+                          _buildStep(
+                            1,
+                            'Production',
+                            'Your magazine will be printed within 3-5 business days.',
+                          ),
+                          const SizedBox(height: 8),
+                          _buildStep(
+                            2,
+                            'Shipping',
+                            'You\'ll receive a tracking number via email once shipped.',
+                          ),
+                          const SizedBox(height: 8),
+                          _buildStep(
+                            3,
+                            'Delivery',
+                            'Estimated delivery: 5-10 business days after shipping.',
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-              const Spacer(),
-              // Done button
-              LynewedButton(
+            ),
+            // Done button - fixed at bottom
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
+              child: LynewedButton(
                 text: 'Done',
                 onPressed: onDone,
                 width: double.infinity,
               ),
-              SizedBox(height: MediaQuery.of(context).padding.bottom),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

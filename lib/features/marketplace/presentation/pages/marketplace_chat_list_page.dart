@@ -84,6 +84,9 @@ class _MarketplaceChatListPageState extends State<MarketplaceChatListPage> {
           listingId: conversation.listingId,
           otherUserId: conversation.otherUserId,
           listingTitle: conversation.listingTitle,
+          listingCoverUrl: conversation.listingCoverUrl,
+          otherUserName: conversation.otherUserName,
+          otherUserAvatarUrl: conversation.otherUserAvatarUrl,
         ),
       ),
     );

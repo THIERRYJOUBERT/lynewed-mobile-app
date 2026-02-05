@@ -92,3 +92,22 @@ const Map<String, String> categoryLabels = {
   'dress': 'Dress',
   'shoes': 'Shoes',
 };
+
+/// Available countries for listing location.
+const List<String> countryOptions = [
+  'United States',
+  'United Kingdom',
+  'France',
+  'Germany',
+  'Italy',
+  'Spain',
+  'Canada',
+  'Australia',
+  'Netherlands',
+  'Belgium',
+  'Switzerland',
+  'Austria',
+  'Portugal',
+  'Ireland',
+  'Sweden',
+];

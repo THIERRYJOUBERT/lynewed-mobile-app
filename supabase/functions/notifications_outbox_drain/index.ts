@@ -10,7 +10,7 @@
 // TYPES ACTIFS: chatMessage, connectionRequest, connectionRequestAccepted, wishlistAdd, videoIncoming
 // TYPES BROADCAST (Admin Panel): broadcast avec deep links lynewed://[page]
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 import { create } from "https://deno.land/x/djwt@v2.8/mod.ts";
 // --- CONFIG ---
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
@@ -159,12 +159,16 @@ const EVENT_TO_NOTIFICATION_TYPE = {
   // replayPublished: SUPPRIMÉ - Géré par send-broadcast-notification (Admin Panel)
 
   // --- MARKETPLACE EVENTS ---
+  marketplaceMessageCreated: "marketplaceNewMessage",
   marketplace_item_sold: "marketplaceItemSold",
   marketplace_order_confirmed: "marketplaceOrderConfirmed",
   marketplace_offer_expired: "marketplaceOfferExpired",
   marketplace_label_ready: "marketplaceLabelReady",
   marketplace_tracking_update: "marketplaceTrackingUpdate",
   marketplace_payment_succeeded: "marketplacePaymentSucceeded",
+  marketplace_new_offer: "marketplaceNewOffer",
+  marketplace_offer_accepted: "marketplaceOfferAccepted",
+  marketplace_offer_rejected: "marketplaceOfferRejected",
 };
 const I18N_TEMPLATES = {
   chatMessage: {
@@ -246,6 +250,15 @@ const I18N_TEMPLATES = {
   },
 
   // --- MARKETPLACE EVENTS ---
+  marketplaceNewMessage: {
+    title: {
+      en: "New marketplace message",
+      fr: "Nouveau message marketplace"
+    },
+    body: (ctx, locale) => locale === "fr"
+      ? `${ctx.sender_full_name || "Quelqu'un"} vous a envoyé un message à propos de "${ctx.listing_title || "votre article"}".`
+      : `${ctx.sender_full_name || "Someone"} sent you a message about "${ctx.listing_title || "your item"}".`
+  },
   marketplaceItemSold: {
     title: {
       en: "Item Sold!",
@@ -309,6 +322,33 @@ const I18N_TEMPLATES = {
     body: (ctx, locale)=>locale === "fr"
       ? `Paiement reçu pour "${ctx.listing_title || "article"}".`
       : `Payment received for "${ctx.listing_title || "item"}".`
+  },
+  marketplaceNewOffer: {
+    title: {
+      en: "New Offer",
+      fr: "Nouvelle offre"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `${ctx.buyer_name || "Quelqu'un"} a fait une offre sur "${ctx.listing_title || "article"}".`
+      : `${ctx.buyer_name || "Someone"} made an offer on "${ctx.listing_title || "item"}".`
+  },
+  marketplaceOfferAccepted: {
+    title: {
+      en: "Offer Accepted!",
+      fr: "Offre acceptée !"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `Votre offre sur "${ctx.listing_title || "article"}" a été acceptée !`
+      : `Your offer on "${ctx.listing_title || "item"}" was accepted!`
+  },
+  marketplaceOfferRejected: {
+    title: {
+      en: "Offer Declined",
+      fr: "Offre refusée"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `Votre offre sur "${ctx.listing_title || "article"}" a été refusée.`
+      : `Your offer on "${ctx.listing_title || "item"}" was declined.`
   },
 };
 // --- HELPERS DB ---
@@ -772,6 +812,63 @@ async function processWeddingEvent(ev) {
   console.log(`[processWeddingEvent] ${eventType}: ${actions.inApp.length} in-app, ${actions.push.length} push`);
   return actions;
 }
+// --- MARKETPLACE MESSAGE PROCESSOR ---
+async function processMarketplaceMessageCreated(ev) {
+  const actions = { inApp: [], push: [] };
+  const type = EVENT_TO_NOTIFICATION_TYPE[ev.event_type];
+  if (!type) return actions;
+
+  const payload = ev.payload || {};
+  const { message_id, listing_id, sender_id, receiver_id } = payload;
+  if (!message_id || !receiver_id) return actions;
+
+  const recipientId = receiver_id;
+  const setting = await getNotificationSetting(recipientId, type);
+  if (!setting.in_app && !setting.push) return actions;
+
+  // Fetch sender info + listing title
+  const senderProfile = await getProfileSummary(sender_id);
+  let listingTitle = null;
+  if (listing_id) {
+    const { data: listing } = await supabase
+      .from("marketplace_listings")
+      .select("title")
+      .eq("id", listing_id)
+      .maybeSingle();
+    listingTitle = listing?.title;
+  }
+
+  const ctx = {
+    sender_full_name: senderProfile.full_name,
+    listing_title: listingTitle
+  };
+  const locale = await getUserLocale(recipientId);
+  const tmpl = I18N_TEMPLATES[type];
+  const title = tmpl.title[locale] || tmpl.title.en;
+  const body = tmpl.body(ctx, locale);
+
+  const basePayload = {
+    listing_id: listing_id,
+    sender_profile_id: sender_id,
+    message_id: message_id
+  };
+
+  if (setting.in_app) {
+    actions.inApp.push({ profile_id: recipientId, type, payload: basePayload });
+  }
+  if (setting.push) {
+    const tokens = await getDeviceTokens(recipientId);
+    tokens.forEach(t => actions.push.push({
+      token: t.token, platform: t.platform, title, body,
+      isHighPriority: false, ttlSeconds: 300,
+      data: { type, ...Object.fromEntries(Object.entries(basePayload).map(([k, v]) => [k, v == null ? "" : String(v)])) }
+    }));
+  }
+
+  console.log(`[processMarketplaceMessageCreated] ${actions.inApp.length} in-app, ${actions.push.length} push`);
+  return actions;
+}
+
 // --- MARKETPLACE EVENT PROCESSOR ---
 // Handles all marketplace notification events generically
 // The payload from Edge Functions already contains: recipient_id, title, body, and context fields
@@ -809,6 +906,7 @@ async function processMarketplaceEvent(ev) {
     listing_title: payload.listing_title,
     tracking_number: payload.tracking_number,
     status: payload.status,
+    buyer_name: payload.buyer_name,
   };
 
   const title = tmpl.title[locale] || tmpl.title.en;
@@ -818,6 +916,7 @@ async function processMarketplaceEvent(ev) {
   const notifPayload = {};
   if (payload.transaction_id) notifPayload.transaction_id = payload.transaction_id;
   if (payload.listing_id) notifPayload.listing_id = payload.listing_id;
+  if (payload.offer_id) notifPayload.offer_id = payload.offer_id;
   if (payload.tracking_number) notifPayload.tracking_number = payload.tracking_number;
   if (payload.label_url) notifPayload.label_url = payload.label_url;
   if (payload.status) notifPayload.status = payload.status;
@@ -909,12 +1008,18 @@ async function processEvent(ev) {
       break;
 
     // --- MARKETPLACE EVENTS ---
+    case "marketplaceMessageCreated":
+      actions = await processMarketplaceMessageCreated(ev);
+      break;
     case "marketplace_item_sold":
     case "marketplace_order_confirmed":
     case "marketplace_offer_expired":
     case "marketplace_label_ready":
     case "marketplace_tracking_update":
     case "marketplace_payment_succeeded":
+    case "marketplace_new_offer":
+    case "marketplace_offer_accepted":
+    case "marketplace_offer_rejected":
       actions = await processMarketplaceEvent(ev);
       break;
 

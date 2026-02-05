@@ -33,4 +33,14 @@ class CheckStripeStatusUseCase {
   Future<StripeAccount?> getAccount(String userId) async {
     return _repository.getStripeAccount(userId);
   }
+
+  /// Syncs the account status from the Stripe API, then returns fresh data.
+  Future<StripeAccount?> syncAndGetAccount(String userId) async {
+    try {
+      await _repository.syncStripeAccount();
+    } catch (_) {
+      // Sync failure is non-fatal; fall through to read from DB
+    }
+    return _repository.getStripeAccount(userId);
+  }
 }

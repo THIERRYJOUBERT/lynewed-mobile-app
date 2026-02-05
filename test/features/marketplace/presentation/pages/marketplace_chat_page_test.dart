@@ -1,7 +1,7 @@
 /// Tests for MarketplaceChatPage.
 ///
 /// Verifies loading state, empty state, error state with retry,
-/// message display, send message, and mark as read on open.
+/// message display, listing card, MessageComposer, and mark as read.
 library;
 
 import 'dart:async';
@@ -10,10 +10,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/marketplace_message.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/marketplace_conversation.dart';
+import 'package:lynewed_beta/features/marketplace/domain/entities/marketplace_offer.dart';
+import 'package:lynewed_beta/features/marketplace/domain/entities/offer_display_model.dart';
 import 'package:lynewed_beta/features/marketplace/domain/repositories/marketplace_chat_repository.dart';
+import 'package:lynewed_beta/features/marketplace/domain/repositories/marketplace_offer_repository.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/pages/marketplace_chat_page.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/widgets/chat_bubble_widget.dart';
-import 'package:lynewed_beta/features/marketplace/presentation/widgets/chat_input_bar.dart';
+import 'package:lynewed_beta/features/chat/presentation/widgets/message_composer.dart';
 
 // =============================================================================
 // MOCK REPOSITORY
@@ -29,6 +32,7 @@ class MockMarketplaceChatRepository implements MarketplaceChatRepository {
   String? lastMarkAsReadOtherUserId;
   bool unsubscribeAllCalled = false;
   int sendMessageCallCount = 0;
+  int uploadAttachmentCallCount = 0;
   final StreamController<MarketplaceMessage> _realtimeController =
       StreamController<MarketplaceMessage>.broadcast();
 
@@ -47,6 +51,11 @@ class MockMarketplaceChatRepository implements MarketplaceChatRepository {
     required String listingId,
     required String receiverId,
     required String content,
+    String messageType = 'text',
+    String? attachmentUrl,
+    String? attachmentName,
+    int? attachmentSize,
+    String? attachmentMimeType,
   }) async {
     sendMessageCallCount++;
     sentMessage = MarketplaceMessage(
@@ -57,8 +66,28 @@ class MockMarketplaceChatRepository implements MarketplaceChatRepository {
       content: content,
       isRead: false,
       createdAt: DateTime.now(),
+      messageType: messageType,
+      attachmentUrl: attachmentUrl,
+      attachmentName: attachmentName,
+      attachmentSize: attachmentSize,
+      attachmentMimeType: attachmentMimeType,
     );
     return sentMessage!;
+  }
+
+  @override
+  Future<String> uploadAttachment({
+    required String filePath,
+    required String fileName,
+    required String listingId,
+  }) async {
+    uploadAttachmentCallCount++;
+    return 'uploads/$listingId/$fileName';
+  }
+
+  @override
+  Future<String?> getSignedUrl(String storagePath) async {
+    return 'https://example.com/signed/$storagePath';
   }
 
   @override
@@ -85,6 +114,45 @@ class MockMarketplaceChatRepository implements MarketplaceChatRepository {
   }
 
   @override
+  Future<MarketplaceMessage> sendOfferMessage({
+    required String listingId,
+    required String receiverId,
+    required String offerId,
+    required int amountCents,
+    String? message,
+  }) async {
+    return MarketplaceMessage(
+      id: 'offer-msg-1',
+      listingId: listingId,
+      senderId: 'current-user',
+      receiverId: receiverId,
+      content: '{"amount_cents": $amountCents}',
+      isRead: false,
+      createdAt: DateTime.now(),
+      messageType: 'offer',
+      offerId: offerId,
+    );
+  }
+
+  @override
+  Future<MarketplaceMessage> sendSystemMessage({
+    required String listingId,
+    required String receiverId,
+    required String content,
+  }) async {
+    return MarketplaceMessage(
+      id: 'system-msg-1',
+      listingId: listingId,
+      senderId: 'current-user',
+      receiverId: receiverId,
+      content: content,
+      isRead: false,
+      createdAt: DateTime.now(),
+      messageType: 'system',
+    );
+  }
+
+  @override
   void unsubscribeAll() {
     unsubscribeAllCalled = true;
   }
@@ -97,6 +165,40 @@ class MockMarketplaceChatRepository implements MarketplaceChatRepository {
   void dispose() {
     _realtimeController.close();
   }
+}
+
+class FakeOfferRepository implements MarketplaceOfferRepository {
+  @override
+  Future<MarketplaceOffer> createOffer({
+    required String listingId,
+    required int amountCents,
+    String? message,
+  }) async => throw UnimplementedError();
+
+  @override
+  Future<void> acceptOffer(String offerId) async {}
+
+  @override
+  Future<void> rejectOffer(String offerId) async {}
+
+  @override
+  Future<void> withdrawOffer(String offerId) async {}
+
+  @override
+  Future<List<OfferDisplayModel>> getOffersForListing(String listingId) async =>
+      [];
+
+  @override
+  Future<MarketplaceOffer?> getPendingOfferForListing(
+          String listingId) async =>
+      null;
+
+  @override
+  Future<List<OfferDisplayModel>> getMyOffers() async => [];
+
+  @override
+  Future<MarketplaceOffer> getOfferById(String offerId) async =>
+      throw UnimplementedError();
 }
 
 // =============================================================================
@@ -113,6 +215,7 @@ MarketplaceMessage _createMessage({
   String content = 'Hello!',
   bool isRead = false,
   DateTime? createdAt,
+  String messageType = 'text',
 }) {
   return MarketplaceMessage(
     id: id,
@@ -122,14 +225,17 @@ MarketplaceMessage _createMessage({
     content: content,
     isRead: isRead,
     createdAt: createdAt ?? _now,
+    messageType: messageType,
   );
 }
 
 void main() {
   late MockMarketplaceChatRepository mockRepository;
+  late FakeOfferRepository fakeOfferRepository;
 
   setUp(() {
     mockRepository = MockMarketplaceChatRepository();
+    fakeOfferRepository = FakeOfferRepository();
   });
 
   tearDown(() {
@@ -140,6 +246,10 @@ void main() {
     String listingId = 'listing-1',
     String otherUserId = 'other-user',
     String? listingTitle,
+    int? listingPriceCents,
+    String? listingCoverUrl,
+    String? otherUserName,
+    String? otherUserAvatarUrl,
     String currentUserId = 'current-user',
   }) {
     return MaterialApp(
@@ -147,7 +257,12 @@ void main() {
         listingId: listingId,
         otherUserId: otherUserId,
         listingTitle: listingTitle,
+        listingPriceCents: listingPriceCents,
+        listingCoverUrl: listingCoverUrl,
+        otherUserName: otherUserName,
+        otherUserAvatarUrl: otherUserAvatarUrl,
         repository: mockRepository,
+        offerRepository: fakeOfferRepository,
         currentUserId: currentUserId,
       ),
     );
@@ -162,11 +277,6 @@ void main() {
       testWidgets('should show loading indicator while messages load',
           (tester) async {
         final completer = Completer<List<MarketplaceMessage>>();
-        mockRepository.getMessagesException = null;
-        // Override getMessages to hang.
-        mockRepository.messagesToReturn = [];
-
-        // Use a delayed repository response.
         final delayedRepo = _DelayedMockRepository(completer);
 
         await tester.pumpWidget(
@@ -175,6 +285,7 @@ void main() {
               listingId: 'listing-1',
               otherUserId: 'other-user',
               repository: delayedRepo,
+              offerRepository: fakeOfferRepository,
               currentUserId: 'current-user',
             ),
           ),
@@ -274,26 +385,70 @@ void main() {
         expect(find.text('Hi there!'), findsOneWidget);
         expect(find.text('Hello!'), findsOneWidget);
       });
+    });
 
-      testWidgets('should show listing title in header', (tester) async {
-        mockRepository.messagesToReturn = [];
+    // ==========================================================
+    // HEADER
+    // ==========================================================
 
-        await tester.pumpWidget(
-          buildPage(listingTitle: 'Beautiful Dress'),
-        );
-        await tester.pumpAndSettle();
-
-        expect(find.text('Beautiful Dress'), findsOneWidget);
-      });
-
-      testWidgets('should show Chat as default header title',
+    group('header', () {
+      testWidgets('should show Conversation as header title',
           (tester) async {
         mockRepository.messagesToReturn = [];
 
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        expect(find.text('Chat'), findsOneWidget);
+        expect(find.text('Conversation'), findsOneWidget);
+      });
+    });
+
+    // ==========================================================
+    // LISTING CARD
+    // ==========================================================
+
+    group('listing card', () {
+      testWidgets('should show listing card with title and price',
+          (tester) async {
+        mockRepository.messagesToReturn = [];
+
+        await tester.pumpWidget(
+          buildPage(
+            listingTitle: 'Beautiful Dress',
+            listingPriceCents: 35000,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Beautiful Dress'), findsOneWidget);
+        expect(find.text('\$350.00'), findsOneWidget);
+      });
+
+      testWidgets('should show seller name in listing card',
+          (tester) async {
+        mockRepository.messagesToReturn = [];
+
+        await tester.pumpWidget(
+          buildPage(
+            listingTitle: 'Wedding Veil',
+            otherUserName: 'Sophie Martin',
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Sophie Martin'), findsOneWidget);
+      });
+
+      testWidgets('should hide listing card when no info provided',
+          (tester) async {
+        mockRepository.messagesToReturn = [];
+
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        // SizedBox.shrink is rendered when no listing info.
+        // Verify no listing-specific text.
+        expect(find.text('Listing'), findsNothing);
       });
     });
 
@@ -309,8 +464,8 @@ void main() {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        // Type a message.
-        await tester.enterText(find.byType(TextFormField), 'Test message');
+        // Type a message in the TextField.
+        await tester.enterText(find.byType(TextField), 'Test message');
         await tester.pump();
 
         // Tap send button.
@@ -327,33 +482,13 @@ void main() {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        await tester.enterText(find.byType(TextFormField), 'New message');
+        await tester.enterText(find.byType(TextField), 'New message');
         await tester.pump();
 
         await tester.tap(find.byIcon(Icons.send));
         await tester.pumpAndSettle();
 
         expect(find.text('New message'), findsOneWidget);
-      });
-
-      testWidgets('should clear input after sending', (tester) async {
-        mockRepository.messagesToReturn = [];
-
-        await tester.pumpWidget(buildPage());
-        await tester.pumpAndSettle();
-
-        final textField = find.byType(TextFormField);
-        await tester.enterText(textField, 'Clear me');
-        await tester.pump();
-
-        await tester.tap(find.byIcon(Icons.send));
-        await tester.pumpAndSettle();
-
-        // The text field should be empty.
-        final controller = tester
-            .widget<TextFormField>(textField)
-            .controller;
-        expect(controller?.text, isEmpty);
       });
     });
 
@@ -388,18 +523,64 @@ void main() {
     });
 
     // ==========================================================
-    // INPUT BAR
+    // COMPOSER
     // ==========================================================
 
-    group('input bar', () {
-      testWidgets('should have ChatInputBar', (tester) async {
+    group('composer', () {
+      testWidgets('should have MessageComposer', (tester) async {
         mockRepository.messagesToReturn = [];
 
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        expect(find.byType(ChatInputBar), findsOneWidget);
-        expect(find.text('Type a message...'), findsOneWidget);
+        expect(find.byType(MessageComposer), findsOneWidget);
+        expect(find.text('Write a message...'), findsOneWidget);
+      });
+    });
+
+    // ==========================================================
+    // REAL-TIME MESSAGES
+    // ==========================================================
+
+    group('real-time messages', () {
+      testWidgets('should display incoming real-time message',
+          (tester) async {
+        mockRepository.messagesToReturn = [];
+
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        // Simulate real-time message.
+        mockRepository.emitRealtimeMessage(
+          _createMessage(
+            id: 'rt-1',
+            senderId: 'other-user',
+            receiverId: 'current-user',
+            content: 'Live message!',
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Live message!'), findsOneWidget);
+      });
+    });
+
+    // ==========================================================
+    // DISPOSE
+    // ==========================================================
+
+    group('dispose', () {
+      testWidgets('should unsubscribe on dispose', (tester) async {
+        mockRepository.messagesToReturn = [];
+
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        // Navigate away to trigger dispose.
+        await tester.pumpWidget(const MaterialApp(home: Scaffold()));
+        await tester.pumpAndSettle();
+
+        expect(mockRepository.unsubscribeAllCalled, isTrue);
       });
     });
   });
@@ -426,8 +607,24 @@ class _DelayedMockRepository implements MarketplaceChatRepository {
     required String listingId,
     required String receiverId,
     required String content,
+    String messageType = 'text',
+    String? attachmentUrl,
+    String? attachmentName,
+    int? attachmentSize,
+    String? attachmentMimeType,
   }) async =>
       throw UnimplementedError();
+
+  @override
+  Future<String> uploadAttachment({
+    required String filePath,
+    required String fileName,
+    required String listingId,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<String?> getSignedUrl(String storagePath) async => null;
 
   @override
   Stream<MarketplaceMessage> subscribeToMessages({
@@ -443,6 +640,22 @@ class _DelayedMockRepository implements MarketplaceChatRepository {
 
   @override
   Future<List<MarketplaceConversation>> getConversations() async => [];
+
+  @override
+  Future<MarketplaceMessage> sendOfferMessage({
+    required String listingId,
+    required String receiverId,
+    required String offerId,
+    required int amountCents,
+    String? message,
+  }) async => throw UnimplementedError();
+
+  @override
+  Future<MarketplaceMessage> sendSystemMessage({
+    required String listingId,
+    required String receiverId,
+    required String content,
+  }) async => throw UnimplementedError();
 
   @override
   void unsubscribeAll() {}

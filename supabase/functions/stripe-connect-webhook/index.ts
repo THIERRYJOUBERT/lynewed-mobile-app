@@ -51,11 +51,58 @@ Deno.serve(async (req: Request) => {
     // Handle different event types
     switch (event.type) {
       case 'account.updated': {
-        // M-04: account.updated is handled by stripe-webhook with full logic
-        // (charges_enabled, payouts_enabled, currently_due, past_due, notifications)
-        // This webhook only handles Connect-specific events below.
         const account = event.data.object as Stripe.Account;
-        console.log(`account.updated for ${account.id} - delegated to stripe-webhook`);
+        console.log(`account.updated for ${account.id}`);
+
+        const { data: sa } = await supabase
+          .from('stripe_accounts')
+          .select('user_id, onboarding_complete')
+          .eq('stripe_account_id', account.id)
+          .single();
+
+        if (sa) {
+          const req = account.requirements || {};
+          const complete = (account.charges_enabled && account.payouts_enabled) || false;
+          const becameComplete = !sa.onboarding_complete && complete;
+
+          const { error: updateErr } = await supabase
+            .from('stripe_accounts')
+            .update({
+              charges_enabled: account.charges_enabled || false,
+              payouts_enabled: account.payouts_enabled || false,
+              details_submitted: account.details_submitted || false,
+              onboarding_complete: complete,
+              currently_due: req.currently_due || [],
+              past_due: req.past_due || [],
+              disabled_reason: req.disabled_reason || null,
+              country: account.country,
+              default_currency: account.default_currency,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('stripe_account_id', account.id);
+
+          if (updateErr) {
+            console.error('Error updating stripe_accounts:', updateErr);
+          } else {
+            console.log(`Updated stripe_accounts for ${account.id}: charges=${account.charges_enabled}, payouts=${account.payouts_enabled}, details_submitted=${account.details_submitted}`);
+          }
+
+          if (becameComplete) {
+            await supabase.from('notifications_outbox').insert({
+              recipient_id: sa.user_id,
+              event_type: 'stripe_onboarding_complete',
+              payload: { message: 'Your seller account is now active!' },
+            });
+          } else if ((req.currently_due?.length ?? 0) > 0) {
+            await supabase.from('notifications_outbox').insert({
+              recipient_id: sa.user_id,
+              event_type: 'stripe_action_required',
+              payload: { message: 'Action required', requirements: req.currently_due },
+            });
+          }
+        } else {
+          console.log(`No stripe_accounts record found for ${account.id}`);
+        }
         break;
       }
 

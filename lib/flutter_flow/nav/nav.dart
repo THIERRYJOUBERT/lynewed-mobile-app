@@ -12,7 +12,9 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import '/features/chat/presentation/pages/chat_details_page.dart';
 import '/features/marketplace/presentation/pages/create_listing_page.dart';
+import '/features/marketplace/presentation/pages/listing_detail_page.dart';
 import '/features/marketplace/presentation/pages/marketplace_feed_page.dart';
+import '/features/marketplace/presentation/pages/my_offers_page.dart';
 import '/features/my_wedding/presentation/pages/order_confirmation_page.dart';
 import '/features/notifications/presentation/bloc/notifications_cubit.dart';
 import '/features/wishlist/presentation/pages/wishlist_pro_page.dart';
@@ -468,6 +470,21 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: CreateListingPage.routeName,
           path: CreateListingPage.routePath,
           builder: (context, params) => const CreateListingPage(),
+        ),
+        // Marketplace - Listing Detail (EPIC-14)
+        FFRoute(
+          name: ListingDetailPage.routeName,
+          path: ListingDetailPage.routePath,
+          builder: (context, params) => ListingDetailPage(
+            listingId:
+                params.getParam('listingId', ParamType.String) ?? '',
+          ),
+        ),
+        // Marketplace - My Offers (buyer view)
+        FFRoute(
+          name: MyOffersPage.routeName,
+          path: MyOffersPage.routePath,
+          builder: (context, params) => const MyOffersPage(),
         ),
         // Magazine Order Success (EPIC-12: deep link from Stripe Checkout)
         FFRoute(

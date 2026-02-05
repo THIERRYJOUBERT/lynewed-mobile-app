@@ -7,6 +7,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/marketplace_offer.dart';
+import 'package:lynewed_beta/features/marketplace/domain/entities/offer_display_model.dart';
 import 'package:lynewed_beta/features/marketplace/domain/repositories/marketplace_offer_repository.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/pages/my_offers_page.dart';
 
@@ -15,7 +16,7 @@ import 'package:lynewed_beta/features/marketplace/presentation/pages/my_offers_p
 // =============================================================================
 
 class FakeOfferRepository implements MarketplaceOfferRepository {
-  List<MarketplaceOffer> myOffers = [];
+  List<OfferDisplayModel> myOffers = [];
   Exception? getMyOffersException;
   int withdrawCallCount = 0;
   String? lastWithdrawnId;
@@ -41,7 +42,7 @@ class FakeOfferRepository implements MarketplaceOfferRepository {
   }
 
   @override
-  Future<List<MarketplaceOffer>> getOffersForListing(
+  Future<List<OfferDisplayModel>> getOffersForListing(
       String listingId) async =>
       [];
 
@@ -51,10 +52,14 @@ class FakeOfferRepository implements MarketplaceOfferRepository {
       null;
 
   @override
-  Future<List<MarketplaceOffer>> getMyOffers() async {
+  Future<List<OfferDisplayModel>> getMyOffers() async {
     if (getMyOffersException != null) throw getMyOffersException!;
     return myOffers;
   }
+
+  @override
+  Future<MarketplaceOffer> getOfferById(String offerId) async =>
+      throw UnimplementedError();
 }
 
 // =============================================================================
@@ -117,14 +122,16 @@ void main() {
       // Fix error and retry.
       fakeRepository.getMyOffersException = null;
       fakeRepository.myOffers = [
-        MarketplaceOffer(
-          id: 'offer-1',
-          listingId: 'listing-1',
-          buyerId: 'buyer-1',
-          amountCents: 15000,
-          status: 'pending',
-          expiresAt: DateTime.now().add(const Duration(hours: 48)),
-          createdAt: DateTime.now(),
+        OfferDisplayModel(
+          offer: MarketplaceOffer(
+            id: 'offer-1',
+            listingId: 'listing-1',
+            buyerId: 'buyer-1',
+            amountCents: 15000,
+            status: 'pending',
+            expiresAt: DateTime.now().add(const Duration(hours: 48)),
+            createdAt: DateTime.now(),
+          ),
         ),
       ];
 
@@ -136,23 +143,27 @@ void main() {
 
     testWidgets('should display offers list', (tester) async {
       fakeRepository.myOffers = [
-        MarketplaceOffer(
-          id: 'offer-1',
-          listingId: 'listing-1',
-          buyerId: 'buyer-1',
-          amountCents: 20000,
-          status: 'pending',
-          expiresAt: DateTime.now().add(const Duration(hours: 48)),
-          createdAt: DateTime.now(),
+        OfferDisplayModel(
+          offer: MarketplaceOffer(
+            id: 'offer-1',
+            listingId: 'listing-1',
+            buyerId: 'buyer-1',
+            amountCents: 20000,
+            status: 'pending',
+            expiresAt: DateTime.now().add(const Duration(hours: 48)),
+            createdAt: DateTime.now(),
+          ),
         ),
-        MarketplaceOffer(
-          id: 'offer-2',
-          listingId: 'listing-2',
-          buyerId: 'buyer-1',
-          amountCents: 30000,
-          status: 'accepted',
-          expiresAt: DateTime.now().add(const Duration(hours: 48)),
-          createdAt: DateTime.now(),
+        OfferDisplayModel(
+          offer: MarketplaceOffer(
+            id: 'offer-2',
+            listingId: 'listing-2',
+            buyerId: 'buyer-1',
+            amountCents: 30000,
+            status: 'accepted',
+            expiresAt: DateTime.now().add(const Duration(hours: 48)),
+            createdAt: DateTime.now(),
+          ),
         ),
       ];
 
@@ -166,14 +177,16 @@ void main() {
     testWidgets('should withdraw offer when Withdraw tapped',
         (tester) async {
       fakeRepository.myOffers = [
-        MarketplaceOffer(
-          id: 'offer-1',
-          listingId: 'listing-1',
-          buyerId: 'buyer-1',
-          amountCents: 20000,
-          status: 'pending',
-          expiresAt: DateTime.now().add(const Duration(hours: 48)),
-          createdAt: DateTime.now(),
+        OfferDisplayModel(
+          offer: MarketplaceOffer(
+            id: 'offer-1',
+            listingId: 'listing-1',
+            buyerId: 'buyer-1',
+            amountCents: 20000,
+            status: 'pending',
+            expiresAt: DateTime.now().add(const Duration(hours: 48)),
+            createdAt: DateTime.now(),
+          ),
         ),
       ];
 

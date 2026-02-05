@@ -217,22 +217,36 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
         ),
         child: Stack(
           children: [
-            // Photo
+            // Photo (supports both local file paths and network URLs)
             ClipRRect(
               borderRadius: BorderRadius.circular(index == 0 ? 6 : 8),
-              child: Image.file(
-                File(path),
-                width: 100,
-                height: 120,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  color: LynewedColors.surface,
-                  child: const Icon(
-                    Icons.broken_image,
-                    color: LynewedColors.gray300,
-                  ),
-                ),
-              ),
+              child: path.startsWith('http')
+                  ? Image.network(
+                      path,
+                      width: 100,
+                      height: 120,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: LynewedColors.surface,
+                        child: const Icon(
+                          Icons.broken_image,
+                          color: LynewedColors.gray300,
+                        ),
+                      ),
+                    )
+                  : Image.file(
+                      File(path),
+                      width: 100,
+                      height: 120,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: LynewedColors.surface,
+                        child: const Icon(
+                          Icons.broken_image,
+                          color: LynewedColors.gray300,
+                        ),
+                      ),
+                    ),
             ),
             // Cover badge
             if (index == 0)

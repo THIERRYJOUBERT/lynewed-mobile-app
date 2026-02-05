@@ -21,7 +21,26 @@ abstract class MarketplaceChatRepository {
     required String listingId,
     required String receiverId,
     required String content,
+    String messageType = 'text',
+    String? attachmentUrl,
+    String? attachmentName,
+    int? attachmentSize,
+    String? attachmentMimeType,
   });
+
+  /// Uploads an attachment file to storage.
+  ///
+  /// Returns the storage path that can be used with [getSignedUrl].
+  Future<String> uploadAttachment({
+    required String filePath,
+    required String fileName,
+    required String listingId,
+  });
+
+  /// Gets a signed URL for a storage path.
+  ///
+  /// Returns a temporary public URL valid for 1 hour.
+  Future<String?> getSignedUrl(String storagePath);
 
   /// Gets messages for a conversation.
   ///
@@ -56,6 +75,28 @@ abstract class MarketplaceChatRepository {
   ///
   /// Returns conversations grouped by listing, sorted by most recent message.
   Future<List<MarketplaceConversation>> getConversations();
+
+  /// Sends an offer-type message in a conversation.
+  ///
+  /// Creates a message with type 'offer' linking to the actual offer record.
+  /// Content is JSON-encoded offer data for display in the chat bubble.
+  Future<MarketplaceMessage> sendOfferMessage({
+    required String listingId,
+    required String receiverId,
+    required String offerId,
+    required int amountCents,
+    String? message,
+  });
+
+  /// Sends a system message in a conversation.
+  ///
+  /// Used for status updates like "Offer accepted!" or "Offer declined".
+  /// The sender is the user who performed the action.
+  Future<MarketplaceMessage> sendSystemMessage({
+    required String listingId,
+    required String receiverId,
+    required String content,
+  });
 
   /// Unsubscribes from all Realtime channels.
   ///

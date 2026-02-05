@@ -49,4 +49,9 @@ class StripeConnectRepositoryImpl implements StripeConnectRepository {
     final account = await _stripeRepository.getStripeAccount(userId);
     return account?.chargesEnabled ?? false;
   }
+
+  @override
+  Future<void> syncStripeAccount() async {
+    return _datasource.syncStripeAccount();
+  }
 }

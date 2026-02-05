@@ -16,25 +16,6 @@ import '../../data/sizes_data.dart';
 import '../../domain/entities/listing_filter.dart';
 import '../../domain/repositories/marketplace_repository.dart';
 
-/// List of countries available for filtering.
-const List<String> _filterCountries = [
-  'United States',
-  'United Kingdom',
-  'France',
-  'Germany',
-  'Italy',
-  'Spain',
-  'Canada',
-  'Australia',
-  'Netherlands',
-  'Belgium',
-  'Switzerland',
-  'Austria',
-  'Portugal',
-  'Ireland',
-  'Sweden',
-];
-
 /// Advanced filter sheet for marketplace listings.
 ///
 /// Provides filter sections for:
@@ -506,7 +487,7 @@ class _FilterSheetState extends State<FilterSheet> {
               value: null,
               child: Text('All countries'),
             ),
-            ..._filterCountries.map((c) {
+            ...countryOptions.map((c) {
               return DropdownMenuItem(value: c, child: Text(c));
             }),
           ],

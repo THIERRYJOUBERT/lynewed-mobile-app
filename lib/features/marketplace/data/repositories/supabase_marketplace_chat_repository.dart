@@ -1,10 +1,12 @@
 /// Supabase implementation of MarketplaceChatRepository.
 ///
-/// Handles messaging between buyers and sellers using Supabase Database
-/// and Realtime for live updates.
+/// Handles messaging between buyers and sellers using Supabase Database,
+/// Storage, and Realtime for live updates.
 library;
 
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -23,6 +25,9 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
 
   final SupabaseClient _client;
 
+  /// Storage bucket for marketplace chat attachments.
+  static const _storageBucket = 'marketplace-chat';
+
   RealtimeChannel? _channel;
   StreamController<MarketplaceMessage>? _streamController;
 
@@ -31,6 +36,11 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
     required String listingId,
     required String receiverId,
     required String content,
+    String messageType = 'text',
+    String? attachmentUrl,
+    String? attachmentName,
+    int? attachmentSize,
+    String? attachmentMimeType,
   }) async {
     final currentUserId = _client.auth.currentUser?.id;
     if (currentUserId == null) {
@@ -38,23 +48,71 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
     }
 
     final trimmedContent = content.trim();
-    if (trimmedContent.isEmpty) {
+    // Allow empty content for attachment-only messages.
+    if (trimmedContent.isEmpty && messageType == 'text') {
       throw ArgumentError('Message content cannot be empty');
+    }
+
+    final data = <String, dynamic>{
+      'listing_id': listingId,
+      'sender_id': currentUserId,
+      'receiver_id': receiverId,
+      'content': trimmedContent,
+      'is_read': false,
+      'message_type': messageType,
+    };
+
+    if (attachmentUrl != null) data['attachment_url'] = attachmentUrl;
+    if (attachmentName != null) data['attachment_name'] = attachmentName;
+    if (attachmentSize != null) data['attachment_size'] = attachmentSize;
+    if (attachmentMimeType != null) {
+      data['attachment_mime_type'] = attachmentMimeType;
     }
 
     final response = await _client
         .from('marketplace_messages')
-        .insert({
-          'listing_id': listingId,
-          'sender_id': currentUserId,
-          'receiver_id': receiverId,
-          'content': trimmedContent,
-          'is_read': false,
-        })
+        .insert(data)
         .select()
         .single();
 
     return MarketplaceMessage.fromJson(response);
+  }
+
+  @override
+  Future<String> uploadAttachment({
+    required String filePath,
+    required String fileName,
+    required String listingId,
+  }) async {
+    final currentUserId = _client.auth.currentUser?.id;
+    if (currentUserId == null) {
+      throw StateError('User must be authenticated to upload attachments');
+    }
+
+    final file = File(filePath);
+    if (!file.existsSync()) {
+      throw ArgumentError('File does not exist: $filePath');
+    }
+
+    // Storage path: {listingId}/{userId}/{timestamp}_{fileName}
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final storagePath = '$listingId/$currentUserId/${timestamp}_$fileName';
+
+    await _client.storage.from(_storageBucket).upload(storagePath, file);
+
+    return storagePath;
+  }
+
+  @override
+  Future<String?> getSignedUrl(String storagePath) async {
+    try {
+      final url = await _client.storage
+          .from(_storageBucket)
+          .createSignedUrl(storagePath, 3600); // 1 hour
+      return url;
+    } catch (e) {
+      return null;
+    }
   }
 
   @override
@@ -80,7 +138,8 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
         .limit(limit);
 
     return (response as List)
-        .map((json) => MarketplaceMessage.fromJson(json as Map<String, dynamic>))
+        .map(
+            (json) => MarketplaceMessage.fromJson(json as Map<String, dynamic>))
         .toList();
   }
 
@@ -108,8 +167,7 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
           ),
           callback: (payload) {
             try {
-              final message =
-                  MarketplaceMessage.fromJson(payload.newRecord);
+              final message = MarketplaceMessage.fromJson(payload.newRecord);
               // Only emit if message involves the current user.
               if (message.senderId == currentUserId ||
                   message.receiverId == currentUserId) {
@@ -169,8 +227,7 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
       final listingId = msg['listing_id'] as String;
       final senderId = msg['sender_id'] as String;
       final receiverId = msg['receiver_id'] as String;
-      final otherUserId =
-          senderId == currentUserId ? receiverId : senderId;
+      final otherUserId = senderId == currentUserId ? receiverId : senderId;
       final key = '$listingId|$otherUserId';
 
       if (!conversationMap.containsKey(key)) {
@@ -179,11 +236,22 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
             msg['marketplace_listings'] as Map<String, dynamic>?;
         final listingTitle = listingData?['title'] as String? ?? 'Listing';
 
+        // Generate appropriate preview text based on message type.
+        final messageType = msg['message_type'] as String? ?? 'text';
+        String? preview;
+        if (messageType == 'offer') {
+          preview = _offerPreview(msg['content'] as String?);
+        } else if (messageType == 'system') {
+          preview = msg['content'] as String?;
+        } else {
+          preview = msg['content'] as String?;
+        }
+
         conversationMap[key] = _ConversationData(
           listingId: listingId,
           listingTitle: listingTitle,
           otherUserId: otherUserId,
-          lastMessage: msg['content'] as String?,
+          lastMessage: preview,
           lastMessageTime: msg['created_at'] != null
               ? DateTime.parse(msg['created_at'] as String)
               : null,
@@ -192,17 +260,14 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
       }
 
       // Count unread messages (where current user is receiver and not read).
-      if (msg['receiver_id'] == currentUserId &&
-          msg['is_read'] == false) {
+      if (msg['receiver_id'] == currentUserId && msg['is_read'] == false) {
         conversationMap[key]!.unreadCount++;
       }
     }
 
     // Batch-fetch profile names for all other users.
-    final otherUserIds = conversationMap.values
-        .map((c) => c.otherUserId)
-        .toSet()
-        .toList();
+    final otherUserIds =
+        conversationMap.values.map((c) => c.otherUserId).toSet().toList();
 
     final profilesResponse = await _client
         .from('profiles')
@@ -222,8 +287,7 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
         listingId: data.listingId,
         listingTitle: data.listingTitle,
         otherUserId: data.otherUserId,
-        otherUserName:
-            profile?['display_name'] as String? ?? 'Unknown',
+        otherUserName: profile?['display_name'] as String? ?? 'Unknown',
         otherUserAvatarUrl: profile?['photo_url'] as String?,
         lastMessage: data.lastMessage,
         lastMessageTime: data.lastMessageTime,
@@ -243,11 +307,86 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
   }
 
   @override
+  Future<MarketplaceMessage> sendOfferMessage({
+    required String listingId,
+    required String receiverId,
+    required String offerId,
+    required int amountCents,
+    String? message,
+  }) async {
+    final currentUserId = _client.auth.currentUser?.id;
+    if (currentUserId == null) {
+      throw StateError('User must be authenticated to send messages');
+    }
+
+    final contentJson = jsonEncode({
+      'amount_cents': amountCents,
+      if (message != null && message.isNotEmpty) 'message': message,
+    });
+
+    final response = await _client
+        .from('marketplace_messages')
+        .insert({
+          'listing_id': listingId,
+          'sender_id': currentUserId,
+          'receiver_id': receiverId,
+          'content': contentJson,
+          'is_read': false,
+          'message_type': 'offer',
+          'offer_id': offerId,
+        })
+        .select()
+        .single();
+
+    return MarketplaceMessage.fromJson(response);
+  }
+
+  @override
+  Future<MarketplaceMessage> sendSystemMessage({
+    required String listingId,
+    required String receiverId,
+    required String content,
+  }) async {
+    final currentUserId = _client.auth.currentUser?.id;
+    if (currentUserId == null) {
+      throw StateError('User must be authenticated to send messages');
+    }
+
+    final response = await _client
+        .from('marketplace_messages')
+        .insert({
+          'listing_id': listingId,
+          'sender_id': currentUserId,
+          'receiver_id': receiverId,
+          'content': content,
+          'is_read': false,
+          'message_type': 'system',
+        })
+        .select()
+        .single();
+
+    return MarketplaceMessage.fromJson(response);
+  }
+
+  @override
   void unsubscribeAll() {
     _channel?.unsubscribe();
     _channel = null;
     _streamController?.close();
     _streamController = null;
+  }
+
+  /// Extracts a human-readable preview from offer message JSON content.
+  String _offerPreview(String? content) {
+    if (content == null || content.isEmpty) return 'Offer';
+    try {
+      final data = jsonDecode(content) as Map<String, dynamic>;
+      final cents = data['amount_cents'] as int? ?? 0;
+      final dollars = (cents / 100).toStringAsFixed(2);
+      return 'Offer: \$$dollars';
+    } catch (_) {
+      return 'Offer';
+    }
   }
 }
 

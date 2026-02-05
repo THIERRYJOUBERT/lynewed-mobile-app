@@ -12,11 +12,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/listing_filter.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/marketplace_listing.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/marketplace_offer.dart';
+import 'package:lynewed_beta/features/marketplace/domain/entities/offer_display_model.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/marketplace_photo.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/marketplace_transaction.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/seller_profile.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/shipping_address.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/shipping_rate.dart';
+import 'package:lynewed_beta/features/marketplace/domain/entities/marketplace_conversation.dart';
+import 'package:lynewed_beta/features/marketplace/domain/entities/marketplace_message.dart';
+import 'package:lynewed_beta/features/marketplace/domain/repositories/marketplace_chat_repository.dart';
 import 'package:lynewed_beta/features/marketplace/domain/repositories/marketplace_offer_repository.dart';
 import 'package:lynewed_beta/features/marketplace/domain/repositories/marketplace_repository.dart';
 import 'package:lynewed_beta/features/marketplace/domain/repositories/marketplace_transaction_repository.dart';
@@ -81,19 +85,21 @@ MarketplaceTransaction _createTransaction({
   );
 }
 
-MarketplaceOffer _createOffer({
+OfferDisplayModel _createOffer({
   String id = 'offer-1',
   String listingId = 'listing-1',
   String status = 'pending',
 }) {
-  return MarketplaceOffer(
-    id: id,
-    listingId: listingId,
-    buyerId: 'buyer-1',
-    amountCents: 25000,
-    status: status,
-    expiresAt: DateTime.now().add(const Duration(hours: 48)),
-    createdAt: DateTime(2025, 6, 1),
+  return OfferDisplayModel(
+    offer: MarketplaceOffer(
+      id: id,
+      listingId: listingId,
+      buyerId: 'buyer-1',
+      amountCents: 25000,
+      status: status,
+      expiresAt: DateTime.now().add(const Duration(hours: 48)),
+      createdAt: DateTime(2025, 6, 1),
+    ),
   );
 }
 
@@ -171,6 +177,11 @@ class _FakeMarketplaceRepository implements MarketplaceRepository {
 
   @override
   Future<int> getFilteredListingsCount(ListingFilter filter) async => 0;
+
+  @override
+  Future<void> deleteListing(String id) async {
+    throw UnimplementedError();
+  }
 }
 
 class _FakeTransactionRepository implements MarketplaceTransactionRepository {
@@ -208,11 +219,11 @@ class _FakeTransactionRepository implements MarketplaceTransactionRepository {
 }
 
 class _FakeOfferRepository implements MarketplaceOfferRepository {
-  Map<String, List<MarketplaceOffer>> offersPerListing = {};
+  Map<String, List<OfferDisplayModel>> offersPerListing = {};
   bool shouldThrow = false;
 
   @override
-  Future<List<MarketplaceOffer>> getOffersForListing(String listingId) async {
+  Future<List<OfferDisplayModel>> getOffersForListing(String listingId) async {
     if (shouldThrow) throw Exception('Error loading offers');
     return offersPerListing[listingId] ?? [];
   }
@@ -247,7 +258,86 @@ class _FakeOfferRepository implements MarketplaceOfferRepository {
   ) async => null;
 
   @override
-  Future<List<MarketplaceOffer>> getMyOffers() async => [];
+  Future<List<OfferDisplayModel>> getMyOffers() async => [];
+
+  @override
+  Future<MarketplaceOffer> getOfferById(String offerId) async =>
+      throw UnimplementedError();
+}
+
+class _FakeChatRepository implements MarketplaceChatRepository {
+  List<MarketplaceConversation> conversations = [];
+  bool shouldThrow = false;
+
+  @override
+  Future<List<MarketplaceConversation>> getConversations() async {
+    if (shouldThrow) throw Exception('Error loading conversations');
+    return conversations;
+  }
+
+  @override
+  Future<MarketplaceMessage> sendMessage({
+    required String listingId,
+    required String receiverId,
+    required String content,
+    String messageType = 'text',
+    String? attachmentUrl,
+    String? attachmentName,
+    int? attachmentSize,
+    String? attachmentMimeType,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String> uploadAttachment({
+    required String filePath,
+    required String fileName,
+    required String listingId,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String?> getSignedUrl(String storagePath) async => null;
+
+  @override
+  Future<List<MarketplaceMessage>> getMessages({
+    required String listingId,
+    required String otherUserId,
+    int limit = 100,
+  }) async => [];
+
+  @override
+  Stream<MarketplaceMessage> subscribeToMessages({
+    required String listingId,
+    required String currentUserId,
+  }) => const Stream.empty();
+
+  @override
+  Future<void> markConversationAsRead({
+    required String listingId,
+    required String otherUserId,
+  }) async {}
+
+  @override
+  Future<MarketplaceMessage> sendOfferMessage({
+    required String listingId,
+    required String receiverId,
+    required String offerId,
+    required int amountCents,
+    String? message,
+  }) async => throw UnimplementedError();
+
+  @override
+  Future<MarketplaceMessage> sendSystemMessage({
+    required String listingId,
+    required String receiverId,
+    required String content,
+  }) async => throw UnimplementedError();
+
+  @override
+  void unsubscribeAll() {}
 }
 
 // -- Test helpers --
@@ -256,6 +346,7 @@ Widget _buildPage({
   _FakeMarketplaceRepository? repository,
   _FakeTransactionRepository? transactionRepository,
   _FakeOfferRepository? offerRepository,
+  _FakeChatRepository? chatRepository,
 }) {
   return MaterialApp(
     home: SellerDashboardPage(
@@ -263,6 +354,7 @@ Widget _buildPage({
       transactionRepository:
           transactionRepository ?? _FakeTransactionRepository(),
       offerRepository: offerRepository ?? _FakeOfferRepository(),
+      chatRepository: chatRepository ?? _FakeChatRepository(),
     ),
   );
 }
@@ -528,6 +620,7 @@ void main() {
               repository: repo,
               transactionRepository: _FakeTransactionRepository(),
               offerRepository: _FakeOfferRepository(),
+              chatRepository: _FakeChatRepository(),
               onListingTap: (id) => navigatedListingId = id,
             ),
           ),
@@ -556,6 +649,7 @@ void main() {
               repository: repo,
               transactionRepository: _FakeTransactionRepository(),
               offerRepository: _FakeOfferRepository(),
+              chatRepository: _FakeChatRepository(),
               onListingTap: (id) => navigatedListingId = id,
             ),
           ),
@@ -594,6 +688,7 @@ void main() {
               repository: repo,
               transactionRepository: txRepo,
               offerRepository: _FakeOfferRepository(),
+              chatRepository: _FakeChatRepository(),
               onTransactionTap: (id) => navigatedTransactionId = id,
             ),
           ),
@@ -657,6 +752,115 @@ void main() {
         // The badge key pattern: we check no offer badge is shown.
         // Only rejected offers - should NOT show a badge.
         expect(find.byKey(const Key('offer-badge-l1')), findsNothing);
+      });
+    });
+
+    // ========================================
+    // AC-4b: Message count badge
+    // ========================================
+    group('AC-4b: message count badge', () {
+      testWidgets('should show message count badge when unread messages exist',
+          (tester) async {
+        final repo = _FakeMarketplaceRepository()
+          ..listings = [
+            _createListing(id: 'l1', title: 'Active Dress', status: 'active'),
+          ];
+        final chatRepo = _FakeChatRepository()
+          ..conversations = [
+            const MarketplaceConversation(
+              listingId: 'l1',
+              listingTitle: 'Active Dress',
+              otherUserId: 'buyer-1',
+              otherUserName: 'Buyer One',
+              unreadCount: 3,
+            ),
+          ];
+
+        await tester.pumpWidget(_buildPage(
+          repository: repo,
+          chatRepository: chatRepo,
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(const Key('message-badge-l1')), findsOneWidget);
+        expect(find.text('3'), findsOneWidget);
+      });
+
+      testWidgets('should aggregate unread messages from multiple conversations',
+          (tester) async {
+        final repo = _FakeMarketplaceRepository()
+          ..listings = [
+            _createListing(id: 'l1', title: 'Active Dress', status: 'active'),
+          ];
+        final chatRepo = _FakeChatRepository()
+          ..conversations = [
+            const MarketplaceConversation(
+              listingId: 'l1',
+              listingTitle: 'Active Dress',
+              otherUserId: 'buyer-1',
+              otherUserName: 'Buyer One',
+              unreadCount: 2,
+            ),
+            const MarketplaceConversation(
+              listingId: 'l1',
+              listingTitle: 'Active Dress',
+              otherUserId: 'buyer-2',
+              otherUserName: 'Buyer Two',
+              unreadCount: 1,
+            ),
+          ];
+
+        await tester.pumpWidget(_buildPage(
+          repository: repo,
+          chatRepository: chatRepo,
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(const Key('message-badge-l1')), findsOneWidget);
+        expect(find.text('3'), findsOneWidget);
+      });
+
+      testWidgets('should not show message badge when no unread messages',
+          (tester) async {
+        final repo = _FakeMarketplaceRepository()
+          ..listings = [
+            _createListing(id: 'l1', title: 'Active Dress', status: 'active'),
+          ];
+        final chatRepo = _FakeChatRepository()
+          ..conversations = [
+            const MarketplaceConversation(
+              listingId: 'l1',
+              listingTitle: 'Active Dress',
+              otherUserId: 'buyer-1',
+              otherUserName: 'Buyer One',
+              unreadCount: 0,
+            ),
+          ];
+
+        await tester.pumpWidget(_buildPage(
+          repository: repo,
+          chatRepository: chatRepo,
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(const Key('message-badge-l1')), findsNothing);
+      });
+
+      testWidgets('should not show message badge when no conversations',
+          (tester) async {
+        final repo = _FakeMarketplaceRepository()
+          ..listings = [
+            _createListing(id: 'l1', title: 'Active Dress', status: 'active'),
+          ];
+        final chatRepo = _FakeChatRepository()..conversations = [];
+
+        await tester.pumpWidget(_buildPage(
+          repository: repo,
+          chatRepository: chatRepo,
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(const Key('message-badge-l1')), findsNothing);
       });
     });
 

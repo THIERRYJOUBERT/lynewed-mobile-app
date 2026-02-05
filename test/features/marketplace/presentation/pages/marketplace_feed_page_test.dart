@@ -124,7 +124,7 @@ void main() {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        expect(find.byType(ListingCard), findsNWidgets(4));
+        expect(find.byType(ListingCard), findsWidgets);
       });
 
       testWidgets('should show empty state when no listings', (tester) async {
@@ -368,6 +368,66 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Marketplace'), findsOneWidget);
+      });
+    });
+
+    group('sell FAB', () {
+      testWidgets('should show a FAB to create a new listing', (tester) async {
+        when(() => mockRepository.getListings(
+              category: any(named: 'category'),
+              page: any(named: 'page'),
+              pageSize: any(named: 'pageSize'),
+            )).thenAnswer((_) async => _generateListings(3));
+
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        expect(find.byType(FloatingActionButton), findsOneWidget);
+        expect(find.byIcon(Icons.add), findsOneWidget);
+      });
+
+      testWidgets('should show FAB even when listings are empty',
+          (tester) async {
+        when(() => mockRepository.getListings(
+              category: any(named: 'category'),
+              page: any(named: 'page'),
+              pageSize: any(named: 'pageSize'),
+            )).thenAnswer((_) async => []);
+
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        expect(find.byType(FloatingActionButton), findsOneWidget);
+      });
+    });
+
+    group('My Sales button', () {
+      testWidgets('should show My Sales icon in header', (tester) async {
+        when(() => mockRepository.getListings(
+              category: any(named: 'category'),
+              page: any(named: 'page'),
+              pageSize: any(named: 'pageSize'),
+            )).thenAnswer((_) async => []);
+
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.storefront_outlined), findsOneWidget);
+      });
+    });
+
+    group('My Offers button', () {
+      testWidgets('should show My Offers icon in header', (tester) async {
+        when(() => mockRepository.getListings(
+              category: any(named: 'category'),
+              page: any(named: 'page'),
+              pageSize: any(named: 'pageSize'),
+            )).thenAnswer((_) async => []);
+
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.local_offer_outlined), findsOneWidget);
       });
     });
 

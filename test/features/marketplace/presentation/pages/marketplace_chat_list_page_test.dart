@@ -43,8 +43,24 @@ class MockMarketplaceChatRepository implements MarketplaceChatRepository {
     required String listingId,
     required String receiverId,
     required String content,
+    String messageType = 'text',
+    String? attachmentUrl,
+    String? attachmentName,
+    int? attachmentSize,
+    String? attachmentMimeType,
   }) async =>
       throw UnimplementedError();
+
+  @override
+  Future<String> uploadAttachment({
+    required String filePath,
+    required String fileName,
+    required String listingId,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<String?> getSignedUrl(String storagePath) async => null;
 
   @override
   Stream<MarketplaceMessage> subscribeToMessages({
@@ -58,6 +74,22 @@ class MockMarketplaceChatRepository implements MarketplaceChatRepository {
     required String listingId,
     required String otherUserId,
   }) async {}
+
+  @override
+  Future<MarketplaceMessage> sendOfferMessage({
+    required String listingId,
+    required String receiverId,
+    required String offerId,
+    required int amountCents,
+    String? message,
+  }) async => throw UnimplementedError();
+
+  @override
+  Future<MarketplaceMessage> sendSystemMessage({
+    required String listingId,
+    required String receiverId,
+    required String content,
+  }) async => throw UnimplementedError();
 
   @override
   void unsubscribeAll() {}
@@ -289,6 +321,22 @@ class _DelayedMockRepository implements MarketplaceChatRepository {
   final Completer<List<MarketplaceConversation>> _completer;
 
   @override
+  Future<MarketplaceMessage> sendOfferMessage({
+    required String listingId,
+    required String receiverId,
+    required String offerId,
+    required int amountCents,
+    String? message,
+  }) async => throw UnimplementedError();
+
+  @override
+  Future<MarketplaceMessage> sendSystemMessage({
+    required String listingId,
+    required String receiverId,
+    required String content,
+  }) async => throw UnimplementedError();
+
+  @override
   Future<List<MarketplaceConversation>> getConversations() =>
       _completer.future;
 
@@ -305,8 +353,24 @@ class _DelayedMockRepository implements MarketplaceChatRepository {
     required String listingId,
     required String receiverId,
     required String content,
+    String messageType = 'text',
+    String? attachmentUrl,
+    String? attachmentName,
+    int? attachmentSize,
+    String? attachmentMimeType,
   }) async =>
       throw UnimplementedError();
+
+  @override
+  Future<String> uploadAttachment({
+    required String filePath,
+    required String fileName,
+    required String listingId,
+  }) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<String?> getSignedUrl(String storagePath) async => null;
 
   @override
   Stream<MarketplaceMessage> subscribeToMessages({

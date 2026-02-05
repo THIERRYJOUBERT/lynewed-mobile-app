@@ -9,9 +9,9 @@
 library;
 
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 
 import '/auth/supabase_auth/auth_util.dart';
@@ -22,6 +22,8 @@ import '../../domain/entities/marketplace_listing.dart';
 import '../../domain/entities/marketplace_photo.dart';
 import '../../domain/repositories/marketplace_repository.dart';
 import '../../domain/usecases/check_stripe_status_use_case.dart';
+import '../../domain/usecases/setup_stripe_connect_use_case.dart';
+import 'stripe_setup_page.dart';
 import '../widgets/brand_autocomplete_widget.dart';
 import '../widgets/cgvu_seller_dialog.dart';
 import '../widgets/condition_selector_widget.dart';
@@ -41,6 +43,7 @@ class CreateListingPage extends StatefulWidget {
     this.userId,
     this.repository,
     this.checkStripeStatusUseCase,
+    this.existingListing,
   });
 
   /// Route name for navigation.
@@ -58,6 +61,9 @@ class CreateListingPage extends StatefulWidget {
   /// The current authenticated user's ID. Falls back to [currentUserUid] if not provided.
   final String? userId;
 
+  /// When set, the page operates in edit mode for this listing.
+  final MarketplaceListing? existingListing;
+
   @override
   State<CreateListingPage> createState() => CreateListingPageState();
 }
@@ -73,9 +79,9 @@ class CreateListingPageState extends State<CreateListingPage> {
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
   final _brandController = TextEditingController();
-  final _countryController = TextEditingController();
 
   // Form state
+  String? _selectedCountry;
   String? _selectedCategory;
   String? _selectedSize;
   String? _selectedCondition;
@@ -93,12 +99,45 @@ class CreateListingPageState extends State<CreateListingPage> {
   late final MarketplaceRepository _repository;
   late final CheckStripeStatusUseCase _checkStripeStatusUseCase;
 
+  /// Whether we are editing an existing listing.
+  bool get _isEditMode => widget.existingListing != null;
+
   @override
   void initState() {
     super.initState();
     _repository = widget.repository ?? sl<MarketplaceRepository>();
     _checkStripeStatusUseCase =
         widget.checkStripeStatusUseCase ?? sl<CheckStripeStatusUseCase>();
+
+    if (widget.existingListing != null) {
+      _populateFromListing(widget.existingListing!);
+      _loadExistingPhotos(widget.existingListing!.id);
+    }
+  }
+
+  void _populateFromListing(MarketplaceListing listing) {
+    _titleController.text = listing.title;
+    _descriptionController.text = listing.description ?? '';
+    _priceController.text = listing.priceCents > 0
+        ? (listing.priceCents / 100).toStringAsFixed(2)
+        : '';
+    _brandController.text = listing.designerBrand ?? '';
+    _selectedCategory = listing.category;
+    _selectedSize = listing.size;
+    _selectedCondition = listing.condition;
+    _selectedSleeveLength = listing.sleeveLength;
+    _selectedCountry = listing.country;
+  }
+
+  Future<void> _loadExistingPhotos(String listingId) async {
+    try {
+      final urls = await _repository.getPhotoUrls(listingId);
+      if (mounted && urls.isNotEmpty) {
+        setState(() => _photos = urls);
+      }
+    } catch (_) {
+      // Non-blocking: photos just won't be pre-loaded.
+    }
   }
 
   @override
@@ -107,7 +146,6 @@ class CreateListingPageState extends State<CreateListingPage> {
     _descriptionController.dispose();
     _priceController.dispose();
     _brandController.dispose();
-    _countryController.dispose();
     super.dispose();
   }
 
@@ -122,11 +160,13 @@ class CreateListingPageState extends State<CreateListingPage> {
   /// Validates the price field.
   String? validatePrice(String? value) {
     if (value == null || value.isEmpty) return 'Price is required';
-    final price = double.tryParse(value);
+    final normalized = value.replaceAll(',', '.');
+    final price = double.tryParse(normalized);
     if (price == null || price <= 0) {
       return 'Enter a valid price greater than 0';
     }
-    if (price >= 1000000) return 'Price must be less than \$1,000,000';
+    if (price < 1) return 'Price must be at least \$1';
+    if (price > 100000) return 'Price must be less than \$100,000';
     return null;
   }
 
@@ -207,15 +247,28 @@ class CreateListingPageState extends State<CreateListingPage> {
         sleeveLength: _selectedCategory == 'dress'
             ? _selectedSleeveLength
             : null,
-        country: _countryController.text.isNotEmpty
-            ? _countryController.text
-            : 'Unknown',
+        country: _selectedCountry ?? 'Unknown',
         status: 'draft',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
 
-      await _repository.createListing(listing);
+      String listingId;
+      if (_isEditMode) {
+        final updated = await _repository.updateListing(
+          widget.existingListing!.id,
+          listing.toJson(),
+        );
+        listingId = updated.id;
+      } else {
+        final created = await _repository.createListing(listing);
+        listingId = created.id;
+      }
+
+      // Upload photos if any were selected.
+      if (_photos.isNotEmpty) {
+        await _uploadPhotos(listingId);
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -231,13 +284,17 @@ class CreateListingPageState extends State<CreateListingPage> {
       }
     } finally {
       if (mounted) {
-        setState(() => _isSavingDraft = false);
+        setState(() {
+          _isSavingDraft = false;
+          _uploadProgress = null;
+        });
       }
     }
   }
 
   int _parsePriceCents() {
-    final price = double.tryParse(_priceController.text);
+    final normalized = _priceController.text.replaceAll(',', '.');
+    final price = double.tryParse(normalized);
     if (price == null || price <= 0) return 0;
     return (price * 100).toInt();
   }
@@ -293,17 +350,27 @@ class CreateListingPageState extends State<CreateListingPage> {
         condition: _selectedCondition!,
         sleeveLength:
             _selectedCategory == 'dress' ? _selectedSleeveLength : null,
-        country: _countryController.text.trim(),
+        country: _selectedCountry!,
         status: 'active',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
 
-      final createdListing = await _repository.createListing(listing);
+      String listingId;
+      if (_isEditMode) {
+        final updated = await _repository.updateListing(
+          widget.existingListing!.id,
+          listing.toJson(),
+        );
+        listingId = updated.id;
+      } else {
+        final created = await _repository.createListing(listing);
+        listingId = created.id;
+      }
 
       // 5. Upload photos with progress
       if (_photos.isNotEmpty) {
-        await _uploadPhotos(createdListing.id);
+        await _uploadPhotos(listingId);
       }
 
       // 6. Navigate back on success
@@ -346,10 +413,16 @@ class CreateListingPageState extends State<CreateListingPage> {
       final isReady = await _checkStripeStatusUseCase(userId);
       if (!isReady && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
+          SnackBar(
+            content: const Text(
               'Please set up your payment account before publishing.',
             ),
+            action: SnackBarAction(
+              label: 'Setup',
+              textColor: LynewedColors.textOnDark,
+              onPressed: () => _navigateToStripeSetup(userId),
+            ),
+            duration: const Duration(seconds: 5),
           ),
         );
         return false;
@@ -367,17 +440,84 @@ class CreateListingPageState extends State<CreateListingPage> {
     }
   }
 
+  Future<void> _confirmDeleteListing() async {
+    if (!_isEditMode || !mounted) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Listing'),
+        content: const Text(
+          'Are you sure you want to delete this listing? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              'Delete',
+              style: TextStyle(color: LynewedColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      await _deleteListing();
+    }
+  }
+
+  Future<void> _deleteListing() async {
+    try {
+      await _repository.deleteListing(widget.existingListing!.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Listing deleted')),
+        );
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  void _navigateToStripeSetup(String userId) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => StripeSetupPage(
+          userId: userId,
+          email: currentUserEmail,
+          setupUseCase: sl<SetupStripeConnectUseCase>(),
+          checkStatusUseCase: _checkStripeStatusUseCase,
+        ),
+      ),
+    );
+  }
+
   Future<void> _uploadPhotos(String listingId) async {
+    // Only upload new local photos (skip existing network URLs).
+    final localPhotos =
+        _photos.where((p) => !p.startsWith('http')).toList();
+    if (localPhotos.isEmpty) return;
+
     final photoBytes = <Uint8List>[];
     final fileNames = <String>[];
     final uuid = const Uuid();
 
-    for (var i = 0; i < _photos.length; i++) {
+    for (var i = 0; i < localPhotos.length; i++) {
       setState(() {
-        _uploadProgress = i / _photos.length;
+        _uploadProgress = i / localPhotos.length;
       });
 
-      final file = File(_photos[i]);
+      final file = File(localPhotos[i]);
       final bytes = await file.readAsBytes();
       photoBytes.add(bytes);
 
@@ -394,13 +534,15 @@ class CreateListingPageState extends State<CreateListingPage> {
       fileNames: fileNames,
     );
 
-    // Save photo records
+    // Save photo records. Position offset accounts for existing network photos.
+    final existingCount =
+        _photos.where((p) => p.startsWith('http')).length;
     final photos = storagePaths.asMap().entries.map((entry) {
       return MarketplacePhoto(
         id: '',
         listingId: listingId,
         storagePath: entry.value,
-        position: entry.key,
+        position: existingCount + entry.key,
         createdAt: DateTime.now(),
       );
     }).toList();
@@ -440,10 +582,17 @@ class CreateListingPageState extends State<CreateListingPage> {
           const SizedBox(width: 4),
           Expanded(
             child: Text(
-              'Create Listing',
+              _isEditMode ? 'Edit Listing' : 'Create Listing',
               style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 20),
             ),
           ),
+          if (_isEditMode)
+            IconButton(
+              key: const Key('delete-listing-button'),
+              icon: const Icon(Icons.delete_outline, color: LynewedColors.error),
+              onPressed: _confirmDeleteListing,
+              tooltip: 'Delete listing',
+            ),
         ],
       ),
     );
@@ -570,6 +719,9 @@ class CreateListingPageState extends State<CreateListingPage> {
           label: 'Price (\$)',
           hint: 'Enter price in dollars',
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+          ],
           validator: validatePrice,
         ),
         const SizedBox(height: LynewedSpacing.lg),
@@ -642,11 +794,49 @@ class CreateListingPageState extends State<CreateListingPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LynewedTextField(
-          controller: _countryController,
-          label: 'Country',
-          hint: 'E.g., France, United States',
+        const LynewedSectionTitle('Country'),
+        const SizedBox(height: LynewedSpacing.labelFieldGap),
+        DropdownButtonFormField<String>(
+          value: _selectedCountry,
+          decoration: InputDecoration(
+            hintText: 'Select country',
+            hintStyle: LynewedTextStyles.inputHint,
+            filled: true,
+            fillColor: const Color(0xFFF2F2F2),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: const BorderSide(
+                color: LynewedColors.textPrimary,
+                width: 1,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: const BorderSide(color: LynewedColors.error),
+            ),
+          ),
+          style: LynewedTextStyles.bodyMedium.copyWith(
+            fontWeight: FontWeight.w300,
+          ),
+          items: countryOptions.map((c) {
+            return DropdownMenuItem(value: c, child: Text(c));
+          }).toList(),
           validator: validateCountry,
+          onChanged: (country) {
+            setState(() => _selectedCountry = country);
+          },
         ),
       ],
     );
@@ -665,7 +855,7 @@ class CreateListingPageState extends State<CreateListingPage> {
         children: [
           Expanded(
             child: LynewedButton(
-              text: 'Save Draft',
+              text: _isEditMode ? 'Save as Draft' : 'Save Draft',
               type: LynewedButtonType.secondary,
               onPressed: _isSavingDraft || _isPublishing ? null : _saveDraft,
               isLoading: _isSavingDraft,
@@ -674,7 +864,7 @@ class CreateListingPageState extends State<CreateListingPage> {
           const SizedBox(width: LynewedSpacing.md),
           Expanded(
             child: LynewedButton(
-              text: 'Publish',
+              text: _isEditMode ? 'Update' : 'Publish',
               onPressed: _isPublishing || _isSavingDraft ? null : _publishListing,
               isLoading: _isPublishing,
             ),

@@ -13,6 +13,11 @@ library;
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '/core/design/design.dart';
+import '/core/di/injection_container.dart';
+import '/features/marketplace/domain/entities/marketplace_conversation.dart';
+import '/features/marketplace/domain/repositories/marketplace_chat_repository.dart';
+import '/features/marketplace/presentation/pages/marketplace_chat_page.dart';
+import '/features/marketplace/presentation/widgets/conversation_tile_widget.dart';
 import '../../domain/entities/entities.dart';
 import '../bloc/conversations_cubit.dart';
 import '../bloc/conversations_state.dart';
@@ -36,7 +41,8 @@ class MessagesPage extends StatefulWidget {
 
 class _MessagesPageState extends State<MessagesPage> {
   late ConversationsNotifier _notifier;
-  
+  List<MarketplaceConversation> _marketplaceConversations = [];
+
   String get _currentUserId => Supabase.instance.client.auth.currentUser?.id ?? '';
 
   @override
@@ -45,6 +51,7 @@ class _MessagesPageState extends State<MessagesPage> {
     _notifier = ConversationsNotifier();
     _notifier.addListener(_onStateChanged);
     _notifier.loadAll();
+    _loadMarketplaceConversations();
   }
 
   void _onStateChanged() {
@@ -58,8 +65,23 @@ class _MessagesPageState extends State<MessagesPage> {
     super.dispose();
   }
 
+  Future<void> _loadMarketplaceConversations() async {
+    try {
+      final repo = sl<MarketplaceChatRepository>();
+      final conversations = await repo.getConversations();
+      if (mounted) {
+        setState(() => _marketplaceConversations = conversations);
+      }
+    } catch (_) {
+      // Silently handle marketplace conversation loading errors.
+    }
+  }
+
   Future<void> _onRefresh() async {
-    await _notifier.refresh();
+    await Future.wait([
+      _notifier.refresh(),
+      _loadMarketplaceConversations(),
+    ]);
   }
 
   void _onConversationTap(Conversation conversation) async {
@@ -184,6 +206,23 @@ class _MessagesPageState extends State<MessagesPage> {
     if (mounted) {
       _notifier.refresh();
     }
+  }
+
+  void _onMarketplaceConversationTap(MarketplaceConversation conv) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MarketplaceChatPage(
+          listingId: conv.listingId,
+          otherUserId: conv.otherUserId,
+          listingTitle: conv.listingTitle,
+          listingCoverUrl: conv.listingCoverUrl,
+          otherUserName: conv.otherUserName,
+          otherUserAvatarUrl: conv.otherUserAvatarUrl,
+        ),
+      ),
+    );
+    if (mounted) _loadMarketplaceConversations();
   }
 
   void _showArchivedSheet() {
@@ -400,6 +439,31 @@ class _MessagesPageState extends State<MessagesPage> {
                 ),
               ),
             ),
+
+          // Marketplace Conversations Section
+          if (_marketplaceConversations.isNotEmpty) ...[
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(20, 30, 20, 10),
+                child: Text(
+                  'Marketplace',
+                  style: LynewedTextStyles.sectionTitle,
+                ),
+              ),
+            ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final conv = _marketplaceConversations[index];
+                  return ConversationTileWidget(
+                    conversation: conv,
+                    onTap: () => _onMarketplaceConversationTap(conv),
+                  );
+                },
+                childCount: _marketplaceConversations.length,
+              ),
+            ),
+          ],
 
           // Bottom padding for safe area
           const SliverToBoxAdapter(

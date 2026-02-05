@@ -33,6 +33,7 @@ class OfferCard extends StatelessWidget {
     this.onAccept,
     this.onReject,
     this.onWithdraw,
+    this.onTap,
     super.key,
   });
 
@@ -51,9 +52,15 @@ class OfferCard extends StatelessWidget {
   /// Callback when buyer withdraws this offer.
   final VoidCallback? onWithdraw;
 
+  /// Callback when the card is tapped (navigate to conversation).
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
       padding: EdgeInsets.all(LynewedSpacing.lg),
       decoration: BoxDecoration(
         color: LynewedColors.background,
@@ -108,6 +115,7 @@ class OfferCard extends StatelessWidget {
           else
             _buildStatusBadge(),
         ],
+      ),
       ),
     );
   }

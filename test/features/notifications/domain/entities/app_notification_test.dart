@@ -33,6 +33,7 @@ void main() {
       expect(NotificationType.values, contains(NotificationType.videoIncoming));
       expect(NotificationType.values, contains(NotificationType.wedPublished));
       expect(NotificationType.values, contains(NotificationType.replayPublished));
+      expect(NotificationType.values, contains(NotificationType.marketplaceNewMessage));
     });
 
     test('should parse from string correctly', () {
@@ -622,6 +623,8 @@ void main() {
             contains(NotificationRoute.marketplaceListing));
         expect(NotificationRoute.values,
             contains(NotificationRoute.marketplaceOffers));
+        expect(NotificationRoute.values,
+            contains(NotificationRoute.marketplaceChat));
       });
     });
 
@@ -850,6 +853,59 @@ void main() {
           title: 'Order confirmed',
           body: 'Body',
           data: const {},
+          createdAt: testDateTime,
+        );
+
+        expect(notification.navigation, isNull);
+      });
+
+      test(
+          'marketplaceNewMessage should navigate to marketplace chat with listingId and otherUserId',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplaceNewMessage,
+          title: 'New marketplace message',
+          body: 'Body',
+          data: const {
+            'listing_id': 'listing-abc',
+            'sender_profile_id': 'user-xyz',
+          },
+          createdAt: testDateTime,
+        );
+
+        final nav = notification.navigation;
+
+        expect(nav, isNotNull);
+        expect(nav!.route, NotificationRoute.marketplaceChat);
+        expect(nav.params['listingId'], 'listing-abc');
+        expect(nav.params['otherUserId'], 'user-xyz');
+      });
+
+      test(
+          'marketplaceNewMessage should return null when listing_id missing',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplaceNewMessage,
+          title: 'New marketplace message',
+          body: 'Body',
+          data: const {'sender_profile_id': 'user-xyz'},
+          createdAt: testDateTime,
+        );
+
+        expect(notification.navigation, isNull);
+      });
+
+      test(
+          'marketplaceNewMessage should return null when sender_profile_id missing',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplaceNewMessage,
+          title: 'New marketplace message',
+          body: 'Body',
+          data: const {'listing_id': 'listing-abc'},
           createdAt: testDateTime,
         );
 

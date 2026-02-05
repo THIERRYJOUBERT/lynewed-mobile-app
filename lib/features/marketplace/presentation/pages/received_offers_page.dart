@@ -8,10 +8,11 @@ import 'package:flutter/material.dart';
 
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
-import '../../domain/entities/marketplace_offer.dart';
 import '../../domain/entities/offer_display_model.dart';
+import '../../domain/repositories/marketplace_chat_repository.dart';
 import '../../domain/repositories/marketplace_offer_repository.dart';
 import '../widgets/offer_card.dart';
+import 'marketplace_chat_page.dart';
 
 /// Page showing all offers received for a specific listing.
 ///
@@ -26,6 +27,7 @@ class ReceivedOffersPage extends StatefulWidget {
     required this.listingId,
     this.listingTitle,
     this.repository,
+    this.chatRepository,
     super.key,
   });
 
@@ -41,22 +43,28 @@ class ReceivedOffersPage extends StatefulWidget {
   /// Optional repository override for testing.
   final MarketplaceOfferRepository? repository;
 
+  /// Optional chat repository override for testing.
+  final MarketplaceChatRepository? chatRepository;
+
   @override
   State<ReceivedOffersPage> createState() => _ReceivedOffersPageState();
 }
 
 class _ReceivedOffersPageState extends State<ReceivedOffersPage> {
   late final MarketplaceOfferRepository _repository;
+  late final MarketplaceChatRepository _chatRepository;
 
   bool _isLoading = true;
   String? _errorMessage;
-  List<MarketplaceOffer> _offers = [];
+  List<OfferDisplayModel> _offers = [];
 
   @override
   void initState() {
     super.initState();
     _repository =
         widget.repository ?? sl<MarketplaceOfferRepository>();
+    _chatRepository =
+        widget.chatRepository ?? sl<MarketplaceChatRepository>();
     _loadOffers();
   }
 
@@ -84,9 +92,21 @@ class _ReceivedOffersPageState extends State<ReceivedOffersPage> {
     }
   }
 
-  Future<void> _acceptOffer(String offerId) async {
+  Future<void> _acceptOffer(OfferDisplayModel model) async {
     try {
-      await _repository.acceptOffer(offerId);
+      await _repository.acceptOffer(model.offer.id);
+
+      // Send system message in the conversation.
+      try {
+        await _chatRepository.sendSystemMessage(
+          listingId: widget.listingId,
+          receiverId: model.offer.buyerId,
+          content: 'Offer accepted!',
+        );
+      } catch (_) {
+        // Non-critical: offer is accepted even if system message fails.
+      }
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -115,9 +135,21 @@ class _ReceivedOffersPageState extends State<ReceivedOffersPage> {
     }
   }
 
-  Future<void> _rejectOffer(String offerId) async {
+  Future<void> _rejectOffer(OfferDisplayModel model) async {
     try {
-      await _repository.rejectOffer(offerId);
+      await _repository.rejectOffer(model.offer.id);
+
+      // Send system message in the conversation.
+      try {
+        await _chatRepository.sendSystemMessage(
+          listingId: widget.listingId,
+          receiverId: model.offer.buyerId,
+          content: 'Offer declined',
+        );
+      } catch (_) {
+        // Non-critical: offer is rejected even if system message fails.
+      }
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -254,22 +286,35 @@ class _ReceivedOffersPageState extends State<ReceivedOffersPage> {
     );
   }
 
+  void _openChat(OfferDisplayModel model) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => MarketplaceChatPage(
+          listingId: widget.listingId,
+          otherUserId: model.offer.buyerId,
+          listingTitle: widget.listingTitle,
+          otherUserName: model.buyerName,
+          otherUserAvatarUrl: model.buyerAvatarUrl,
+        ),
+      ),
+    );
+  }
+
   Widget _buildOffersList() {
     return ListView.builder(
       itemCount: _offers.length,
       itemBuilder: (context, index) {
-        final offer = _offers[index];
+        final model = _offers[index];
         return OfferCard(
-          model: OfferDisplayModel(
-            offer: offer,
-          ),
+          model: model,
           viewMode: OfferCardViewMode.seller,
-          onAccept: offer.isPending
-              ? () => _acceptOffer(offer.id)
+          onAccept: model.offer.isPending
+              ? () => _acceptOffer(model)
               : null,
-          onReject: offer.isPending
-              ? () => _rejectOffer(offer.id)
+          onReject: model.offer.isPending
+              ? () => _rejectOffer(model)
               : null,
+          onTap: () => _openChat(model),
         );
       },
     );

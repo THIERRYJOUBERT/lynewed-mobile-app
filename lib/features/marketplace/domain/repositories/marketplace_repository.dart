@@ -106,4 +106,9 @@ abstract class MarketplaceRepository {
   ///
   /// Returns count without pagination for the preview badge.
   Future<int> getFilteredListingsCount(ListingFilter filter);
+
+  /// Soft-deletes a listing by setting its status to 'deleted'.
+  ///
+  /// Only the owner can delete (enforced by RLS).
+  Future<void> deleteListing(String id);
 }

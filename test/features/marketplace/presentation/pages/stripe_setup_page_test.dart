@@ -50,7 +50,7 @@ void main() {
 
     group('initial state', () {
       testWidgets('should show loading indicator initially', (tester) async {
-        when(() => mockCheckUseCase.getAccount('user-123'))
+        when(() => mockCheckUseCase.syncAndGetAccount('user-123'))
             .thenAnswer((_) async => null);
 
         await tester.pumpWidget(buildPage());
@@ -60,7 +60,7 @@ void main() {
       });
 
       testWidgets('should show page title', (tester) async {
-        when(() => mockCheckUseCase.getAccount('user-123'))
+        when(() => mockCheckUseCase.syncAndGetAccount('user-123'))
             .thenAnswer((_) async => null);
 
         await tester.pumpWidget(buildPage());
@@ -73,7 +73,7 @@ void main() {
     group('no account state', () {
       testWidgets('should show setup button when no account exists',
           (tester) async {
-        when(() => mockCheckUseCase.getAccount('user-123'))
+        when(() => mockCheckUseCase.syncAndGetAccount('user-123'))
             .thenAnswer((_) async => null);
 
         await tester.pumpWidget(buildPage());
@@ -101,7 +101,7 @@ void main() {
           updatedAt: DateTime(2024),
         );
 
-        when(() => mockCheckUseCase.getAccount('user-123'))
+        when(() => mockCheckUseCase.syncAndGetAccount('user-123'))
             .thenAnswer((_) async => account);
 
         await tester.pumpWidget(buildPage());
@@ -124,7 +124,7 @@ void main() {
           updatedAt: DateTime(2024),
         );
 
-        when(() => mockCheckUseCase.getAccount('user-123'))
+        when(() => mockCheckUseCase.syncAndGetAccount('user-123'))
             .thenAnswer((_) async => account);
 
         await tester.pumpWidget(buildPage());
@@ -139,7 +139,7 @@ void main() {
     group('error handling', () {
       testWidgets('should show error message when loading fails',
           (tester) async {
-        when(() => mockCheckUseCase.getAccount('user-123'))
+        when(() => mockCheckUseCase.syncAndGetAccount('user-123'))
             .thenThrow(Exception('Network error'));
 
         await tester.pumpWidget(buildPage());
@@ -157,7 +157,7 @@ void main() {
           (tester) async {
         final completer = Completer<Map<String, dynamic>>();
 
-        when(() => mockCheckUseCase.getAccount('user-123'))
+        when(() => mockCheckUseCase.syncAndGetAccount('user-123'))
             .thenAnswer((_) async => null);
         when(
           () => mockSetupUseCase(
@@ -184,7 +184,7 @@ void main() {
       });
 
       testWidgets('should show error when setup fails', (tester) async {
-        when(() => mockCheckUseCase.getAccount('user-123'))
+        when(() => mockCheckUseCase.syncAndGetAccount('user-123'))
             .thenAnswer((_) async => null);
         when(
           () => mockSetupUseCase(

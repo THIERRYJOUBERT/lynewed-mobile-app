@@ -16,6 +16,7 @@ import '/custom_code/actions/index.dart' as actions;
 import '/index.dart' show ProDetailsWidget;
 import '/features/weddings_hub_pro/presentation/pages/weddings_hub_pro_page.dart';
 import '/features/my_wedding/presentation/pages/my_wedding_page.dart';
+import '/features/marketplace/presentation/pages/marketplace_chat_page.dart';
 
 // ignore_for_file: use_build_context_synchronously
 
@@ -502,6 +503,54 @@ Future<void> handleNotificationRedirection(
         }
       }
       break;
+
+    case 'marketplaceNewMessage':
+      {
+        final listingId = (data['listing_id'] as String?) ?? '';
+        final senderId = (data['sender_profile_id'] as String?) ?? '';
+
+        if (listingId.isNotEmpty && senderId.isNotEmpty) {
+          SecureLogger.info('💬 marketplaceNewMessage: listing=$listingId, sender=$senderId');
+
+          // Fetch sender info + listing title for display
+          String? senderName;
+          String? senderAvatar;
+          String? listingTitle;
+
+          try {
+            final senderProfile = await Supabase.instance.client
+                .from('profiles')
+                .select('full_name, avatar_url')
+                .eq('id', senderId)
+                .maybeSingle();
+            senderName = senderProfile?['full_name'] as String?;
+            senderAvatar = senderProfile?['avatar_url'] as String?;
+
+            final listing = await Supabase.instance.client
+                .from('marketplace_listings')
+                .select('title')
+                .eq('id', listingId)
+                .maybeSingle();
+            listingTitle = listing?['title'] as String?;
+          } catch (e) {
+            SecureLogger.warning('marketplaceNewMessage: Failed to load context: $e');
+          }
+
+          if (!context.mounted) return;
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => MarketplaceChatPage(
+                listingId: listingId,
+                otherUserId: senderId,
+                listingTitle: listingTitle,
+                otherUserName: senderName,
+                otherUserAvatarUrl: senderAvatar,
+              ),
+            ),
+          );
+        }
+        break;
+      }
 
     // connectionRequestDeclined: REMOVED - Backend no longer notifies on rejections
     // professionalAlert: DEAD CODE - Never triggered

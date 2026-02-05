@@ -23,6 +23,12 @@ abstract class StripeConnectDatasource {
     required String returnUrl,
     required String refreshUrl,
   });
+
+  /// Syncs the Stripe account status from the Stripe API.
+  ///
+  /// Calls the `sync-stripe-account` Edge Function which fetches fresh
+  /// data from Stripe and updates the DB. Returns the sync result.
+  Future<void> syncStripeAccount();
 }
 
 /// Supabase implementation of [StripeConnectDatasource].
@@ -74,5 +80,17 @@ class SupabaseStripeConnectDatasource implements StripeConnectDatasource {
     }
 
     return parsed;
+  }
+
+  @override
+  Future<void> syncStripeAccount() async {
+    final response = await _supabase.functions.invoke(
+      'sync-stripe-account',
+    );
+
+    final data = response.data;
+    if (data is Map && data['error'] != null) {
+      throw Exception('Sync failed: ${data['error']}');
+    }
   }
 }

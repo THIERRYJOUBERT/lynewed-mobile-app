@@ -18,6 +18,7 @@ import '../widgets/listing_info_section.dart';
 import '../widgets/photo_carousel.dart';
 import '../widgets/seller_info_widget.dart';
 import 'checkout_page.dart';
+import 'create_listing_page.dart';
 import 'marketplace_chat_page.dart';
 import 'received_offers_page.dart';
 
@@ -44,6 +45,9 @@ class ListingDetailPage extends StatefulWidget {
 
   /// Route name for navigation.
   static const String routeName = 'ListingDetail';
+
+  /// Route path for GoRouter registration.
+  static const String routePath = '/marketplace/listing';
 
   /// The ID of the listing to display.
   final String listingId;
@@ -287,6 +291,10 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
           listingId: _listing!.id,
           otherUserId: _listing!.sellerId,
           listingTitle: _listing!.title,
+          listingPriceCents: _listing!.priceCents,
+          listingCoverUrl: _photoUrls.isNotEmpty ? _photoUrls.first : null,
+          otherUserName: _seller?.name,
+          otherUserAvatarUrl: _seller?.avatarUrl,
         ),
       ),
     );
@@ -324,6 +332,8 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
 
   /// Action bar shown when the current user is the seller.
   Widget _buildSellerActionBar() {
+    final isDraft = _listing?.status == 'draft';
+
     return SafeArea(
       child: Container(
         padding: EdgeInsets.all(LynewedSpacing.md),
@@ -333,13 +343,47 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
             top: BorderSide(color: LynewedColors.gray200),
           ),
         ),
-        child: LynewedButton(
-          text: 'View Offers',
-          type: LynewedButtonType.primary,
-          onPressed: _openReceivedOffers,
-        ),
+        child: isDraft
+            ? LynewedButton(
+                text: 'Edit Draft',
+                type: LynewedButtonType.primary,
+                onPressed: _editListing,
+              )
+            : Row(
+                children: [
+                  Expanded(
+                    child: LynewedButton(
+                      text: 'View Offers',
+                      type: LynewedButtonType.primary,
+                      onPressed: _openReceivedOffers,
+                    ),
+                  ),
+                  SizedBox(width: LynewedSpacing.md),
+                  Expanded(
+                    child: LynewedButton(
+                      text: 'Edit',
+                      type: LynewedButtonType.secondary,
+                      onPressed: _editListing,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
+  }
+
+  void _editListing() {
+    if (_listing == null) return;
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute<void>(
+            builder: (_) => CreateListingPage(
+              existingListing: _listing,
+              userId: _currentUserId,
+            ),
+          ),
+        )
+        .then((_) => _loadData());
   }
 
   void _openMakeOfferSheet() {
@@ -352,8 +396,14 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
         listingId: _listing!.id,
         listingTitle: _listing!.title,
         listingPriceCents: _listing!.priceCents,
+        sellerId: _listing!.sellerId,
       ),
-    );
+    ).then((result) {
+      if (result == true && mounted) {
+        // Navigate to the conversation with the seller after making an offer.
+        _openChat();
+      }
+    });
   }
 
   void _openReceivedOffers() {

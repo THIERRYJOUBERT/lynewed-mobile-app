@@ -17,6 +17,10 @@ import '../widgets/filter_badge_row.dart';
 import '../widgets/filter_sheet.dart';
 import '../widgets/listing_card.dart';
 import '../widgets/listing_skeleton_card.dart';
+import 'create_listing_page.dart';
+import 'listing_detail_page.dart';
+import 'my_offers_page.dart';
+import 'seller_dashboard_page.dart';
 
 /// Number of items per page for pagination.
 const int _kPageSize = 20;
@@ -282,16 +286,39 @@ class _MarketplaceFeedPageState extends State<MarketplaceFeedPage> {
     );
   }
 
+  void _onCreateListing() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const CreateListingPage(),
+      ),
+    );
+  }
+
+  void _onMyOffersTap() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const MyOffersPage(),
+      ),
+    );
+  }
+
+  void _onMySalesTap() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const SellerDashboardPage(),
+      ),
+    );
+  }
+
   void _onListingTap(MarketplaceListing listing) {
     if (widget.onListingTap != null) {
       widget.onListingTap!(listing.id);
       return;
     }
-    // Default navigation: push to listing detail route.
-    // Using Navigator for simplicity; production code may use GoRouter.
-    Navigator.of(context).pushNamed(
-      '/marketplace/listing',
-      arguments: {'listingId': listing.id},
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ListingDetailPage(listingId: listing.id),
+      ),
     );
   }
 
@@ -343,6 +370,17 @@ class _MarketplaceFeedPageState extends State<MarketplaceFeedPage> {
               alignment: Alignment.bottomCenter,
               child: NavBarBridesWidget(number: 3),
             ),
+            // Sell FAB
+            Positioned(
+              right: 16,
+              bottom: 100,
+              child: FloatingActionButton(
+                heroTag: 'sell-fab',
+                onPressed: _onCreateListing,
+                backgroundColor: LynewedColors.primary,
+                child: const Icon(Icons.add, color: Colors.white),
+              ),
+            ),
           ],
         ),
       ),
@@ -359,6 +397,26 @@ class _MarketplaceFeedPageState extends State<MarketplaceFeedPage> {
               'Marketplace',
               style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 20),
             ),
+          ),
+          // My Offers button (buyer view).
+          LynewedIconButton(
+            icon: const Icon(
+              Icons.local_offer_outlined,
+              color: LynewedColors.textPrimary,
+              size: 22,
+            ),
+            onPressed: _onMyOffersTap,
+            buttonSize: 40,
+          ),
+          // My Sales button.
+          LynewedIconButton(
+            icon: const Icon(
+              Icons.storefront_outlined,
+              color: LynewedColors.textPrimary,
+              size: 22,
+            ),
+            onPressed: _onMySalesTap,
+            buttonSize: 40,
           ),
           // Filter button with badge indicator.
           Stack(
@@ -426,7 +484,7 @@ class _MarketplaceFeedPageState extends State<MarketplaceFeedPage> {
         crossAxisCount: _getCrossAxisCount(context),
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
-        childAspectRatio: 0.7,
+        childAspectRatio: 0.62,
       ),
       itemCount: _kSkeletonCount,
       itemBuilder: (context, index) => const ListingSkeletonCard(),
@@ -544,7 +602,7 @@ class _MarketplaceFeedPageState extends State<MarketplaceFeedPage> {
                 crossAxisCount: _getCrossAxisCount(context),
                 crossAxisSpacing: 8,
                 mainAxisSpacing: 8,
-                childAspectRatio: 0.7,
+                childAspectRatio: 0.62,
               ),
             ),
           ),

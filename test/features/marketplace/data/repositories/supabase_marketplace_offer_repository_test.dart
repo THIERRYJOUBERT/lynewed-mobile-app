@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/marketplace_offer.dart';
+import 'package:lynewed_beta/features/marketplace/domain/entities/offer_display_model.dart';
 import 'package:lynewed_beta/features/marketplace/domain/repositories/marketplace_offer_repository.dart';
 
 // =============================================================================
@@ -154,7 +155,7 @@ class FakeMarketplaceOfferRepository implements MarketplaceOfferRepository {
   }
 
   @override
-  Future<List<MarketplaceOffer>> getOffersForListing(
+  Future<List<OfferDisplayModel>> getOffersForListing(
       String listingId) async {
     if (nextException != null) {
       final e = nextException!;
@@ -162,10 +163,11 @@ class FakeMarketplaceOfferRepository implements MarketplaceOfferRepository {
       throw e;
     }
 
-    return _offers
+    final filtered = _offers
         .where((o) => o.listingId == listingId)
         .toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return filtered.map((o) => OfferDisplayModel(offer: o)).toList();
   }
 
   @override
@@ -190,17 +192,23 @@ class FakeMarketplaceOfferRepository implements MarketplaceOfferRepository {
   }
 
   @override
-  Future<List<MarketplaceOffer>> getMyOffers() async {
+  Future<List<OfferDisplayModel>> getMyOffers() async {
     if (nextException != null) {
       final e = nextException!;
       nextException = null;
       throw e;
     }
 
-    return _offers
+    final filtered = _offers
         .where((o) => o.buyerId == currentUserId)
         .toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return filtered.map((o) => OfferDisplayModel(offer: o)).toList();
+  }
+
+  @override
+  Future<MarketplaceOffer> getOfferById(String offerId) async {
+    return _offers.firstWhere((o) => o.id == offerId);
   }
 }
 
@@ -304,8 +312,8 @@ void main() {
         await repository.acceptOffer(offer.id);
 
         final offers = await repository.getOffersForListing('listing-1');
-        expect(offers.first.status, 'accepted');
-        expect(offers.first.respondedAt, isNotNull);
+        expect(offers.first.offer.status, 'accepted');
+        expect(offers.first.offer.respondedAt, isNotNull);
       });
 
       test('should reject other pending offers when accepting', () async {
@@ -332,13 +340,13 @@ void main() {
         await repo1.acceptOffer(offer1.id);
 
         final offers = await repo1.getOffersForListing('listing-1');
-        final accepted = offers.where((o) => o.status == 'accepted');
-        final rejected = offers.where((o) => o.status == 'rejected');
+        final accepted = offers.where((o) => o.offer.status == 'accepted');
+        final rejected = offers.where((o) => o.offer.status == 'rejected');
 
         expect(accepted.length, 1);
-        expect(accepted.first.id, offer1.id);
+        expect(accepted.first.offer.id, offer1.id);
         expect(rejected.length, 1);
-        expect(rejected.first.id, 'offer-other');
+        expect(rejected.first.offer.id, 'offer-other');
       });
 
       test('should throw for non-existent offer', () async {
@@ -363,8 +371,8 @@ void main() {
         await repository.rejectOffer(offer.id);
 
         final offers = await repository.getOffersForListing('listing-1');
-        expect(offers.first.status, 'rejected');
-        expect(offers.first.respondedAt, isNotNull);
+        expect(offers.first.offer.status, 'rejected');
+        expect(offers.first.offer.respondedAt, isNotNull);
       });
 
       test('should throw for already rejected offer', () async {
@@ -396,7 +404,7 @@ void main() {
         await repository.withdrawOffer(offer.id);
 
         final offers = await repository.getOffersForListing('listing-1');
-        expect(offers.first.status, 'withdrawn');
+        expect(offers.first.offer.status, 'withdrawn');
       });
 
       test('should throw when withdrawing non-owned offer', () async {
@@ -447,7 +455,7 @@ void main() {
 
         final offers = await repository.getOffersForListing('listing-1');
         expect(offers.length, 1);
-        expect(offers.first.listingId, 'listing-1');
+        expect(offers.first.offer.listingId, 'listing-1');
       });
 
       test('should return empty list for listing with no offers', () async {
