@@ -96,10 +96,90 @@ flutter test --reporter compact --no-pub  # Combinaison optimale
 flutter analyze --fatal-infos             # Linting (0 warnings obligatoire)
 flutter analyze path/to/file.dart         # Analyser un fichier spécifique
 
-# Build/Run
-flutter build                             # Build
-flutter run                               # Run
+# Build/Run iOS (Simulateur)
+# Voir section "Build iOS Simulateur" ci-dessous pour la méthode complète
 ```
+
+### Build iOS Simulateur (MÉTHODE DE RÉFÉRENCE)
+
+**Utiliser `/build-ios`** ou suivre cette procédure manuelle :
+
+#### 1. Identifier le simulateur
+
+```bash
+# Lister les simulateurs disponibles
+xcrun simctl list devices available | grep -i "iphone"
+
+# Booter un simulateur (si aucun n'est démarré)
+xcrun simctl boot <DEVICE_ID>
+# Exemple : xcrun simctl boot 04B822AE-18B4-4BDA-86A5-47AB23CA0E2F
+
+# Ouvrir Simulator.app
+open -a Simulator
+```
+
+#### 2. Build incrémental (rapide)
+
+```bash
+cd ios && xcodebuild \
+  -workspace Runner.xcworkspace \
+  -scheme Runner \
+  -configuration Debug \
+  -sdk iphonesimulator \
+  -destination 'platform=iOS Simulator,id=<DEVICE_ID>' \
+  CODE_SIGN_IDENTITY="" \
+  CODE_SIGNING_REQUIRED=NO \
+  CODE_SIGNING_ALLOWED=NO \
+  ONLY_ACTIVE_ARCH=YES \
+  2>&1 | tail -5
+```
+
+#### 3. Déployer et lancer
+
+```bash
+APP_PATH="<DERIVED_DATA>/Build/Products/Debug-iphonesimulator/Runner.app"
+
+# Copier .env pour flutter_dotenv
+cp .env "$APP_PATH/Frameworks/App.framework/flutter_assets/.env"
+
+# Signer les frameworks (obligatoire)
+cd "$APP_PATH/Frameworks" && for fw in *.framework; do \
+  codesign --force --sign - --timestamp=none "$fw" 2>/dev/null; done
+codesign --force --sign - --deep --timestamp=none "$APP_PATH"
+
+# Installer et lancer
+xcrun simctl uninstall <DEVICE_ID> com.lynewed.app 2>/dev/null || true
+xcrun simctl install <DEVICE_ID> "$APP_PATH"
+xcrun simctl launch <DEVICE_ID> com.lynewed.app
+```
+
+#### Valeurs actuelles du projet
+
+| Variable | Valeur |
+|----------|--------|
+| `DEVICE_ID` | `04B822AE-18B4-4BDA-86A5-47AB23CA0E2F` (iPhone 16e) |
+| `DERIVED_DATA` | `~/Library/Developer/Xcode/DerivedData/Runner-hetrbdshiimdwtavyfrtbyvcocvp` |
+| `BUNDLE_ID` | `com.lynewed.app` |
+
+#### Erreurs courantes et solutions
+
+| Erreur | Cause | Solution |
+|--------|-------|----------|
+| `sandbox is not in sync with Podfile.lock` | Pods pas installés ou désynchronisés | `cd ios && pod install` |
+| `GoogleUtilities version conflict` | Conflit entre Firebase (8.x) et un pod nécessitant GoogleUtilities < 8.0 | Mettre à jour le pod conflictuel (ex: `mobile_scanner: ^7.1.4` utilise Apple Vision au lieu de MLKit) |
+| `Unable to load contents of file list .xcfilelist` | Pods corrompus après clean | `cd ios && rm -rf Pods Podfile.lock && pod install` |
+| `PhaseScriptExecution Copy XCFrameworks failed` | Cache Agora corrompu | `cd ios && rm -rf Pods Podfile.lock && pod install --repo-update` |
+| `SwiftDriver Compilation failed (DKPhotoGallery)` | Cache Swift corrompu | `xcodebuild clean` puis rebuild |
+| `rm: Pods: Directory not empty` | Fichiers verrouillés dans Pods | `sudo rm -rf ios/Pods && cd ios && pod install` |
+
+#### ❌ Ce qui NE MARCHE PAS
+
+```bash
+flutter run                # Échoue avec erreur de signing/provisioning
+flutter build ios          # Nécessite un profil de provisioning valide
+```
+
+> **Note** : `flutter run` ne fonctionne pas car il essaie de signer l'app avec un profil de provisioning. La méthode xcodebuild ci-dessus contourne ce problème en désactivant le code signing (`CODE_SIGNING_REQUIRED=NO`).
 
 ### Optimisation des Tests (IMPORTANT)
 
@@ -146,6 +226,7 @@ test/features/auth/
 test/features/chat/
 test/features/guest/
 test/features/map/
+test/features/marketplace/
 test/features/payments/
 test/features/reviews/
 test/features/profile/
@@ -258,7 +339,7 @@ flutter test 2>&1 | tail -10              # Le pipe n'empêche pas la saturation
 | Features CA | **16 modules** |
 
 **Modules Clean Architecture (`lib/features/`):**
-auth, chat, content, dashboard, feed, **guest**, home, map, my_wedding, notifications, **payments**, profile, **reviews**, settings, support, video_call, **weddings_hub_pro**, wishlist
+auth, chat, content, dashboard, feed, **guest**, home, map, **marketplace**, my_wedding, notifications, **payments**, profile, **reviews**, settings, support, video_call, **weddings_hub_pro**, wishlist
 
 > **Note**: iOS minimum 15.0 (Firebase 12.x requirement). Secrets via flutter_dotenv (runtime .env).
 
@@ -277,6 +358,7 @@ auth, chat, content, dashboard, feed, **guest**, home, map, my_wedding, notifica
 | EPIC-11 | Stripe Integration | ✅ COMPLETE (2026-01-29) |
 | EPIC-12 | Magazines Photo | ✅ COMPLETE (2026-02-03) |
 | EPIC-13 | Map Filters | ✅ COMPLETE (2026-01-30) |
+| EPIC-14 | Marketplace | ✅ COMPLETE (2026-02-05) |
 
 ### Epics En Cours / Attente
 
@@ -296,7 +378,7 @@ auth, chat, content, dashboard, feed, **guest**, home, map, my_wedding, notifica
 | EPIC-11 | APP-05 | Stripe Integration | 12 | ✅ DONE |
 | EPIC-12 | APP-06 | Magazines Photo | 12 | ✅ DONE |
 | EPIC-13 | APP-07 | Map Filters | 9 | ✅ DONE |
-| EPIC-14 | APP-08 | Marketplace | 26 | 7j |
+| EPIC-14 | APP-08 | Marketplace | 26 | ✅ DONE |
 
 **Total** : 104 stories (créées), 15 jours, 4500€ - PRD: `docs/specs/MISSION-01-EVOLUTIONS-2026.md`
 

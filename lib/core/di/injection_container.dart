@@ -24,8 +24,29 @@ import 'package:get_it/get_it.dart';
 
 import '../../backend/supabase/supabase.dart';
 import '../../features/auth/auth.dart';
-import '../../features/reviews/domain/repositories/review_repository.dart';
+import '../../features/marketplace/data/datasources/fedex_remote_datasource.dart';
+import '../../features/marketplace/data/datasources/stripe_connect_datasource.dart';
+import '../../features/marketplace/data/repositories/fedex_repository_impl.dart';
+import '../../features/marketplace/data/repositories/stripe_connect_repository_impl.dart';
+import '../../features/marketplace/data/repositories/supabase_marketplace_chat_repository.dart';
+import '../../features/marketplace/data/repositories/supabase_marketplace_offer_repository.dart';
+import '../../features/marketplace/data/repositories/supabase_marketplace_repository.dart';
+import '../../features/marketplace/data/repositories/supabase_marketplace_transaction_repository.dart';
+import '../../features/marketplace/domain/repositories/fedex_repository.dart';
+import '../../features/marketplace/domain/repositories/marketplace_chat_repository.dart';
+import '../../features/marketplace/domain/repositories/marketplace_offer_repository.dart';
+import '../../features/marketplace/domain/repositories/marketplace_repository.dart';
+import '../../features/marketplace/domain/repositories/marketplace_transaction_repository.dart';
+import '../../features/marketplace/domain/repositories/stripe_connect_repository.dart';
+import '../../features/marketplace/domain/usecases/calculate_shipping_rate_use_case.dart';
+import '../../features/marketplace/domain/usecases/check_stripe_status_use_case.dart';
+import '../../features/marketplace/domain/usecases/generate_shipping_label_use_case.dart';
+import '../../features/marketplace/domain/usecases/get_tracking_events_use_case.dart';
+import '../../features/marketplace/domain/usecases/setup_stripe_connect_use_case.dart';
+import '../../features/payments/data/repositories/supabase_stripe_repository.dart';
+import '../../features/payments/domain/repositories/stripe_repository.dart';
 import '../../features/reviews/data/repositories/supabase_review_repository.dart';
+import '../../features/reviews/domain/repositories/review_repository.dart';
 
 /// Global service locator instance.
 ///
@@ -81,6 +102,15 @@ Future<void> initSupabaseDependencies() async {
 
   // Reviews feature
   await _initReviews();
+
+  // Marketplace Stripe Connect feature
+  await _initMarketplaceStripe();
+
+  // Marketplace FedEx shipping feature
+  await _initMarketplaceFedEx();
+
+  // Marketplace listing repository
+  await _initMarketplace();
 }
 
 /// Initializes core dependencies.
@@ -115,5 +145,91 @@ Future<void> _initReviews() async {
   // Repository (uses Supabase client)
   sl.registerLazySingleton<ReviewRepository>(
     () => SupabaseReviewRepository(SupaFlow.client),
+  );
+}
+
+/// Initializes Marketplace Stripe Connect dependencies.
+///
+/// Registers datasource, repository, and use cases for Stripe Connect
+/// seller onboarding flow.
+Future<void> _initMarketplaceStripe() async {
+  // Payments repository (shared, used by marketplace)
+  if (!sl.isRegistered<StripeRepository>()) {
+    sl.registerLazySingleton<StripeRepository>(
+      () => SupabaseStripeRepository(SupaFlow.client),
+    );
+  }
+
+  // Datasource
+  sl.registerLazySingleton<StripeConnectDatasource>(
+    () => SupabaseStripeConnectDatasource(SupaFlow.client),
+  );
+
+  // Repository
+  sl.registerLazySingleton<StripeConnectRepository>(
+    () => StripeConnectRepositoryImpl(
+      datasource: sl<StripeConnectDatasource>(),
+      stripeRepository: sl<StripeRepository>(),
+    ),
+  );
+
+  // Use Cases
+  sl.registerLazySingleton<SetupStripeConnectUseCase>(
+    () => SetupStripeConnectUseCase(sl<StripeConnectRepository>()),
+  );
+  sl.registerLazySingleton<CheckStripeStatusUseCase>(
+    () => CheckStripeStatusUseCase(sl<StripeConnectRepository>()),
+  );
+}
+
+/// Initializes marketplace listing repository dependencies.
+///
+/// Registers the MarketplaceRepository for CRUD operations on listings
+/// and photo management.
+Future<void> _initMarketplace() async {
+  sl.registerLazySingleton<MarketplaceRepository>(
+    () => SupabaseMarketplaceRepository(SupaFlow.client),
+  );
+
+  // Marketplace chat repository
+  sl.registerLazySingleton<MarketplaceChatRepository>(
+    () => SupabaseMarketplaceChatRepository(SupaFlow.client),
+  );
+
+  // Marketplace offer repository
+  sl.registerLazySingleton<MarketplaceOfferRepository>(
+    () => SupabaseMarketplaceOfferRepository(SupaFlow.client),
+  );
+
+  // Marketplace transaction repository
+  sl.registerLazySingleton<MarketplaceTransactionRepository>(
+    () => SupabaseMarketplaceTransactionRepository(SupaFlow.client),
+  );
+}
+
+/// Initializes Marketplace FedEx shipping dependencies.
+///
+/// Registers datasource, repository, and use cases for FedEx shipping
+/// (rate calculation, label generation, tracking events).
+Future<void> _initMarketplaceFedEx() async {
+  // Datasource
+  sl.registerLazySingleton<FedExRemoteDatasource>(
+    () => SupabaseFedExRemoteDatasource(SupaFlow.client),
+  );
+
+  // Repository
+  sl.registerLazySingleton<FedExRepository>(
+    () => FedExRepositoryImpl(sl<FedExRemoteDatasource>()),
+  );
+
+  // Use Cases
+  sl.registerLazySingleton<CalculateShippingRateUseCase>(
+    () => CalculateShippingRateUseCase(sl<FedExRepository>()),
+  );
+  sl.registerLazySingleton<GenerateShippingLabelUseCase>(
+    () => GenerateShippingLabelUseCase(sl<FedExRepository>()),
+  );
+  sl.registerLazySingleton<GetTrackingEventsUseCase>(
+    () => GetTrackingEventsUseCase(sl<FedExRepository>()),
   );
 }

@@ -1,0 +1,78 @@
+/// Datasource for Stripe Connect operations via Supabase Edge Functions.
+///
+/// Handles communication with the `create-stripe-connect-account` Edge Function
+/// to create Stripe Connect Express accounts and generate onboarding links.
+library;
+
+import 'dart:convert';
+
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+/// Abstract interface for Stripe Connect datasource operations.
+abstract class StripeConnectDatasource {
+  /// Creates a Stripe Connect account and returns the onboarding URL.
+  ///
+  /// Calls the `create-stripe-connect-account` Edge Function.
+  /// Returns a map with `url` (onboarding link) and `stripe_account_id`.
+  ///
+  /// Throws [FunctionException] if the Edge Function call fails.
+  /// Throws [Exception] if the response is missing required fields.
+  Future<Map<String, dynamic>> createStripeConnectAccount({
+    required String userId,
+    required String email,
+    required String returnUrl,
+    required String refreshUrl,
+  });
+}
+
+/// Supabase implementation of [StripeConnectDatasource].
+///
+/// Uses [SupabaseClient.functions] to invoke Edge Functions.
+class SupabaseStripeConnectDatasource implements StripeConnectDatasource {
+  final SupabaseClient _supabase;
+
+  /// Creates a datasource with the given Supabase client.
+  SupabaseStripeConnectDatasource(this._supabase);
+
+  @override
+  Future<Map<String, dynamic>> createStripeConnectAccount({
+    required String userId,
+    required String email,
+    required String returnUrl,
+    required String refreshUrl,
+  }) async {
+    final response = await _supabase.functions.invoke(
+      'create-stripe-connect-account',
+      body: {
+        'user_id': userId,
+        'email': email,
+        'return_url': returnUrl,
+        'refresh_url': refreshUrl,
+      },
+    );
+
+    final data = response.data;
+    Map<String, dynamic> parsed;
+
+    if (data is String) {
+      parsed = Map<String, dynamic>.from(
+        jsonDecode(data) as Map,
+      );
+    } else if (data is Map) {
+      parsed = Map<String, dynamic>.from(data);
+    } else {
+      throw Exception(
+        'Unexpected response format from create-stripe-connect-account',
+      );
+    }
+
+    if (parsed['url'] == null) {
+      final error = parsed['error'] ?? 'Unknown error';
+      throw Exception(
+        'Failed to create Stripe Connect account: $error',
+      );
+    }
+
+    return parsed;
+  }
+}

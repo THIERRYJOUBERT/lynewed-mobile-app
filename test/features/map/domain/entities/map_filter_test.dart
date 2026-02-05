@@ -150,6 +150,7 @@ void main() {
       expect(toggles.showAlerts, true);
       expect(toggles.showWeddings, true);
       expect(toggles.showOnlyMyProfession, false);
+      expect(toggles.showMarketplace, false);
     });
 
     test('copyWith should create new instance with updated values', () {
@@ -176,6 +177,51 @@ void main() {
       expect(toggles.showPros, true);
       expect(toggles.showAlerts, false);
       expect(toggles.showWeddings, true);
+    });
+
+    test('showMarketplace should default to false', () {
+      const toggles = LayerToggles();
+      expect(toggles.showMarketplace, false);
+    });
+
+    test('copyWith should toggle showMarketplace', () {
+      const toggles = LayerToggles();
+
+      final updated = toggles.copyWith(showMarketplace: true);
+
+      expect(updated.showMarketplace, true);
+      expect(updated.showPros, true); // Unchanged
+      expect(updated.showWeddings, true); // Unchanged
+    });
+
+    test('copyWith should preserve showMarketplace when not specified', () {
+      const toggles = LayerToggles(showMarketplace: true);
+
+      final updated = toggles.copyWith(showPros: false);
+
+      expect(updated.showMarketplace, true);
+      expect(updated.showPros, false);
+    });
+
+    test('equality should consider showMarketplace', () {
+      const toggles1 = LayerToggles(showMarketplace: true);
+      const toggles2 = LayerToggles(showMarketplace: false);
+      const toggles3 = LayerToggles(showMarketplace: true);
+
+      expect(toggles1, isNot(equals(toggles2)));
+      expect(toggles1, equals(toggles3));
+    });
+
+    test('all toggles off should have showMarketplace false', () {
+      const toggles = LayerToggles(
+        showPros: false,
+        showFixedLocations: false,
+        showAlerts: false,
+        showWeddings: false,
+        showMarketplace: false,
+      );
+      expect(toggles.showMarketplace, false);
+      expect(toggles.showPros, false);
     });
   });
 }

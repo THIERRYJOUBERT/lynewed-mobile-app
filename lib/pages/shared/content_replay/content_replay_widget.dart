@@ -441,7 +441,7 @@ class _ContentReplayWidgetState extends State<ContentReplayWidget> {
                           model: _model.navBarBridesModel,
                           updateCallback: () => safeSetState(() {}),
                           child: const NavBarBridesWidget(
-                            number: 5,
+                            number: 6,
                           ),
                         ),
                       ),

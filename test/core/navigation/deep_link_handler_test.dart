@@ -120,4 +120,179 @@ void main() {
       });
     });
   });
+
+  group('DeepLinkHandler.extractStripeConnectReturn', () {
+    test('should detect success return', () {
+      final uri =
+          Uri.parse('lynewed://stripe-connect-return?success=true');
+      final result = DeepLinkHandler.extractStripeConnectReturn(uri);
+
+      expect(result, isNotNull);
+      expect(result!['success'], true);
+      expect(result['error'], isNull);
+    });
+
+    test('should detect error return with refresh required', () {
+      final uri = Uri.parse(
+        'lynewed://stripe-connect-return?error=refresh_required',
+      );
+      final result = DeepLinkHandler.extractStripeConnectReturn(uri);
+
+      expect(result, isNotNull);
+      expect(result!['success'], false);
+      expect(result['error'], 'refresh_required');
+    });
+
+    test('should detect error return without specific reason', () {
+      final uri = Uri.parse('lynewed://stripe-connect-return');
+      final result = DeepLinkHandler.extractStripeConnectReturn(uri);
+
+      expect(result, isNotNull);
+      expect(result!['success'], false);
+      expect(result['error'], isNull);
+    });
+
+    test('should return null for non-stripe-connect URI', () {
+      final uri = Uri.parse('lynewed://join/ABCD1234');
+      final result = DeepLinkHandler.extractStripeConnectReturn(uri);
+
+      expect(result, isNull);
+    });
+
+    test('should return null for HTTPS URI', () {
+      final uri = Uri.parse(
+        'https://lynewed.app/stripe-connect-return?success=true',
+      );
+      final result = DeepLinkHandler.extractStripeConnectReturn(uri);
+
+      expect(result, isNull);
+    });
+  });
+
+  group('DeepLinkHandler.extractMagazineOrderSuccess', () {
+    test('should extract session_id from valid URI', () {
+      final uri = Uri.parse(
+        'lynewed://magazine-order-success?session_id=cs_test_abc123',
+      );
+      final result = DeepLinkHandler.extractMagazineOrderSuccess(uri);
+
+      expect(result, isNotNull);
+      expect(result!['session_id'], 'cs_test_abc123');
+    });
+
+    test('should return map with null session_id when missing', () {
+      final uri = Uri.parse('lynewed://magazine-order-success');
+      final result = DeepLinkHandler.extractMagazineOrderSuccess(uri);
+
+      expect(result, isNotNull);
+      expect(result!['session_id'], isNull);
+    });
+
+    test('should return null for non-magazine-order-success URI', () {
+      final uri = Uri.parse('lynewed://join/ABCD1234');
+      final result = DeepLinkHandler.extractMagazineOrderSuccess(uri);
+
+      expect(result, isNull);
+    });
+
+    test('should return null for HTTPS URI', () {
+      final uri = Uri.parse(
+        'https://lynewed.app/magazine-order-success?session_id=cs_test',
+      );
+      final result = DeepLinkHandler.extractMagazineOrderSuccess(uri);
+
+      expect(result, isNull);
+    });
+
+    test('should return null for wrong custom scheme host', () {
+      final uri = Uri.parse('lynewed://stripe-connect-return?session_id=cs_test');
+      final result = DeepLinkHandler.extractMagazineOrderSuccess(uri);
+
+      expect(result, isNull);
+    });
+  });
+
+  group('DeepLinkHandler.extractMarketplacePaymentSuccess', () {
+    test('should extract session_id from valid URI', () {
+      final uri = Uri.parse(
+        'lynewed://marketplace/payment-success?session_id=cs_test_abc123',
+      );
+      final result = DeepLinkHandler.extractMarketplacePaymentSuccess(uri);
+
+      expect(result, isNotNull);
+      expect(result!['session_id'], 'cs_test_abc123');
+    });
+
+    test('should return map with null session_id when missing', () {
+      final uri = Uri.parse('lynewed://marketplace/payment-success');
+      final result = DeepLinkHandler.extractMarketplacePaymentSuccess(uri);
+
+      expect(result, isNotNull);
+      expect(result!['session_id'], isNull);
+    });
+
+    test('should return null for non-marketplace URI', () {
+      final uri = Uri.parse('lynewed://join/ABCD1234');
+      final result = DeepLinkHandler.extractMarketplacePaymentSuccess(uri);
+
+      expect(result, isNull);
+    });
+
+    test('should return null for HTTPS URI', () {
+      final uri = Uri.parse(
+        'https://lynewed.app/marketplace/payment-success?session_id=cs_test',
+      );
+      final result = DeepLinkHandler.extractMarketplacePaymentSuccess(uri);
+
+      expect(result, isNull);
+    });
+
+    test('should return null for wrong path', () {
+      final uri = Uri.parse('lynewed://marketplace/payment-cancel');
+      final result = DeepLinkHandler.extractMarketplacePaymentSuccess(uri);
+
+      expect(result, isNull);
+    });
+
+    test('should return null for wrong host', () {
+      final uri = Uri.parse(
+        'lynewed://magazine-order-success?session_id=cs_test',
+      );
+      final result = DeepLinkHandler.extractMarketplacePaymentSuccess(uri);
+
+      expect(result, isNull);
+    });
+  });
+
+  group('DeepLinkHandler.extractMarketplacePaymentCancel', () {
+    test('should detect cancel URI', () {
+      final uri = Uri.parse('lynewed://marketplace/payment-cancel');
+      final result = DeepLinkHandler.extractMarketplacePaymentCancel(uri);
+
+      expect(result, isNotNull);
+    });
+
+    test('should return null for non-cancel path', () {
+      final uri = Uri.parse('lynewed://marketplace/payment-success');
+      final result = DeepLinkHandler.extractMarketplacePaymentCancel(uri);
+
+      expect(result, isNull);
+    });
+
+    test('should return null for non-marketplace URI', () {
+      final uri = Uri.parse('lynewed://join/ABCD1234');
+      final result = DeepLinkHandler.extractMarketplacePaymentCancel(uri);
+
+      expect(result, isNull);
+    });
+
+    test('should return null for HTTPS URI', () {
+      final uri = Uri.parse(
+        'https://lynewed.app/marketplace/payment-cancel',
+      );
+      final result = DeepLinkHandler.extractMarketplacePaymentCancel(uri);
+
+      expect(result, isNull);
+    });
+  });
 }

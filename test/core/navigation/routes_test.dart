@@ -187,6 +187,26 @@ void main() {
       test('map route should start with /', () {
         expect(AppRoutes.map, startsWith('/'));
       });
+
+      test('stripeSetup route should start with /', () {
+        expect(AppRoutes.stripeSetup, startsWith('/'));
+      });
+
+      test('checkout route should start with /', () {
+        expect(AppRoutes.checkout, startsWith('/'));
+      });
+
+      test('orderConfirmation route should start with /', () {
+        expect(AppRoutes.orderConfirmation, startsWith('/'));
+      });
+
+      test('transactionDetail route should start with /', () {
+        expect(AppRoutes.transactionDetail, startsWith('/'));
+      });
+
+      test('buyerTransaction route should start with /', () {
+        expect(AppRoutes.buyerTransaction, startsWith('/'));
+      });
     });
 
     group('Route naming conventions', () {
@@ -241,6 +261,11 @@ void main() {
           AppRoutes.inspirations,
           AppRoutes.guests,
           AppRoutes.map,
+          AppRoutes.stripeSetup,
+          AppRoutes.checkout,
+          AppRoutes.orderConfirmation,
+          AppRoutes.transactionDetail,
+          AppRoutes.buyerTransaction,
         ];
 
         final uniqueRoutes = allRoutes.toSet();
@@ -278,10 +303,31 @@ void main() {
       expect(RouteNames.myWedding, equals('myWedding'));
     });
 
+    test('stripeSetup name should match route convention', () {
+      expect(RouteNames.stripeSetup, equals('StripeSetup'));
+    });
+
     test('all names should not be empty', () {
       expect(RouteNames.signUp, isNotEmpty);
       expect(RouteNames.chatDetails, isNotEmpty);
       expect(RouteNames.myWedding, isNotEmpty);
+      expect(RouteNames.stripeSetup, isNotEmpty);
+    });
+
+    test('checkout name should match route convention', () {
+      expect(RouteNames.checkout, equals('Checkout'));
+    });
+
+    test('orderConfirmation name should match route convention', () {
+      expect(RouteNames.orderConfirmation, equals('OrderConfirmation'));
+    });
+
+    test('transactionDetail name should match route convention', () {
+      expect(RouteNames.transactionDetail, equals('TransactionDetail'));
+    });
+
+    test('buyerTransaction name should match route convention', () {
+      expect(RouteNames.buyerTransaction, equals('BuyerTransaction'));
     });
   });
 }

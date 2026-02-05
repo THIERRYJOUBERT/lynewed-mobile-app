@@ -11,6 +11,9 @@ import '/flutter_flow/flutter_flow_util.dart';
 
 import '/index.dart';
 import '/features/chat/presentation/pages/chat_details_page.dart';
+import '/features/marketplace/presentation/pages/create_listing_page.dart';
+import '/features/marketplace/presentation/pages/marketplace_feed_page.dart';
+import '/features/my_wedding/presentation/pages/order_confirmation_page.dart';
 import '/features/notifications/presentation/bloc/notifications_cubit.dart';
 import '/features/wishlist/presentation/pages/wishlist_pro_page.dart';
 
@@ -453,7 +456,28 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               viewerIsReviewer: params.getParam('viewerIsReviewer', ParamType.bool) ?? false,
             );
           },
-        )
+        ),
+        // Marketplace - Feed (EPIC-14: S15)
+        FFRoute(
+          name: MarketplaceFeedPage.routeName,
+          path: MarketplaceFeedPage.routePath,
+          builder: (context, params) => const MarketplaceFeedPage(),
+        ),
+        // Marketplace - Create Listing (EPIC-14)
+        FFRoute(
+          name: CreateListingPage.routeName,
+          path: CreateListingPage.routePath,
+          builder: (context, params) => const CreateListingPage(),
+        ),
+        // Magazine Order Success (EPIC-12: deep link from Stripe Checkout)
+        FFRoute(
+          name: 'MagazineOrderSuccess',
+          path: '/magazineOrderSuccess',
+          builder: (context, params) => OrderConfirmationPage(
+            sessionId: params.getParam('sessionId', ParamType.String) ?? '',
+            onDone: () => GoRouter.of(context).go('/'),
+          ),
+        ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
 

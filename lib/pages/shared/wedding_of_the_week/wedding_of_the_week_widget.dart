@@ -97,7 +97,7 @@ class _WeddingOfTheWeekWidgetState extends State<WeddingOfTheWeekWidget> {
                     ? wrapWithModel(
                         model: _model.navBarBridesModel,
                         updateCallback: () => safeSetState(() {}),
-                        child: const NavBarBridesWidget(number: 4),
+                        child: const NavBarBridesWidget(number: 5),
                       )
                     : wrapWithModel(
                         model: _model.navBarProModel,

@@ -186,6 +186,48 @@ abstract final class AppRoutes {
   /// Map page (Clean Architecture)
   static const String map = '/map';
 
+  /// Stripe Connect setup page (Marketplace)
+  static const String stripeSetup = '/stripeSetup';
+
+  /// Marketplace home/feed page
+  static const String marketplace = '/marketplace';
+
+  /// Create a new marketplace listing
+  static const String createListing = '/marketplace/create';
+
+  /// View a marketplace listing detail
+  static const String listingDetail = '/marketplace/listing';
+
+  /// Magazine order success confirmation page
+  static const String magazineOrderSuccess = '/magazineOrderSuccess';
+
+  /// Marketplace chat conversation page
+  static const String marketplaceChat = '/marketplace/chat';
+
+  /// Marketplace chat list (all conversations)
+  static const String marketplaceChatList = '/marketplace/chats';
+
+  /// Received offers for a listing (seller view)
+  static const String receivedOffers = '/marketplace/offers/received';
+
+  /// My offers across all listings (buyer view)
+  static const String myOffers = '/marketplace/offers/mine';
+
+  /// Marketplace checkout page
+  static const String checkout = '/marketplace/checkout';
+
+  /// Marketplace order confirmation page
+  static const String orderConfirmation = '/marketplace/order-confirmation';
+
+  /// Marketplace transaction detail page (seller view)
+  static const String transactionDetail = '/marketplace/transaction';
+
+  /// Marketplace buyer transaction/order detail page (buyer view)
+  static const String buyerTransaction = '/marketplace/purchase';
+
+  /// Seller dashboard - "My Sales" page
+  static const String sellerDashboard = '/marketplace/my-sales';
+
   // ============================================
   // Deep Link Routes
   // ============================================
@@ -280,4 +322,18 @@ abstract final class RouteNames {
   static const String inspirations = 'inspirations';
   static const String guests = 'guests';
   static const String map = 'MapPage';
+  static const String stripeSetup = 'StripeSetup';
+  static const String marketplace = 'Marketplace';
+  static const String createListing = 'CreateListing';
+  static const String listingDetail = 'ListingDetail';
+  static const String magazineOrderSuccess = 'MagazineOrderSuccess';
+  static const String marketplaceChat = 'MarketplaceChat';
+  static const String marketplaceChatList = 'MarketplaceChatList';
+  static const String receivedOffers = 'ReceivedOffers';
+  static const String myOffers = 'MyOffers';
+  static const String checkout = 'Checkout';
+  static const String orderConfirmation = 'OrderConfirmation';
+  static const String transactionDetail = 'TransactionDetail';
+  static const String buyerTransaction = 'BuyerTransaction';
+  static const String sellerDashboard = 'SellerDashboard';
 }

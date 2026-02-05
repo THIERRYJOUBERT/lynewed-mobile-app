@@ -27,6 +27,8 @@ import '../widgets/map_controls.dart';
 import '../sheets/sheets.dart';
 import '../services/map_actions_service.dart';
 import '/core/di/injection_container.dart';
+import '/features/marketplace/presentation/pages/listing_detail_page.dart';
+import '/features/marketplace/presentation/pages/marketplace_chat_page.dart';
 import '/features/reviews/domain/repositories/review_repository.dart';
 import '/features/reviews/presentation/sheets/review_submit_sheet.dart';
 
@@ -587,6 +589,20 @@ class _MapPageState extends State<MapPage> {
                         ),
                       ),
                     ),
+                    // Marketplace - BRIDE ONLY
+                    if (isBride) ...[
+                      const SizedBox(width: 8.0),
+                      _buildFilterChip(
+                        label: 'Marketplace',
+                        isActive: state.filter.toggles.showMarketplace,
+                        onTap: () => state.updateToggles(
+                          state.filter.toggles.copyWith(
+                            showMarketplace:
+                                !state.filter.toggles.showMarketplace,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -1054,26 +1070,32 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
     }
   }
 
-  /// Handle view marketplace listing action (EPIC-13 APP-07)
-  /// Navigation to full listing will be available when EPIC-14 is deployed
+  /// Handle view marketplace listing action
   void _handleViewMarketplaceListing(BuildContext context, String listingId) {
     Navigator.pop(context);
-    // TODO EPIC-14: Navigate to MarketplaceItemDetailsPage
-    // For now, just show a snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Marketplace feature coming soon!'),
-        duration: Duration(seconds: 2),
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ListingDetailPage(listingId: listingId),
       ),
     );
   }
 
-  /// Handle contact marketplace seller action (EPIC-13 APP-07)
+  /// Handle contact marketplace seller action
   void _handleContactMarketplaceSeller(BuildContext context, Map<String, dynamic> metadata) {
     Navigator.pop(context);
     final sellerId = metadata['sellerId'] as String?;
-    if (sellerId != null) {
-      _actionsService.navigateToChat(context, sellerId);
+    final listingId = metadata['listingId'] as String?;
+    final listingTitle = metadata['title'] as String?;
+    if (sellerId != null && listingId != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => MarketplaceChatPage(
+            listingId: listingId,
+            otherUserId: sellerId,
+            listingTitle: listingTitle,
+          ),
+        ),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

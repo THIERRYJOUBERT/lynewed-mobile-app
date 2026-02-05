@@ -12,6 +12,7 @@ import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/features/chat/presentation/pages/chat_details_page.dart';
 import '/features/chat/presentation/pages/messages_page.dart';
+import '/features/marketplace/presentation/widgets/home_marketplace_preview.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'home_brides_model.dart';
@@ -114,6 +115,10 @@ class _HomeBridesWidgetState extends State<HomeBridesWidget> {
                     children: [
                       // Map Section
                       _buildMapSection(),
+                      const SizedBox(height: 14.0),
+                      const Divider(height: 1.0, thickness: 1.0, color: LynewedColors.gray200),
+                      // Marketplace Preview Section
+                      const HomeMarketplacePreview(),
                       const SizedBox(height: 14.0),
                       const Divider(height: 1.0, thickness: 1.0, color: LynewedColors.gray200),
                       // Chat Rooms Section
