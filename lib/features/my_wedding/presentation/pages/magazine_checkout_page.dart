@@ -14,7 +14,6 @@ import '../../domain/entities/magazine_format.dart';
 import '../bloc/magazine_checkout_cubit.dart';
 import '../bloc/magazine_checkout_state.dart';
 import '../widgets/order_summary_card.dart';
-import '../widgets/shipping_address_form.dart';
 
 /// Page for magazine checkout with Stripe payment.
 class MagazineCheckoutPage extends StatefulWidget {
@@ -25,6 +24,7 @@ class MagazineCheckoutPage extends StatefulWidget {
     required this.brideUserId,
     required this.format,
     required this.photoCount,
+    this.spreadCount = 0,
     required this.weddingTitle,
     this.weddingDate,
     this.coverPhotoId,
@@ -44,6 +44,9 @@ class MagazineCheckoutPage extends StatefulWidget {
 
   /// Number of photos in the magazine.
   final int photoCount;
+
+  /// Actual number of spreads (content pages, excluding cover).
+  final int spreadCount;
 
   /// Wedding title for the cover.
   final String weddingTitle;
@@ -116,7 +119,7 @@ class _MagazineCheckoutPageState extends State<MagazineCheckoutPage> {
         },
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: LynewedColors.surface,
+            backgroundColor: LynewedColors.background,
             body: SafeArea(
               child: Column(
                 children: [
@@ -264,33 +267,10 @@ class _MagazineCheckoutPageState extends State<MagazineCheckoutPage> {
           OrderSummaryCard(
             format: state.format,
             photoCount: state.photoCount,
+            spreadCount: widget.spreadCount,
             magazinePriceCents: state.magazinePriceCents,
-            shippingCostCents: state.shippingCostCents,
             coverPhotoUrl: state.coverPhotoUrl,
             weddingTitle: state.weddingTitle,
-          ),
-          const SizedBox(height: 30),
-
-          // Shipping Address Section
-          Text(
-            'SHIPPING ADDRESS',
-            style: LynewedTextStyles.sectionTitle.copyWith(
-              letterSpacing: 1.2,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: LynewedColors.background,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: LynewedColors.border),
-            ),
-            child: ShippingAddressForm(
-              address: state.address!,
-              onAddressChanged: (address) => _cubit.updateAddress(address),
-            ),
           ),
           const SizedBox(height: 30),
 
@@ -386,7 +366,7 @@ class _MagazineCheckoutPageState extends State<MagazineCheckoutPage> {
         ],
       ),
       child: LynewedButton(
-        text: 'Pay ${state.totalFormatted} with Stripe',
+        text: 'Checkout — ${state.magazinePriceFormatted}',
         onPressed: state.canProceed ? () => _cubit.initiateCheckout() : null,
         width: double.infinity,
         icon: Icons.lock_outline,

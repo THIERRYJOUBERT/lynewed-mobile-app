@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '/components/nav/nav_bar_brides/nav_bar_brides_widget.dart';
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
 import '../../domain/entities/listing_filter.dart';
@@ -310,22 +311,38 @@ class _MarketplaceFeedPageState extends State<MarketplaceFeedPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: LynewedColors.background,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        child: Stack(
           children: [
-            _buildHeader(),
-            CategoryChips(
-              selectedCategory: _selectedCategory,
-              onCategoryChanged: _onCategoryChanged,
-            ),
-            // Show active filter badges when advanced filters are active.
-            if (_currentFilter.hasActiveFilters)
-              FilterBadgeRow(
-                filter: _currentFilter,
-                onFilterChanged: _onFilterChanged,
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 84.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(),
+                    CategoryChips(
+                      selectedCategory: _selectedCategory,
+                      onCategoryChanged: _onCategoryChanged,
+                    ),
+                    // Show active filter badges when advanced filters are active.
+                    if (_currentFilter.hasActiveFilters)
+                      FilterBadgeRow(
+                        filter: _currentFilter,
+                        onFilterChanged: _onFilterChanged,
+                      ),
+                    Expanded(child: _buildBody()),
+                  ],
+                ),
               ),
-            Expanded(child: _buildBody()),
+            ),
+            // Bottom Navigation
+            const Align(
+              alignment: Alignment.bottomCenter,
+              child: NavBarBridesWidget(number: 3),
+            ),
           ],
         ),
       ),

@@ -17,6 +17,8 @@ class MagazineFormat {
     required this.spreads,
     required this.maxPhotos,
     required this.priceCents,
+    required this.widthCm,
+    required this.heightCm,
   });
 
   /// Unique identifier for this format.
@@ -36,6 +38,15 @@ class MagazineFormat {
 
   /// Price in cents (USD).
   final int priceCents;
+
+  /// Width in centimeters.
+  final int widthCm;
+
+  /// Height in centimeters.
+  final int heightCm;
+
+  /// Aspect ratio (width / height) for preview rendering.
+  double get aspectRatio => widthCm / heightCm;
 
   /// Returns true if the given photo count fits in this format.
   bool isValidForPhotoCount(int photoCount) => photoCount <= maxPhotos;
@@ -78,6 +89,8 @@ class MagazineFormats {
     spreads: 20,
     maxPhotos: 20,
     priceCents: 2900,
+    widthCm: 21,
+    heightCm: 30,
   );
 
   /// Iconic - Mid-tier, 40 photos max.
@@ -88,6 +101,8 @@ class MagazineFormats {
     spreads: 40,
     maxPhotos: 40,
     priceCents: 5900,
+    widthCm: 21,
+    heightCm: 30,
   );
 
   /// Memory - Standard premium, 60 photos max.
@@ -98,6 +113,8 @@ class MagazineFormats {
     spreads: 60,
     maxPhotos: 60,
     priceCents: 6900,
+    widthCm: 21,
+    heightCm: 30,
   );
 
   /// Collector - Premium large format, 60 photos max.
@@ -108,6 +125,8 @@ class MagazineFormats {
     spreads: 60,
     maxPhotos: 60,
     priceCents: 8900,
+    widthCm: 25,
+    heightCm: 32,
   );
 
   /// All available formats, ordered by price ascending.
@@ -134,6 +153,14 @@ class MagazineFormats {
   static MagazineFormat? getFormatById(String id) {
     for (final format in all) {
       if (format.id == id) return format;
+    }
+    return null;
+  }
+
+  /// Finds a format by its display name.
+  static MagazineFormat? getByName(String name) {
+    for (final format in all) {
+      if (format.name == name) return format;
     }
     return null;
   }

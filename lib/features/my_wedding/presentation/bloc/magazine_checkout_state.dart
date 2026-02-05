@@ -7,7 +7,6 @@ library;
 import 'package:flutter/foundation.dart';
 
 import '../../domain/entities/magazine_format.dart';
-import '../../domain/entities/shipping_address.dart';
 
 /// Checkout step enum.
 enum CheckoutStep {
@@ -37,7 +36,6 @@ class MagazineCheckoutState {
     this.weddingDate,
     this.coverPhotoId,
     this.coverPhotoUrl,
-    this.address,
     this.cgvuAccepted = false,
     this.step = CheckoutStep.addressEntry,
     this.checkoutUrl,
@@ -70,9 +68,6 @@ class MagazineCheckoutState {
   /// Cover photo URL for preview (optional).
   final String? coverPhotoUrl;
 
-  /// Shipping address.
-  final ShippingAddress? address;
-
   /// Whether CGVU/Terms are accepted.
   final bool cgvuAccepted;
 
@@ -94,25 +89,11 @@ class MagazineCheckoutState {
   /// Returns the magazine price in cents.
   int get magazinePriceCents => format.priceCents;
 
-  /// Returns the shipping cost in cents based on country.
-  int get shippingCostCents =>
-      ShippingCosts.calculateCents(address?.country ?? 'US');
-
-  /// Returns the total price in cents.
-  int get totalCents => magazinePriceCents + shippingCostCents;
-
   /// Returns the formatted magazine price.
   String get magazinePriceFormatted => format.priceFormatted;
 
-  /// Returns the formatted shipping cost.
-  String get shippingCostFormatted => ShippingCosts.format(shippingCostCents);
-
-  /// Returns the formatted total price.
-  String get totalFormatted => _formatCents(totalCents);
-
   /// Returns whether the checkout can proceed.
-  bool get canProceed =>
-      address != null && address!.isValid && cgvuAccepted && !isProcessing;
+  bool get canProceed => cgvuAccepted && !isProcessing;
 
   /// Returns whether we're currently processing.
   bool get isProcessing => step == CheckoutStep.processing;
@@ -122,16 +103,6 @@ class MagazineCheckoutState {
 
   /// Returns whether payment failed.
   bool get isFailed => step == CheckoutStep.failed;
-
-  /// Helper to format cents as dollars.
-  String _formatCents(int cents) {
-    final dollars = cents ~/ 100;
-    final remainder = cents % 100;
-    if (remainder == 0) {
-      return '\$$dollars.00';
-    }
-    return '\$$dollars.${remainder.toString().padLeft(2, '0')}';
-  }
 
   /// Creates a copy with updated values.
   MagazineCheckoutState copyWith({
@@ -146,7 +117,6 @@ class MagazineCheckoutState {
     bool clearCoverPhotoId = false,
     String? coverPhotoUrl,
     bool clearCoverPhotoUrl = false,
-    ShippingAddress? address,
     bool? cgvuAccepted,
     CheckoutStep? step,
     String? checkoutUrl,
@@ -170,7 +140,6 @@ class MagazineCheckoutState {
           clearCoverPhotoId ? null : (coverPhotoId ?? this.coverPhotoId),
       coverPhotoUrl:
           clearCoverPhotoUrl ? null : (coverPhotoUrl ?? this.coverPhotoUrl),
-      address: address ?? this.address,
       cgvuAccepted: cgvuAccepted ?? this.cgvuAccepted,
       step: step ?? this.step,
       checkoutUrl:
@@ -195,7 +164,6 @@ class MagazineCheckoutState {
         other.weddingDate == weddingDate &&
         other.coverPhotoId == coverPhotoId &&
         other.coverPhotoUrl == coverPhotoUrl &&
-        other.address == address &&
         other.cgvuAccepted == cgvuAccepted &&
         other.step == step &&
         other.checkoutUrl == checkoutUrl &&
@@ -214,7 +182,6 @@ class MagazineCheckoutState {
         weddingDate,
         coverPhotoId,
         coverPhotoUrl,
-        address,
         cgvuAccepted,
         step,
         checkoutUrl,

@@ -17,6 +17,8 @@ void main() {
           spreads: 20,
           maxPhotos: 20,
           priceCents: 2900,
+          widthCm: 21,
+          heightCm: 30,
         );
 
         expect(format.id, 'guest_edition');
@@ -37,6 +39,8 @@ void main() {
           spreads: 20,
           maxPhotos: 20,
           priceCents: 2900,
+          widthCm: 21,
+          heightCm: 30,
         );
 
         expect(format.isValidForPhotoCount(20), true);
@@ -50,6 +54,8 @@ void main() {
           spreads: 40,
           maxPhotos: 40,
           priceCents: 5900,
+          widthCm: 21,
+          heightCm: 30,
         );
 
         expect(format.isValidForPhotoCount(15), true);
@@ -63,6 +69,8 @@ void main() {
           spreads: 20,
           maxPhotos: 20,
           priceCents: 2900,
+          widthCm: 21,
+          heightCm: 30,
         );
 
         expect(format.isValidForPhotoCount(25), false);
@@ -76,6 +84,8 @@ void main() {
           spreads: 60,
           maxPhotos: 60,
           priceCents: 6900,
+          widthCm: 21,
+          heightCm: 30,
         );
 
         expect(format.isValidForPhotoCount(0), true);
@@ -91,6 +101,8 @@ void main() {
           spreads: 20,
           maxPhotos: 20,
           priceCents: 2900,
+          widthCm: 21,
+          heightCm: 30,
         );
 
         expect(format.priceFormatted, r'$29');
@@ -104,6 +116,8 @@ void main() {
           spreads: 20,
           maxPhotos: 20,
           priceCents: 2950,
+          widthCm: 21,
+          heightCm: 30,
         );
 
         expect(format.priceFormatted, r'$29.50');
@@ -117,6 +131,8 @@ void main() {
           spreads: 10,
           maxPhotos: 10,
           priceCents: 0,
+          widthCm: 21,
+          heightCm: 30,
         );
 
         expect(format.priceFormatted, r'$0');
@@ -132,6 +148,8 @@ void main() {
           spreads: 60,
           maxPhotos: 60,
           priceCents: 8900,
+          widthCm: 25,
+          heightCm: 32,
         );
 
         expect(format.isPremium, true);
@@ -145,6 +163,8 @@ void main() {
           spreads: 40,
           maxPhotos: 40,
           priceCents: 5900,
+          widthCm: 21,
+          heightCm: 30,
         );
 
         expect(format.isPremium, false);
@@ -160,6 +180,8 @@ void main() {
           spreads: 40,
           maxPhotos: 40,
           priceCents: 5900,
+          widthCm: 21,
+          heightCm: 30,
         );
 
         const format2 = MagazineFormat(
@@ -169,6 +191,8 @@ void main() {
           spreads: 40,
           maxPhotos: 40,
           priceCents: 5900,
+          widthCm: 21,
+          heightCm: 30,
         );
 
         expect(format1, equals(format2));
@@ -182,6 +206,8 @@ void main() {
           spreads: 40,
           maxPhotos: 40,
           priceCents: 5900,
+          widthCm: 21,
+          heightCm: 30,
         );
 
         const format2 = MagazineFormat(
@@ -191,6 +217,8 @@ void main() {
           spreads: 60,
           maxPhotos: 60,
           priceCents: 6900,
+          widthCm: 21,
+          heightCm: 30,
         );
 
         expect(format1, isNot(equals(format2)));
@@ -206,6 +234,8 @@ void main() {
           spreads: 40,
           maxPhotos: 40,
           priceCents: 5900,
+          widthCm: 21,
+          heightCm: 30,
         );
 
         const format2 = MagazineFormat(
@@ -215,6 +245,8 @@ void main() {
           spreads: 40,
           maxPhotos: 40,
           priceCents: 5900,
+          widthCm: 21,
+          heightCm: 30,
         );
 
         expect(format1.hashCode, equals(format2.hashCode));
@@ -230,6 +262,8 @@ void main() {
           spreads: 60,
           maxPhotos: 60,
           priceCents: 8900,
+          widthCm: 25,
+          heightCm: 32,
         );
 
         expect(format.toString(), contains('collector'));

@@ -52,7 +52,9 @@ class MagazineMosaicPage extends StatelessWidget {
     // Different layouts based on photo count
     switch (count) {
       case 4:
-        return _build2x2Grid(photos);
+        return page.isFeatureLayout
+            ? _buildFeature4Layout(photos)
+            : _build2x2Grid(photos);
       case 5:
         return _build5PhotoLayout(photos);
       case 6:
@@ -61,6 +63,31 @@ class MagazineMosaicPage extends StatelessWidget {
         // Fallback to simple grid
         return _buildSimpleGrid(photos);
     }
+  }
+
+  /// Feature layout: 1 large photo on the left, 3 small on the right.
+  Widget _buildFeature4Layout(List<MagazinePhoto> photos) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: _buildPhotoTile(photos[0]),
+        ),
+        const SizedBox(width: 4),
+        Expanded(
+          flex: 1,
+          child: Column(
+            children: [
+              Expanded(child: _buildPhotoTile(photos[1])),
+              const SizedBox(height: 4),
+              Expanded(child: _buildPhotoTile(photos[2])),
+              const SizedBox(height: 4),
+              Expanded(child: _buildPhotoTile(photos[3])),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   /// 2x2 grid layout for 4 photos.

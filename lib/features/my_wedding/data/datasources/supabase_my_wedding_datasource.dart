@@ -1825,6 +1825,96 @@ class SupabaseMyWeddingDatasource {
 
   // ========== MAGAZINE SELECTIONS ==========
 
+  /// Get all magazine orders for a wedding.
+  ///
+  /// Returns orders sorted by creation date (newest first).
+  Future<List<MagazineOrder>> getMagazineOrders({
+    required String weddingId,
+  }) async {
+    try {
+      final response = await _client
+          .from('magazine_orders')
+          .select('''
+            id,
+            wedding_id,
+            magazine_format,
+            magazine_price_cents,
+            shipping_cost_cents,
+            total_paid_cents,
+            currency,
+            status,
+            photo_count,
+            magazine_title,
+            created_at,
+            paid_at,
+            production_started_at,
+            shipped_at,
+            delivered_at,
+            shipping_name,
+            shipping_address_line1,
+            shipping_address_line2,
+            shipping_city,
+            shipping_zip,
+            shipping_country,
+            shipping_phone,
+            tracking_number,
+            tracking_url
+          ''')
+          .eq('wedding_id', weddingId)
+          .order('created_at', ascending: false);
+
+      final orders = (response as List)
+          .map((row) => MagazineOrder.fromJson(row))
+          .toList();
+
+      SecureLogger.info('getMagazineOrders: Found ${orders.length} orders');
+      return orders;
+    } catch (e) {
+      SecureLogger.error('getMagazineOrders error: $e');
+      rethrow;
+    }
+  }
+
+  /// Get all order items for a magazine order.
+  ///
+  /// Returns items sorted by position with resolved URLs.
+  /// Guest media paths are converted to full public URLs.
+  Future<List<MagazineOrderItem>> getMagazineOrderItems({
+    required String orderId,
+  }) async {
+    try {
+      final response = await _client
+          .from('magazine_order_items')
+          .select('''
+            id,
+            order_id,
+            media_type,
+            media_id,
+            position,
+            storage_url,
+            caption
+          ''')
+          .eq('order_id', orderId)
+          .order('position', ascending: true);
+
+      final items = (response as List).map((row) {
+        // Resolve relative paths to full public URLs.
+        final url = row['storage_url'] as String;
+        if (!url.startsWith('http')) {
+          row['storage_url'] =
+              _client.storage.from('wedding-albums').getPublicUrl(url);
+        }
+        return MagazineOrderItem.fromJson(row);
+      }).toList();
+
+      SecureLogger.info('getMagazineOrderItems: Found ${items.length} items');
+      return items;
+    } catch (e) {
+      SecureLogger.error('getMagazineOrderItems error: $e');
+      rethrow;
+    }
+  }
+
   /// Get all magazine selections for a wedding.
   ///
   /// Returns selections ordered by position with thumbnail URLs from joined tables.

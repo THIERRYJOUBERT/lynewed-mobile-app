@@ -6,7 +6,6 @@ library;
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lynewed_beta/features/my_wedding/domain/entities/magazine_format.dart';
-import 'package:lynewed_beta/features/my_wedding/domain/entities/shipping_address.dart';
 import 'package:lynewed_beta/features/my_wedding/presentation/bloc/magazine_checkout_cubit.dart';
 import 'package:lynewed_beta/features/my_wedding/presentation/bloc/magazine_checkout_state.dart';
 import 'package:mocktail/mocktail.dart';
@@ -45,7 +44,6 @@ void main() {
         expect(cubit.state.photoCount, 25);
         expect(cubit.state.weddingTitle, 'Wedding');
         expect(cubit.state.step, CheckoutStep.addressEntry);
-        expect(cubit.state.address, isNotNull);
         expect(cubit.state.cgvuAccepted, false);
 
         cubit.close();
@@ -71,101 +69,6 @@ void main() {
 
         cubit.close();
       });
-    });
-
-    group('updateAddress', () {
-      blocTest<MagazineCheckoutCubit, MagazineCheckoutState>(
-        'should update address in state',
-        build: () => MagazineCheckoutCubit(
-          weddingId: 'wedding-123',
-          brideUserId: 'user-123',
-          format: testFormat,
-          photoCount: 25,
-          weddingTitle: 'Wedding',
-          supabaseClient: mockSupabase,
-        ),
-        act: (cubit) => cubit.updateAddress(const ShippingAddress(
-          fullName: 'John Doe',
-          addressLine1: '123 Main St',
-          city: 'New York',
-          zipCode: '10001',
-          country: 'US',
-        )),
-        expect: () => [
-          isA<MagazineCheckoutState>()
-              .having((s) => s.address?.fullName, 'fullName', 'John Doe')
-              .having((s) => s.address?.city, 'city', 'New York'),
-        ],
-      );
-
-      blocTest<MagazineCheckoutCubit, MagazineCheckoutState>(
-        'should clear error when updating address',
-        build: () => MagazineCheckoutCubit(
-          weddingId: 'wedding-123',
-          brideUserId: 'user-123',
-          format: testFormat,
-          photoCount: 25,
-          weddingTitle: 'Wedding',
-          supabaseClient: mockSupabase,
-        ),
-        seed: () => MagazineCheckoutState(
-          weddingId: 'wedding-123',
-          brideUserId: 'user-123',
-          format: testFormat,
-          photoCount: 25,
-          weddingTitle: 'Wedding',
-          address: ShippingAddress.empty(),
-          errorMessage: 'Previous error',
-        ),
-        act: (cubit) => cubit.updateAddress(const ShippingAddress(
-          fullName: 'John Doe',
-          addressLine1: '123 Main St',
-          city: 'New York',
-          zipCode: '10001',
-          country: 'US',
-        )),
-        expect: () => [
-          isA<MagazineCheckoutState>()
-              .having((s) => s.errorMessage, 'errorMessage', isNull),
-        ],
-      );
-    });
-
-    group('updateAddressField', () {
-      blocTest<MagazineCheckoutCubit, MagazineCheckoutState>(
-        'should update single field',
-        build: () => MagazineCheckoutCubit(
-          weddingId: 'wedding-123',
-          brideUserId: 'user-123',
-          format: testFormat,
-          photoCount: 25,
-          weddingTitle: 'Wedding',
-          supabaseClient: mockSupabase,
-        ),
-        act: (cubit) => cubit.updateAddressField(fullName: 'Jane Doe'),
-        expect: () => [
-          isA<MagazineCheckoutState>()
-              .having((s) => s.address?.fullName, 'fullName', 'Jane Doe'),
-        ],
-      );
-
-      blocTest<MagazineCheckoutCubit, MagazineCheckoutState>(
-        'should update country and recalculate shipping',
-        build: () => MagazineCheckoutCubit(
-          weddingId: 'wedding-123',
-          brideUserId: 'user-123',
-          format: testFormat,
-          photoCount: 25,
-          weddingTitle: 'Wedding',
-          supabaseClient: mockSupabase,
-        ),
-        act: (cubit) => cubit.updateAddressField(country: 'FR'),
-        expect: () => [
-          isA<MagazineCheckoutState>()
-              .having((s) => s.address?.country, 'country', 'FR')
-              .having((s) => s.shippingCostCents, 'shippingCostCents', 2500),
-        ],
-      );
     });
 
     group('toggleCgvuAccepted', () {
@@ -202,7 +105,6 @@ void main() {
           format: testFormat,
           photoCount: 25,
           weddingTitle: 'Wedding',
-          address: ShippingAddress.empty(),
           cgvuAccepted: true,
         ),
         act: (cubit) => cubit.toggleCgvuAccepted(),
@@ -249,7 +151,6 @@ void main() {
           format: testFormat,
           photoCount: 25,
           weddingTitle: 'Wedding',
-          address: ShippingAddress.empty(),
           step: CheckoutStep.processing,
           checkoutSessionId: 'cs_test_123',
         ),
@@ -299,7 +200,6 @@ void main() {
           format: testFormat,
           photoCount: 25,
           weddingTitle: 'Wedding',
-          address: ShippingAddress.empty(),
           step: CheckoutStep.processing,
           checkoutSessionId: 'cs_real_session_456',
         ),
@@ -331,7 +231,6 @@ void main() {
           format: testFormat,
           photoCount: 25,
           weddingTitle: 'Wedding',
-          address: ShippingAddress.empty(),
           step: CheckoutStep.processing,
           checkoutUrl: 'https://checkout.stripe.com/...',
           checkoutSessionId: 'cs_test_123',
@@ -383,7 +282,6 @@ void main() {
           format: testFormat,
           photoCount: 25,
           weddingTitle: 'Wedding',
-          address: ShippingAddress.empty(),
           step: CheckoutStep.failed,
           errorMessage: 'Payment failed',
           checkoutUrl: 'https://checkout.stripe.com/...',

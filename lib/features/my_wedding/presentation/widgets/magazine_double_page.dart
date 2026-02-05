@@ -36,23 +36,35 @@ class MagazineDoublePage extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(4),
-        child: Row(
-          children: [
-            // Left photo
-            Expanded(
-              child: _buildPhoto(page.leftPhoto.thumbnailUrl),
-            ),
-            // Center divider (spine)
-            Container(
-              width: 2,
-              color: LynewedColors.gray200,
-            ),
-            // Right photo
-            Expanded(
-              child: _buildPhoto(page.rightPhoto.thumbnailUrl),
-            ),
-          ],
-        ),
+        child: page.isStacked
+            ? Column(
+                children: [
+                  Expanded(
+                    child: _buildPhoto(page.leftPhoto.thumbnailUrl),
+                  ),
+                  Container(
+                    height: 2,
+                    color: LynewedColors.gray200,
+                  ),
+                  Expanded(
+                    child: _buildPhoto(page.rightPhoto.thumbnailUrl),
+                  ),
+                ],
+              )
+            : Row(
+                children: [
+                  Expanded(
+                    child: _buildPhoto(page.leftPhoto.thumbnailUrl),
+                  ),
+                  Container(
+                    width: 2,
+                    color: LynewedColors.gray200,
+                  ),
+                  Expanded(
+                    child: _buildPhoto(page.rightPhoto.thumbnailUrl),
+                  ),
+                ],
+              ),
       ),
     );
   }

@@ -11,7 +11,6 @@ interface CheckoutRequest {
   bride_user_id: string;
   magazine_format: string;
   magazine_price_cents: number;
-  shipping_cost_cents: number;
   photo_count: number;
   magazine_title: string;
   magazine_date?: string;
@@ -45,9 +44,6 @@ const FORMAT_PRICES: Record<string, number> = {
 
 // Valid formats whitelist
 const VALID_FORMATS = Object.keys(FORMAT_PRICES);
-
-// Maximum allowed shipping cost (prevents manipulation)
-const MAX_SHIPPING_CENTS = 5000; // $50 max
 
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight
@@ -125,12 +121,6 @@ Deno.serve(async (req: Request) => {
     // SECURITY: Calculate prices SERVER-SIDE (never trust client)
     const magazinePriceCents = FORMAT_PRICES[body.magazine_format];
 
-    // Validate and cap shipping cost
-    const shippingCostCents = Math.min(
-      Math.max(body.shipping_cost_cents || 0, 0),
-      MAX_SHIPPING_CENTS
-    );
-
     // Security check: user must match bride_user_id
     if (user.id !== body.bride_user_id) {
       return new Response(
@@ -191,28 +181,51 @@ Deno.serve(async (req: Request) => {
           },
           quantity: 1,
         },
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: "Shipping (FedEx)",
-              description: "Delivery to your address",
-            },
-            unit_amount: shippingCostCents, // Validated and capped
-          },
-          quantity: 1,
-        },
       ],
       shipping_address_collection: {
         allowed_countries: ["US", "CA", "GB", "FR", "DE", "IT", "ES", "AU"],
       },
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: { amount: 1500, currency: "usd" },
+            display_name: "Standard Shipping — USA",
+            delivery_estimate: {
+              minimum: { unit: "business_day", value: 5 },
+              maximum: { unit: "business_day", value: 10 },
+            },
+          },
+        },
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: { amount: 2500, currency: "usd" },
+            display_name: "International — Canada & Europe",
+            delivery_estimate: {
+              minimum: { unit: "business_day", value: 7 },
+              maximum: { unit: "business_day", value: 14 },
+            },
+          },
+        },
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: { amount: 3500, currency: "usd" },
+            display_name: "International — Australia",
+            delivery_estimate: {
+              minimum: { unit: "business_day", value: 10 },
+              maximum: { unit: "business_day", value: 21 },
+            },
+          },
+        },
+      ],
       metadata: {
         product_type: "magazine",
         wedding_id: body.wedding_id,
         bride_user_id: body.bride_user_id,
         magazine_format: body.magazine_format,
-        magazine_price_cents: magazinePriceCents.toString(), // SERVER-SIDE calculated
-        shipping_cost_cents: shippingCostCents.toString(), // Validated and capped
+        magazine_price_cents: magazinePriceCents.toString(),
         photo_count: body.photo_count.toString(),
         magazine_title: body.magazine_title,
         magazine_date: body.magazine_date || "",

@@ -10,8 +10,14 @@ import 'package:lynewed_beta/features/my_wedding/domain/entities/magazine_page.d
 import 'package:lynewed_beta/features/my_wedding/presentation/bloc/magazine_preview_cubit.dart';
 import 'package:lynewed_beta/features/my_wedding/presentation/bloc/magazine_preview_state.dart';
 import 'package:lynewed_beta/features/my_wedding/presentation/bloc/magazine_selection_state.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
   // Test helper to create MagazinePhoto
   MagazinePhoto createPhoto(int index) {
     return MagazinePhoto(
@@ -31,6 +37,7 @@ void main() {
     group('initial state', () {
       test('should have correct initial state', () {
         final cubit = MagazinePreviewCubit(
+          weddingId: 'test-wedding-id',
           photos: createPhotos(10),
           weddingTitle: 'Test Wedding',
           weddingDate: DateTime(2025, 6, 12),
@@ -49,6 +56,7 @@ void main() {
       blocTest<MagazinePreviewCubit, MagazinePreviewState>(
         'should generate layouts and select cheapest valid format',
         build: () => MagazinePreviewCubit(
+          weddingId: 'test-wedding-id',
           photos: createPhotos(15),
           weddingTitle: 'Jessica & Kyle',
           weddingDate: DateTime(2025, 6, 12),
@@ -57,15 +65,18 @@ void main() {
         expect: () => [
           isA<MagazinePreviewState>()
               .having((s) => s.isLoading, 'isLoading', false)
-              .having((s) => s.pages.isNotEmpty, 'pages.isNotEmpty', true)
+              .having((s) => s.pages.length, 'pages.length', 1)
+              .having((s) => s.pages.first, 'first page', isA<CoverPage>())
               .having((s) => s.selectedFormat, 'selectedFormat', MagazineFormats.guestEdition)
-              .having((s) => s.photoCount, 'photoCount', 15),
+              .having((s) => s.photoCount, 'photoCount', 15)
+              .having((s) => s.unassignedPhotos.length, 'unassigned', 14),
         ],
       );
 
       blocTest<MagazinePreviewCubit, MagazinePreviewState>(
         'should select iconic format for 25 photos',
         build: () => MagazinePreviewCubit(
+          weddingId: 'test-wedding-id',
           photos: createPhotos(25),
           weddingTitle: 'Test',
           weddingDate: DateTime.now(),
@@ -73,13 +84,16 @@ void main() {
         act: (cubit) => cubit.initialize(),
         expect: () => [
           isA<MagazinePreviewState>()
-              .having((s) => s.selectedFormat?.id, 'format', 'iconic'),
+              .having((s) => s.selectedFormat?.id, 'format', 'iconic')
+              .having((s) => s.pages.length, 'pages.length', 1)
+              .having((s) => s.unassignedPhotos.length, 'unassigned', 24),
         ],
       );
 
       blocTest<MagazinePreviewCubit, MagazinePreviewState>(
         'should select memory format for 50 photos',
         build: () => MagazinePreviewCubit(
+          weddingId: 'test-wedding-id',
           photos: createPhotos(50),
           weddingTitle: 'Test',
           weddingDate: DateTime.now(),
@@ -87,20 +101,25 @@ void main() {
         act: (cubit) => cubit.initialize(),
         expect: () => [
           isA<MagazinePreviewState>()
-              .having((s) => s.selectedFormat?.id, 'format', 'memory'),
+              .having((s) => s.selectedFormat?.id, 'format', 'memory')
+              .having((s) => s.pages.length, 'pages.length', 1)
+              .having((s) => s.unassignedPhotos.length, 'unassigned', 49),
         ],
       );
 
       blocTest<MagazinePreviewCubit, MagazinePreviewState>(
         'should create cover as first page',
         build: () => MagazinePreviewCubit(
+          weddingId: 'test-wedding-id',
           photos: createPhotos(10),
           weddingTitle: 'Test',
           weddingDate: DateTime.now(),
         ),
         act: (cubit) => cubit.initialize(),
         verify: (cubit) {
+          expect(cubit.state.pages.length, 1);
           expect(cubit.state.pages.first, isA<CoverPage>());
+          expect(cubit.state.unassignedPhotos.length, 9);
         },
       );
     });
@@ -109,6 +128,7 @@ void main() {
       blocTest<MagazinePreviewCubit, MagazinePreviewState>(
         'should update selected format',
         build: () => MagazinePreviewCubit(
+          weddingId: 'test-wedding-id',
           photos: createPhotos(15),
           weddingTitle: 'Test',
           weddingDate: DateTime.now(),
@@ -135,6 +155,7 @@ void main() {
       blocTest<MagazinePreviewCubit, MagazinePreviewState>(
         'should not change if same format selected',
         build: () => MagazinePreviewCubit(
+          weddingId: 'test-wedding-id',
           photos: createPhotos(15),
           weddingTitle: 'Test',
           weddingDate: DateTime.now(),
@@ -152,6 +173,7 @@ void main() {
       blocTest<MagazinePreviewCubit, MagazinePreviewState>(
         'should reject invalid format for photo count',
         build: () => MagazinePreviewCubit(
+          weddingId: 'test-wedding-id',
           photos: createPhotos(25),
           weddingTitle: 'Test',
           weddingDate: DateTime.now(),
@@ -171,6 +193,7 @@ void main() {
       blocTest<MagazinePreviewCubit, MagazinePreviewState>(
         'nextPage should increment page index',
         build: () => MagazinePreviewCubit(
+          weddingId: 'test-wedding-id',
           photos: createPhotos(10),
           weddingTitle: 'Test',
           weddingDate: DateTime.now(),
@@ -194,6 +217,7 @@ void main() {
       blocTest<MagazinePreviewCubit, MagazinePreviewState>(
         'nextPage should not exceed page count',
         build: () => MagazinePreviewCubit(
+          weddingId: 'test-wedding-id',
           photos: createPhotos(10),
           weddingTitle: 'Test',
           weddingDate: DateTime.now(),
@@ -215,6 +239,7 @@ void main() {
       blocTest<MagazinePreviewCubit, MagazinePreviewState>(
         'previousPage should decrement page index',
         build: () => MagazinePreviewCubit(
+          weddingId: 'test-wedding-id',
           photos: createPhotos(10),
           weddingTitle: 'Test',
           weddingDate: DateTime.now(),
@@ -238,6 +263,7 @@ void main() {
       blocTest<MagazinePreviewCubit, MagazinePreviewState>(
         'previousPage should not go below 0',
         build: () => MagazinePreviewCubit(
+          weddingId: 'test-wedding-id',
           photos: createPhotos(10),
           weddingTitle: 'Test',
           weddingDate: DateTime.now(),
@@ -259,6 +285,7 @@ void main() {
       blocTest<MagazinePreviewCubit, MagazinePreviewState>(
         'goToPage should set exact page index',
         build: () => MagazinePreviewCubit(
+          weddingId: 'test-wedding-id',
           photos: createPhotos(10),
           weddingTitle: 'Test',
           weddingDate: DateTime.now(),
@@ -282,6 +309,7 @@ void main() {
       blocTest<MagazinePreviewCubit, MagazinePreviewState>(
         'goToPage should clamp to valid range',
         build: () => MagazinePreviewCubit(
+          weddingId: 'test-wedding-id',
           photos: createPhotos(10),
           weddingTitle: 'Test',
           weddingDate: DateTime.now(),
@@ -305,6 +333,7 @@ void main() {
       blocTest<MagazinePreviewCubit, MagazinePreviewState>(
         'goToPage should handle negative index',
         build: () => MagazinePreviewCubit(
+          weddingId: 'test-wedding-id',
           photos: createPhotos(10),
           weddingTitle: 'Test',
           weddingDate: DateTime.now(),
@@ -327,13 +356,14 @@ void main() {
     });
 
     group('computed properties', () {
-      test('validFormats should exclude formats with insufficient capacity', () {
+      test('validFormats should exclude formats with insufficient capacity', () async {
         final cubit = MagazinePreviewCubit(
+          weddingId: 'test-wedding-id',
           photos: createPhotos(25),
           weddingTitle: 'Test',
           weddingDate: DateTime.now(),
         );
-        cubit.initialize();
+        await cubit.initialize();
 
         final valid = cubit.state.validFormats;
         expect(valid.any((f) => f.id == 'guest_edition'), false);
@@ -344,13 +374,14 @@ void main() {
         cubit.close();
       });
 
-      test('isFormatValid should check format validity', () {
+      test('isFormatValid should check format validity', () async {
         final cubit = MagazinePreviewCubit(
+          weddingId: 'test-wedding-id',
           photos: createPhotos(25),
           weddingTitle: 'Test',
           weddingDate: DateTime.now(),
         );
-        cubit.initialize();
+        await cubit.initialize();
 
         expect(cubit.state.isFormatValid(MagazineFormats.guestEdition), false);
         expect(cubit.state.isFormatValid(MagazineFormats.iconic), true);

@@ -848,6 +848,36 @@ class MyWeddingRepositoryImpl implements MyWeddingRepository {
     }
   }
 
+  // ========== MAGAZINE ORDERS ==========
+
+  @override
+  Future<RepositoryResult<List<MagazineOrder>>> getMagazineOrders({
+    required String weddingId,
+  }) async {
+    try {
+      final orders = await _datasource.getMagazineOrders(
+        weddingId: weddingId,
+      );
+      return RepositoryResult.success(orders);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get magazine orders: $e');
+    }
+  }
+
+  @override
+  Future<RepositoryResult<List<MagazineOrderItem>>> getMagazineOrderItems({
+    required String orderId,
+  }) async {
+    try {
+      final items = await _datasource.getMagazineOrderItems(
+        orderId: orderId,
+      );
+      return RepositoryResult.success(items);
+    } catch (e) {
+      return RepositoryResult.failure('Failed to get order items: $e');
+    }
+  }
+
   // ========== MAGAZINE SELECTIONS ==========
 
   @override

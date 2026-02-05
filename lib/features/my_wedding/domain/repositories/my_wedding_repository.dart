@@ -453,6 +453,22 @@ abstract class MyWeddingRepository {
     required String albumId,
   });
 
+  // ========== MAGAZINE ORDERS ==========
+
+  /// Get all magazine orders for a wedding.
+  ///
+  /// Returns orders sorted by creation date (newest first).
+  Future<RepositoryResult<List<MagazineOrder>>> getMagazineOrders({
+    required String weddingId,
+  });
+
+  /// Get all items for a magazine order.
+  ///
+  /// Returns items sorted by position with resolved URLs.
+  Future<RepositoryResult<List<MagazineOrderItem>>> getMagazineOrderItems({
+    required String orderId,
+  });
+
   // ========== MAGAZINE SELECTIONS ==========
 
   /// Get all magazine selections for a wedding.

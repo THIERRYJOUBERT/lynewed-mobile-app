@@ -2,13 +2,12 @@
 // Handles checkout.session.completed for magazine orders
 // Creates magazine_orders, magazine_order_items (photo snapshots), clears selections
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import Stripe from "npm:stripe@14";
+import Stripe from "npm:stripe@17.7.0";
 import { createClient, SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
-const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
-  apiVersion: "2024-12-18.acacia",
-});
+const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!);
 const webhookSecret = Deno.env.get("STRIPE_MAGAZINE_WEBHOOK_SECRET")!;
+const cryptoProvider = Stripe.createSubtleCryptoProvider();
 
 Deno.serve(async (req: Request) => {
   // 1. Verify Stripe signature
@@ -22,9 +21,15 @@ Deno.serve(async (req: Request) => {
   const body = await req.text();
 
   try {
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    event = await stripe.webhooks.constructEventAsync(
+      body,
+      signature,
+      webhookSecret,
+      undefined,
+      cryptoProvider,
+    );
   } catch (err) {
-    console.error("Signature verification failed:", err);
+    console.error("Signature verification failed:", (err as Error).message);
     return new Response("Invalid signature", { status: 400 });
   }
 
@@ -132,11 +137,22 @@ async function processMagazineOrder(
     magazine_format,
     photo_count,
     magazine_price_cents,
-    shipping_cost_cents,
     magazine_title,
     magazine_date,
     cover_photo_id,
   } = metadata;
+
+  // Extract shipping cost from Stripe session (set by shipping_options)
+  const shippingCostCents =
+    session.total_details?.amount_shipping ??
+    (session as any).shipping_cost?.amount_total ??
+    0;
+
+  // Extract shipping details (Stripe API 2025-07-30+ moved to collected_information)
+  const shippingInfo =
+    session.shipping_details ??
+    (session as any).collected_information?.shipping_details ??
+    null;
 
   // Validate required fields
   if (!wedding_id || !bride_user_id || !magazine_format) {
@@ -186,17 +202,15 @@ async function processMagazineOrder(
       stripe_payment_intent_id: paymentIntentId,
       magazine_format,
       magazine_price_cents: parseInt(magazine_price_cents || "0"),
-      shipping_cost_cents: parseInt(shipping_cost_cents || "0"),
+      shipping_cost_cents: shippingCostCents,
       total_paid_cents: session.amount_total || 0,
       currency: (session.currency || "usd").toUpperCase(),
-      shipping_name: session.shipping_details?.name || "",
-      shipping_address_line1:
-        session.shipping_details?.address?.line1 || "",
-      shipping_address_line2:
-        session.shipping_details?.address?.line2 || null,
-      shipping_city: session.shipping_details?.address?.city || "",
-      shipping_zip: session.shipping_details?.address?.postal_code || "",
-      shipping_country: session.shipping_details?.address?.country || "",
+      shipping_name: shippingInfo?.name || "",
+      shipping_address_line1: shippingInfo?.address?.line1 || "",
+      shipping_address_line2: shippingInfo?.address?.line2 || null,
+      shipping_city: shippingInfo?.address?.city || "",
+      shipping_zip: shippingInfo?.address?.postal_code || "",
+      shipping_country: shippingInfo?.address?.country || "",
       shipping_phone: session.customer_details?.phone || null,
       magazine_title: magazine_title || "Wedding Magazine",
       magazine_date: magazine_date || null,

@@ -13,8 +13,8 @@ void main() {
     Widget buildWidget({
       MagazineFormat? format,
       int photoCount = 25,
+      int spreadCount = 0,
       int magazinePriceCents = 5900,
-      int shippingCostCents = 1500,
       String? coverPhotoUrl,
       String? weddingTitle,
     }) {
@@ -23,8 +23,8 @@ void main() {
           body: OrderSummaryCard(
             format: format ?? MagazineFormats.iconic,
             photoCount: photoCount,
+            spreadCount: spreadCount,
             magazinePriceCents: magazinePriceCents,
-            shippingCostCents: shippingCostCents,
             coverPhotoUrl: coverPhotoUrl,
             weddingTitle: weddingTitle,
           ),
@@ -40,11 +40,21 @@ void main() {
         expect(find.text('ICONIC Wedding Magazine'), findsOneWidget);
       });
 
-      testWidgets('should display format size and spreads', (tester) async {
+      testWidgets('should display format size when no spread count',
+          (tester) async {
         await tester.pumpWidget(buildWidget(format: MagazineFormats.iconic));
         await tester.pump();
 
-        expect(find.text('21x30cm - 40 spreads'), findsOneWidget);
+        expect(find.text('21x30cm'), findsOneWidget);
+      });
+
+      testWidgets('should display actual spread count when provided',
+          (tester) async {
+        await tester.pumpWidget(
+            buildWidget(format: MagazineFormats.iconic, spreadCount: 5));
+        await tester.pump();
+
+        expect(find.text('21x30cm \u2022 5 spreads'), findsOneWidget);
       });
 
       testWidgets('should display photo count', (tester) async {
@@ -65,34 +75,12 @@ void main() {
         expect(find.text(r'$59.00'), findsOneWidget);
       });
 
-      testWidgets('should display shipping cost', (tester) async {
-        await tester.pumpWidget(buildWidget(shippingCostCents: 1500));
+      testWidgets('should display shipping note', (tester) async {
+        await tester.pumpWidget(buildWidget());
         await tester.pump();
 
-        expect(find.text('Shipping'), findsOneWidget);
-        expect(find.text(r'$15.00'), findsOneWidget);
-      });
-
-      testWidgets('should display total', (tester) async {
-        await tester.pumpWidget(buildWidget(
-          magazinePriceCents: 5900,
-          shippingCostCents: 1500,
-        ));
-        await tester.pump();
-
-        expect(find.text('Total'), findsOneWidget);
-        expect(find.text(r'$74.00'), findsOneWidget);
-      });
-
-      testWidgets('should calculate total correctly', (tester) async {
-        await tester.pumpWidget(buildWidget(
-          magazinePriceCents: 8900,
-          shippingCostCents: 2500,
-        ));
-        await tester.pump();
-
-        // Total should be $89 + $25 = $114
-        expect(find.text(r'$114.00'), findsOneWidget);
+        expect(
+            find.text('Shipping calculated at checkout'), findsOneWidget);
       });
     });
 
@@ -115,41 +103,41 @@ void main() {
 
       testWidgets('should handle cover photo URL provided',
           (tester) async {
-        // Just verify the widget builds without error with a cover photo URL
         await tester.pumpWidget(buildWidget(
           coverPhotoUrl: 'https://example.com/cover.jpg',
         ));
         await tester.pump();
 
-        // The CachedNetworkImage handles the display
         expect(find.byType(OrderSummaryCard), findsOneWidget);
       });
     });
 
     group('format variations', () {
       testWidgets('should display GUEST EDITION format', (tester) async {
-        await tester
-            .pumpWidget(buildWidget(format: MagazineFormats.guestEdition));
+        await tester.pumpWidget(
+            buildWidget(format: MagazineFormats.guestEdition, spreadCount: 4));
         await tester.pump();
 
         expect(find.text('GUEST EDITION Wedding Magazine'), findsOneWidget);
-        expect(find.text('21x30cm - 20 spreads'), findsOneWidget);
+        expect(find.text('21x30cm \u2022 4 spreads'), findsOneWidget);
       });
 
       testWidgets('should display MEMORY format', (tester) async {
-        await tester.pumpWidget(buildWidget(format: MagazineFormats.memory));
+        await tester.pumpWidget(
+            buildWidget(format: MagazineFormats.memory, spreadCount: 12));
         await tester.pump();
 
         expect(find.text('MEMORY Wedding Magazine'), findsOneWidget);
-        expect(find.text('21x30cm - 60 spreads'), findsOneWidget);
+        expect(find.text('21x30cm \u2022 12 spreads'), findsOneWidget);
       });
 
       testWidgets('should display COLLECTOR format', (tester) async {
-        await tester.pumpWidget(buildWidget(format: MagazineFormats.collector));
+        await tester.pumpWidget(
+            buildWidget(format: MagazineFormats.collector, spreadCount: 8));
         await tester.pump();
 
         expect(find.text('COLLECTOR Wedding Magazine'), findsOneWidget);
-        expect(find.text('25x32cm - 60 spreads'), findsOneWidget);
+        expect(find.text('25x32cm \u2022 8 spreads'), findsOneWidget);
       });
     });
 
@@ -168,23 +156,13 @@ void main() {
         expect(find.text('1 photos'), findsOneWidget);
       });
 
-      testWidgets('should handle free shipping', (tester) async {
-        await tester.pumpWidget(buildWidget(shippingCostCents: 0));
-        await tester.pump();
-
-        expect(find.text(r'$0.00'), findsOneWidget);
-      });
-
       testWidgets('should handle prices with cents', (tester) async {
         await tester.pumpWidget(buildWidget(
           magazinePriceCents: 5950, // $59.50
-          shippingCostCents: 1599, // $15.99
         ));
         await tester.pump();
 
         expect(find.text(r'$59.50'), findsOneWidget);
-        expect(find.text(r'$15.99'), findsOneWidget);
-        expect(find.text(r'$75.49'), findsOneWidget);
       });
     });
   });

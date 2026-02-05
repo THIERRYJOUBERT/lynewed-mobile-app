@@ -24,11 +24,16 @@ class SupportWidget extends StatefulWidget {
   const SupportWidget({
     super.key,
     this.prefilledSubject,
+    this.prefilledMessage,
   });
 
   /// Optional pre-filled subject for the support ticket
   /// Used when navigating from specific contexts (e.g., "Delete Account" for Pro)
   final String? prefilledSubject;
+
+  /// Optional pre-filled message body for the support ticket.
+  /// Used when navigating from specific contexts (e.g., magazine order details).
+  final String? prefilledMessage;
 
   static String routeName = 'Support';
   static String routePath = '/support';
@@ -52,6 +57,7 @@ class _SupportWidgetState extends State<SupportWidget> {
     'Report a bug',
     'Feature request',
     _deleteAccountSubject, // Pro-only, will be filtered in UI
+    'Magazine order issue',
     'Other...'
   ];
 
@@ -64,6 +70,9 @@ class _SupportWidgetState extends State<SupportWidget> {
     // Handle pre-filled subject from navigation
     if (widget.prefilledSubject != null) {
       _selectedSubject = widget.prefilledSubject;
+    }
+    if (widget.prefilledMessage != null) {
+      _messageController.text = widget.prefilledMessage!;
     }
   }
 

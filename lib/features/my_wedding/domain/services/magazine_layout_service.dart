@@ -1,7 +1,7 @@
 /// Magazine Layout Service for generating page layouts.
 ///
-/// Distributes photos across different page types (cover, single, double, mosaic)
-/// to create a visually appealing magazine layout.
+/// Creates the initial cover page and provides utilities for creating
+/// individual pages from layout types.
 library;
 
 import '../entities/magazine_page.dart';
@@ -12,17 +12,43 @@ class MagazineLayoutService {
   /// Creates a MagazineLayoutService.
   const MagazineLayoutService();
 
-  /// Generates magazine page layouts from the given photos.
+  /// Creates a single page from a layout type and photos.
   ///
-  /// Returns an ordered list of [MagazinePage] instances:
-  /// - First page is always a cover with the first photo
-  /// - Remaining photos are distributed across mosaic, double, and single pages
+  /// The [photos] list must have at least [layout.photoCount] items.
+  /// Only the first [layout.photoCount] photos are used.
+  static MagazinePage createPageFromLayout(
+    EditablePageLayout layout,
+    List<MagazinePhoto> photos,
+  ) {
+    return switch (layout) {
+      EditablePageLayout.single => SinglePage(photo: photos[0]),
+      EditablePageLayout.double => DoublePage(
+          leftPhoto: photos[0],
+          rightPhoto: photos[1],
+        ),
+      EditablePageLayout.doubleStacked => DoublePage(
+          leftPhoto: photos[0],
+          rightPhoto: photos[1],
+          isStacked: true,
+        ),
+      EditablePageLayout.mosaic4 =>
+        MosaicPage(mosaicPhotos: photos.sublist(0, 4)),
+      EditablePageLayout.feature4 => MosaicPage(
+          mosaicPhotos: photos.sublist(0, 4),
+          isFeatureLayout: true,
+        ),
+      EditablePageLayout.mosaic5 =>
+        MosaicPage(mosaicPhotos: photos.sublist(0, 5)),
+      EditablePageLayout.mosaic6 =>
+        MosaicPage(mosaicPhotos: photos.sublist(0, 6)),
+    };
+  }
+
+  /// Generates the initial magazine layout from the given photos.
   ///
-  /// Layout algorithm:
-  /// - 6+ remaining: mosaic page (6 photos)
-  /// - 4-5 remaining: mosaic page (4 or 5 photos)
-  /// - 2-3 remaining: double page (2 photos)
-  /// - 1 remaining: single page
+  /// Returns a list containing only a [CoverPage] with the first photo.
+  /// All remaining photos should be placed in the unassigned pool by the
+  /// caller, allowing the bride to manually create pages.
   List<MagazinePage> generateLayouts({
     required List<MagazinePhoto> photos,
     required String weddingTitle,
@@ -40,49 +66,6 @@ class MagazineLayoutService {
       weddingTitle: weddingTitle,
       weddingDate: weddingDate,
     ));
-
-    // Distribute remaining photos
-    if (photos.length > 1) {
-      final remaining = photos.sublist(1);
-      pages.addAll(_distributePhotos(remaining));
-    }
-
-    return pages;
-  }
-
-  /// Distributes photos across page types.
-  List<MagazinePage> _distributePhotos(List<MagazinePhoto> photos) {
-    final pages = <MagazinePage>[];
-    var index = 0;
-
-    while (index < photos.length) {
-      final photosLeft = photos.length - index;
-
-      if (photosLeft >= 6) {
-        // Full mosaic page (6 photos)
-        pages.add(MosaicPage(
-          mosaicPhotos: photos.sublist(index, index + 6),
-        ));
-        index += 6;
-      } else if (photosLeft >= 4) {
-        // Partial mosaic page (4-5 photos)
-        pages.add(MosaicPage(
-          mosaicPhotos: photos.sublist(index, index + photosLeft),
-        ));
-        index += photosLeft;
-      } else if (photosLeft >= 2) {
-        // Double page (2 photos)
-        pages.add(DoublePage(
-          leftPhoto: photos[index],
-          rightPhoto: photos[index + 1],
-        ));
-        index += 2;
-      } else {
-        // Single page (1 photo)
-        pages.add(SinglePage(photo: photos[index]));
-        index += 1;
-      }
-    }
 
     return pages;
   }

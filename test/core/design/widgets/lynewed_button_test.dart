@@ -319,7 +319,7 @@ void main() {
 
     group('Enum Values', () {
       test('LynewedButtonType should have all expected values', () {
-        expect(LynewedButtonType.values.length, 5);
+        expect(LynewedButtonType.values.length, 6);
         expect(LynewedButtonType.values, contains(LynewedButtonType.primary));
         expect(LynewedButtonType.values, contains(LynewedButtonType.secondary));
         expect(LynewedButtonType.values, contains(LynewedButtonType.ghost));
@@ -327,6 +327,8 @@ void main() {
             LynewedButtonType.values, contains(LynewedButtonType.destructive));
         expect(LynewedButtonType.values,
             contains(LynewedButtonType.destructiveFilled));
+        expect(LynewedButtonType.values,
+            contains(LynewedButtonType.destructiveOutlined));
       });
     });
   });

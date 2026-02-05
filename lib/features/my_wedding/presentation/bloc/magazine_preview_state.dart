@@ -1,13 +1,14 @@
 /// Magazine Preview State for MagazinePreviewCubit.
 ///
 /// Manages the state for magazine preview including selected format,
-/// generated pages, and current page navigation.
+/// generated pages, current page navigation, and page editing.
 library;
 
 import 'package:flutter/foundation.dart';
 
 import '../../domain/entities/magazine_format.dart';
 import '../../domain/entities/magazine_page.dart';
+import 'magazine_selection_state.dart';
 
 /// State for the magazine preview Cubit.
 @immutable
@@ -20,6 +21,8 @@ class MagazinePreviewState {
     this.currentPageIndex = 0,
     this.photoCount = 0,
     this.errorMessage,
+    this.unassignedPhotos = const [],
+    this.hasManualEdits = false,
   });
 
   /// Whether the preview is loading.
@@ -34,11 +37,17 @@ class MagazinePreviewState {
   /// Current page index for navigation.
   final int currentPageIndex;
 
-  /// Total number of photos in the magazine.
+  /// Total number of photos in the magazine (assigned + unassigned).
   final int photoCount;
 
   /// Error message if something went wrong.
   final String? errorMessage;
+
+  /// Photos not currently assigned to any page.
+  final List<MagazinePhoto> unassignedPhotos;
+
+  /// Whether the layout has been manually edited.
+  final bool hasManualEdits;
 
   /// Returns the total number of pages.
   int get pageCount => pages.length;
@@ -69,6 +78,12 @@ class MagazinePreviewState {
   /// Returns the formatted price string.
   String get priceFormatted => selectedFormat?.priceFormatted ?? '\$0';
 
+  /// Returns whether there are unassigned photos.
+  bool get hasUnassignedPhotos => unassignedPhotos.isNotEmpty;
+
+  /// Returns the count of unassigned photos.
+  int get unassignedCount => unassignedPhotos.length;
+
   /// Creates a copy with updated values.
   MagazinePreviewState copyWith({
     bool? isLoading,
@@ -78,6 +93,8 @@ class MagazinePreviewState {
     int? photoCount,
     String? errorMessage,
     bool clearError = false,
+    List<MagazinePhoto>? unassignedPhotos,
+    bool? hasManualEdits,
   }) {
     return MagazinePreviewState(
       isLoading: isLoading ?? this.isLoading,
@@ -86,6 +103,8 @@ class MagazinePreviewState {
       currentPageIndex: currentPageIndex ?? this.currentPageIndex,
       photoCount: photoCount ?? this.photoCount,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      unassignedPhotos: unassignedPhotos ?? this.unassignedPhotos,
+      hasManualEdits: hasManualEdits ?? this.hasManualEdits,
     );
   }
 
@@ -98,7 +117,9 @@ class MagazinePreviewState {
         other.selectedFormat == selectedFormat &&
         other.currentPageIndex == currentPageIndex &&
         other.photoCount == photoCount &&
-        other.errorMessage == errorMessage;
+        other.errorMessage == errorMessage &&
+        listEquals(other.unassignedPhotos, unassignedPhotos) &&
+        other.hasManualEdits == hasManualEdits;
   }
 
   @override
@@ -109,5 +130,7 @@ class MagazinePreviewState {
         currentPageIndex,
         photoCount,
         errorMessage,
+        Object.hashAll(unassignedPhotos),
+        hasManualEdits,
       );
 }

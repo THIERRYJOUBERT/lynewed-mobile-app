@@ -18,6 +18,7 @@ import 'services/agora_engine_manager.dart';
 import 'core/services/unread_counter_service.dart';
 import 'core/widgets/incoming_call_wrapper.dart';
 import 'core/di/injection_container.dart';
+import 'core/navigation/deep_link_handler.dart';
 import 'features/auth/auth.dart';
 
 void main() async {
@@ -89,6 +90,7 @@ class _MyAppState extends State<MyApp> {
 
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
+  late DeepLinkHandler _deepLinkHandler;
 
   String getRoute([RouteMatch? routeMatch]) {
     final RouteMatch lastMatch =
@@ -111,6 +113,8 @@ class _MyAppState extends State<MyApp> {
 
     _appStateNotifier = AppStateNotifier.instance;
     _router = createRouter(_appStateNotifier);
+    _deepLinkHandler = DeepLinkHandler(router: _router);
+    _deepLinkHandler.init();
     userStream = lynewedAlphaSupabaseUserStream()
       ..listen((user) {
         _appStateNotifier.update(user);
@@ -130,6 +134,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
+    _deepLinkHandler.dispose();
     // ✅ ROBUSTNESS: Cleanup Agora resources on app termination
     AgoraEngineManager.instance.dispose();
     super.dispose();

@@ -16,8 +16,8 @@ class OrderSummaryCard extends StatelessWidget {
     super.key,
     required this.format,
     required this.photoCount,
+    this.spreadCount = 0,
     required this.magazinePriceCents,
-    required this.shippingCostCents,
     this.coverPhotoUrl,
     this.weddingTitle,
   });
@@ -28,20 +28,17 @@ class OrderSummaryCard extends StatelessWidget {
   /// Number of photos in the magazine.
   final int photoCount;
 
+  /// Actual number of spreads (content pages, excluding cover).
+  final int spreadCount;
+
   /// Magazine price in cents.
   final int magazinePriceCents;
-
-  /// Shipping cost in cents.
-  final int shippingCostCents;
 
   /// Cover photo URL for preview (optional).
   final String? coverPhotoUrl;
 
   /// Wedding title (optional).
   final String? weddingTitle;
-
-  /// Returns the total price in cents.
-  int get totalCents => magazinePriceCents + shippingCostCents;
 
   /// Formats cents as dollars.
   String _formatCents(int cents) {
@@ -83,7 +80,9 @@ class OrderSummaryCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${format.size} - ${format.spreads} spreads',
+                      spreadCount > 0
+                          ? '${format.size} \u2022 $spreadCount spreads'
+                          : format.size,
                       style: LynewedTextStyles.bodySmall.copyWith(
                         color: LynewedColors.textSecondary,
                       ),
@@ -105,21 +104,15 @@ class OrderSummaryCard extends StatelessWidget {
           _buildPriceRow(
             'Magazine (${format.name})',
             _formatCents(magazinePriceCents),
+            isTotal: true,
           ),
           const SizedBox(height: 8),
-          _buildPriceRow(
-            'Shipping',
-            _formatCents(shippingCostCents),
-          ),
-          const SizedBox(height: 12),
-          // Divider
-          const Divider(color: LynewedColors.border),
-          const SizedBox(height: 12),
-          // Total
-          _buildPriceRow(
-            'Total',
-            _formatCents(totalCents),
-            isTotal: true,
+          Text(
+            'Shipping calculated at checkout',
+            style: LynewedTextStyles.bodySmall.copyWith(
+              color: LynewedColors.textSecondary,
+              fontStyle: FontStyle.italic,
+            ),
           ),
         ],
       ),

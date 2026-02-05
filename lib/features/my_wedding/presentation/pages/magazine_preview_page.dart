@@ -13,11 +13,13 @@ import '../../domain/entities/magazine_page.dart';
 import '../bloc/magazine_preview_cubit.dart';
 import '../bloc/magazine_preview_state.dart';
 import '../bloc/magazine_selection_state.dart';
+import '../sheets/magazine_format_sheet.dart';
+import '../sheets/magazine_page_edit_sheet.dart';
 import '../widgets/magazine_cover.dart';
 import '../widgets/magazine_double_page.dart';
-import '../widgets/magazine_format_selector.dart';
 import '../widgets/magazine_mosaic_page.dart';
 import '../widgets/magazine_single_page.dart';
+import 'magazine_full_preview_page.dart';
 
 /// Page for previewing the magazine and selecting format.
 class MagazinePreviewPage extends StatefulWidget {
@@ -27,6 +29,7 @@ class MagazinePreviewPage extends StatefulWidget {
     required this.photos,
     required this.weddingTitle,
     required this.weddingDate,
+    required this.weddingId,
     this.onNavigateBack,
     this.onNavigateToCheckout,
   });
@@ -40,11 +43,17 @@ class MagazinePreviewPage extends StatefulWidget {
   /// Wedding date for the cover.
   final DateTime weddingDate;
 
+  /// Wedding ID for draft persistence.
+  final String weddingId;
+
   /// Callback to navigate back to selection.
   final VoidCallback? onNavigateBack;
 
-  /// Callback to navigate to checkout with selected format.
-  final void Function(MagazineFormat format)? onNavigateToCheckout;
+  /// Callback to navigate to checkout with selected format, cover photo,
+  /// and actual spread count.
+  final void Function(
+          MagazineFormat format, String? coverPhotoUrl, int spreadCount)?
+      onNavigateToCheckout;
 
   @override
   State<MagazinePreviewPage> createState() => _MagazinePreviewPageState();
@@ -53,7 +62,6 @@ class MagazinePreviewPage extends StatefulWidget {
 class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
   late MagazinePreviewCubit _cubit;
   late PageController _pageController;
-  bool _showFormatSelector = false;
 
   @override
   void initState() {
@@ -63,6 +71,7 @@ class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
       photos: widget.photos,
       weddingTitle: widget.weddingTitle,
       weddingDate: widget.weddingDate,
+      weddingId: widget.weddingId,
     );
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -77,14 +86,11 @@ class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
     super.dispose();
   }
 
-  void _toggleFormatSelector() {
-    setState(() {
-      _showFormatSelector = !_showFormatSelector;
-    });
-  }
-
   void _onPageChanged(int index) {
-    _cubit.goToPage(index);
+    // Don't notify the cubit for the blank "add page" placeholder.
+    if (index < _cubit.state.pages.length) {
+      _cubit.goToPage(index);
+    }
   }
 
   void _goToPage(int index) {
@@ -97,13 +103,23 @@ class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
     }
   }
 
+  Future<void> _openFormatSheet(MagazinePreviewState state) async {
+    final format = await MagazineFormatSheet.show(
+      context,
+      photoCount: state.photoCount,
+      currentFormat: state.selectedFormat,
+    );
+    if (format != null && mounted) {
+      _cubit.selectFormat(format);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _cubit,
       child: BlocConsumer<MagazinePreviewCubit, MagazinePreviewState>(
         listener: (context, state) {
-          // Sync page controller with state
           if (_pageController.hasClients &&
               _pageController.page?.round() != state.currentPageIndex) {
             _goToPage(state.currentPageIndex);
@@ -111,7 +127,7 @@ class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
         },
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: LynewedColors.surface,
+            backgroundColor: LynewedColors.background,
             body: SafeArea(
               child: Column(
                 children: [
@@ -119,9 +135,7 @@ class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
                   Expanded(
                     child: state.isLoading
                         ? _buildLoading()
-                        : _showFormatSelector
-                            ? _buildFormatSelector(state)
-                            : _buildPreview(state),
+                        : _buildPreview(state),
                   ),
                   if (!state.isLoading) _buildBottomBar(state),
                 ],
@@ -135,7 +149,7 @@ class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
 
   Widget _buildHeader(MagazinePreviewState state) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
+      padding: const EdgeInsets.fromLTRB(8, 12, 16, 12),
       decoration: const BoxDecoration(
         color: LynewedColors.background,
         border: Border(
@@ -146,26 +160,40 @@ class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
         children: [
           LynewedComponentStyles.backButton(
             context,
-            onTap: _showFormatSelector
-                ? _toggleFormatSelector
-                : widget.onNavigateBack,
+            onTap: widget.onNavigateBack,
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              _showFormatSelector ? 'Select Format' : 'Magazine Preview',
+              'Magazine Preview',
               style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 18),
             ),
           ),
-          if (!state.isLoading && !_showFormatSelector)
-            TextButton(
-              onPressed: _toggleFormatSelector,
-              child: Text(
-                state.selectedFormat?.name ?? 'Format',
-                style: LynewedTextStyles.bodyMedium.copyWith(
-                  color: LynewedColors.primary,
-                  fontWeight: FontWeight.w500,
-                ),
+          if (!state.isLoading && state.pages.isNotEmpty)
+            GestureDetector(
+              onTap: () => MagazineFullPreviewPage.show(
+                context,
+                pages: state.pages,
+                initialPage: state.currentPageIndex,
+                aspectRatio:
+                    state.selectedFormat?.aspectRatio ?? 0.7,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.visibility,
+                    size: 18,
+                    color: LynewedColors.textPrimary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Preview',
+                    style: LynewedTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
         ],
@@ -188,24 +216,18 @@ class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
     );
   }
 
-  Widget _buildFormatSelector(MagazinePreviewState state) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      child: MagazineFormatSelector(
-        photoCount: state.photoCount,
-        selectedFormat: state.selectedFormat,
-        onFormatSelected: (format) {
-          _cubit.selectFormat(format);
-          _toggleFormatSelector();
-        },
-      ),
-    );
-  }
-
   Widget _buildPreview(MagazinePreviewState state) {
     if (state.pages.isEmpty) {
       return _buildEmptyState();
     }
+
+    final hasAddPage = state.hasUnassignedPhotos;
+    final pageViewCount =
+        state.pages.length + (hasAddPage ? 1 : 0);
+    final currentIndex = _pageController.hasClients
+        ? (_pageController.page?.round() ?? state.currentPageIndex)
+        : state.currentPageIndex;
+    final isOnAddPage = currentIndex >= state.pages.length;
 
     return Column(
       children: [
@@ -213,7 +235,9 @@ class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: Text(
-            '${state.currentPageIndex + 1} / ${state.pageCount}',
+            isOnAddPage
+                ? 'New Page'
+                : '${state.currentPageIndex + 1} / ${state.pageCount}',
             style: LynewedTextStyles.bodyMedium.copyWith(
               color: LynewedColors.textSecondary,
             ),
@@ -224,8 +248,13 @@ class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
           child: PageView.builder(
             controller: _pageController,
             onPageChanged: _onPageChanged,
-            itemCount: state.pages.length,
-            itemBuilder: (context, index) => _buildPage(state.pages[index]),
+            itemCount: pageViewCount,
+            itemBuilder: (context, index) {
+              if (index >= state.pages.length) {
+                return _buildAddPagePlaceholder(state);
+              }
+              return _buildPage(state.pages[index], index);
+            },
           ),
         ),
         // Page indicators
@@ -234,27 +263,131 @@ class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
     );
   }
 
-  Widget _buildPage(MagazinePage page) {
-    return switch (page) {
+  Widget _buildAddPagePlaceholder(MagazinePreviewState state) {
+    return GestureDetector(
+      onTap: _openNewPageSheet,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Container(
+          decoration: BoxDecoration(
+            color: LynewedColors.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: LynewedColors.gray200),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.add_circle_outline,
+                  size: 48,
+                  color: LynewedColors.gray300,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Add New Page',
+                  style: LynewedTextStyles.titleSmall.copyWith(
+                    color: LynewedColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${state.unassignedCount} photos available',
+                  style: LynewedTextStyles.bodySmall.copyWith(
+                    color: LynewedColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPage(MagazinePage page, int index) {
+    final pageWidget = switch (page) {
       CoverPage() => MagazineCover(page: page),
       SinglePage() => MagazineSinglePage(page: page),
       DoublePage() => MagazineDoublePage(page: page),
       MosaicPage() => MagazineMosaicPage(page: page),
-      _ => const SizedBox.shrink(), // Fallback for any unknown page type
+      _ => const SizedBox.shrink(),
     };
+
+    final ar = _cubit.state.selectedFormat?.aspectRatio;
+    final constrained = ar != null
+        ? Center(
+            child: AspectRatio(
+              aspectRatio: ar,
+              child: pageWidget,
+            ),
+          )
+        : pageWidget;
+
+    return GestureDetector(
+      onTap: () => _openPageEditSheet(index),
+      child: Stack(
+        children: [
+          constrained,
+          // Edit overlay icon
+          Positioned(
+            top: 24,
+            right: 24,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(
+                Icons.edit,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openPageEditSheet(int pageIndex) {
+    MagazinePageEditSheet.show(
+      context,
+      pageIndex: pageIndex,
+      cubit: _cubit,
+    ).then((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  void _openNewPageSheet() {
+    MagazinePageEditSheet.showCreate(
+      context,
+      afterIndex: _cubit.state.pages.length - 1,
+      cubit: _cubit,
+    ).then((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   Widget _buildPageIndicators(MagazinePreviewState state) {
     const maxVisible = 7;
     final total = state.pageCount;
-    final current = state.currentPageIndex;
+    final hasAddPage = state.hasUnassignedPhotos;
+    final displayTotal = total + (hasAddPage ? 1 : 0);
+    final currentViewIndex = _pageController.hasClients
+        ? (_pageController.page?.round() ?? state.currentPageIndex)
+        : state.currentPageIndex;
 
-    if (total <= maxVisible) {
+    if (displayTotal <= maxVisible) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(total, (index) {
+          children: List.generate(displayTotal, (index) {
+            final isAddPageDot = index >= total;
+            final isActive = index == currentViewIndex;
             return GestureDetector(
               onTap: () => _goToPage(index),
               child: Container(
@@ -263,9 +396,14 @@ class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: index == current
+                  color: isActive
                       ? LynewedColors.primary
-                      : LynewedColors.gray200,
+                      : isAddPageDot
+                          ? Colors.transparent
+                          : LynewedColors.gray200,
+                  border: isAddPageDot && !isActive
+                      ? Border.all(color: LynewedColors.gray300, width: 1.5)
+                      : null,
                 ),
               ),
             );
@@ -274,30 +412,32 @@ class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
       );
     }
 
-    // For many pages, show truncated indicators
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Previous button
           IconButton(
             icon: const Icon(Icons.chevron_left),
-            onPressed: state.canGoPrevious ? () => _cubit.previousPage() : null,
-            color: state.canGoPrevious
+            onPressed: currentViewIndex > 0
+                ? () => _goToPage(currentViewIndex - 1)
+                : null,
+            color: currentViewIndex > 0
                 ? LynewedColors.textPrimary
                 : LynewedColors.gray300,
           ),
-          // Current / Total
           Text(
-            '${current + 1} / $total',
+            currentViewIndex >= total
+                ? '+'
+                : '${currentViewIndex + 1} / $total',
             style: LynewedTextStyles.bodyMedium,
           ),
-          // Next button
           IconButton(
             icon: const Icon(Icons.chevron_right),
-            onPressed: state.canGoNext ? () => _cubit.nextPage() : null,
-            color: state.canGoNext
+            onPressed: currentViewIndex < displayTotal - 1
+                ? () => _goToPage(currentViewIndex + 1)
+                : null,
+            color: currentViewIndex < displayTotal - 1
                 ? LynewedColors.textPrimary
                 : LynewedColors.gray300,
           ),
@@ -339,7 +479,7 @@ class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
         20,
         12,
         20,
-        12 + MediaQuery.of(context).padding.bottom,
+        MediaQuery.of(context).padding.bottom,
       ),
       decoration: BoxDecoration(
         color: LynewedColors.background,
@@ -355,7 +495,7 @@ class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Format summary
-          if (state.selectedFormat != null && !_showFormatSelector) ...[
+          if (state.selectedFormat != null) ...[
             Row(
               children: [
                 Expanded(
@@ -377,7 +517,7 @@ class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
                   ),
                 ),
                 TextButton(
-                  onPressed: _toggleFormatSelector,
+                  onPressed: () => _openFormatSheet(state),
                   child: Text(
                     'Change',
                     style: LynewedTextStyles.bodyMedium.copyWith(
@@ -390,39 +530,27 @@ class _MagazinePreviewPageState extends State<MagazinePreviewPage> {
             const SizedBox(height: 12),
           ],
           // Order button
-          Row(
-            children: [
-              if (!_showFormatSelector) ...[
-                TextButton(
-                  onPressed: widget.onNavigateBack,
-                  child: Text(
-                    'Edit',
-                    style: LynewedTextStyles.bodyMedium.copyWith(
-                      color: LynewedColors.textPrimary,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-              ],
-              Expanded(
-                child: LynewedButton(
-                  text: _showFormatSelector
-                      ? 'Apply'
-                      : 'Order Magazine - ${state.priceFormatted}',
-                  onPressed: state.selectedFormat != null
-                      ? () {
-                          if (_showFormatSelector) {
-                            _toggleFormatSelector();
-                          } else if (widget.onNavigateToCheckout != null) {
-                            widget.onNavigateToCheckout!(state.selectedFormat!);
-                          }
-                        }
-                      : null,
-                  width: double.infinity,
-                  icon: _showFormatSelector ? null : Icons.shopping_cart_outlined,
-                ),
-              ),
-            ],
+          LynewedButton(
+            text: 'Order Magazine - ${state.priceFormatted}',
+            onPressed: state.selectedFormat != null &&
+                    widget.onNavigateToCheckout != null
+                ? () {
+                    // Extract cover photo URL from first page (CoverPage)
+                    String? coverUrl;
+                    if (state.pages.isNotEmpty &&
+                        state.pages.first is CoverPage) {
+                      coverUrl =
+                          (state.pages.first as CoverPage).photo.thumbnailUrl;
+                    }
+                    // Spread count = total pages minus the cover page.
+                    final spreadCount =
+                        state.pages.length > 1 ? state.pages.length - 1 : 0;
+                    widget.onNavigateToCheckout!(
+                        state.selectedFormat!, coverUrl, spreadCount);
+                  }
+                : null,
+            width: double.infinity,
+            icon: Icons.shopping_cart_outlined,
           ),
         ],
       ),

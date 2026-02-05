@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lynewed_beta/features/my_wedding/domain/entities/magazine_format.dart';
 import 'package:lynewed_beta/features/my_wedding/presentation/bloc/magazine_selection_state.dart';
 import 'package:lynewed_beta/features/my_wedding/presentation/pages/magazine_preview_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class _MockHttpOverrides extends HttpOverrides {
   @override
@@ -20,9 +21,15 @@ class _MockHttpOverrides extends HttpOverrides {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   // Mock HTTP client to avoid network requests in tests
   setUpAll(() {
     HttpOverrides.global = _MockHttpOverrides();
+  });
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
   });
 
   // Test helper to create MagazinePhoto
@@ -43,13 +50,14 @@ void main() {
   Widget buildTestWidget({
     required int photoCount,
     VoidCallback? onNavigateBack,
-    void Function(MagazineFormat)? onNavigateToCheckout,
+    void Function(MagazineFormat, String?, int)? onNavigateToCheckout,
   }) {
     return MaterialApp(
       home: MagazinePreviewPage(
         photos: createPhotos(photoCount),
         weddingTitle: 'Test Wedding',
         weddingDate: DateTime(2025, 6, 12),
+        weddingId: 'test-wedding-id',
         onNavigateBack: onNavigateBack,
         onNavigateToCheckout: onNavigateToCheckout,
       ),
@@ -72,7 +80,8 @@ void main() {
 
     testWidgets('should show page indicator after loading', (tester) async {
       await tester.pumpWidget(buildTestWidget(photoCount: 10));
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
 
       // Should show "1 / X" page indicator
       expect(find.textContaining('1 /'), findsOneWidget);
@@ -80,7 +89,8 @@ void main() {
 
     testWidgets('should display order button with price', (tester) async {
       await tester.pumpWidget(buildTestWidget(photoCount: 10));
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
 
       // Should show order button with price
       expect(find.textContaining('Order Magazine'), findsOneWidget);
@@ -93,7 +103,8 @@ void main() {
         photoCount: 10,
         onNavigateBack: () => backPressed = true,
       ));
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
 
       // Find and tap the back button (GestureDetector wrapping icon)
       final backButton = find.byIcon(Icons.chevron_left);
@@ -103,24 +114,28 @@ void main() {
       expect(backPressed, true);
     });
 
-    testWidgets('should display Edit button', (tester) async {
+    testWidgets('should display Preview button in header', (tester) async {
       await tester.pumpWidget(buildTestWidget(photoCount: 10));
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
 
-      expect(find.text('Edit'), findsOneWidget);
+      expect(find.text('Preview'), findsOneWidget);
+      expect(find.byIcon(Icons.visibility), findsOneWidget);
     });
 
     testWidgets('should display format name in bottom bar', (tester) async {
       await tester.pumpWidget(buildTestWidget(photoCount: 10));
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
 
-      // After loading, should show format name (GUEST EDITION for 10 photos)
-      expect(find.text('GUEST EDITION'), findsWidgets);
+      // After loading, should show format name in bottom bar
+      expect(find.text('GUEST EDITION'), findsOneWidget);
     });
 
     testWidgets('should show Change button for format', (tester) async {
       await tester.pumpWidget(buildTestWidget(photoCount: 10));
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
 
       expect(find.text('Change'), findsOneWidget);
     });
@@ -130,9 +145,10 @@ void main() {
       MagazineFormat? checkoutFormat;
       await tester.pumpWidget(buildTestWidget(
         photoCount: 10,
-        onNavigateToCheckout: (format) => checkoutFormat = format,
+        onNavigateToCheckout: (format, _, __) => checkoutFormat = format,
       ));
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
 
       // Find and tap the order button
       final orderButton = find.textContaining('Order Magazine');
@@ -144,7 +160,8 @@ void main() {
 
     testWidgets('should navigate pages with PageView', (tester) async {
       await tester.pumpWidget(buildTestWidget(photoCount: 10));
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
 
       // Should have a PageView for pages
       expect(find.byType(PageView), findsOneWidget);
@@ -154,7 +171,8 @@ void main() {
         (tester) async {
       // With 25 photos, should select ICONIC (guest edition is too small)
       await tester.pumpWidget(buildTestWidget(photoCount: 25));
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
 
       // ICONIC should be selected (visible in bottom bar)
       expect(find.text('ICONIC'), findsWidgets);

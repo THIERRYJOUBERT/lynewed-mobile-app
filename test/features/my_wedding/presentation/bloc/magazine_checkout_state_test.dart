@@ -5,19 +5,11 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lynewed_beta/features/my_wedding/domain/entities/magazine_format.dart';
-import 'package:lynewed_beta/features/my_wedding/domain/entities/shipping_address.dart';
 import 'package:lynewed_beta/features/my_wedding/presentation/bloc/magazine_checkout_state.dart';
 
 void main() {
   group('MagazineCheckoutState', () {
     final testFormat = MagazineFormats.iconic;
-    const testAddress = ShippingAddress(
-      fullName: 'John Doe',
-      addressLine1: '123 Main St',
-      city: 'New York',
-      zipCode: '10001',
-      country: 'US',
-    );
 
     group('constructor', () {
       test('should create state with required fields', () {
@@ -70,69 +62,6 @@ void main() {
       });
     });
 
-    group('shippingCostCents', () {
-      test('should return US shipping for US address', () {
-        final state = MagazineCheckoutState(
-          weddingId: 'wedding-123',
-          brideUserId: 'user-123',
-          format: testFormat,
-          photoCount: 25,
-          weddingTitle: 'Wedding',
-          address: testAddress,
-        );
-
-        expect(state.shippingCostCents, 1500);
-      });
-
-      test('should return EU shipping for FR address', () {
-        const frAddress = ShippingAddress(
-          fullName: 'Jean Dupont',
-          addressLine1: '15 Rue de Paris',
-          city: 'Paris',
-          zipCode: '75001',
-          country: 'FR',
-        );
-
-        final state = MagazineCheckoutState(
-          weddingId: 'wedding-123',
-          brideUserId: 'user-123',
-          format: testFormat,
-          photoCount: 25,
-          weddingTitle: 'Wedding',
-          address: frAddress,
-        );
-
-        expect(state.shippingCostCents, 2500);
-      });
-
-      test('should return US shipping when no address', () {
-        final state = MagazineCheckoutState(
-          weddingId: 'wedding-123',
-          brideUserId: 'user-123',
-          format: testFormat,
-          photoCount: 25,
-          weddingTitle: 'Wedding',
-        );
-
-        expect(state.shippingCostCents, 1500);
-      });
-    });
-
-    group('totalCents', () {
-      test('should return sum of magazine and shipping', () {
-        final state = MagazineCheckoutState(
-          weddingId: 'wedding-123',
-          brideUserId: 'user-123',
-          format: MagazineFormats.iconic, // 5900
-          photoCount: 25,
-          weddingTitle: 'Wedding',
-          address: testAddress, // US - 1500
-        );
-
-        expect(state.totalCents, 7400);
-      });
-    });
-
     group('formatted prices', () {
       test('should format magazine price', () {
         final state = MagazineCheckoutState(
@@ -145,62 +74,9 @@ void main() {
 
         expect(state.magazinePriceFormatted, r'$59');
       });
-
-      test('should format shipping cost', () {
-        final state = MagazineCheckoutState(
-          weddingId: 'wedding-123',
-          brideUserId: 'user-123',
-          format: testFormat,
-          photoCount: 25,
-          weddingTitle: 'Wedding',
-          address: testAddress,
-        );
-
-        expect(state.shippingCostFormatted, r'$15');
-      });
-
-      test('should format total with cents', () {
-        final state = MagazineCheckoutState(
-          weddingId: 'wedding-123',
-          brideUserId: 'user-123',
-          format: MagazineFormats.iconic,
-          photoCount: 25,
-          weddingTitle: 'Wedding',
-          address: testAddress,
-        );
-
-        expect(state.totalFormatted, r'$74.00');
-      });
     });
 
     group('canProceed', () {
-      test('should return false when address is null', () {
-        final state = MagazineCheckoutState(
-          weddingId: 'wedding-123',
-          brideUserId: 'user-123',
-          format: testFormat,
-          photoCount: 25,
-          weddingTitle: 'Wedding',
-          cgvuAccepted: true,
-        );
-
-        expect(state.canProceed, false);
-      });
-
-      test('should return false when address is invalid', () {
-        final state = MagazineCheckoutState(
-          weddingId: 'wedding-123',
-          brideUserId: 'user-123',
-          format: testFormat,
-          photoCount: 25,
-          weddingTitle: 'Wedding',
-          address: ShippingAddress.empty(),
-          cgvuAccepted: true,
-        );
-
-        expect(state.canProceed, false);
-      });
-
       test('should return false when CGVU not accepted', () {
         final state = MagazineCheckoutState(
           weddingId: 'wedding-123',
@@ -208,7 +84,6 @@ void main() {
           format: testFormat,
           photoCount: 25,
           weddingTitle: 'Wedding',
-          address: testAddress,
           cgvuAccepted: false,
         );
 
@@ -222,7 +97,6 @@ void main() {
           format: testFormat,
           photoCount: 25,
           weddingTitle: 'Wedding',
-          address: testAddress,
           cgvuAccepted: true,
           step: CheckoutStep.processing,
         );
@@ -230,14 +104,13 @@ void main() {
         expect(state.canProceed, false);
       });
 
-      test('should return true when all conditions met', () {
+      test('should return true when CGVU accepted and not processing', () {
         final state = MagazineCheckoutState(
           weddingId: 'wedding-123',
           brideUserId: 'user-123',
           format: testFormat,
           photoCount: 25,
           weddingTitle: 'Wedding',
-          address: testAddress,
           cgvuAccepted: true,
           step: CheckoutStep.addressEntry,
         );
@@ -294,21 +167,6 @@ void main() {
     });
 
     group('copyWith', () {
-      test('should copy with updated address', () {
-        final original = MagazineCheckoutState(
-          weddingId: 'wedding-123',
-          brideUserId: 'user-123',
-          format: testFormat,
-          photoCount: 25,
-          weddingTitle: 'Wedding',
-        );
-
-        final updated = original.copyWith(address: testAddress);
-
-        expect(updated.address, testAddress);
-        expect(updated.weddingId, 'wedding-123');
-      });
-
       test('should copy with updated cgvuAccepted', () {
         final original = MagazineCheckoutState(
           weddingId: 'wedding-123',

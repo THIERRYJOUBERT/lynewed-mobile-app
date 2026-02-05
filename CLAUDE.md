@@ -86,7 +86,7 @@ Ce projet utilise une **methodologie structuree** avec des workflows, des agents
 
 ```bash
 # Tests
-flutter test                              # Tous les tests (3069 tests)
+flutter test                              # Tous les tests (3464 tests)
 flutter test --no-pub                     # Skip pub check (plus rapide)
 flutter test path/to/test.dart            # Test spécifique
 flutter test --reporter compact           # Output minimal (évite Output too large)

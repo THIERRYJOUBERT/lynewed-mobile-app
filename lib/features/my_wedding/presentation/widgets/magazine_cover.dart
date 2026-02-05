@@ -129,7 +129,7 @@ class MagazineCover extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Captured by our loved ones',
+                    page.coverSubtitle,
                     style: LynewedTextStyles.bodySmall.copyWith(
                       color: Colors.white.withValues(alpha: 0.8),
                       fontStyle: FontStyle.italic,
@@ -137,33 +137,36 @@ class MagazineCover extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'THE LOVE STORY',
-                        style: LynewedTextStyles.labelSmall.copyWith(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          letterSpacing: 1,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
-                          '-',
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'THE LOVE STORY',
                           style: LynewedTextStyles.labelSmall.copyWith(
                             color: Colors.white.withValues(alpha: 0.7),
+                            letterSpacing: 1,
                           ),
                         ),
-                      ),
-                      Text(
-                        'EXCLUSIVE',
-                        style: LynewedTextStyles.labelSmall.copyWith(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          letterSpacing: 1,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(
+                            '-',
+                            style: LynewedTextStyles.labelSmall.copyWith(
+                              color: Colors.white.withValues(alpha: 0.7),
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+                        Text(
+                          'EXCLUSIVE',
+                          style: LynewedTextStyles.labelSmall.copyWith(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

@@ -532,6 +532,332 @@ void main() {
     });
 
     // ==============================================================
+    // MARKETPLACE NOTIFICATION TYPES TESTS
+    // ==============================================================
+
+    group('marketplace notification types', () {
+      test('should have all marketplace notification types', () {
+        expect(NotificationType.values,
+            contains(NotificationType.marketplaceNewOffer));
+        expect(NotificationType.values,
+            contains(NotificationType.marketplaceOfferAccepted));
+        expect(NotificationType.values,
+            contains(NotificationType.marketplaceOfferRejected));
+        expect(NotificationType.values,
+            contains(NotificationType.marketplaceItemSold));
+        expect(NotificationType.values,
+            contains(NotificationType.marketplaceOrderConfirmed));
+        expect(NotificationType.values,
+            contains(NotificationType.marketplaceLabelCreated));
+        expect(NotificationType.values,
+            contains(NotificationType.marketplacePackageShipped));
+        expect(NotificationType.values,
+            contains(NotificationType.marketplacePackageDelivered));
+        expect(NotificationType.values,
+            contains(NotificationType.marketplaceTransactionComplete));
+      });
+
+      test('should parse marketplace types from string', () {
+        expect(
+          NotificationTypeExtension.fromString('marketplaceNewOffer'),
+          NotificationType.marketplaceNewOffer,
+        );
+        expect(
+          NotificationTypeExtension.fromString('marketplaceOfferAccepted'),
+          NotificationType.marketplaceOfferAccepted,
+        );
+        expect(
+          NotificationTypeExtension.fromString('marketplaceOfferRejected'),
+          NotificationType.marketplaceOfferRejected,
+        );
+        expect(
+          NotificationTypeExtension.fromString('marketplaceItemSold'),
+          NotificationType.marketplaceItemSold,
+        );
+        expect(
+          NotificationTypeExtension.fromString('marketplaceOrderConfirmed'),
+          NotificationType.marketplaceOrderConfirmed,
+        );
+        expect(
+          NotificationTypeExtension.fromString('marketplaceLabelCreated'),
+          NotificationType.marketplaceLabelCreated,
+        );
+        expect(
+          NotificationTypeExtension.fromString('marketplacePackageShipped'),
+          NotificationType.marketplacePackageShipped,
+        );
+        expect(
+          NotificationTypeExtension.fromString('marketplacePackageDelivered'),
+          NotificationType.marketplacePackageDelivered,
+        );
+        expect(
+          NotificationTypeExtension.fromString(
+              'marketplaceTransactionComplete'),
+          NotificationType.marketplaceTransactionComplete,
+        );
+      });
+
+      test('should create notification from JSON with marketplace type', () {
+        final notification = AppNotification.fromJson(const {
+          'id': 'notif-mp-1',
+          'type': 'marketplaceNewOffer',
+          'title': 'New offer received',
+          'body': 'You received an offer on your listing',
+          'data': {'listing_id': 'listing-abc'},
+          'created_at': '2025-01-24T10:00:00Z',
+        });
+
+        expect(notification.type, NotificationType.marketplaceNewOffer);
+        expect(notification.data['listing_id'], 'listing-abc');
+      });
+    });
+
+    group('marketplace notification types - have all routes', () {
+      test('should have marketplace routes', () {
+        expect(NotificationRoute.values,
+            contains(NotificationRoute.marketplaceSellerTransaction));
+        expect(NotificationRoute.values,
+            contains(NotificationRoute.marketplaceBuyerTransaction));
+        expect(NotificationRoute.values,
+            contains(NotificationRoute.marketplaceListing));
+        expect(NotificationRoute.values,
+            contains(NotificationRoute.marketplaceOffers));
+      });
+    });
+
+    group('marketplace navigation', () {
+      test(
+          'marketplaceNewOffer should navigate to offers with listingId',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplaceNewOffer,
+          title: 'New offer',
+          body: 'Body',
+          data: const {'listing_id': 'listing-abc'},
+          createdAt: testDateTime,
+        );
+
+        final nav = notification.navigation;
+
+        expect(nav, isNotNull);
+        expect(nav!.route, NotificationRoute.marketplaceOffers);
+        expect(nav.params['listingId'], 'listing-abc');
+      });
+
+      test('marketplaceNewOffer should return null when listing_id missing',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplaceNewOffer,
+          title: 'New offer',
+          body: 'Body',
+          data: const {},
+          createdAt: testDateTime,
+        );
+
+        expect(notification.navigation, isNull);
+      });
+
+      test(
+          'marketplaceOfferAccepted should navigate to listing with listingId',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplaceOfferAccepted,
+          title: 'Offer accepted',
+          body: 'Body',
+          data: const {'listing_id': 'listing-xyz'},
+          createdAt: testDateTime,
+        );
+
+        final nav = notification.navigation;
+
+        expect(nav, isNotNull);
+        expect(nav!.route, NotificationRoute.marketplaceListing);
+        expect(nav.params['listingId'], 'listing-xyz');
+      });
+
+      test(
+          'marketplaceOfferRejected should navigate to listing with listingId',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplaceOfferRejected,
+          title: 'Offer rejected',
+          body: 'Body',
+          data: const {'listing_id': 'listing-xyz'},
+          createdAt: testDateTime,
+        );
+
+        final nav = notification.navigation;
+
+        expect(nav, isNotNull);
+        expect(nav!.route, NotificationRoute.marketplaceListing);
+        expect(nav.params['listingId'], 'listing-xyz');
+      });
+
+      test(
+          'marketplaceOfferAccepted should return null when listing_id missing',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplaceOfferAccepted,
+          title: 'Offer accepted',
+          body: 'Body',
+          data: const {},
+          createdAt: testDateTime,
+        );
+
+        expect(notification.navigation, isNull);
+      });
+
+      test(
+          'marketplaceItemSold should navigate to seller transaction',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplaceItemSold,
+          title: 'Item sold',
+          body: 'Body',
+          data: const {'transaction_id': 'tx-123'},
+          createdAt: testDateTime,
+        );
+
+        final nav = notification.navigation;
+
+        expect(nav, isNotNull);
+        expect(nav!.route, NotificationRoute.marketplaceSellerTransaction);
+        expect(nav.params['transactionId'], 'tx-123');
+      });
+
+      test(
+          'marketplaceLabelCreated should navigate to seller transaction',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplaceLabelCreated,
+          title: 'Label created',
+          body: 'Body',
+          data: const {'transaction_id': 'tx-456'},
+          createdAt: testDateTime,
+        );
+
+        final nav = notification.navigation;
+
+        expect(nav, isNotNull);
+        expect(nav!.route, NotificationRoute.marketplaceSellerTransaction);
+        expect(nav.params['transactionId'], 'tx-456');
+      });
+
+      test(
+          'marketplaceItemSold should return null when transaction_id missing',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplaceItemSold,
+          title: 'Item sold',
+          body: 'Body',
+          data: const {},
+          createdAt: testDateTime,
+        );
+
+        expect(notification.navigation, isNull);
+      });
+
+      test(
+          'marketplaceOrderConfirmed should navigate to buyer transaction',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplaceOrderConfirmed,
+          title: 'Order confirmed',
+          body: 'Body',
+          data: const {'transaction_id': 'tx-789'},
+          createdAt: testDateTime,
+        );
+
+        final nav = notification.navigation;
+
+        expect(nav, isNotNull);
+        expect(nav!.route, NotificationRoute.marketplaceBuyerTransaction);
+        expect(nav.params['transactionId'], 'tx-789');
+      });
+
+      test(
+          'marketplacePackageShipped should navigate to buyer transaction',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplacePackageShipped,
+          title: 'Package shipped',
+          body: 'Body',
+          data: const {'transaction_id': 'tx-ship'},
+          createdAt: testDateTime,
+        );
+
+        final nav = notification.navigation;
+
+        expect(nav, isNotNull);
+        expect(nav!.route, NotificationRoute.marketplaceBuyerTransaction);
+        expect(nav.params['transactionId'], 'tx-ship');
+      });
+
+      test(
+          'marketplacePackageDelivered should navigate to buyer transaction',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplacePackageDelivered,
+          title: 'Package delivered',
+          body: 'Body',
+          data: const {'transaction_id': 'tx-deliv'},
+          createdAt: testDateTime,
+        );
+
+        final nav = notification.navigation;
+
+        expect(nav, isNotNull);
+        expect(nav!.route, NotificationRoute.marketplaceBuyerTransaction);
+        expect(nav.params['transactionId'], 'tx-deliv');
+      });
+
+      test(
+          'marketplaceTransactionComplete should navigate to buyer transaction',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplaceTransactionComplete,
+          title: 'Transaction complete',
+          body: 'Body',
+          data: const {'transaction_id': 'tx-done'},
+          createdAt: testDateTime,
+        );
+
+        final nav = notification.navigation;
+
+        expect(nav, isNotNull);
+        expect(nav!.route, NotificationRoute.marketplaceBuyerTransaction);
+        expect(nav.params['transactionId'], 'tx-done');
+      });
+
+      test(
+          'marketplaceOrderConfirmed should return null when transaction_id missing',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplaceOrderConfirmed,
+          title: 'Order confirmed',
+          body: 'Body',
+          data: const {},
+          createdAt: testDateTime,
+        );
+
+        expect(notification.navigation, isNull);
+      });
+    });
+
+    // ==============================================================
     // TOSTRING TESTS
     // ==============================================================
 

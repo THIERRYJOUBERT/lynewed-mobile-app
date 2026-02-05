@@ -6,7 +6,8 @@ enum LynewedButtonType {
   secondary,       // Transparent background, border
   ghost,           // Text only, no background/border
   destructive,     // Red text, ghost style
-  destructiveFilled // Red background, white text
+  destructiveFilled, // Red background, white text
+  destructiveOutlined // Red border, red text, transparent background
 }
 
 class LynewedButton extends StatelessWidget {
@@ -80,6 +81,13 @@ class LynewedButton extends StatelessWidget {
           child: content,
         );
         break;
+      case LynewedButtonType.destructiveOutlined:
+        button = OutlinedButton(
+          onPressed: onPressed,
+          style: style,
+          child: content,
+        );
+        break;
       case LynewedButtonType.destructiveFilled:
         button = ElevatedButton(
           onPressed: onPressed,
@@ -144,6 +152,16 @@ class LynewedButton extends StatelessWidget {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24),
         );
+      case LynewedButtonType.destructiveOutlined:
+        return OutlinedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          foregroundColor: LynewedColors.error,
+          side: const BorderSide(color: LynewedColors.error),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(0),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+        );
     }
   }
 
@@ -168,6 +186,11 @@ class LynewedButton extends StatelessWidget {
           fontSize: 15,
           fontWeight: FontWeight.w400,
           color: Colors.white,
+        );
+      case LynewedButtonType.destructiveOutlined:
+        return LynewedTextStyles.bodyMedium.copyWith(
+          fontWeight: FontWeight.w400,
+          color: LynewedColors.error,
         );
     }
   }

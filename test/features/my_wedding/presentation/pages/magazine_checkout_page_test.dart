@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lynewed_beta/features/my_wedding/domain/entities/magazine_format.dart';
-import 'package:lynewed_beta/features/my_wedding/domain/entities/shipping_address.dart';
 import 'package:lynewed_beta/features/my_wedding/presentation/bloc/magazine_checkout_cubit.dart';
 import 'package:lynewed_beta/features/my_wedding/presentation/bloc/magazine_checkout_state.dart';
 import 'package:mocktail/mocktail.dart';
@@ -48,7 +47,7 @@ void main() {
       cubit.close();
     });
 
-    test('should calculate correct total for ICONIC', () {
+    test('should have correct magazine price for ICONIC', () {
       final cubit = MagazineCheckoutCubit(
         weddingId: 'wedding-123',
         brideUserId: 'user-123',
@@ -58,14 +57,13 @@ void main() {
         supabaseClient: mockSupabase,
       );
 
-      // ICONIC ($59) + US shipping ($15) = $74
-      expect(cubit.state.totalCents, 7400);
-      expect(cubit.state.totalFormatted, r'$74.00');
+      expect(cubit.state.magazinePriceCents, 5900);
+      expect(cubit.state.magazinePriceFormatted, r'$59');
 
       cubit.close();
     });
 
-    test('should calculate correct total for GUEST EDITION', () {
+    test('should have correct magazine price for GUEST EDITION', () {
       final cubit = MagazineCheckoutCubit(
         weddingId: 'wedding-123',
         brideUserId: 'user-123',
@@ -75,14 +73,13 @@ void main() {
         supabaseClient: mockSupabase,
       );
 
-      // Guest Edition ($29) + US shipping ($15) = $44
-      expect(cubit.state.totalCents, 4400);
-      expect(cubit.state.totalFormatted, r'$44.00');
+      expect(cubit.state.magazinePriceCents, 2900);
+      expect(cubit.state.magazinePriceFormatted, r'$29');
 
       cubit.close();
     });
 
-    test('should calculate correct total for COLLECTOR', () {
+    test('should have correct magazine price for COLLECTOR', () {
       final cubit = MagazineCheckoutCubit(
         weddingId: 'wedding-123',
         brideUserId: 'user-123',
@@ -92,9 +89,8 @@ void main() {
         supabaseClient: mockSupabase,
       );
 
-      // Collector ($89) + US shipping ($15) = $104
-      expect(cubit.state.totalCents, 10400);
-      expect(cubit.state.totalFormatted, r'$104.00');
+      expect(cubit.state.magazinePriceCents, 8900);
+      expect(cubit.state.magazinePriceFormatted, r'$89');
 
       cubit.close();
     });
@@ -153,14 +149,12 @@ void main() {
         supabaseClient: mockSupabase,
       );
 
-      // Manually set to processing state
       cubit.emit(MagazineCheckoutState(
         weddingId: 'wedding-123',
         brideUserId: 'user-123',
         format: testFormat,
         photoCount: 25,
         weddingTitle: 'Wedding',
-        address: ShippingAddress.empty(),
         step: CheckoutStep.processing,
       ));
 
@@ -189,7 +183,6 @@ void main() {
         format: testFormat,
         photoCount: 25,
         weddingTitle: 'Wedding',
-        address: ShippingAddress.empty(),
         step: CheckoutStep.failed,
         errorMessage: 'Payment declined',
       ));
@@ -222,8 +215,8 @@ void main() {
     });
   });
 
-  group('MagazineCheckoutPage address handling', () {
-    test('should update shipping cost when country changes', () {
+  group('MagazineCheckoutPage canProceed', () {
+    test('should update canProceed when CGVU accepted', () {
       final cubit = MagazineCheckoutCubit(
         weddingId: 'wedding-123',
         brideUserId: 'user-123',
@@ -233,42 +226,7 @@ void main() {
         supabaseClient: mockSupabase,
       );
 
-      // Default is US - $15 shipping
-      expect(cubit.state.shippingCostCents, 1500);
-
-      // Change to France - $25 shipping
-      cubit.updateAddressField(country: 'FR');
-      expect(cubit.state.shippingCostCents, 2500);
-
-      // ICONIC ($59) + FR shipping ($25) = $84
-      expect(cubit.state.totalCents, 8400);
-
-      cubit.close();
-    });
-
-    test('should update canProceed when address filled', () {
-      final cubit = MagazineCheckoutCubit(
-        weddingId: 'wedding-123',
-        brideUserId: 'user-123',
-        format: testFormat,
-        photoCount: 25,
-        weddingTitle: 'Wedding',
-        supabaseClient: mockSupabase,
-      );
-
-      // Initial state - cannot proceed
-      expect(cubit.state.canProceed, false);
-
-      // Fill address
-      cubit.updateAddress(const ShippingAddress(
-        fullName: 'John Doe',
-        addressLine1: '123 Main St',
-        city: 'New York',
-        zipCode: '10001',
-        country: 'US',
-      ));
-
-      // Still cannot proceed - CGVU not accepted
+      // Initial state - cannot proceed (CGVU not accepted)
       expect(cubit.state.canProceed, false);
 
       // Accept CGVU

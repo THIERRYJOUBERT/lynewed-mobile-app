@@ -1,6 +1,7 @@
 /// Magazine Checkout Cubit for managing checkout state.
 ///
-/// Handles address entry, CGVU acceptance, and Stripe payment initiation.
+/// Handles CGVU acceptance and Stripe payment initiation.
+/// Shipping address is collected by Stripe Checkout directly.
 library;
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,7 +9,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../domain/entities/magazine_format.dart';
-import '../../domain/entities/shipping_address.dart';
 import 'magazine_checkout_state.dart';
 
 /// Cubit for managing magazine checkout state.
@@ -34,36 +34,9 @@ class MagazineCheckoutCubit extends Cubit<MagazineCheckoutState> {
           weddingDate: weddingDate,
           coverPhotoId: coverPhotoId,
           coverPhotoUrl: coverPhotoUrl,
-          address: ShippingAddress.empty(),
         ));
 
   final SupabaseClient _supabase;
-
-  /// Updates the shipping address.
-  void updateAddress(ShippingAddress address) {
-    emit(state.copyWith(address: address, clearError: true));
-  }
-
-  /// Updates a single field in the address.
-  void updateAddressField({
-    String? fullName,
-    String? addressLine1,
-    String? addressLine2,
-    String? city,
-    String? zipCode,
-    String? country,
-  }) {
-    final current = state.address ?? ShippingAddress.empty();
-    final updated = current.copyWith(
-      fullName: fullName,
-      addressLine1: addressLine1,
-      addressLine2: addressLine2,
-      city: city,
-      zipCode: zipCode,
-      country: country,
-    );
-    updateAddress(updated);
-  }
 
   /// Toggles CGVU acceptance.
   void toggleCgvuAccepted() {
@@ -92,7 +65,6 @@ class MagazineCheckoutCubit extends Cubit<MagazineCheckoutState> {
           'bride_user_id': state.brideUserId,
           'magazine_format': state.format.id,
           'magazine_price_cents': state.magazinePriceCents,
-          'shipping_cost_cents': state.shippingCostCents,
           'photo_count': state.photoCount,
           'magazine_title': state.weddingTitle,
           'magazine_date': state.weddingDate?.toIso8601String(),

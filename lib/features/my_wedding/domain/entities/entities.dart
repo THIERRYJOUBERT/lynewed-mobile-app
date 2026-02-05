@@ -16,4 +16,6 @@ export 'magazine_page.dart';
 export 'magazine_selection.dart';
 export 'picker_media_item.dart';
 export 'photo_share.dart';
+export 'magazine_order.dart';
+export 'magazine_order_item.dart';
 export 'shipping_address.dart';

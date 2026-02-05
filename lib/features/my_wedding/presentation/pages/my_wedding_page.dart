@@ -37,6 +37,7 @@ import 'guest_albums_page.dart';
 import 'wedding_groups_page.dart';
 import 'magazine_selection_page.dart';
 import '../sheets/magazine_photo_picker_sheet.dart';
+import 'magazine_order_detail_page.dart';
 
 /// My Wedding Page - Main page for brides to manage their wedding
 ///
@@ -81,6 +82,7 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
 
   // Magazine preview data
   List<MagazineSelection> _magazineSelections = [];
+  List<MagazineOrder> _magazineOrders = [];
 
   @override
   void initState() {
@@ -136,6 +138,7 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
       _repository.getInspirationAlbums(weddingId: _wedding!.id),
       _repository.getWeddingGuests(weddingId: _wedding!.id),
       _repository.getMagazineSelections(weddingId: _wedding!.id),
+      _repository.getMagazineOrders(weddingId: _wedding!.id),
     ]);
 
     final chatResult = results[0] as RepositoryResult<WeddingTeamChatInfo?>;
@@ -145,6 +148,7 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
     final albumsResult = results[4] as RepositoryResult<List<InspirationAlbum>>;
     final guestsResult = results[5] as RepositoryResult<List<WeddingGuest>>;
     final magazineResult = results[6] as RepositoryResult<List<MagazineSelection>>;
+    final ordersResult = results[7] as RepositoryResult<List<MagazineOrder>>;
 
     if (chatResult.isSuccess) {
       _teamChatInfo = chatResult.data;
@@ -185,6 +189,10 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
 
     if (magazineResult.isSuccess) {
       _magazineSelections = magazineResult.data ?? [];
+    }
+
+    if (ordersResult.isSuccess) {
+      _magazineOrders = ordersResult.data ?? [];
     }
   }
 
@@ -233,7 +241,7 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
               // Bottom Navigation - always visible
               const Align(
                 alignment: Alignment.bottomCenter,
-                child: NavBarBridesWidget(number: 3),
+                child: NavBarBridesWidget(number: 4),
               ),
               // Header - only for overview, not during onboarding
               if (!_shouldShowOnboarding || _isLoading || _error != null)
@@ -1838,6 +1846,7 @@ Or scan the QR code in the app.
 
   /// Magazine Section - Create photo magazines from wedding photos
   Widget _buildMagazineSection() {
+    final hasOrders = _magazineOrders.isNotEmpty;
     final hasSelections = _magazineSelections.isNotEmpty;
     final selectionCount = _magazineSelections.length;
 
@@ -1861,11 +1870,60 @@ Or scan the QR code in the app.
         ),
         const SizedBox(height: 4.0),
         Text(
-          hasSelections
-              ? '$selectionCount photo${selectionCount > 1 ? 's' : ''} selected'
-              : 'Create a photo magazine from your wedding',
+          hasOrders
+              ? '${_magazineOrders.length} order${_magazineOrders.length > 1 ? 's' : ''}'
+              : hasSelections
+                  ? '$selectionCount photo${selectionCount > 1 ? 's' : ''} selected'
+                  : 'Create a photo magazine from your wedding',
           style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
         ),
+        const SizedBox(height: 10.0),
+
+        // Orders sub-section (always visible)
+        LynewedSectionTitle('Orders'),
+        const SizedBox(height: 10.0),
+        if (hasOrders)
+          for (final order in _magazineOrders)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: _buildOrderCard(order),
+            )
+        else
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20.0),
+            decoration: BoxDecoration(
+              color: LynewedColors.surface,
+              borderRadius: BorderRadius.circular(4.0),
+            ),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.receipt_long_outlined,
+                  size: 32.0,
+                  color: LynewedColors.gray300,
+                ),
+                const SizedBox(height: 8.0),
+                Text(
+                  'No orders yet',
+                  style: LynewedTextStyles.bodyMedium.copyWith(
+                    color: LynewedColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 4.0),
+                Text(
+                  'Your magazine orders will appear here',
+                  style: LynewedTextStyles.bodySmall.copyWith(
+                    color: LynewedColors.gray300,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        const SizedBox(height: 20.0),
+
+        // Selection card or empty state
+        LynewedSectionTitle('Selection'),
         const SizedBox(height: 10.0),
         if (hasSelections)
           GestureDetector(
@@ -1955,6 +2013,114 @@ Or scan the QR code in the app.
             ),
           ),
       ],
+    );
+  }
+
+  /// Build an order card for the magazine section.
+  Widget _buildOrderCard(MagazineOrder order) {
+    return GestureDetector(
+      onTap: () => _openOrderDetail(order),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: LynewedColors.surface,
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: Row(
+          children: [
+            // Status indicator
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: order.statusColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              child: Icon(
+                _orderStatusIcon(order.status),
+                color: order.statusColor,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12.0),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: order.statusColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(4.0),
+                        ),
+                        child: Text(
+                          order.statusLabel,
+                          style: LynewedTextStyles.labelSmall.copyWith(
+                            color: order.statusColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4.0),
+                  Text(
+                    '${order.formatDisplayName} \u2022 ${order.formatSize}',
+                    style: LynewedTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2.0),
+                  Text(
+                    '${order.photoCount} photos \u2022 ${order.formattedTotal}',
+                    style: LynewedTextStyles.bodySmall.copyWith(
+                      color: LynewedColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              color: LynewedColors.textSecondary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Get icon for order status.
+  IconData _orderStatusIcon(String status) {
+    switch (status) {
+      case 'paid':
+        return Icons.check_circle_outline;
+      case 'in_production':
+        return Icons.precision_manufacturing_outlined;
+      case 'shipped':
+        return Icons.local_shipping_outlined;
+      case 'delivered':
+        return Icons.inventory_2_outlined;
+      case 'cancelled':
+        return Icons.cancel_outlined;
+      default:
+        return Icons.hourglass_empty;
+    }
+  }
+
+  /// Open order detail page.
+  void _openOrderDetail(MagazineOrder order) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MagazineOrderDetailPage(order: order),
+      ),
     );
   }
 

@@ -16,6 +16,7 @@ import '../bloc/magazine_selection_cubit.dart';
 import '../bloc/magazine_selection_state.dart';
 import '../sheets/magazine_photo_picker_sheet.dart';
 import '../widgets/reorderable_magazine_grid.dart';
+import 'magazine_checkout_page.dart';
 import 'magazine_preview_page.dart';
 
 /// Page for managing magazine photo selection.
@@ -135,11 +136,28 @@ class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
   void _openMagazinePreview(MagazineSelectionState state) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => MagazinePreviewPage(
+        builder: (navContext) => MagazinePreviewPage(
           photos: state.photos,
           weddingTitle: widget.weddingTitle,
           weddingDate: widget.weddingDate,
-          onNavigateBack: () => Navigator.pop(context),
+          weddingId: widget.weddingId,
+          onNavigateBack: () => Navigator.pop(navContext),
+          onNavigateToCheckout: (format, coverPhotoUrl, spreadCount) {
+            Navigator.of(navContext).push(
+              MaterialPageRoute(
+                builder: (_) => MagazineCheckoutPage(
+                  weddingId: widget.weddingId,
+                  brideUserId: widget.userId,
+                  format: format,
+                  photoCount: state.count,
+                  spreadCount: spreadCount,
+                  weddingTitle: widget.weddingTitle,
+                  weddingDate: widget.weddingDate,
+                  coverPhotoUrl: coverPhotoUrl,
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -222,17 +240,6 @@ class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
                 'Clear',
                 style: LynewedTextStyles.labelLarge.copyWith(
                   color: LynewedColors.error,
-                ),
-              ),
-            ),
-          // Preview button
-          if (state.canPreview)
-            TextButton(
-              onPressed: state.isLoading ? null : () => _openMagazinePreview(state),
-              child: Text(
-                'Preview',
-                style: LynewedTextStyles.labelLarge.copyWith(
-                  color: LynewedColors.primary,
                 ),
               ),
             ),
@@ -389,10 +396,10 @@ class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
           ],
           // Create magazine button
           LynewedButton(
-            text: 'Create Magazine',
+            text: 'Preview Magazine',
             onPressed: () => _openMagazinePreview(state),
             width: double.infinity,
-            icon: Icons.arrow_forward,
+            icon: Icons.auto_stories,
           ),
         ],
       ),
