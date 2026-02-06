@@ -131,4 +131,53 @@ class SupabaseMarketplaceTransactionRepository
       'cgvu_version': marketplaceBuyerCgvuVersion,
     });
   }
+
+  @override
+  Future<void> requestRefund({
+    required String transactionId,
+    String? reason,
+  }) async {
+    final response = await _client.functions.invoke(
+      'marketplace-refund',
+      body: {
+        'action': 'request',
+        'transaction_id': transactionId,
+        if (reason != null) 'reason': reason,
+      },
+    );
+    _handleRefundResponse(response);
+  }
+
+  @override
+  Future<void> approveRefund({required String transactionId}) async {
+    final response = await _client.functions.invoke(
+      'marketplace-refund',
+      body: {
+        'action': 'approve',
+        'transaction_id': transactionId,
+      },
+    );
+    _handleRefundResponse(response);
+  }
+
+  @override
+  Future<void> rejectRefund({required String transactionId}) async {
+    final response = await _client.functions.invoke(
+      'marketplace-refund',
+      body: {
+        'action': 'reject',
+        'transaction_id': transactionId,
+      },
+    );
+    _handleRefundResponse(response);
+  }
+
+  void _handleRefundResponse(FunctionResponse response) {
+    final data = response.data is String
+        ? jsonDecode(response.data as String) as Map<String, dynamic>
+        : response.data as Map<String, dynamic>;
+    if (data['error'] != null) {
+      throw Exception(data['error'] as String);
+    }
+  }
 }

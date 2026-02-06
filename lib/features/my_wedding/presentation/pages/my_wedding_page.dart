@@ -29,9 +29,7 @@ import '../widgets/wedding_onboarding_widget.dart';
 import '../sheets/wedding_edit_sheet.dart';
 import '../sheets/invite_pro_sheet.dart';
 import '../sheets/note_for_pros_sheet.dart';
-import 'inspirations_page.dart';
-import 'guests_page.dart';
-import 'guest_albums_page.dart';
+import 'all_albums_page.dart';
 import 'magazine_selection_page.dart';
 import 'people_page.dart';
 import 'organization_page.dart';
@@ -975,7 +973,7 @@ Or scan the QR code in the app.
 
   Widget _buildCompactGuestAvatar(WeddingGuest guest) {
     return GestureDetector(
-      onTap: _openGuestsPage,
+      onTap: () => _openPeoplePage(initialTab: 1),
       child: SizedBox(
         width: 64,
         child: Column(
@@ -1291,7 +1289,7 @@ Or scan the QR code in the app.
           children: [
             const Text('ALBUMS', style: LynewedTextStyles.sectionTitle),
             GestureDetector(
-              onTap: _openInspirationsPage,
+              onTap: _openAllAlbumsPage,
               child: Text(
                 'View all',
                 style: LynewedTextStyles.labelLarge.copyWith(
@@ -1342,7 +1340,7 @@ Or scan the QR code in the app.
 
   Widget _buildEmptyAlbumsState() {
     return GestureDetector(
-      onTap: _openInspirationsPage,
+      onTap: _openAllAlbumsPage,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20.0),
@@ -1398,7 +1396,7 @@ Or scan the QR code in the app.
 
   Widget _buildAlbumPreviewCard(InspirationAlbum album) {
     return GestureDetector(
-      onTap: _openInspirationsPage,
+      onTap: _openAllAlbumsPage,
       child: SizedBox(
         width: 120,
         child: Column(
@@ -1640,35 +1638,27 @@ Or scan the QR code in the app.
     );
   }
 
-  void _openInspirationsPage() {
+  void _openAllAlbumsPage({int initialTab = 0}) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => InspirationsPage(weddingId: _wedding!.id),
-      ),
-    ).then((_) => _loadWedding());
-  }
-
-  void _openGuestsPage() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => GuestsPage(weddingId: _wedding!.id),
+        builder: (context) => AllAlbumsPage(
+          weddingId: _wedding!.id,
+          initialTab: initialTab,
+        ),
       ),
     ).then((_) => _loadWedding());
   }
 
   void _openGuestAlbumsPage() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => GuestAlbumsPage(weddingId: _wedding!.id),
-      ),
-    );
+    _openAllAlbumsPage(initialTab: 2);
   }
 
-  void _openPeoplePage() {
+  void _openPeoplePage({int initialTab = 0}) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => PeoplePage(
           weddingId: _wedding!.id,
+          initialTab: initialTab,
         ),
       ),
     ).then((_) => _loadWedding());

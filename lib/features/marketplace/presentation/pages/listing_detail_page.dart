@@ -309,6 +309,20 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
 
       if (!mounted) return;
 
+      if (sellerAddress == null) {
+        setState(() => _isProcessing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'This seller hasn\'t set up their shipping address yet. '
+              'Please contact the seller.',
+            ),
+            duration: Duration(seconds: 5),
+          ),
+        );
+        return;
+      }
+
       Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (_) => CheckoutPage(

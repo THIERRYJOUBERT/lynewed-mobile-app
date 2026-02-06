@@ -14,7 +14,10 @@ import 'package:lynewed_beta/features/marketplace/domain/entities/shipping_rate.
 import 'package:lynewed_beta/features/marketplace/domain/entities/tracking_event.dart';
 import 'package:lynewed_beta/features/marketplace/domain/repositories/fedex_repository.dart';
 import 'package:lynewed_beta/features/marketplace/domain/repositories/marketplace_transaction_repository.dart';
+import 'package:lynewed_beta/features/marketplace/domain/usecases/approve_refund_use_case.dart';
+import 'package:lynewed_beta/features/marketplace/domain/usecases/cancel_shipment_use_case.dart';
 import 'package:lynewed_beta/features/marketplace/domain/usecases/generate_shipping_label_use_case.dart';
+import 'package:lynewed_beta/features/marketplace/domain/usecases/reject_refund_use_case.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/pages/transaction_detail_page.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/widgets/generate_label_button.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/widgets/shipping_label_widget.dart';
@@ -109,6 +112,21 @@ class _MockTransactionRepository implements MarketplaceTransactionRepository {
   Future<void> acceptBuyerCgvu() async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> requestRefund({required String transactionId, String? reason}) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> approveRefund({required String transactionId}) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> rejectRefund({required String transactionId}) async {
+    throw UnimplementedError();
+  }
 }
 
 // -- Mock FedEx repository --
@@ -135,6 +153,11 @@ class _MockFedExRepository implements FedExRepository {
   Future<List<TrackingEvent>> getTrackingEvents(String transactionId) async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> cancelShipment(String transactionId) async {
+    throw UnimplementedError();
+  }
 }
 
 // -- Mock use case --
@@ -154,12 +177,34 @@ class _MockGenerateShippingLabelUseCase extends GenerateShippingLabelUseCase {
   }
 }
 
+class _MockCancelShipmentUseCase extends CancelShipmentUseCase {
+  _MockCancelShipmentUseCase() : super(_MockFedExRepository());
+
+  @override
+  Future<void> call({required String transactionId}) async {}
+}
+
+class _MockApproveRefundUseCase extends ApproveRefundUseCase {
+  _MockApproveRefundUseCase() : super(_MockTransactionRepository());
+
+  @override
+  Future<void> call({required String transactionId}) async {}
+}
+
+class _MockRejectRefundUseCase extends RejectRefundUseCase {
+  _MockRejectRefundUseCase() : super(_MockTransactionRepository());
+
+  @override
+  Future<void> call({required String transactionId}) async {}
+}
+
 void main() {
   group('TransactionDetailPage', () {
     Widget buildPage({
       String transactionId = 'txn-1',
       _MockTransactionRepository? repository,
       GenerateShippingLabelUseCase? generateLabelUseCase,
+      CancelShipmentUseCase? cancelShipmentUseCase,
     }) {
       return MaterialApp(
         home: TransactionDetailPage(
@@ -176,6 +221,10 @@ void main() {
                   serviceType: 'FEDEX_GROUND',
                 ),
               ),
+          cancelShipmentUseCase:
+              cancelShipmentUseCase ?? _MockCancelShipmentUseCase(),
+          approveRefundUseCase: _MockApproveRefundUseCase(),
+          rejectRefundUseCase: _MockRejectRefundUseCase(),
         ),
       );
     }

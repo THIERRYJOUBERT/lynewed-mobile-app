@@ -23,6 +23,7 @@
 | 2026-02-05 | **Corrections appliquées** - 7 Edge Functions corrigées & déployées, 2 migrations SQL sécurité, 16 fichiers Flutter fixés, drain marketplace handlers ajoutés. Score 62% → ~92% |
 | 2026-02-05 | **Post-validation: offres↔chat Vinted** - DB migration (offer/system message types + offer_id FK), domain/data/presentation layers, 2 nouveaux widgets (OfferBubbleWidget, SystemMessageWidget), 7 pages modifiées, 11 tests corrigés. 763 tests marketplace passent. |
 | 2026-02-06 | **Project cleanup final** - Withdraw offer button, profile column names fix, seller listings page, buyer offer tile, phone formatter, organization/people pages, flat-rate shipping, tests fixés. 5193 tests passent, 0 warnings. |
+| 2026-02-06 | **Challenge deep: 5-phase marketplace completeness** - Phase 1: Fix cron FedEx auth + create expire-unshipped cron + notification drain + DB columns. Phase 2: Store stripe_charge_id + marketplace fallback in stripe-webhook + refund/dispute notifications. Phase 3: FedEx cancel shipment (edge function + Flutter void label). Phase 4: In-app refund system (edge function marketplace-refund + request/approve/reject use cases + buyer/seller UI). Phase 5: My Purchases page + delivery exception UI + terminal status banners. 7 edge functions deployed, 4 new use cases, 795+ marketplace tests passing. |
 
 ---
 
@@ -201,13 +202,14 @@
 | Stories completees | 26 (100%) |
 | Tables DB creees | 7 (marketplace_listings, photos, offers, transactions, messages, fedex_events, cgvu_acceptances) |
 | Storage buckets | 2 (marketplace-listings, marketplace-labels) |
-| Edge Functions | 5 (create-stripe-connect-account, stripe-connect-webhook, fedex-calculate-rate, fedex-create-shipment, fedex-track-shipment) |
-| Cron jobs | 1 (fedex-tracking-poll - hourly) |
-| Tests marketplace | 500+ (all passing) |
+| Edge Functions | 9 (create-stripe-connect-account, stripe-connect-webhook, fedex-calculate-rate, fedex-create-shipment, fedex-track-shipment, marketplace-payment-webhook, fedex-cancel-shipment, marketplace-refund, expire-unshipped-transactions) |
+| Cron jobs | 3 (fedex-tracking-poll hourly, expire-offers 15min, expire-unshipped daily) |
+| Tests marketplace | 795+ (all passing) |
 | Tests projet total | 5193+ (all passing) |
 | Lint warnings | 0 |
-| Fichiers Flutter crees | 50+ (entities, repos, datasources, use cases, pages, widgets, tests) |
-| Pages UI | 12 (feed, detail, create listing, chat, checkout, seller dashboard, etc.) |
+| Fichiers Flutter crees | 60+ (entities, repos, datasources, use cases, pages, widgets, tests) |
+| Pages UI | 13 (feed, detail, create listing, chat, checkout, seller dashboard, my purchases, etc.) |
+| Use cases | 12+ (create listing, offers, checkout, tracking, cancel shipment, request/approve/reject refund, etc.) |
 
 ---
 

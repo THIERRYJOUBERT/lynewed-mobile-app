@@ -181,20 +181,92 @@ class SupabaseMarketplaceOfferRepository
 
   @override
   Future<List<OfferDisplayModel>> getMyOffers() async {
-    final buyerId = _currentUserId;
+    return _getOffersForBuyer();
+  }
 
-    // Fetch offers with listing info via join.
-    final response = await _client
+  @override
+  Future<List<OfferDisplayModel>> getOffersAwaitingMyPayment() async {
+    final allOffers = await _getOffersForBuyer(statusFilter: 'accepted');
+
+    if (allOffers.isEmpty) return [];
+
+    // Exclude offers that already have a transaction.
+    final offerIds = allOffers.map((m) => m.offer.id).toList();
+    final existingTx = await _client
+        .from('marketplace_transactions')
+        .select('offer_id')
+        .inFilter('offer_id', offerIds);
+
+    final paidOfferIds = (existingTx as List)
+        .map((row) => row['offer_id'] as String)
+        .toSet();
+
+    return allOffers
+        .where((m) => !paidOfferIds.contains(m.offer.id))
+        .toList();
+  }
+
+  /// Fetches all offers relevant to the current user as buyer.
+  ///
+  /// Includes direct offers (buyer_id = currentUser) and counter-offers
+  /// received from sellers (found via marketplace_messages.receiver_id).
+  /// Optionally filters by [statusFilter] (e.g. 'accepted').
+  Future<List<OfferDisplayModel>> _getOffersForBuyer({
+    String? statusFilter,
+  }) async {
+    final userId = _currentUserId;
+
+    // Query 1: Direct offers by this user.
+    var directQuery = _client
         .from('marketplace_offers')
-        .select('*, marketplace_listings!inner(id, title, price_cents, seller_id)')
-        .eq('buyer_id', buyerId)
-        .order('created_at', ascending: false);
+        .select(
+            '*, marketplace_listings!inner(id, title, price_cents, seller_id)')
+        .eq('buyer_id', userId);
+    if (statusFilter != null) {
+      directQuery = directQuery.eq('status', statusFilter);
+    }
+    final directResponse =
+        await directQuery.order('created_at', ascending: false);
 
-    if ((response as List).isEmpty) return [];
+    final directOfferIds =
+        (directResponse as List).map((r) => r['id'] as String).toSet();
+
+    // Query 2: Counter-offers received from sellers.
+    // Find offer IDs from marketplace_messages where this user is the receiver.
+    final counterOfferMsgs = await _client
+        .from('marketplace_messages')
+        .select('offer_id')
+        .eq('receiver_id', userId)
+        .eq('message_type', 'offer')
+        .not('offer_id', 'is', null);
+
+    final counterOfferIds = (counterOfferMsgs as List)
+        .map((row) => row['offer_id'] as String)
+        .toSet()
+        .difference(directOfferIds) // Exclude already-fetched offers.
+        .toList();
+
+    List<dynamic> counterResponse = [];
+    if (counterOfferIds.isNotEmpty) {
+      var counterQuery = _client
+          .from('marketplace_offers')
+          .select(
+              '*, marketplace_listings!inner(id, title, price_cents, seller_id)')
+          .inFilter('id', counterOfferIds);
+      if (statusFilter != null) {
+        counterQuery = counterQuery.eq('status', statusFilter);
+      }
+      counterResponse =
+          await counterQuery.order('created_at', ascending: false) as List;
+    }
+
+    // Merge both result sets.
+    final allRows = [...directResponse, ...counterResponse];
+    if (allRows.isEmpty) return [];
 
     // Collect seller IDs for batch profile fetch.
     final sellerIds = <String>{};
-    for (final row in response) {
+    for (final row in allRows) {
       final listing = row['marketplace_listings'] as Map<String, dynamic>?;
       if (listing != null && listing['seller_id'] != null) {
         sellerIds.add(listing['seller_id'] as String);
@@ -214,8 +286,8 @@ class SupabaseMarketplaceOfferRepository
       }
     }
 
-    return response.map((row) {
-      final json = row;
+    final results = allRows.map((row) {
+      final json = row as Map<String, dynamic>;
       final listing = json['marketplace_listings'] as Map<String, dynamic>?;
       final offer = MarketplaceOffer.fromJson(json);
       final sellerId = listing?['seller_id'] as String?;
@@ -230,5 +302,9 @@ class SupabaseMarketplaceOfferRepository
         sellerAvatarUrl: sellerProfile?['avatar_url'] as String?,
       );
     }).toList();
+
+    // Sort by creation date descending (merged from two queries).
+    results.sort((a, b) => b.offer.createdAt.compareTo(a.offer.createdAt));
+    return results;
   }
 }

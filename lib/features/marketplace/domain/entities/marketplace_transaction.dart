@@ -40,6 +40,10 @@ class MarketplaceTransaction {
     this.shippedAt,
     this.deliveredAt,
     this.completedAt,
+    this.refundedAt,
+    this.disputedAt,
+    this.refundReason,
+    this.refundRequestedAt,
   });
 
   /// Unique identifier (UUID from database).
@@ -120,6 +124,30 @@ class MarketplaceTransaction {
   /// When the transaction was completed (7 days after delivery).
   final DateTime? completedAt;
 
+  /// When the transaction was refunded.
+  final DateTime? refundedAt;
+
+  /// When a dispute was opened.
+  final DateTime? disputedAt;
+
+  /// Reason for refund request.
+  final String? refundReason;
+
+  /// When a refund was requested by the buyer.
+  final DateTime? refundRequestedAt;
+
+  /// Whether the transaction has been refunded.
+  bool get isRefunded => status == 'refunded';
+
+  /// Whether the transaction is disputed.
+  bool get isDisputed => status == 'disputed';
+
+  /// Whether the transaction has expired.
+  bool get isExpired => status == 'expired';
+
+  /// Whether the label has been created but not shipped.
+  bool get isLabelCreated => status == 'label_created';
+
   /// Item price in dollars.
   double get itemPriceInDollars => itemPriceCents / 100;
 
@@ -184,6 +212,16 @@ class MarketplaceTransaction {
           : null,
       completedAt: json['completed_at'] != null
           ? DateTime.parse(json['completed_at'] as String)
+          : null,
+      refundedAt: json['refunded_at'] != null
+          ? DateTime.parse(json['refunded_at'] as String)
+          : null,
+      disputedAt: json['disputed_at'] != null
+          ? DateTime.parse(json['disputed_at'] as String)
+          : null,
+      refundReason: json['refund_reason'] as String?,
+      refundRequestedAt: json['refund_requested_at'] != null
+          ? DateTime.parse(json['refund_requested_at'] as String)
           : null,
     );
   }
@@ -258,6 +296,10 @@ class MarketplaceTransaction {
     DateTime? shippedAt,
     DateTime? deliveredAt,
     DateTime? completedAt,
+    DateTime? refundedAt,
+    DateTime? disputedAt,
+    String? refundReason,
+    DateTime? refundRequestedAt,
   }) {
     return MarketplaceTransaction(
       id: id ?? this.id,
@@ -287,6 +329,10 @@ class MarketplaceTransaction {
       shippedAt: shippedAt ?? this.shippedAt,
       deliveredAt: deliveredAt ?? this.deliveredAt,
       completedAt: completedAt ?? this.completedAt,
+      refundedAt: refundedAt ?? this.refundedAt,
+      disputedAt: disputedAt ?? this.disputedAt,
+      refundReason: refundReason ?? this.refundReason,
+      refundRequestedAt: refundRequestedAt ?? this.refundRequestedAt,
     );
   }
 }

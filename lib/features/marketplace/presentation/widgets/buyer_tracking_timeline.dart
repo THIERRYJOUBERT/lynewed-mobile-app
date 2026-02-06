@@ -75,6 +75,15 @@ class BuyerTrackingTimeline extends StatelessWidget {
   /// Date format used for event timestamps, created once per build.
   static final _dateFormat = DateFormat('MMM d, yyyy');
 
+  /// Whether the current status is a terminal non-happy-path state.
+  bool get _isTerminalStatus =>
+      currentStatus == 'refunded' ||
+      currentStatus == 'disputed' ||
+      currentStatus == 'expired';
+
+  /// Whether the current status is a delivery exception.
+  bool get _isException => currentStatus == 'exception';
+
   @override
   Widget build(BuildContext context) {
     final currentIndex = _stepIds.indexOf(currentStatus);
@@ -88,20 +97,100 @@ class BuyerTrackingTimeline extends StatelessWidget {
           _buildTrackingNumberRow(),
         if (trackingNumber != null && trackingNumber!.isNotEmpty)
           const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: LynewedComponentStyles.cardDecoration(),
-          child: Column(
-            children: List.generate(_stepIds.length, (index) {
-              return _buildStepItem(
-                index: index,
-                currentIndex: currentIndex,
-                isLast: index == _stepIds.length - 1,
-              );
-            }),
+        if (_isTerminalStatus)
+          _buildTerminalBanner()
+        else ...[
+          if (_isException)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _buildExceptionBanner(),
+            ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: LynewedComponentStyles.cardDecoration(),
+            child: Column(
+              children: List.generate(_stepIds.length, (index) {
+                return _buildStepItem(
+                  index: index,
+                  currentIndex: currentIndex,
+                  isLast: index == _stepIds.length - 1,
+                );
+              }),
+            ),
           ),
-        ),
+        ],
       ],
+    );
+  }
+
+  Widget _buildTerminalBanner() {
+    String message;
+    IconData icon;
+    Color color;
+
+    switch (currentStatus) {
+      case 'refunded':
+        message = 'This order has been refunded.';
+        icon = Icons.money_off;
+        color = LynewedColors.error;
+      case 'disputed':
+        message = 'A dispute is being investigated.';
+        icon = Icons.gavel;
+        color = LynewedColors.warning;
+      case 'expired':
+        message = 'This order expired because the seller did not ship in time.';
+        icon = Icons.timer_off;
+        color = LynewedColors.error;
+      default:
+        return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: LynewedTextStyles.bodySmall.copyWith(color: color),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExceptionBanner() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: LynewedColors.warning.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: LynewedColors.warning.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.warning_amber, color: LynewedColors.warning, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'A delivery exception has occurred. Contact support if the issue persists.',
+              style: LynewedTextStyles.bodySmall.copyWith(
+                color: LynewedColors.warning,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

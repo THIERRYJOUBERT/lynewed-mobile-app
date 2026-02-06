@@ -170,6 +170,16 @@ const EVENT_TO_NOTIFICATION_TYPE = {
   marketplace_offer_accepted: "marketplaceOfferAccepted",
   marketplace_offer_rejected: "marketplaceOfferRejected",
   marketplace_offer_withdrawn: "marketplaceOfferWithdrawn",
+
+  // --- MARKETPLACE TRANSACTION LIFECYCLE ---
+  marketplace_transaction_expired: "marketplaceTransactionExpired",
+  marketplace_refunded: "marketplaceRefunded",
+  marketplace_disputed: "marketplaceDisputed",
+  marketplace_dispute_resolved: "marketplaceDisputeResolved",
+  marketplace_refund_requested: "marketplaceRefundRequested",
+  marketplace_refund_approved: "marketplaceRefundApproved",
+  marketplace_refund_rejected: "marketplaceRefundRejected",
+  marketplace_shipment_cancelled: "marketplaceShipmentCancelled",
 };
 const I18N_TEMPLATES = {
   chatMessage: {
@@ -359,6 +369,80 @@ const I18N_TEMPLATES = {
     body: (ctx, locale)=>locale === "fr"
       ? `Un acheteur a retiré son offre sur "${ctx.listing_title || "article"}".`
       : `A buyer withdrew their offer on "${ctx.listing_title || "item"}".`
+  },
+
+  // --- MARKETPLACE TRANSACTION LIFECYCLE ---
+  marketplaceTransactionExpired: {
+    title: {
+      en: "Order Expired",
+      fr: "Commande expirée"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `La commande pour "${ctx.listing_title || "article"}" a expiré. ${ctx.reason || "L'article n'a pas été expédié dans les délais."}`
+      : `The order for "${ctx.listing_title || "item"}" has expired. ${ctx.reason || "Item was not shipped in time."}`
+  },
+  marketplaceRefunded: {
+    title: {
+      en: "Order Refunded",
+      fr: "Commande remboursée"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `Votre commande pour "${ctx.listing_title || "article"}" a été remboursée.`
+      : `Your order for "${ctx.listing_title || "item"}" has been refunded.`
+  },
+  marketplaceDisputed: {
+    title: {
+      en: "Payment Disputed",
+      fr: "Paiement contesté"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `Un litige a été ouvert pour "${ctx.listing_title || "article"}". ${ctx.reason || ""}`
+      : `A dispute has been opened for "${ctx.listing_title || "item"}". ${ctx.reason || ""}`
+  },
+  marketplaceDisputeResolved: {
+    title: {
+      en: "Dispute Resolved",
+      fr: "Litige résolu"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `Le litige pour "${ctx.listing_title || "article"}" a été résolu.`
+      : `The dispute for "${ctx.listing_title || "item"}" has been resolved.`
+  },
+  marketplaceRefundRequested: {
+    title: {
+      en: "Refund Requested",
+      fr: "Remboursement demandé"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `Un remboursement a été demandé pour "${ctx.listing_title || "article"}". Raison: ${ctx.refund_reason || "Non spécifiée"}`
+      : `A refund has been requested for "${ctx.listing_title || "item"}". Reason: ${ctx.refund_reason || "Not specified"}`
+  },
+  marketplaceRefundApproved: {
+    title: {
+      en: "Refund Approved",
+      fr: "Remboursement approuvé"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `Le remboursement pour "${ctx.listing_title || "article"}" a été approuvé. Vous serez remboursé sous quelques jours.`
+      : `The refund for "${ctx.listing_title || "item"}" was approved. You will be refunded within a few days.`
+  },
+  marketplaceRefundRejected: {
+    title: {
+      en: "Refund Declined",
+      fr: "Remboursement refusé"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `La demande de remboursement pour "${ctx.listing_title || "article"}" a été refusée.`
+      : `The refund request for "${ctx.listing_title || "item"}" was declined.`
+  },
+  marketplaceShipmentCancelled: {
+    title: {
+      en: "Shipment Cancelled",
+      fr: "Envoi annulé"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `L'envoi pour "${ctx.listing_title || "article"}" a été annulé par le vendeur.`
+      : `The shipment for "${ctx.listing_title || "item"}" was cancelled by the seller.`
   },
 };
 // --- HELPERS DB ---
@@ -917,6 +1001,9 @@ async function processMarketplaceEvent(ev) {
     tracking_number: payload.tracking_number,
     status: payload.status,
     buyer_name: payload.buyer_name,
+    reason: payload.reason,
+    refund_reason: payload.refund_reason,
+    amount_cents: payload.amount_cents,
   };
 
   const title = tmpl.title[locale] || tmpl.title.en;
@@ -1031,6 +1118,14 @@ async function processEvent(ev) {
     case "marketplace_offer_accepted":
     case "marketplace_offer_rejected":
     case "marketplace_offer_withdrawn":
+    case "marketplace_transaction_expired":
+    case "marketplace_refunded":
+    case "marketplace_disputed":
+    case "marketplace_dispute_resolved":
+    case "marketplace_refund_requested":
+    case "marketplace_refund_approved":
+    case "marketplace_refund_rejected":
+    case "marketplace_shipment_cancelled":
       actions = await processMarketplaceEvent(ev);
       break;
 

@@ -43,6 +43,12 @@ abstract class FedExRemoteDatasource {
   /// Reads from the `fedex_events` database table (NOT an Edge Function).
   /// Returns events ordered by event_timestamp ascending.
   Future<List<TrackingEvent>> getTrackingEvents(String transactionId);
+
+  /// Cancels a shipment (voids the shipping label).
+  ///
+  /// Calls the `fedex-cancel-shipment` Edge Function.
+  /// Throws [FunctionException] if the Edge Function call fails.
+  Future<void> cancelShipment(String transactionId);
 }
 
 /// Supabase implementation of [FedExRemoteDatasource].
@@ -110,6 +116,19 @@ class SupabaseFedExRemoteDatasource implements FedExRemoteDatasource {
           (row) => TrackingEvent.fromJson(Map<String, dynamic>.from(row)),
         )
         .toList();
+  }
+
+  @override
+  Future<void> cancelShipment(String transactionId) async {
+    final response = await _supabase.functions.invoke(
+      'fedex-cancel-shipment',
+      body: {'transaction_id': transactionId},
+    );
+
+    final data = _parseResponseData(response.data);
+    if (data['error'] != null) {
+      throw Exception(data['error'] as String);
+    }
   }
 
   /// Parses response data that may be a JSON string or a Map.

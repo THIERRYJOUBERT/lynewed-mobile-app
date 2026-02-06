@@ -371,6 +371,39 @@ void main() {
       });
     });
 
+    group('missing seller address', () {
+      testWidgets(
+          'should show error when seller shipping address is null',
+          (tester) async {
+        // Build page with NO seller shipping address.
+        await tester.pumpWidget(
+          MaterialApp(
+            home: CheckoutPage(
+              listing: _createListing(),
+              sellerShippingAddress: null,
+              transactionRepository: mockTransactionRepo,
+              currentUserId: 'buyer-1',
+              fedexDatasource: mockFedExDatasource,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Fill address and proceed to shipping step.
+        await fillAddress(tester);
+        await tester.ensureVisible(find.text('Continue'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Continue'));
+        await tester.pumpAndSettle();
+
+        // Should show the improved error message.
+        expect(
+          find.textContaining('seller has not set up a shipping address'),
+          findsOneWidget,
+        );
+      });
+    });
+
     group('flat rate shipping', () {
       testWidgets('should calculate international flat rate for FR to US',
           (tester) async {

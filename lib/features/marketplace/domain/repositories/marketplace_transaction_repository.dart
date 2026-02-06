@@ -42,4 +42,16 @@ abstract class MarketplaceTransactionRepository {
 
   /// Records CGVU acceptance for marketplace buyer.
   Future<void> acceptBuyerCgvu();
+
+  /// Requests a refund for a transaction (buyer action).
+  Future<void> requestRefund({
+    required String transactionId,
+    String? reason,
+  });
+
+  /// Approves a refund request (seller action).
+  Future<void> approveRefund({required String transactionId});
+
+  /// Rejects a refund request (seller action).
+  Future<void> rejectRefund({required String transactionId});
 }

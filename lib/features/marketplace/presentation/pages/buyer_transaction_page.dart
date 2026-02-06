@@ -14,6 +14,7 @@ import '../../domain/entities/marketplace_transaction.dart';
 import '../../domain/entities/tracking_event.dart';
 import '../../domain/repositories/marketplace_transaction_repository.dart';
 import '../../domain/usecases/get_tracking_events_use_case.dart';
+import '../../domain/usecases/request_refund_use_case.dart';
 import '../widgets/buyer_tracking_timeline.dart';
 
 /// Displays order details for the buyer.
@@ -36,10 +37,14 @@ class BuyerTransactionPage extends StatefulWidget {
   /// Use case for fetching tracking events. Injectable for testing.
   final GetTrackingEventsUseCase? getTrackingEventsUseCase;
 
+  /// Use case for requesting a refund. Injectable for testing.
+  final RequestRefundUseCase? requestRefundUseCase;
+
   const BuyerTransactionPage({
     required this.transactionId,
     this.transactionRepository,
     this.getTrackingEventsUseCase,
+    this.requestRefundUseCase,
     super.key,
   });
 
@@ -50,10 +55,12 @@ class BuyerTransactionPage extends StatefulWidget {
 class _BuyerTransactionPageState extends State<BuyerTransactionPage> {
   late final MarketplaceTransactionRepository _repository;
   late final GetTrackingEventsUseCase _getTrackingEventsUseCase;
+  late final RequestRefundUseCase _requestRefundUseCase;
 
   MarketplaceTransaction? _transaction;
   List<TrackingEvent> _trackingEvents = [];
   bool _isLoading = true;
+  bool _isRequestingRefund = false;
   String? _errorMessage;
 
   @override
@@ -63,6 +70,8 @@ class _BuyerTransactionPageState extends State<BuyerTransactionPage> {
         sl<MarketplaceTransactionRepository>();
     _getTrackingEventsUseCase =
         widget.getTrackingEventsUseCase ?? sl<GetTrackingEventsUseCase>();
+    _requestRefundUseCase =
+        widget.requestRefundUseCase ?? sl<RequestRefundUseCase>();
     _loadData();
   }
 
@@ -155,17 +164,23 @@ class _BuyerTransactionPageState extends State<BuyerTransactionPage> {
       return _buildEmptyState();
     }
 
+    final tx = _transaction!;
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildStatusBadge(),
+          if (tx.isRefunded || tx.isDisputed || tx.isExpired ||
+              tx.refundRequestedAt != null) ...[
+            const SizedBox(height: 12),
+            _buildAlertBanner(),
+          ],
           const SizedBox(height: 30),
           if (_hasTrackingNumber()) ...[
             BuyerTrackingTimeline(
-              currentStatus: _transaction!.status,
-              trackingNumber: _transaction!.fedexTrackingNumber,
+              currentStatus: tx.status,
+              trackingNumber: tx.fedexTrackingNumber,
               events: _trackingEvents,
             ),
             const SizedBox(height: 30),
@@ -173,6 +188,10 @@ class _BuyerTransactionPageState extends State<BuyerTransactionPage> {
           _buildDeliveryAddressSection(),
           const SizedBox(height: 30),
           _buildPriceSummary(),
+          if (_canRequestRefund()) ...[
+            const SizedBox(height: 30),
+            _buildRefundSection(),
+          ],
           const SizedBox(height: 30),
         ],
       ),
@@ -315,6 +334,180 @@ class _BuyerTransactionPageState extends State<BuyerTransactionPage> {
     );
   }
 
+  bool _canRequestRefund() {
+    final tx = _transaction;
+    if (tx == null) return false;
+    // Can request refund if not already completed/refunded/disputed/expired
+    // and no existing refund request
+    final eligibleStatuses = ['paid', 'label_created', 'shipped', 'in_transit',
+        'out_for_delivery', 'delivered'];
+    return eligibleStatuses.contains(tx.status) &&
+        tx.refundRequestedAt == null;
+  }
+
+  Widget _buildAlertBanner() {
+    final tx = _transaction!;
+    String message;
+    IconData icon;
+    Color color;
+
+    if (tx.isRefunded) {
+      message = 'This order has been refunded.';
+      icon = Icons.money_off;
+      color = LynewedColors.error;
+    } else if (tx.isDisputed) {
+      message = 'A dispute is open on this order.';
+      icon = Icons.gavel;
+      color = LynewedColors.warning;
+    } else if (tx.isExpired) {
+      message = 'This order has expired.';
+      icon = Icons.timer_off;
+      color = LynewedColors.error;
+    } else if (tx.refundRequestedAt != null) {
+      message = 'Your refund request is pending seller review.';
+      icon = Icons.hourglass_top;
+      color = LynewedColors.warning;
+    } else {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: LynewedTextStyles.bodySmall.copyWith(color: color),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRefundSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const LynewedSectionTitle('Need Help?'),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          child: LynewedButton(
+            text: _isRequestingRefund ? 'Requesting...' : 'Request Refund',
+            type: LynewedButtonType.secondary,
+            icon: Icons.money_off,
+            onPressed: _isRequestingRefund ? null : _showRefundSheet,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showRefundSheet() {
+    String? selectedReason;
+    final reasons = [
+      'Item not received',
+      'Item damaged',
+      'Not as described',
+      'Changed my mind',
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Request Refund',
+                style: LynewedTextStyles.sheetTitle,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Select a reason:',
+                style: LynewedTextStyles.bodySmall.copyWith(
+                  color: LynewedColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 10),
+              ...reasons.map((reason) => RadioListTile<String>(
+                    title: Text(reason, style: LynewedTextStyles.bodySmall),
+                    value: reason,
+                    groupValue: selectedReason,
+                    activeColor: LynewedColors.primary,
+                    onChanged: (val) =>
+                        setSheetState(() => selectedReason = val),
+                  )),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: LynewedButton(
+                  text: 'Submit Request',
+                  onPressed: selectedReason == null
+                      ? null
+                      : () {
+                          Navigator.pop(ctx);
+                          _requestRefund(selectedReason!);
+                        },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _requestRefund(String reason) async {
+    setState(() => _isRequestingRefund = true);
+    try {
+      await _requestRefundUseCase.call(
+        transactionId: widget.transactionId,
+        reason: reason,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Refund request submitted')),
+        );
+        _loadData();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.toString().replaceFirst('Exception: ', ''),
+            ),
+            backgroundColor: LynewedColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isRequestingRefund = false);
+    }
+  }
+
   Widget _buildErrorState() {
     return Center(
       child: Padding(
@@ -386,6 +579,16 @@ class _BuyerTransactionPageState extends State<BuyerTransactionPage> {
         return 'Delivered';
       case 'completed':
         return 'Completed';
+      case 'expired':
+        return 'Expired';
+      case 'refunded':
+        return 'Refunded';
+      case 'disputed':
+        return 'Disputed';
+      case 'exception':
+        return 'Delivery Exception';
+      case 'out_for_delivery':
+        return 'Out for Delivery';
       default:
         return status;
     }
@@ -400,10 +603,17 @@ class _BuyerTransactionPageState extends State<BuyerTransactionPage> {
       case 'label_created':
       case 'shipped':
       case 'in_transit':
+      case 'out_for_delivery':
         return LynewedColors.success;
       case 'delivered':
       case 'completed':
         return LynewedColors.success;
+      case 'expired':
+      case 'refunded':
+        return LynewedColors.error;
+      case 'disputed':
+      case 'exception':
+        return LynewedColors.warning;
       default:
         return LynewedColors.textSecondary;
     }
@@ -421,10 +631,20 @@ class _BuyerTransactionPageState extends State<BuyerTransactionPage> {
         return Icons.local_shipping;
       case 'in_transit':
         return Icons.flight_takeoff;
+      case 'out_for_delivery':
+        return Icons.delivery_dining;
       case 'delivered':
         return Icons.inventory_2;
       case 'completed':
         return Icons.check_circle;
+      case 'expired':
+        return Icons.timer_off;
+      case 'refunded':
+        return Icons.money_off;
+      case 'disputed':
+        return Icons.gavel;
+      case 'exception':
+        return Icons.warning_amber;
       default:
         return Icons.info_outline;
     }

@@ -32,4 +32,10 @@ abstract class FedExRepository {
   ///
   /// Returns a list of [TrackingEvent] ordered by timestamp ascending.
   Future<List<TrackingEvent>> getTrackingEvents(String transactionId);
+
+  /// Cancels a shipment (voids the shipping label).
+  ///
+  /// Only works when transaction status is 'label_created'.
+  /// Reverts transaction to 'paid' status and clears FedEx fields.
+  Future<void> cancelShipment(String transactionId);
 }

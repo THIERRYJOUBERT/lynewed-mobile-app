@@ -11,6 +11,7 @@ import '/core/di/injection_container.dart';
 import '../../domain/entities/offer_display_model.dart';
 import '../../domain/repositories/marketplace_offer_repository.dart';
 import '../widgets/offer_card.dart';
+import '../widgets/pending_payment_banner.dart';
 import 'marketplace_chat_page.dart';
 
 /// Page showing all offers made by the current user.
@@ -235,19 +236,33 @@ class _MyOffersPageState extends State<MyOffersPage> {
   }
 
   Widget _buildOffersList() {
-    return ListView.builder(
-      itemCount: _offers.length,
-      itemBuilder: (context, index) {
-        final model = _offers[index];
-        return OfferCard(
-          model: model,
-          viewMode: OfferCardViewMode.buyer,
-          onWithdraw: model.offer.isPending
-              ? () => _withdrawOffer(model.offer.id)
-              : null,
-          onTap: () => _openChat(model),
-        );
-      },
+    return Column(
+      children: [
+        PendingPaymentBanner(
+          repository: _repository,
+          onTap: (offers) {
+            if (offers.length == 1) {
+              _openChat(offers.first);
+            }
+          },
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: _offers.length,
+            itemBuilder: (context, index) {
+              final model = _offers[index];
+              return OfferCard(
+                model: model,
+                viewMode: OfferCardViewMode.buyer,
+                onWithdraw: model.offer.isPending
+                    ? () => _withdrawOffer(model.offer.id)
+                    : null,
+                onTap: () => _openChat(model),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

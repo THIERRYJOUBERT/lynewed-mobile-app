@@ -127,7 +127,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
     final sellerAddress = widget.sellerShippingAddress;
     if (sellerAddress == null) {
       setState(() {
-        _ratesError = 'Seller shipping address not available';
+        _ratesError = 'The seller has not set up a shipping address yet. '
+            'Please go back and contact the seller.';
         _isLoadingRates = false;
       });
       return;

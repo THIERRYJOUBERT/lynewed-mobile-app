@@ -210,6 +210,21 @@ class FakeMarketplaceOfferRepository implements MarketplaceOfferRepository {
   Future<MarketplaceOffer> getOfferById(String offerId) async {
     return _offers.firstWhere((o) => o.id == offerId);
   }
+
+  @override
+  Future<List<OfferDisplayModel>> getOffersAwaitingMyPayment() async {
+    if (nextException != null) {
+      final e = nextException!;
+      nextException = null;
+      throw e;
+    }
+
+    final accepted = _offers
+        .where((o) => o.status == 'accepted')
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return accepted.map((o) => OfferDisplayModel(offer: o)).toList();
+  }
 }
 
 // =============================================================================

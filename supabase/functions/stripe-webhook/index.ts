@@ -160,32 +160,89 @@ async function accountDeauth(db: SupabaseClient, o: any) {
   await db.from("notifications_outbox").insert({ recipient_id: null, event_type: "admin_account_deauthorized", payload: { user_id: sa.user_id, account_id: o.account } });
 }
 
+// Helper: find marketplace_transaction by stripe_charge_id (fallback when not in purchases)
+async function findMarketplaceTx(db: SupabaseClient, chargeId: string) {
+  const { data } = await db.from("marketplace_transactions")
+    .select("id, buyer_id, seller_id, listing_id, status")
+    .eq("stripe_charge_id", chargeId).maybeSingle();
+  return data;
+}
+
+async function getListingTitle(db: SupabaseClient, listingId: string): Promise<string> {
+  const { data } = await db.from("marketplace_listings").select("title").eq("id", listingId).maybeSingle();
+  return data?.title || "item";
+}
+
 async function disputeCreated(db: SupabaseClient, d: Stripe.Dispute) {
-  const { data: p } = await db.from("purchases").select("id, user_id, seller_id").eq("stripe_charge_id", d.charge as string).single();
+  const chargeId = d.charge as string;
+  const { data: p } = await db.from("purchases").select("id, user_id, seller_id").eq("stripe_charge_id", chargeId).maybeSingle();
   if (p) {
     await db.from("purchases").update({ status: "disputed", disputed_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", p.id);
     if (p.seller_id) await db.from("notifications_outbox").insert({ recipient_id: p.seller_id, event_type: "dispute_critical", payload: { priority: "critical", message: "URGENT: Dispute received", reason: d.reason, amount: d.amount / 100 } });
     await db.from("notifications_outbox").insert({ recipient_id: p.user_id, event_type: "dispute_created_buyer", payload: { message: "Dispute received" } });
+  } else {
+    // Fallback: marketplace_transactions
+    const mt = await findMarketplaceTx(db, chargeId);
+    if (mt) {
+      const now = new Date().toISOString();
+      await db.from("marketplace_transactions").update({ status: "disputed", disputed_at: now, updated_at: now }).eq("id", mt.id);
+      const title = await getListingTitle(db, mt.listing_id);
+      await db.from("notifications_outbox").insert({ event_type: "marketplace_disputed", event_key: `marketplace:disputed:seller:${mt.id}`, payload: { recipient_id: mt.seller_id, transaction_id: mt.id, listing_title: title, reason: d.reason } });
+      await db.from("notifications_outbox").insert({ event_type: "marketplace_disputed", event_key: `marketplace:disputed:buyer:${mt.id}`, payload: { recipient_id: mt.buyer_id, transaction_id: mt.id, listing_title: title, reason: d.reason } });
+    }
   }
-  await db.from("notifications_outbox").insert({ recipient_id: null, event_type: "admin_dispute_created", payload: { dispute_id: d.id, charge_id: d.charge, reason: d.reason, amount: d.amount / 100 } });
+  await db.from("notifications_outbox").insert({ recipient_id: null, event_type: "admin_dispute_created", payload: { dispute_id: d.id, charge_id: chargeId, reason: d.reason, amount: d.amount / 100 } });
 }
 async function disputeUpdated(db: SupabaseClient, d: Stripe.Dispute) {
-  const { data: p } = await db.from("purchases").select("seller_id").eq("stripe_charge_id", d.charge as string).single();
-  if (p?.seller_id) await db.from("notifications_outbox").insert({ recipient_id: p.seller_id, event_type: "dispute_updated", payload: { status: d.status } });
+  const chargeId = d.charge as string;
+  const { data: p } = await db.from("purchases").select("seller_id").eq("stripe_charge_id", chargeId).maybeSingle();
+  if (p?.seller_id) {
+    await db.from("notifications_outbox").insert({ recipient_id: p.seller_id, event_type: "dispute_updated", payload: { status: d.status } });
+  } else {
+    const mt = await findMarketplaceTx(db, chargeId);
+    if (mt) {
+      await db.from("notifications_outbox").insert({ event_type: "marketplace_disputed", event_key: `marketplace:dispute_update:${mt.id}:${d.status}`, payload: { recipient_id: mt.seller_id, transaction_id: mt.id, reason: `Dispute status: ${d.status}` } });
+    }
+  }
 }
 async function disputeClosed(db: SupabaseClient, d: Stripe.Dispute) {
   const won = d.status === "won";
-  const { data: p } = await db.from("purchases").select("id, seller_id, user_id").eq("stripe_charge_id", d.charge as string).single();
+  const chargeId = d.charge as string;
+  const { data: p } = await db.from("purchases").select("id, seller_id, user_id").eq("stripe_charge_id", chargeId).maybeSingle();
   if (p) {
     await db.from("purchases").update({ status: won ? "succeeded" : "refunded", updated_at: new Date().toISOString(), ...(won ? {} : { refunded_at: new Date().toISOString() }) }).eq("id", p.id);
     if (p.seller_id) await db.from("notifications_outbox").insert({ recipient_id: p.seller_id, event_type: won ? "dispute_won" : "dispute_lost", payload: { message: won ? "Dispute won!" : "Dispute lost", amount: d.amount / 100 } });
     await db.from("notifications_outbox").insert({ recipient_id: p.user_id, event_type: "dispute_closed_buyer", payload: { message: won ? "Dispute resolved" : "Refund processed" } });
+  } else {
+    const mt = await findMarketplaceTx(db, chargeId);
+    if (mt) {
+      const now = new Date().toISOString();
+      if (won) {
+        // Dispute won: restore previous status (best guess: 'paid' if no tracking, or keep current)
+        await db.from("marketplace_transactions").update({ updated_at: now }).eq("id", mt.id);
+      } else {
+        // Dispute lost: refund the transaction, re-activate listing
+        await db.from("marketplace_transactions").update({ status: "refunded", refunded_at: now, updated_at: now }).eq("id", mt.id);
+        await db.from("marketplace_listings").update({ status: "active" }).eq("id", mt.listing_id);
+      }
+      const title = await getListingTitle(db, mt.listing_id);
+      await db.from("notifications_outbox").insert({ event_type: "marketplace_dispute_resolved", event_key: `marketplace:dispute_closed:seller:${mt.id}`, payload: { recipient_id: mt.seller_id, transaction_id: mt.id, listing_title: title } });
+      await db.from("notifications_outbox").insert({ event_type: "marketplace_dispute_resolved", event_key: `marketplace:dispute_closed:buyer:${mt.id}`, payload: { recipient_id: mt.buyer_id, transaction_id: mt.id, listing_title: title } });
+    }
   }
 }
 async function disputeFunds(db: SupabaseClient, d: Stripe.Dispute, type: string) {
   const reinstated = type.includes("reinstated");
-  const { data: p } = await db.from("purchases").select("seller_id").eq("stripe_charge_id", d.charge as string).single();
-  if (p?.seller_id) await db.from("notifications_outbox").insert({ recipient_id: p.seller_id, event_type: reinstated ? "funds_reinstated" : "funds_withdrawn", payload: { message: reinstated ? "Funds returned" : "Funds withdrawn", amount: d.amount / 100 } });
+  const chargeId = d.charge as string;
+  const { data: p } = await db.from("purchases").select("seller_id").eq("stripe_charge_id", chargeId).maybeSingle();
+  if (p?.seller_id) {
+    await db.from("notifications_outbox").insert({ recipient_id: p.seller_id, event_type: reinstated ? "funds_reinstated" : "funds_withdrawn", payload: { message: reinstated ? "Funds returned" : "Funds withdrawn", amount: d.amount / 100 } });
+  } else {
+    const mt = await findMarketplaceTx(db, chargeId);
+    if (mt) {
+      await db.from("notifications_outbox").insert({ event_type: reinstated ? "marketplace_dispute_resolved" : "marketplace_disputed", event_key: `marketplace:dispute_funds:${mt.id}:${reinstated ? 'reinstated' : 'withdrawn'}`, payload: { recipient_id: mt.seller_id, transaction_id: mt.id, reason: reinstated ? "Funds reinstated" : "Funds withdrawn" } });
+    }
+  }
 }
 
 async function payoutPaid(db: SupabaseClient, p: Stripe.Payout) {
@@ -214,20 +271,44 @@ async function payoutCanceled(db: SupabaseClient, p: Stripe.Payout) {
 async function transferCreated(db: SupabaseClient, t: Stripe.Transfer) {
   const src = t.source_transaction as string;
   if (src) {
-    const { data: p } = await db.from("purchases").select("id").eq("stripe_charge_id", src).single();
-    if (p) await db.from("purchases").update({ stripe_transfer_id: t.id, updated_at: new Date().toISOString() }).eq("id", p.id);
+    const { data: p } = await db.from("purchases").select("id").eq("stripe_charge_id", src).maybeSingle();
+    if (p) {
+      await db.from("purchases").update({ stripe_transfer_id: t.id, updated_at: new Date().toISOString() }).eq("id", p.id);
+    } else {
+      // Fallback: marketplace_transactions
+      const { data: mt } = await db.from("marketplace_transactions").select("id").eq("stripe_charge_id", src).maybeSingle();
+      if (mt) await db.from("marketplace_transactions").update({ stripe_transfer_id: t.id, updated_at: new Date().toISOString() }).eq("id", mt.id);
+    }
   }
 }
 async function transferReversed(db: SupabaseClient, t: Stripe.Transfer) {
-  const { data: p } = await db.from("purchases").select("seller_id").eq("stripe_transfer_id", t.id).single();
-  if (p?.seller_id) await db.from("notifications_outbox").insert({ recipient_id: p.seller_id, event_type: "transfer_reversed", payload: { message: "Transfer reversed", amount: t.amount / 100 } });
+  const { data: p } = await db.from("purchases").select("seller_id").eq("stripe_transfer_id", t.id).maybeSingle();
+  if (p?.seller_id) {
+    await db.from("notifications_outbox").insert({ recipient_id: p.seller_id, event_type: "transfer_reversed", payload: { message: "Transfer reversed", amount: t.amount / 100 } });
+  } else {
+    // Fallback: marketplace_transactions
+    const { data: mt } = await db.from("marketplace_transactions").select("seller_id").eq("stripe_transfer_id", t.id).maybeSingle();
+    if (mt?.seller_id) await db.from("notifications_outbox").insert({ recipient_id: mt.seller_id, event_type: "transfer_reversed", payload: { message: "Transfer reversed", amount: t.amount / 100 } });
+  }
 }
 async function chargeRefunded(db: SupabaseClient, c: Stripe.Charge) {
   const full = c.amount_refunded >= c.amount;
-  const { data: p } = await db.from("purchases").select("id, user_id, seller_id").eq("stripe_charge_id", c.id).single();
+  const { data: p } = await db.from("purchases").select("id, user_id, seller_id").eq("stripe_charge_id", c.id).maybeSingle();
   if (p) {
     await db.from("purchases").update({ status: full ? "refunded" : "partially_refunded", updated_at: new Date().toISOString(), ...(full ? { refunded_at: new Date().toISOString() } : {}) }).eq("id", p.id);
     await db.from("notifications_outbox").insert({ recipient_id: p.user_id, event_type: full ? "purchase_refunded" : "partial_refund", payload: { message: full ? "Refunded" : "Partial refund", amount: c.amount_refunded / 100 } });
     if (p.seller_id) await db.from("notifications_outbox").insert({ recipient_id: p.seller_id, event_type: "sale_refunded", payload: { message: "Sale refunded", amount: c.amount_refunded / 100 } });
+  } else {
+    // Fallback: marketplace_transactions
+    const mt = await findMarketplaceTx(db, c.id);
+    if (mt && full) {
+      const now = new Date().toISOString();
+      await db.from("marketplace_transactions").update({ status: "refunded", refunded_at: now, updated_at: now }).eq("id", mt.id);
+      // Re-activate listing so it can be sold again
+      await db.from("marketplace_listings").update({ status: "active" }).eq("id", mt.listing_id);
+      const title = await getListingTitle(db, mt.listing_id);
+      await db.from("notifications_outbox").insert({ event_type: "marketplace_refunded", event_key: `marketplace:refunded:buyer:${mt.id}`, payload: { recipient_id: mt.buyer_id, transaction_id: mt.id, listing_title: title } });
+      await db.from("notifications_outbox").insert({ event_type: "marketplace_refunded", event_key: `marketplace:refunded:seller:${mt.id}`, payload: { recipient_id: mt.seller_id, transaction_id: mt.id, listing_title: title } });
+    }
   }
 }

@@ -19,6 +19,7 @@ import '/features/marketplace/presentation/pages/received_offers_page.dart';
 import '/features/marketplace/presentation/pages/marketplace_chat_page.dart';
 import '/features/marketplace/presentation/pages/transaction_detail_page.dart';
 import '/features/marketplace/presentation/pages/buyer_transaction_page.dart';
+import '/features/marketplace/presentation/pages/my_purchases_page.dart';
 import '/features/my_wedding/presentation/pages/order_confirmation_page.dart';
 import '/features/notifications/presentation/bloc/notifications_cubit.dart';
 import '/features/wishlist/presentation/pages/wishlist_pro_page.dart';
@@ -524,6 +525,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             transactionId:
                 params.getParam('transactionId', ParamType.String) ?? '',
           ),
+        ),
+        // Marketplace - My Purchases (EPIC-14)
+        FFRoute(
+          name: MyPurchasesPage.routeName,
+          path: MyPurchasesPage.routePath,
+          builder: (context, params) => const MyPurchasesPage(),
         ),
         // Marketplace - Buyer Transaction (EPIC-14)
         FFRoute(

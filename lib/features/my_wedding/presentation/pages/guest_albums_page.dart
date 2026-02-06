@@ -226,7 +226,7 @@ class _GuestAlbumsPageState extends State<GuestAlbumsPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => _GuestAlbumDetailPage(album: album),
+        builder: (context) => GuestAlbumDetailPage(album: album),
       ),
     );
   }
@@ -235,16 +235,16 @@ class _GuestAlbumsPageState extends State<GuestAlbumsPage> {
 /// Detail page for viewing a specific guest's album.
 ///
 /// Style reference: album_detail_page.dart (grid layout)
-class _GuestAlbumDetailPage extends StatefulWidget {
-  const _GuestAlbumDetailPage({required this.album});
+class GuestAlbumDetailPage extends StatefulWidget {
+  const GuestAlbumDetailPage({super.key, required this.album});
 
   final GuestAlbum album;
 
   @override
-  State<_GuestAlbumDetailPage> createState() => _GuestAlbumDetailPageState();
+  State<GuestAlbumDetailPage> createState() => _GuestAlbumDetailPageState();
 }
 
-class _GuestAlbumDetailPageState extends State<_GuestAlbumDetailPage> {
+class _GuestAlbumDetailPageState extends State<GuestAlbumDetailPage> {
   bool _isLoading = true;
   String? _error;
   List<GuestMedia> _media = [];

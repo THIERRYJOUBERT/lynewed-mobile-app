@@ -39,6 +39,11 @@ class _MockFedExRepository implements FedExRepository {
   Future<List<TrackingEvent>> getTrackingEvents(String transactionId) async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> cancelShipment(String transactionId) async {
+    throw UnimplementedError();
+  }
 }
 
 /// Mock use case that returns a configurable result.

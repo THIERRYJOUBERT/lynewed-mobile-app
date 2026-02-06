@@ -58,6 +58,9 @@ class _PeoplePageState extends State<PeoplePage>
       vsync: this,
       initialIndex: widget.initialTab,
     );
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) setState(() {});
+    });
     _loadPros();
     _loadGuests();
   }
@@ -118,6 +121,13 @@ class _PeoplePageState extends State<PeoplePage>
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _tabController.index == 0
+            ? _openInviteProSheet
+            : () => _openAddGuestSheet(),
+        backgroundColor: LynewedColors.primary,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -406,20 +416,16 @@ class _PeoplePageState extends State<PeoplePage>
 
     if (pendingWithEmail.isEmpty) return const SizedBox.shrink();
 
-    return GestureDetector(
-      onTap: () => showDialog(
+    return LynewedButton(
+      text: 'Invite all (${pendingWithEmail.length})',
+      icon: Icons.send_outlined,
+      type: LynewedButtonType.secondary,
+      onPressed: () => showDialog(
         context: context,
         builder: (context) => BulkInviteDialog(
           weddingId: widget.weddingId,
           pendingGuests: pendingWithEmail,
           onInvitationsSent: _loadGuests,
-        ),
-      ),
-      child: Text(
-        'Invite all (${pendingWithEmail.length})',
-        style: LynewedTextStyles.bodySmall.copyWith(
-          color: LynewedColors.textSecondary,
-          decoration: TextDecoration.underline,
         ),
       ),
     );

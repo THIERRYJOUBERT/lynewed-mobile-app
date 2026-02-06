@@ -48,4 +48,9 @@ class FedExRepositoryImpl implements FedExRepository {
   Future<List<TrackingEvent>> getTrackingEvents(String transactionId) async {
     return _datasource.getTrackingEvents(transactionId);
   }
+
+  @override
+  Future<void> cancelShipment(String transactionId) async {
+    return _datasource.cancelShipment(transactionId);
+  }
 }

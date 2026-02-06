@@ -11,7 +11,10 @@ import '/core/di/injection_container.dart';
 import '../../domain/entities/marketplace_transaction.dart';
 import '../../domain/entities/shipping_label.dart';
 import '../../domain/repositories/marketplace_transaction_repository.dart';
+import '../../domain/usecases/approve_refund_use_case.dart';
+import '../../domain/usecases/cancel_shipment_use_case.dart';
 import '../../domain/usecases/generate_shipping_label_use_case.dart';
+import '../../domain/usecases/reject_refund_use_case.dart';
 import '../widgets/generate_label_button.dart';
 import '../widgets/shipping_label_widget.dart';
 
@@ -35,10 +38,22 @@ class TransactionDetailPage extends StatefulWidget {
   /// Use case for generating shipping labels. Injectable for testing.
   final GenerateShippingLabelUseCase? generateLabelUseCase;
 
+  /// Use case for cancelling shipments. Injectable for testing.
+  final CancelShipmentUseCase? cancelShipmentUseCase;
+
+  /// Use case for approving refunds. Injectable for testing.
+  final ApproveRefundUseCase? approveRefundUseCase;
+
+  /// Use case for rejecting refunds. Injectable for testing.
+  final RejectRefundUseCase? rejectRefundUseCase;
+
   const TransactionDetailPage({
     required this.transactionId,
     this.transactionRepository,
     this.generateLabelUseCase,
+    this.cancelShipmentUseCase,
+    this.approveRefundUseCase,
+    this.rejectRefundUseCase,
     super.key,
   });
 
@@ -49,9 +64,14 @@ class TransactionDetailPage extends StatefulWidget {
 class _TransactionDetailPageState extends State<TransactionDetailPage> {
   late final MarketplaceTransactionRepository _repository;
   late final GenerateShippingLabelUseCase _generateLabelUseCase;
+  late final CancelShipmentUseCase _cancelShipmentUseCase;
+  late final ApproveRefundUseCase _approveRefundUseCase;
+  late final RejectRefundUseCase _rejectRefundUseCase;
 
   MarketplaceTransaction? _transaction;
   bool _isLoading = true;
+  bool _isCancelling = false;
+  bool _isProcessingRefund = false;
   String? _errorMessage;
 
   @override
@@ -61,6 +81,12 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
         sl<MarketplaceTransactionRepository>();
     _generateLabelUseCase =
         widget.generateLabelUseCase ?? sl<GenerateShippingLabelUseCase>();
+    _cancelShipmentUseCase =
+        widget.cancelShipmentUseCase ?? sl<CancelShipmentUseCase>();
+    _approveRefundUseCase =
+        widget.approveRefundUseCase ?? sl<ApproveRefundUseCase>();
+    _rejectRefundUseCase =
+        widget.rejectRefundUseCase ?? sl<RejectRefundUseCase>();
     _loadTransaction();
   }
 
@@ -92,6 +118,166 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
   void _onLabelGenerated(ShippingLabel label) {
     // Reload the transaction to get updated status and label info.
     _loadTransaction();
+  }
+
+  Future<void> _cancelShipment() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Void Shipping Label'),
+        content: const Text(
+          'Are you sure you want to void this shipping label? '
+          'The transaction will revert to "Paid" status and you can '
+          'generate a new label.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              'Void Label',
+              style: TextStyle(color: LynewedColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isCancelling = true);
+    try {
+      await _cancelShipmentUseCase.call(
+        transactionId: widget.transactionId,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Shipping label voided successfully')),
+        );
+        _loadTransaction();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.toString().replaceFirst('Exception: ', ''),
+            ),
+            backgroundColor: LynewedColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isCancelling = false);
+    }
+  }
+
+  Future<void> _approveRefund() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Approve Refund'),
+        content: const Text(
+          'This will issue a full refund to the buyer via Stripe. '
+          'This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              'Approve Refund',
+              style: TextStyle(color: LynewedColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isProcessingRefund = true);
+    try {
+      await _approveRefundUseCase.call(
+        transactionId: widget.transactionId,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Refund approved and processed')),
+        );
+        _loadTransaction();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.toString().replaceFirst('Exception: ', ''),
+            ),
+            backgroundColor: LynewedColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isProcessingRefund = false);
+    }
+  }
+
+  Future<void> _rejectRefund() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Decline Refund'),
+        content: const Text(
+          'The buyer will be notified that their refund request '
+          'was declined.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Decline'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isProcessingRefund = true);
+    try {
+      await _rejectRefundUseCase.call(
+        transactionId: widget.transactionId,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Refund request declined')),
+        );
+        _loadTransaction();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.toString().replaceFirst('Exception: ', ''),
+            ),
+            backgroundColor: LynewedColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isProcessingRefund = false);
+    }
   }
 
   @override
@@ -150,15 +336,66 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildStatusBadge(),
+          if (_transaction!.isRefunded || _transaction!.isDisputed ||
+              _transaction!.isExpired ||
+              _transaction!.refundRequestedAt != null) ...[
+            const SizedBox(height: 12),
+            _buildAlertBanner(),
+          ],
           const SizedBox(height: 30),
           _buildShippingSection(),
           const SizedBox(height: 30),
           _buildShippingAddressSection(),
           const SizedBox(height: 30),
           _buildPriceBreakdown(),
+          if (_transaction!.refundRequestedAt != null &&
+              !_transaction!.isRefunded) ...[
+            const SizedBox(height: 30),
+            _buildRefundActions(),
+          ],
           const SizedBox(height: 30),
         ],
       ),
+    );
+  }
+
+  Widget _buildRefundActions() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const LynewedSectionTitle('Refund Request'),
+        const SizedBox(height: 10),
+        if (_transaction!.refundReason != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              'Reason: ${_transaction!.refundReason}',
+              style: LynewedTextStyles.bodySmall.copyWith(
+                color: LynewedColors.textSecondary,
+              ),
+            ),
+          ),
+        Row(
+          children: [
+            Expanded(
+              child: LynewedButton(
+                text: _isProcessingRefund ? 'Processing...' : 'Approve Refund',
+                icon: Icons.check,
+                onPressed: _isProcessingRefund ? null : _approveRefund,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: LynewedButton(
+                text: 'Decline',
+                type: LynewedButtonType.secondary,
+                icon: Icons.close,
+                onPressed: _isProcessingRefund ? null : _rejectRefund,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -208,6 +445,18 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
             trackingNumber: tx.fedexTrackingNumber ?? '',
             labelUrl: tx.fedexLabelUrl!,
           ),
+          if (tx.isLabelCreated) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: LynewedButton(
+                text: _isCancelling ? 'Voiding...' : 'Void Shipping Label',
+                type: LynewedButtonType.secondary,
+                icon: Icons.cancel_outlined,
+                onPressed: _isCancelling ? null : _cancelShipment,
+              ),
+            ),
+          ],
         ],
       );
     }
@@ -340,6 +589,54 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
     );
   }
 
+  Widget _buildAlertBanner() {
+    final tx = _transaction!;
+    String message;
+    IconData icon;
+    Color color;
+
+    if (tx.isRefunded) {
+      message = 'This transaction has been refunded.';
+      icon = Icons.money_off;
+      color = LynewedColors.error;
+    } else if (tx.isDisputed) {
+      message = 'A dispute has been opened on this transaction.';
+      icon = Icons.gavel;
+      color = LynewedColors.warning;
+    } else if (tx.isExpired) {
+      message = 'This transaction has expired because the item was not shipped in time.';
+      icon = Icons.timer_off;
+      color = LynewedColors.error;
+    } else if (tx.refundRequestedAt != null) {
+      message = 'The buyer has requested a refund.${tx.refundReason != null ? ' Reason: ${tx.refundReason}' : ''}';
+      icon = Icons.warning_amber;
+      color = LynewedColors.warning;
+    } else {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: LynewedTextStyles.bodySmall.copyWith(color: color),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildErrorState() {
     return Center(
       child: Padding(
@@ -415,6 +712,12 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
         return 'Completed';
       case 'expired':
         return 'Expired';
+      case 'refunded':
+        return 'Refunded';
+      case 'disputed':
+        return 'Disputed';
+      case 'exception':
+        return 'Delivery Exception';
       default:
         return status;
     }
@@ -435,7 +738,11 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
       case 'completed':
         return LynewedColors.success;
       case 'expired':
+      case 'refunded':
         return LynewedColors.error;
+      case 'disputed':
+      case 'exception':
+        return LynewedColors.warning;
       default:
         return LynewedColors.textSecondary;
     }
@@ -461,6 +768,12 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
         return Icons.check_circle;
       case 'expired':
         return Icons.timer_off;
+      case 'refunded':
+        return Icons.money_off;
+      case 'disputed':
+        return Icons.gavel;
+      case 'exception':
+        return Icons.warning_amber;
       default:
         return Icons.info_outline;
     }

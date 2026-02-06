@@ -11,15 +11,19 @@ import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
 import '../../domain/entities/listing_filter.dart';
 import '../../domain/entities/marketplace_listing.dart';
+import '../../domain/entities/offer_display_model.dart';
 import '../../domain/repositories/marketplace_repository.dart';
 import '../widgets/category_chips.dart';
 import '../widgets/filter_badge_row.dart';
 import '../widgets/filter_sheet.dart';
 import '../widgets/listing_card.dart';
 import '../widgets/listing_skeleton_card.dart';
+import '../widgets/pending_payment_banner.dart';
 import 'create_listing_page.dart';
 import 'listing_detail_page.dart';
+import 'marketplace_chat_page.dart';
 import 'my_offers_page.dart';
+import 'my_purchases_page.dart';
 import 'seller_dashboard_page.dart';
 
 /// Number of items per page for pagination.
@@ -302,10 +306,40 @@ class _MarketplaceFeedPageState extends State<MarketplaceFeedPage> {
     );
   }
 
+  void _onPendingPaymentTap(List<OfferDisplayModel> offers) {
+    if (offers.length == 1) {
+      final offer = offers.first;
+      final sellerId = offer.sellerId;
+      if (sellerId != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => MarketplaceChatPage(
+              listingId: offer.offer.listingId,
+              otherUserId: sellerId,
+              listingTitle: offer.listingTitle,
+              otherUserName: offer.sellerName,
+              otherUserAvatarUrl: offer.sellerAvatarUrl,
+            ),
+          ),
+        );
+        return;
+      }
+    }
+    _onMyOffersTap();
+  }
+
   void _onMySalesTap() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => const SellerDashboardPage(),
+      ),
+    );
+  }
+
+  void _onMyPurchasesTap() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const MyPurchasesPage(),
       ),
     );
   }
@@ -360,6 +394,9 @@ class _MarketplaceFeedPageState extends State<MarketplaceFeedPage> {
                         filter: _currentFilter,
                         onFilterChanged: _onFilterChanged,
                       ),
+                    PendingPaymentBanner(
+                      onTap: _onPendingPaymentTap,
+                    ),
                     Expanded(child: _buildBody()),
                   ],
                 ),
@@ -397,6 +434,16 @@ class _MarketplaceFeedPageState extends State<MarketplaceFeedPage> {
               'Marketplace',
               style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 20),
             ),
+          ),
+          // My Purchases button (buyer view).
+          LynewedIconButton(
+            icon: const Icon(
+              Icons.shopping_bag_outlined,
+              color: LynewedColors.textPrimary,
+              size: 22,
+            ),
+            onPressed: _onMyPurchasesTap,
+            buttonSize: 40,
           ),
           // My Offers button (buyer view).
           LynewedIconButton(

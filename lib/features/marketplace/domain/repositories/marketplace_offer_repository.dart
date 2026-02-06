@@ -47,6 +47,15 @@ abstract class MarketplaceOfferRepository {
 
   /// Get current user's offers across all listings (buyer view) with listing info.
   ///
+  /// Includes both direct offers and counter-offers received from sellers.
   /// Ordered by creation date, newest first.
   Future<List<OfferDisplayModel>> getMyOffers();
+
+  /// Get accepted offers awaiting payment by the current user.
+  ///
+  /// Returns offers where:
+  /// - Status is 'accepted'
+  /// - Current user is the buyer (direct offer or counter-offer receiver)
+  /// - No transaction has been created yet for the offer
+  Future<List<OfferDisplayModel>> getOffersAwaitingMyPayment();
 }

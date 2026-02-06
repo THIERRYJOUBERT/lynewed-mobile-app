@@ -41,7 +41,11 @@ import '../../features/marketplace/domain/repositories/stripe_connect_repository
 import '../../features/marketplace/domain/usecases/calculate_shipping_rate_use_case.dart';
 import '../../features/marketplace/domain/usecases/check_stripe_status_use_case.dart';
 import '../../features/marketplace/domain/usecases/generate_shipping_label_use_case.dart';
+import '../../features/marketplace/domain/usecases/approve_refund_use_case.dart';
+import '../../features/marketplace/domain/usecases/cancel_shipment_use_case.dart';
 import '../../features/marketplace/domain/usecases/get_tracking_events_use_case.dart';
+import '../../features/marketplace/domain/usecases/reject_refund_use_case.dart';
+import '../../features/marketplace/domain/usecases/request_refund_use_case.dart';
 import '../../features/marketplace/domain/usecases/setup_stripe_connect_use_case.dart';
 import '../../features/payments/data/repositories/supabase_stripe_repository.dart';
 import '../../features/payments/domain/repositories/stripe_repository.dart';
@@ -205,6 +209,17 @@ Future<void> _initMarketplace() async {
   sl.registerLazySingleton<MarketplaceTransactionRepository>(
     () => SupabaseMarketplaceTransactionRepository(SupaFlow.client),
   );
+
+  // Refund use cases
+  sl.registerLazySingleton<RequestRefundUseCase>(
+    () => RequestRefundUseCase(sl<MarketplaceTransactionRepository>()),
+  );
+  sl.registerLazySingleton<ApproveRefundUseCase>(
+    () => ApproveRefundUseCase(sl<MarketplaceTransactionRepository>()),
+  );
+  sl.registerLazySingleton<RejectRefundUseCase>(
+    () => RejectRefundUseCase(sl<MarketplaceTransactionRepository>()),
+  );
 }
 
 /// Initializes Marketplace FedEx shipping dependencies.
@@ -231,5 +246,8 @@ Future<void> _initMarketplaceFedEx() async {
   );
   sl.registerLazySingleton<GetTrackingEventsUseCase>(
     () => GetTrackingEventsUseCase(sl<FedExRepository>()),
+  );
+  sl.registerLazySingleton<CancelShipmentUseCase>(
+    () => CancelShipmentUseCase(sl<FedExRepository>()),
   );
 }

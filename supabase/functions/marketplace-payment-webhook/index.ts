@@ -112,6 +112,7 @@ Deno.serve(async (req: Request) => {
           total_paid_cents: paymentIntent.amount,
           status: 'paid',
           stripe_payment_intent_id: paymentIntent.id,
+          stripe_charge_id: typeof paymentIntent.latest_charge === 'string' ? paymentIntent.latest_charge : null,
           shipping_to_address: shippingToAddress,
           shipping_from_address: shippingFromAddress,
           shipping_service_type: metadata.shipping_service || 'FEDEX_GROUND',

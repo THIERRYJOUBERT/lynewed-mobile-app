@@ -15,6 +15,7 @@ import 'package:lynewed_beta/features/marketplace/domain/entities/tracking_event
 import 'package:lynewed_beta/features/marketplace/domain/repositories/fedex_repository.dart';
 import 'package:lynewed_beta/features/marketplace/domain/repositories/marketplace_transaction_repository.dart';
 import 'package:lynewed_beta/features/marketplace/domain/usecases/get_tracking_events_use_case.dart';
+import 'package:lynewed_beta/features/marketplace/domain/usecases/request_refund_use_case.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/pages/buyer_transaction_page.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/widgets/buyer_tracking_timeline.dart';
 
@@ -112,6 +113,21 @@ class _MockTransactionRepository implements MarketplaceTransactionRepository {
   Future<void> acceptBuyerCgvu() async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> requestRefund({required String transactionId, String? reason}) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> approveRefund({required String transactionId}) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> rejectRefund({required String transactionId}) async {
+    throw UnimplementedError();
+  }
 }
 
 class _MockFedExRepository implements FedExRepository {
@@ -136,6 +152,18 @@ class _MockFedExRepository implements FedExRepository {
   Future<List<TrackingEvent>> getTrackingEvents(String transactionId) async {
     return [];
   }
+
+  @override
+  Future<void> cancelShipment(String transactionId) async {
+    throw UnimplementedError();
+  }
+}
+
+class _MockRequestRefundUseCase extends RequestRefundUseCase {
+  _MockRequestRefundUseCase() : super(_MockTransactionRepository());
+
+  @override
+  Future<void> call({required String transactionId, String? reason}) async {}
 }
 
 class _MockGetTrackingEventsUseCase extends GetTrackingEventsUseCase {
@@ -179,6 +207,7 @@ void main() {
                   ),
                 ],
               ),
+          requestRefundUseCase: _MockRequestRefundUseCase(),
         ),
       );
     }

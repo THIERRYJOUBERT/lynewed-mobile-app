@@ -501,6 +501,14 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
       final sellerProfile = await authDs.getProfile(listing.sellerId);
       if (!mounted) return;
 
+      if (sellerProfile?.shippingAddress == null) {
+        _showErrorSnackBar(
+          'This seller hasn\'t set up their shipping address yet. '
+          'Please contact the seller.',
+        );
+        return;
+      }
+
       Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (_) => CheckoutPage(
