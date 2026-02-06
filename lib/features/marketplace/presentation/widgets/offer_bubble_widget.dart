@@ -27,6 +27,7 @@ class OfferBubbleWidget extends StatelessWidget {
     this.needsLargeSpacing = false,
     this.onAccept,
     this.onDecline,
+    this.onWithdraw,
     this.onProceedToCheckout,
     super.key,
   });
@@ -54,6 +55,9 @@ class OfferBubbleWidget extends StatelessWidget {
 
   /// Called when seller declines the offer.
   final VoidCallback? onDecline;
+
+  /// Called when buyer withdraws the offer.
+  final VoidCallback? onWithdraw;
 
   /// Called when buyer proceeds to checkout (after acceptance).
   final VoidCallback? onProceedToCheckout;
@@ -237,6 +241,19 @@ class OfferBubbleWidget extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ] else if (_isPending && isMe) ...[
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+              child: SizedBox(
+                width: double.infinity,
+                child: LynewedButton(
+                  text: 'Withdraw',
+                  type: LynewedButtonType.secondary,
+                  onPressed: onWithdraw,
+                ),
               ),
             ),
           ] else if (_isAccepted && isMe) ...[

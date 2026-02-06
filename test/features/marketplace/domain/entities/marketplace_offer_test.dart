@@ -166,7 +166,7 @@ void main() {
       });
 
       test('isExpired should be false when pending and before expires_at', () {
-        final now = DateTime(2026, 2, 4);
+        final now = DateTime.now();
         final offer = MarketplaceOffer(
           id: 'offer-123',
           listingId: 'listing-456',

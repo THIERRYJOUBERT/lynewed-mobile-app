@@ -271,7 +271,7 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
 
     final profilesResponse = await _client
         .from('profiles')
-        .select('id, display_name, photo_url')
+        .select('id, full_name, avatar_url')
         .inFilter('id', otherUserIds);
 
     final profilesMap = <String, Map<String, dynamic>>{};
@@ -287,8 +287,8 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
         listingId: data.listingId,
         listingTitle: data.listingTitle,
         otherUserId: data.otherUserId,
-        otherUserName: profile?['display_name'] as String? ?? 'Unknown',
-        otherUserAvatarUrl: profile?['photo_url'] as String?,
+        otherUserName: profile?['full_name'] as String? ?? 'Unknown',
+        otherUserAvatarUrl: profile?['avatar_url'] as String?,
         lastMessage: data.lastMessage,
         lastMessageTime: data.lastMessageTime,
         unreadCount: data.unreadCount,

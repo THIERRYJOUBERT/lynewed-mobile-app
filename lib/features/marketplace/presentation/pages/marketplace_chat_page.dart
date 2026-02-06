@@ -428,6 +428,34 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
     }
   }
 
+  Future<void> _handleWithdrawOffer(String offerId) async {
+    try {
+      await _offerRepository.withdrawOffer(offerId);
+      // Send system message.
+      await _repository.sendSystemMessage(
+        listingId: widget.listingId,
+        receiverId: widget.otherUserId,
+        content: 'Offer withdrawn.',
+      );
+      if (mounted) {
+        setState(() => _offerStatuses[offerId] = 'withdrawn');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Offer withdrawn',
+              style: LynewedTextStyles.bodySmall.copyWith(
+                color: LynewedColors.textOnDark,
+              ),
+            ),
+          ),
+        );
+      }
+      await _loadMessages();
+    } catch (e) {
+      if (mounted) _showErrorSnackBar('Failed to withdraw offer');
+    }
+  }
+
   Future<void> _handleProceedToCheckout(String offerId, int amountCents) async {
     try {
       // Fetch the listing to pass to CheckoutPage.
@@ -696,6 +724,9 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
                 : null,
             onDecline: message.offerId != null
                 ? () => _handleRejectOffer(message.offerId!)
+                : null,
+            onWithdraw: message.offerId != null
+                ? () => _handleWithdrawOffer(message.offerId!)
                 : null,
             onProceedToCheckout: message.offerId != null
                 ? () => _handleProceedToCheckout(message.offerId!, amountCents)

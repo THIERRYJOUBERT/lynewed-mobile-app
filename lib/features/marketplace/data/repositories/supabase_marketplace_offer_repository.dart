@@ -145,7 +145,7 @@ class SupabaseMarketplaceOfferRepository
     // Fetch offers with buyer profile info via join.
     final response = await _client
         .from('marketplace_offers')
-        .select('*, profiles!marketplace_offers_buyer_id_fkey(display_name, photo_url)')
+        .select('*, profiles!marketplace_offers_buyer_id_fkey(full_name, avatar_url)')
         .eq('listing_id', listingId)
         .order('created_at', ascending: false);
 
@@ -155,8 +155,8 @@ class SupabaseMarketplaceOfferRepository
       final offer = MarketplaceOffer.fromJson(json);
       return OfferDisplayModel(
         offer: offer,
-        buyerName: profile?['display_name'] as String?,
-        buyerAvatarUrl: profile?['photo_url'] as String?,
+        buyerName: profile?['full_name'] as String?,
+        buyerAvatarUrl: profile?['avatar_url'] as String?,
       );
     }).toList();
   }
@@ -205,7 +205,7 @@ class SupabaseMarketplaceOfferRepository
     if (sellerIds.isNotEmpty) {
       final profiles = await _client
           .from('profiles')
-          .select('id, display_name, photo_url')
+          .select('id, full_name, avatar_url')
           .inFilter('id', sellerIds.toList());
       for (final p in profiles as List) {
         final profile = p as Map<String, dynamic>;
@@ -225,8 +225,8 @@ class SupabaseMarketplaceOfferRepository
         listingTitle: listing?['title'] as String?,
         listingPriceCents: listing?['price_cents'] as int?,
         sellerId: sellerId,
-        sellerName: sellerProfile?['display_name'] as String?,
-        sellerAvatarUrl: sellerProfile?['photo_url'] as String?,
+        sellerName: sellerProfile?['full_name'] as String?,
+        sellerAvatarUrl: sellerProfile?['avatar_url'] as String?,
       );
     }).toList();
   }
