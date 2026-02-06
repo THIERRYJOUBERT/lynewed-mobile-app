@@ -8,7 +8,10 @@ import '../../../payments/domain/entities/stripe_account.dart';
 
 /// Repository interface for Stripe Connect marketplace operations.
 abstract class StripeConnectRepository {
-  /// Creates a Stripe Connect Express account and returns the onboarding URL.
+  /// Creates a Stripe Connect Custom account and returns the onboarding URL.
+  ///
+  /// Pre-fills individual data (name, DOB, address, IBAN) so the Stripe
+  /// onboarding redirect only requires identity verification.
   ///
   /// Returns a map with:
   /// - `url`: The Stripe onboarding URL to redirect the seller to.
@@ -23,6 +26,9 @@ abstract class StripeConnectRepository {
     String? phone,
     String? country,
     Map<String, String>? address,
+    Map<String, int>? dateOfBirth,
+    String? iban,
+    bool tosAccepted = false,
   });
 
   /// Gets the Stripe account for a user.

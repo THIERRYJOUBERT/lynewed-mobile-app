@@ -9,9 +9,9 @@ import 'package:flutter/material.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
-import '../../../auth/data/datasources/auth_remote_datasource.dart';
 import '../../domain/entities/marketplace_listing.dart';
 import '../../domain/entities/seller_profile.dart';
+import '../../domain/repositories/marketplace_offer_repository.dart';
 import '../../domain/repositories/marketplace_repository.dart';
 import '../sheets/make_offer_sheet.dart';
 import '../widgets/action_buttons_bar.dart';
@@ -73,6 +73,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
   MarketplaceListing? _listing;
   SellerProfile? _seller;
   List<String> _photoUrls = [];
+  bool _hasAcceptedOffer = false;
 
   @override
   void initState() {
@@ -99,10 +100,12 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
         return;
       }
 
-      // Fetch photos and seller info in parallel.
+      // Fetch photos, seller info, and accepted offer status in parallel.
+      final offerRepo = sl<MarketplaceOfferRepository>();
       final results = await Future.wait([
         _repository.getPhotoUrls(widget.listingId),
         _repository.getSellerInfo(listing.sellerId),
+        offerRepo.hasAcceptedOfferForListing(widget.listingId),
       ]);
 
       if (!mounted) return;
@@ -110,6 +113,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
         _listing = listing;
         _photoUrls = results[0] as List<String>;
         _seller = results[1] as SellerProfile?;
+        _hasAcceptedOffer = results[2] as bool;
         _isLoading = false;
       });
     } catch (e) {
@@ -297,50 +301,19 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
     );
   }
 
-  Future<void> _openCheckout() async {
+  void _openCheckout() {
     if (_listing == null || _isProcessing) return;
     setState(() => _isProcessing = true);
 
-    try {
-      // Fetch seller's shipping address from profile
-      final authDs = sl<AuthRemoteDatasource>();
-      final sellerProfile = await authDs.getProfile(_listing!.sellerId);
-      final sellerAddress = sellerProfile?.shippingAddress;
-
-      if (!mounted) return;
-
-      if (sellerAddress == null) {
-        setState(() => _isProcessing = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'This seller hasn\'t set up their shipping address yet. '
-              'Please contact the seller.',
-            ),
-            duration: Duration(seconds: 5),
-          ),
-        );
-        return;
-      }
-
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => CheckoutPage(
-            listing: _listing!,
-            sellerShippingAddress: sellerAddress,
-          ),
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => CheckoutPage(
+          listing: _listing!,
         ),
-      ).then((_) {
-        if (mounted) setState(() => _isProcessing = false);
-      });
-    } catch (_) {
-      if (mounted) {
-        setState(() => _isProcessing = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not load seller info')),
-        );
-      }
-    }
+      ),
+    ).then((_) {
+      if (mounted) setState(() => _isProcessing = false);
+    });
   }
 
   /// Returns the current user ID.
@@ -356,7 +329,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
     }
     return ActionButtonsBar(
       onContact: _openChat,
-      onMakeOffer: _openMakeOfferSheet,
+      onMakeOffer: _hasAcceptedOffer ? null : _openMakeOfferSheet,
       onBuyNow: _openCheckout,
     );
   }

@@ -69,6 +69,7 @@ void main() {
               'email': email,
               'return_url': returnUrl,
               'refresh_url': refreshUrl,
+              'tos_accepted': false,
             },
           ),
         ).called(1);

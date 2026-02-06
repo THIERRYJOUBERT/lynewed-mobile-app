@@ -52,6 +52,9 @@ class FakeOfferRepository implements MarketplaceOfferRepository {
   @override
   Future<MarketplaceOffer> getOfferById(String offerId) async =>
       throw UnimplementedError();
+
+  @override
+  Future<bool> hasAcceptedOfferForListing(String listingId) async => false;
 }
 
 // =============================================================================

@@ -25,6 +25,9 @@ class OfferDisplayModel {
     this.sellerId,
     this.sellerName,
     this.sellerAvatarUrl,
+    this.chatPartnerId,
+    this.chatPartnerName,
+    this.chatPartnerAvatarUrl,
   });
 
   /// The underlying marketplace offer.
@@ -54,6 +57,16 @@ class OfferDisplayModel {
   /// Seller avatar URL.
   final String? sellerAvatarUrl;
 
+  /// The correct user to open chat with.
+  /// For regular offers: the seller. For counter-offers: the actual buyer.
+  final String? chatPartnerId;
+
+  /// Chat partner display name.
+  final String? chatPartnerName;
+
+  /// Chat partner avatar URL.
+  final String? chatPartnerAvatarUrl;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -64,7 +77,8 @@ class OfferDisplayModel {
           buyerAvatarUrl == other.buyerAvatarUrl &&
           listingTitle == other.listingTitle &&
           listingPriceCents == other.listingPriceCents &&
-          sellerId == other.sellerId;
+          sellerId == other.sellerId &&
+          chatPartnerId == other.chatPartnerId;
 
   @override
   int get hashCode => Object.hash(
@@ -74,6 +88,7 @@ class OfferDisplayModel {
         listingTitle,
         listingPriceCents,
         sellerId,
+        chatPartnerId,
       );
 
   @override

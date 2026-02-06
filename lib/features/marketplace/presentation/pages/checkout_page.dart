@@ -2,10 +2,9 @@
 ///
 /// Multi-step checkout flow:
 /// 1. Enter/confirm shipping address
-/// 2. Select shipping option (FedEx rates)
-/// 3. Review order summary
-/// 4. Accept CGVU (if first purchase)
-/// 5. Pay via Stripe Checkout (opens URL)
+/// 2. Review order summary (with flat-rate shipping)
+/// 3. Accept CGVU (if first purchase)
+/// 4. Pay via Stripe Checkout (opens URL)
 library;
 
 import 'package:flutter/material.dart';
@@ -13,7 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
-import '../../data/datasources/fedex_remote_datasource.dart';
+import '../../data/sizes_data.dart';
 import '../../domain/entities/marketplace_listing.dart';
 import '../../domain/entities/shipping_address.dart';
 import '../../domain/entities/shipping_rate.dart';
@@ -21,11 +20,11 @@ import '../../domain/repositories/marketplace_transaction_repository.dart';
 import '../widgets/address_form_widget.dart';
 import '../widgets/cgvu_acceptance_widget.dart';
 import '../widgets/order_summary_widget.dart';
-import '../widgets/shipping_options_widget.dart';
 
 /// Multi-step checkout page for marketplace purchases.
 ///
-/// Steps: Address -> Shipping -> Review -> CGVU -> Payment.
+/// Steps: Address -> Review -> Confirm (CGVU + Pay).
+/// Shipping is flat-rate based on seller/buyer country pair.
 /// Uses StatefulWidget with repository injection for testing.
 class CheckoutPage extends StatefulWidget {
   /// Creates a checkout page.
@@ -33,9 +32,7 @@ class CheckoutPage extends StatefulWidget {
     required this.listing,
     this.offerId,
     this.agreedPriceCents,
-    this.sellerShippingAddress,
     this.transactionRepository,
-    this.fedexDatasource,
     this.currentUserId,
     super.key,
   });
@@ -49,14 +46,8 @@ class CheckoutPage extends StatefulWidget {
   /// Agreed price in cents (from offer), overrides listing price.
   final int? agreedPriceCents;
 
-  /// Seller's shipping address (from profile) for FedEx rate calculation.
-  final ShippingAddress? sellerShippingAddress;
-
   /// Optional transaction repository override for testing.
   final MarketplaceTransactionRepository? transactionRepository;
-
-  /// Optional FedEx datasource override for testing.
-  final FedExRemoteDatasource? fedexDatasource;
 
   /// Optional current user ID override for testing.
   final String? currentUserId;
@@ -67,26 +58,22 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   late final MarketplaceTransactionRepository _transactionRepo;
-  late final FedExRemoteDatasource _fedexDatasource;
 
-  // Step management
+  // Step management: Address -> Review -> Confirm
   int _currentStep = 0;
-  static const int _totalSteps = 4;
+  static const int _totalSteps = 3;
 
   // Step 1: Address
   ShippingAddress? _shippingAddress;
 
-  // Step 2: Shipping
-  List<ShippingRate> _shippingRates = [];
-  ShippingRate? _selectedRate;
-  bool _isLoadingRates = false;
-  String? _ratesError;
+  // Flat-rate shipping (computed from address)
+  ShippingRate? _flatRate;
 
-  // Step 3: Review (populated from checkout session response)
+  // Step 2: Review (populated from checkout session response)
   // These are initially estimated client-side, then confirmed server-side.
   int get _itemPriceCents => widget.agreedPriceCents ?? widget.listing.priceCents;
 
-  // Step 4: CGVU
+  // Step 3: CGVU
   bool _alreadyAcceptedCgvu = false;
   bool _cgvuChecked = false;
   bool _isCheckingCgvu = false;
@@ -100,8 +87,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
     super.initState();
     _transactionRepo = widget.transactionRepository ??
         sl<MarketplaceTransactionRepository>();
-    _fedexDatasource =
-        widget.fedexDatasource ?? sl<FedExRemoteDatasource>();
     _checkCgvuStatus();
   }
 
@@ -121,50 +106,33 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
   }
 
-  Future<void> _calculateShippingRates() async {
+  /// Computes the flat-rate shipping based on listing country and buyer address.
+  void _computeFlatRate() {
     if (_shippingAddress == null) return;
 
-    final sellerAddress = widget.sellerShippingAddress;
-    if (sellerAddress == null) {
-      setState(() {
-        _ratesError = 'The seller has not set up a shipping address yet. '
-            'Please go back and contact the seller.';
-        _isLoadingRates = false;
-      });
-      return;
-    }
+    final sellerCountry = widget.listing.countryCode ?? 'US';
+    final buyerCountry = _shippingAddress!.countryCode;
+
+    final rateCents =
+        MarketplaceShippingCosts.calculateCents(sellerCountry, buyerCountry);
+    final label =
+        MarketplaceShippingCosts.tierLabel(sellerCountry, buyerCountry);
+    final days =
+        MarketplaceShippingCosts.estimatedDays(sellerCountry, buyerCountry);
 
     setState(() {
-      _isLoadingRates = true;
-      _ratesError = null;
-      _shippingRates = [];
-      _selectedRate = null;
-    });
-
-    try {
-      final rates = await _fedexDatasource.calculateRates(
-        fromAddress: sellerAddress,
-        toAddress: _shippingAddress!,
-        category: widget.listing.category,
+      _flatRate = ShippingRate(
+        serviceType: 'FLAT_RATE',
+        serviceName: label,
+        rateCents: rateCents,
+        currency: 'USD',
+        estimatedDaysLabel: days,
       );
-
-      if (!mounted) return;
-      setState(() {
-        _shippingRates = rates;
-        _selectedRate = rates.isNotEmpty ? rates.first : null;
-        _isLoadingRates = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isLoadingRates = false;
-        _ratesError = 'Could not calculate shipping rates. Please try again.';
-      });
-    }
+    });
   }
 
   Future<void> _processPayment() async {
-    if (_selectedRate == null || _shippingAddress == null) return;
+    if (_flatRate == null || _shippingAddress == null) return;
 
     setState(() {
       _isProcessingPayment = true;
@@ -182,7 +150,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         listingId: widget.listing.id,
         offerId: widget.offerId,
         shippingToAddress: _shippingAddress!,
-        shippingOption: _selectedRate!,
+        shippingOption: _flatRate!,
       );
 
       final checkoutUrl = session['checkout_url'] as String?;
@@ -223,10 +191,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
       case 0:
         return _shippingAddress != null;
       case 1:
-        return _selectedRate != null;
-      case 2:
         return true; // Review is informational
-      case 3:
+      case 2:
         return _cgvuChecked || _alreadyAcceptedCgvu;
       default:
         return false;
@@ -235,8 +201,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   void _nextStep() {
     if (_currentStep == 0 && _shippingAddress != null) {
-      // Moving from address to shipping: fetch real FedEx rates
-      _calculateShippingRates();
+      // Moving from address to review: compute flat-rate shipping
+      _computeFlatRate();
     }
 
     if (_currentStep < _totalSteps - 1) {
@@ -294,7 +260,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   Widget _buildStepIndicator() {
-    const stepLabels = ['Address', 'Shipping', 'Review', 'Confirm'];
+    const stepLabels = ['Address', 'Review', 'Confirm'];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -376,10 +342,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
       case 0:
         return _buildAddressStep();
       case 1:
-        return _buildShippingStep();
-      case 2:
         return _buildReviewStep();
-      case 3:
+      case 2:
         return _buildConfirmStep();
       default:
         return const SizedBox.shrink();
@@ -395,21 +359,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
-  Widget _buildShippingStep() {
-    return ShippingOptionsWidget(
-      rates: _shippingRates,
-      selectedRate: _selectedRate,
-      onRateSelected: (rate) {
-        setState(() => _selectedRate = rate);
-      },
-      isLoading: _isLoadingRates,
-      errorMessage: _ratesError,
-      onRetry: _calculateShippingRates,
-    );
-  }
-
   Widget _buildReviewStep() {
-    final shippingCents = _selectedRate?.rateCents ?? 0;
+    final shippingCents = _flatRate?.rateCents ?? 0;
     final platformFeeCents = _itemPriceCents ~/ 10;
     final totalCents = _itemPriceCents + shippingCents;
 

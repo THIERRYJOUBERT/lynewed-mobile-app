@@ -219,17 +219,18 @@ class _MyOffersPageState extends State<MyOffersPage> {
   }
 
   void _openChat(OfferDisplayModel model) {
-    final sellerId = model.sellerId;
-    if (sellerId == null) return;
+    final partnerId = model.chatPartnerId ?? model.sellerId;
+    if (partnerId == null) return;
 
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => MarketplaceChatPage(
           listingId: model.offer.listingId,
-          otherUserId: sellerId,
+          otherUserId: partnerId,
           listingTitle: model.listingTitle,
-          otherUserName: model.sellerName,
-          otherUserAvatarUrl: model.sellerAvatarUrl,
+          otherUserName: model.chatPartnerName ?? model.sellerName,
+          otherUserAvatarUrl:
+              model.chatPartnerAvatarUrl ?? model.sellerAvatarUrl,
         ),
       ),
     );

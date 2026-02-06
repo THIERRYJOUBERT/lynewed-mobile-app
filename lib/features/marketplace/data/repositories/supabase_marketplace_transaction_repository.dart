@@ -106,6 +106,25 @@ class SupabaseMarketplaceTransactionRepository
   }
 
   @override
+  Future<List<MarketplaceTransaction>> getTransactionsAwaitingShipment() async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw Exception('User not authenticated');
+
+    final response = await _client
+        .from('marketplace_transactions')
+        .select()
+        .eq('seller_id', userId)
+        .eq('status', 'paid')
+        .isFilter('fedex_label_url', null)
+        .order('paid_at', ascending: false);
+
+    return (response as List)
+        .map((json) =>
+            MarketplaceTransaction.fromJson(json as Map<String, dynamic>))
+        .toList();
+  }
+
+  @override
   Future<bool> hasAcceptedBuyerCgvu() async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) throw Exception('User not authenticated');

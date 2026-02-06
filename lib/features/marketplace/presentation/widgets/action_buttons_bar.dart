@@ -20,7 +20,7 @@ class ActionButtonsBar extends StatelessWidget {
   /// Creates an action buttons bar.
   const ActionButtonsBar({
     required this.onContact,
-    required this.onMakeOffer,
+    this.onMakeOffer,
     required this.onBuyNow,
     super.key,
   });
@@ -28,8 +28,8 @@ class ActionButtonsBar extends StatelessWidget {
   /// Callback when Contact Seller is tapped.
   final VoidCallback onContact;
 
-  /// Callback when Make Offer is tapped.
-  final VoidCallback onMakeOffer;
+  /// Callback when Make Offer is tapped. When null, button is hidden.
+  final VoidCallback? onMakeOffer;
 
   /// Callback when Buy Now is tapped.
   final VoidCallback onBuyNow;
@@ -62,15 +62,17 @@ class ActionButtonsBar extends StatelessWidget {
             ),
             SizedBox(width: LynewedSpacing.sm),
 
-            // Make Offer (secondary)
-            Expanded(
-              child: LynewedButton(
-                text: 'Make Offer',
-                type: LynewedButtonType.secondary,
-                onPressed: onMakeOffer,
+            // Make Offer (secondary) - hidden when an offer is already accepted.
+            if (onMakeOffer != null) ...[
+              Expanded(
+                child: LynewedButton(
+                  text: 'Make Offer',
+                  type: LynewedButtonType.secondary,
+                  onPressed: onMakeOffer,
+                ),
               ),
-            ),
-            SizedBox(width: LynewedSpacing.sm),
+              SizedBox(width: LynewedSpacing.sm),
+            ],
 
             // Buy Now (primary)
             Expanded(

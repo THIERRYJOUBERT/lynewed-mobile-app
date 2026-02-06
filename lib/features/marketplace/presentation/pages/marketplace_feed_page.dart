@@ -19,6 +19,7 @@ import '../widgets/filter_sheet.dart';
 import '../widgets/listing_card.dart';
 import '../widgets/listing_skeleton_card.dart';
 import '../widgets/pending_payment_banner.dart';
+import '../widgets/seller_action_banner.dart';
 import 'create_listing_page.dart';
 import 'listing_detail_page.dart';
 import 'marketplace_chat_page.dart';
@@ -309,16 +310,17 @@ class _MarketplaceFeedPageState extends State<MarketplaceFeedPage> {
   void _onPendingPaymentTap(List<OfferDisplayModel> offers) {
     if (offers.length == 1) {
       final offer = offers.first;
-      final sellerId = offer.sellerId;
-      if (sellerId != null) {
+      final partnerId = offer.chatPartnerId ?? offer.sellerId;
+      if (partnerId != null) {
         Navigator.of(context).push(
           MaterialPageRoute<void>(
             builder: (_) => MarketplaceChatPage(
               listingId: offer.offer.listingId,
-              otherUserId: sellerId,
+              otherUserId: partnerId,
               listingTitle: offer.listingTitle,
-              otherUserName: offer.sellerName,
-              otherUserAvatarUrl: offer.sellerAvatarUrl,
+              otherUserName: offer.chatPartnerName ?? offer.sellerName,
+              otherUserAvatarUrl:
+                  offer.chatPartnerAvatarUrl ?? offer.sellerAvatarUrl,
             ),
           ),
         );
@@ -396,6 +398,9 @@ class _MarketplaceFeedPageState extends State<MarketplaceFeedPage> {
                       ),
                     PendingPaymentBanner(
                       onTap: _onPendingPaymentTap,
+                    ),
+                    SellerActionBanner(
+                      onTap: (_) => _onMySalesTap(),
                     ),
                     Expanded(child: _buildBody()),
                   ],

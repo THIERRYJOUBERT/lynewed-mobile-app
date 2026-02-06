@@ -43,6 +43,12 @@ abstract class MarketplaceTransactionRepository {
   /// Records CGVU acceptance for marketplace buyer.
   Future<void> acceptBuyerCgvu();
 
+  /// Gets seller's transactions that are paid but not yet shipped.
+  ///
+  /// Returns transactions where the current user is the seller,
+  /// status is 'paid', and no shipping label has been generated yet.
+  Future<List<MarketplaceTransaction>> getTransactionsAwaitingShipment();
+
   /// Requests a refund for a transaction (buyer action).
   Future<void> requestRefund({
     required String transactionId,

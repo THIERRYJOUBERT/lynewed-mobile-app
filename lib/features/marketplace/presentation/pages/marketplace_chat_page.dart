@@ -18,7 +18,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
-import '/features/auth/data/datasources/auth_remote_datasource.dart';
 import '/features/chat/presentation/widgets/fullscreen_image_viewer.dart';
 import '/features/chat/presentation/widgets/message_composer.dart';
 import '../../domain/entities/marketplace_message.dart';
@@ -113,6 +112,9 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
 
   /// Cached offer statuses keyed by offer ID.
   final Map<String, String> _offerStatuses = {};
+
+  /// Whether this listing already has an accepted offer (blocks new offers).
+  bool _hasAcceptedOffer = false;
 
   /// Cache of signed URLs for media attachments keyed by storage path.
   final Map<String, String> _signedUrlCache = {};
@@ -401,7 +403,10 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
         try {
           final offer = await _offerRepository.getOfferById(msg.offerId!);
           if (mounted) {
-            setState(() => _offerStatuses[msg.offerId!] = offer.status);
+            setState(() {
+              _offerStatuses[msg.offerId!] = offer.status;
+              if (offer.isAccepted) _hasAcceptedOffer = true;
+            });
           }
         } catch (e) {
           // If offer not found (e.g. RLS blocks access), default to expired.
@@ -424,7 +429,10 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
         content: 'Offer accepted! Buyer can now proceed to checkout.',
       );
       if (mounted) {
-        setState(() => _offerStatuses[offerId] = 'accepted');
+        setState(() {
+          _offerStatuses[offerId] = 'accepted';
+          _hasAcceptedOffer = true;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -496,26 +504,12 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
       final listing = await marketplaceRepo.getListingById(widget.listingId);
       if (listing == null || !mounted) return;
 
-      // Fetch seller's shipping address from profile.
-      final authDs = sl<AuthRemoteDatasource>();
-      final sellerProfile = await authDs.getProfile(listing.sellerId);
-      if (!mounted) return;
-
-      if (sellerProfile?.shippingAddress == null) {
-        _showErrorSnackBar(
-          'This seller hasn\'t set up their shipping address yet. '
-          'Please contact the seller.',
-        );
-        return;
-      }
-
       Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (_) => CheckoutPage(
             listing: listing,
             offerId: offerId,
             agreedPriceCents: amountCents,
-            sellerShippingAddress: sellerProfile?.shippingAddress,
           ),
         ),
       );
@@ -683,22 +677,24 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
               ),
             ),
           ],
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: _openMakeOfferSheet,
-            child: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: LynewedColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.local_offer_outlined,
-                color: LynewedColors.primary,
-                size: 20,
+          if (!_hasAcceptedOffer) ...[
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: _openMakeOfferSheet,
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: LynewedColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.local_offer_outlined,
+                  color: LynewedColors.primary,
+                  size: 20,
+                ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -918,7 +914,7 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
       onSendImage: _sendImageMessage,
       onSendAudio: _sendAudioMessage,
       onSendDocument: _sendDocumentMessage,
-      onMakeOffer: _openMakeOfferSheet,
+      onMakeOffer: _hasAcceptedOffer ? null : _openMakeOfferSheet,
       onSendingComplete: () {
         if (mounted) setState(() => _isSending = false);
       },

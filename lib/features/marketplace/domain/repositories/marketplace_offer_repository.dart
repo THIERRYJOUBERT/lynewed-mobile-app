@@ -58,4 +58,10 @@ abstract class MarketplaceOfferRepository {
   /// - Current user is the buyer (direct offer or counter-offer receiver)
   /// - No transaction has been created yet for the offer
   Future<List<OfferDisplayModel>> getOffersAwaitingMyPayment();
+
+  /// Check if a listing already has an accepted offer (by any buyer).
+  ///
+  /// Returns true if at least one offer with status 'accepted' exists
+  /// for this listing. Used to prevent new offers after acceptance.
+  Future<bool> hasAcceptedOfferForListing(String listingId);
 }

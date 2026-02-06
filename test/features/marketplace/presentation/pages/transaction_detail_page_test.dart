@@ -127,6 +127,11 @@ class _MockTransactionRepository implements MarketplaceTransactionRepository {
   Future<void> rejectRefund({required String transactionId}) async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<List<MarketplaceTransaction>> getTransactionsAwaitingShipment() async {
+    return [];
+  }
 }
 
 // -- Mock FedEx repository --

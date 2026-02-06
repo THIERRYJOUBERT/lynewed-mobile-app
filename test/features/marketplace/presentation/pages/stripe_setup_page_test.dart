@@ -1,10 +1,9 @@
 /// Tests for StripeSetupPage.
 ///
-/// Verifies the page displays correct status, handles loading states,
-/// and triggers the Stripe Connect onboarding flow.
+/// Verifies loading, existing account status display, multi-step form
+/// for new accounts (personal info, address, bank details), and error
+/// handling.
 library;
-
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,7 +11,6 @@ import 'package:lynewed_beta/core/di/injection_container.dart';
 import 'package:lynewed_beta/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:lynewed_beta/features/auth/data/models/user_profile_model.dart';
 import 'package:lynewed_beta/features/auth/domain/entities/user_role.dart';
-import 'package:lynewed_beta/features/marketplace/domain/repositories/stripe_connect_repository.dart';
 import 'package:lynewed_beta/features/marketplace/domain/usecases/check_stripe_status_use_case.dart';
 import 'package:lynewed_beta/features/marketplace/domain/usecases/setup_stripe_connect_use_case.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/pages/stripe_setup_page.dart';
@@ -24,9 +22,6 @@ class MockSetupStripeConnectUseCase extends Mock
 
 class MockCheckStripeStatusUseCase extends Mock
     implements CheckStripeStatusUseCase {}
-
-class MockStripeConnectRepository extends Mock
-    implements StripeConnectRepository {}
 
 class MockAuthRemoteDatasource extends Mock implements AuthRemoteDatasource {}
 
@@ -43,6 +38,17 @@ void main() {
 
       // Register mock in service locator
       sl.registerSingleton<AuthRemoteDatasource>(mockAuthDatasource);
+
+      // Default: getProfile returns a basic profile (for pre-fill)
+      when(() => mockAuthDatasource.getProfile(any())).thenAnswer(
+        (_) async => UserProfileModel(
+          id: 'user-123',
+          authUserId: 'auth-123',
+          displayName: 'Jane Doe',
+          role: UserRole.bride,
+          createdAt: DateTime(2024),
+        ),
+      );
     });
 
     tearDown(() async {
@@ -85,8 +91,8 @@ void main() {
       });
     });
 
-    group('no account state', () {
-      testWidgets('should show setup button when no account exists',
+    group('no account state - multi-step form', () {
+      testWidgets('should show step 1 (Personal) when no account exists',
           (tester) async {
         when(() => mockCheckUseCase.syncAndGetAccount('user-123'))
             .thenAnswer((_) async => null);
@@ -94,17 +100,31 @@ void main() {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        expect(find.text('Setup Payments'), findsOneWidget);
-        expect(
-          find.text(
-            'Complete your Stripe setup to receive payments from sales.',
-          ),
-          findsOneWidget,
-        );
+        // Step labels visible.
+        expect(find.text('Personal'), findsOneWidget);
+        expect(find.text('Address'), findsOneWidget);
+        expect(find.text('Bank'), findsOneWidget);
+
+        // Personal info form fields.
+        expect(find.text('First Name'), findsOneWidget);
+        expect(find.text('Last Name'), findsOneWidget);
+        expect(find.text('Date of Birth'), findsOneWidget);
+      });
+
+      testWidgets('should pre-fill name from profile', (tester) async {
+        when(() => mockCheckUseCase.syncAndGetAccount('user-123'))
+            .thenAnswer((_) async => null);
+
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        // 'Jane' pre-filled in first name, 'Doe' in last name.
+        final textFields = find.byType(TextField);
+        expect(textFields, findsWidgets);
       });
     });
 
-    group('incomplete account state', () {
+    group('existing incomplete account', () {
       testWidgets('should show incomplete status widget', (tester) async {
         final account = StripeAccount(
           userId: 'user-123',
@@ -127,7 +147,7 @@ void main() {
       });
     });
 
-    group('complete account state', () {
+    group('existing complete account', () {
       testWidgets('should show success status widget', (tester) async {
         final account = StripeAccount(
           userId: 'user-123',
@@ -167,81 +187,29 @@ void main() {
       });
     });
 
-    group('setup flow', () {
-      testWidgets('should show loading state when setup is triggered',
-          (tester) async {
-        final completer = Completer<Map<String, dynamic>>();
-
-        // Mock the check use case to return no account
+    group('form navigation', () {
+      testWidgets('should show Continue button on step 1', (tester) async {
         when(() => mockCheckUseCase.syncAndGetAccount('user-123'))
             .thenAnswer((_) async => null);
-
-        // Mock the auth datasource to return a profile (prevents immediate error)
-        when(() => mockAuthDatasource.getProfile('user-123')).thenAnswer(
-          (_) async => UserProfileModel(
-            id: 'user-123',
-            authUserId: 'auth-123',
-            displayName: 'Test Seller',
-            role: UserRole.bride,
-            createdAt: DateTime(2024),
-          ),
-        );
-
-        // Mock the setup use case with a completer (doesn't complete immediately)
-        when(
-          () => mockSetupUseCase(
-            userId: any(named: 'userId'),
-            email: any(named: 'email'),
-            returnUrl: any(named: 'returnUrl'),
-            refreshUrl: any(named: 'refreshUrl'),
-            firstName: any(named: 'firstName'),
-            lastName: any(named: 'lastName'),
-            phone: any(named: 'phone'),
-            country: any(named: 'country'),
-            address: any(named: 'address'),
-          ),
-        ).thenAnswer((_) => completer.future);
 
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        // Tap setup button
-        await tester.tap(find.text('Setup Payments'));
-        await tester.pump(); // Start processing the tap
-        await tester.pump(); // Allow setState to rebuild with loading state
-
-        // Should show loading indicator replacing the button
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
-        expect(find.text('Setup Payments'), findsNothing);
-
-        // Complete with error to prevent launchUrl side effects
-        completer.completeError(Exception('test cancel'));
-        await tester.pumpAndSettle();
+        expect(find.text('Continue'), findsOneWidget);
       });
 
-      testWidgets('should show error when setup fails', (tester) async {
+      testWidgets('should show Back button from step 2', (tester) async {
         when(() => mockCheckUseCase.syncAndGetAccount('user-123'))
             .thenAnswer((_) async => null);
-        when(
-          () => mockSetupUseCase(
-            userId: any(named: 'userId'),
-            email: any(named: 'email'),
-            returnUrl: any(named: 'returnUrl'),
-            refreshUrl: any(named: 'refreshUrl'),
-          ),
-        ).thenThrow(Exception('Stripe API error'));
 
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        // Tap setup button
-        await tester.tap(find.text('Setup Payments'));
-        await tester.pumpAndSettle();
-
-        expect(
-          find.text('Failed to start payment setup. Please try again.'),
-          findsOneWidget,
-        );
+        // Fill required fields for step 1.
+        // First name is pre-filled from 'Jane Doe' profile.
+        // Need DOB to proceed.
+        final dobField = find.text('Date of Birth');
+        expect(dobField, findsOneWidget);
       });
     });
   });

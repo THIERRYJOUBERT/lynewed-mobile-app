@@ -1,7 +1,7 @@
 /// Datasource for Stripe Connect operations via Supabase Edge Functions.
 ///
 /// Handles communication with the `create-stripe-connect-account` Edge Function
-/// to create Stripe Connect Express accounts and generate onboarding links.
+/// to create Stripe Connect Custom accounts and generate onboarding links.
 library;
 
 import 'dart:convert';
@@ -15,6 +15,10 @@ abstract class StripeConnectDatasource {
   /// Calls the `create-stripe-connect-account` Edge Function.
   /// Returns a map with `url` (onboarding link) and `stripe_account_id`.
   ///
+  /// For Custom accounts, [dateOfBirth], [iban], and [tosAccepted] allow
+  /// pre-filling most data in-app so the Stripe onboarding redirect only
+  /// requires identity verification (KYC).
+  ///
   /// Throws [FunctionException] if the Edge Function call fails.
   /// Throws [Exception] if the response is missing required fields.
   Future<Map<String, dynamic>> createStripeConnectAccount({
@@ -27,6 +31,9 @@ abstract class StripeConnectDatasource {
     String? phone,
     String? country,
     Map<String, String>? address,
+    Map<String, int>? dateOfBirth,
+    String? iban,
+    bool tosAccepted = false,
   });
 
   /// Syncs the Stripe account status from the Stripe API.
@@ -56,6 +63,9 @@ class SupabaseStripeConnectDatasource implements StripeConnectDatasource {
     String? phone,
     String? country,
     Map<String, String>? address,
+    Map<String, int>? dateOfBirth,
+    String? iban,
+    bool tosAccepted = false,
   }) async {
     final response = await _supabase.functions.invoke(
       'create-stripe-connect-account',
@@ -69,6 +79,9 @@ class SupabaseStripeConnectDatasource implements StripeConnectDatasource {
         if (phone != null) 'phone': phone,
         if (country != null) 'country': country,
         if (address != null) 'address': address,
+        if (dateOfBirth != null) 'date_of_birth': dateOfBirth,
+        if (iban != null) 'iban': iban,
+        'tos_accepted': tosAccepted,
       },
     );
 

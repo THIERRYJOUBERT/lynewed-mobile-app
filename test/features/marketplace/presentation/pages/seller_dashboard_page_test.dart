@@ -241,6 +241,11 @@ class _FakeTransactionRepository implements MarketplaceTransactionRepository {
   Future<void> rejectRefund({required String transactionId}) async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<List<MarketplaceTransaction>> getTransactionsAwaitingShipment() async {
+    return [];
+  }
 }
 
 class _FakeOfferRepository implements MarketplaceOfferRepository {
@@ -291,6 +296,9 @@ class _FakeOfferRepository implements MarketplaceOfferRepository {
   @override
   Future<MarketplaceOffer> getOfferById(String offerId) async =>
       throw UnimplementedError();
+
+  @override
+  Future<bool> hasAcceptedOfferForListing(String listingId) async => false;
 }
 
 class _FakeChatRepository implements MarketplaceChatRepository {

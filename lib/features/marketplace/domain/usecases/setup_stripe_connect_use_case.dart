@@ -1,24 +1,16 @@
 /// Use case for setting up a Stripe Connect account.
 ///
-/// Calls the repository to create a Connect account via Edge Function
+/// Calls the repository to create a Custom Connect account via Edge Function
 /// and returns the onboarding URL. Does NOT launch the URL -- that is
 /// the responsibility of the presentation layer.
 library;
 
 import '../repositories/stripe_connect_repository.dart';
 
-/// Creates a Stripe Connect Express account and returns the onboarding URL.
+/// Creates a Stripe Connect Custom account and returns the onboarding URL.
 ///
-/// Usage:
-/// ```dart
-/// final result = await setupStripeConnect(
-///   userId: currentUser.id,
-///   email: currentUser.email,
-///   returnUrl: 'lynewed://stripe-connect-return?success=true',
-///   refreshUrl: 'lynewed://stripe-connect-return?error=refresh_required',
-/// );
-/// final onboardingUrl = result['url'] as String;
-/// ```
+/// Pre-fills individual data (name, DOB, address, IBAN) so the Stripe
+/// redirect only requires identity verification (KYC).
 class SetupStripeConnectUseCase {
   final StripeConnectRepository _repository;
 
@@ -39,6 +31,9 @@ class SetupStripeConnectUseCase {
     String? phone,
     String? country,
     Map<String, String>? address,
+    Map<String, int>? dateOfBirth,
+    String? iban,
+    bool tosAccepted = false,
   }) async {
     return _repository.createConnectAccount(
       userId: userId,
@@ -50,6 +45,9 @@ class SetupStripeConnectUseCase {
       phone: phone,
       country: country,
       address: address,
+      dateOfBirth: dateOfBirth,
+      iban: iban,
+      tosAccepted: tosAccepted,
     );
   }
 }

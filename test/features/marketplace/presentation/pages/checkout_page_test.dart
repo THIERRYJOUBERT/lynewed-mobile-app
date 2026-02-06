@@ -1,27 +1,22 @@
 /// Tests for CheckoutPage.
 ///
-/// Verifies multi-step checkout flow: address, shipping (flat rates),
-/// review, CGVU acceptance, and payment processing.
+/// Verifies multi-step checkout flow: address, review (with flat-rate
+/// shipping), CGVU acceptance, and payment processing.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lynewed_beta/features/marketplace/data/datasources/fedex_remote_datasource.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/marketplace_listing.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/shipping_address.dart';
-import 'package:lynewed_beta/features/marketplace/domain/entities/shipping_rate.dart';
 import 'package:lynewed_beta/features/marketplace/domain/repositories/marketplace_transaction_repository.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/pages/checkout_page.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/widgets/address_form_widget.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/widgets/cgvu_acceptance_widget.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/widgets/order_summary_widget.dart';
-import 'package:lynewed_beta/features/marketplace/presentation/widgets/shipping_options_widget.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockTransactionRepository extends Mock
     implements MarketplaceTransactionRepository {}
-
-class MockFedExDatasource extends Mock implements FedExRemoteDatasource {}
 
 MarketplaceListing _createListing({
   String id = 'listing-1',
@@ -51,7 +46,6 @@ MarketplaceListing _createListing({
 
 void main() {
   late MockTransactionRepository mockTransactionRepo;
-  late MockFedExDatasource mockFedExDatasource;
 
   setUpAll(() {
     // Register fallback values for mocktail.
@@ -67,26 +61,10 @@ void main() {
 
   setUp(() {
     mockTransactionRepo = MockTransactionRepository();
-    mockFedExDatasource = MockFedExDatasource();
 
     // Default: buyer has not accepted CGVU.
     when(() => mockTransactionRepo.hasAcceptedBuyerCgvu())
         .thenAnswer((_) async => false);
-
-    // Default: FedEx returns flat rate for FR → US (international shipping).
-    when(() => mockFedExDatasource.calculateRates(
-          fromAddress: any(named: 'fromAddress'),
-          toAddress: any(named: 'toAddress'),
-          category: any(named: 'category'),
-        )).thenAnswer((_) async => [
-          const ShippingRate(
-            serviceType: 'FLAT_RATE_INTERNATIONAL',
-            serviceName: 'International Shipping',
-            rateCents: 3500,
-            currency: 'USD',
-            estimatedDaysLabel: '7-14 business days',
-          ),
-        ]);
   });
 
   Widget buildPage({
@@ -99,15 +77,8 @@ void main() {
         listing: listing ?? _createListing(),
         offerId: offerId,
         agreedPriceCents: agreedPriceCents,
-        sellerShippingAddress: const ShippingAddress(
-          streetLines: ['123 Rue de la Paix'],
-          city: 'Paris',
-          postalCode: '75001',
-          countryCode: 'FR',
-        ),
         transactionRepository: mockTransactionRepo,
         currentUserId: 'buyer-1',
-        fedexDatasource: mockFedExDatasource,
       ),
     );
   }
@@ -171,15 +142,15 @@ void main() {
         expect(find.text('Continue'), findsOneWidget);
       });
 
-      testWidgets('should show step indicator with Address active',
-          (tester) async {
+      testWidgets('should show step indicator with 3 steps', (tester) async {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
         expect(find.text('Address'), findsOneWidget);
-        expect(find.text('Shipping'), findsOneWidget);
         expect(find.text('Review'), findsOneWidget);
         expect(find.text('Confirm'), findsOneWidget);
+        // Shipping step no longer exists.
+        expect(find.text('Shipping'), findsNothing);
       });
 
       testWidgets('should disable Continue when address is not filled',
@@ -193,64 +164,60 @@ void main() {
       });
     });
 
-    group('step 2: shipping', () {
-      testWidgets('should show shipping options after filling address',
+    group('step 2: review with flat-rate', () {
+      testWidgets('should show order summary after filling address',
           (tester) async {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
         await fillAddress(tester);
 
-        // Tap Continue to go to shipping step.
+        // Tap Continue to go to review step (flat-rate auto-computed).
         await tester.ensureVisible(find.text('Continue'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
-        expect(find.byType(ShippingOptionsWidget), findsOneWidget);
-      });
-
-      testWidgets('should auto-select flat rate when moving to shipping step',
-          (tester) async {
-        await tester.pumpWidget(buildPage());
-        await tester.pumpAndSettle();
-
-        await fillAddress(tester);
-
-        await tester.ensureVisible(find.text('Continue'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
-
-        // Flat rate is auto-calculated: FR → US = International Shipping.
-        expect(find.text('International Shipping'), findsOneWidget);
-      });
-    });
-
-    group('step 3: review', () {
-      testWidgets('should show order summary after shipping step',
-          (tester) async {
-        await tester.pumpWidget(buildPage());
-        await tester.pumpAndSettle();
-
-        // Step 1: Fill address.
-        await fillAddress(tester);
-        await tester.ensureVisible(find.text('Continue'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
-
-        // Step 2: Flat rate auto-selected. Continue.
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
-
-        // Step 3: Review.
         expect(find.byType(OrderSummaryWidget), findsOneWidget);
         expect(find.text('Beautiful Wedding Dress'), findsOneWidget);
       });
+
+      testWidgets(
+          'should compute international flat rate for FR listing to US buyer',
+          (tester) async {
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        await fillAddress(tester);
+        await tester.ensureVisible(find.text('Continue'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Continue'));
+        await tester.pumpAndSettle();
+
+        // FR → US = $35.00 international shipping.
+        expect(find.text('\$35.00'), findsOneWidget);
+      });
+
+      testWidgets('should compute domestic flat rate for same country',
+          (tester) async {
+        // Listing from US.
+        await tester.pumpWidget(buildPage(
+          listing: _createListing(countryCode: 'US', country: 'United States'),
+        ));
+        await tester.pumpAndSettle();
+
+        await fillAddress(tester);
+        await tester.ensureVisible(find.text('Continue'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Continue'));
+        await tester.pumpAndSettle();
+
+        // US → US = $15.00 domestic shipping.
+        expect(find.text('\$15.00'), findsOneWidget);
+      });
     });
 
-    group('step 4: confirm', () {
+    group('step 3: confirm', () {
       testWidgets('should show CGVU acceptance on confirm step',
           (tester) async {
         await tester.pumpWidget(buildPage());
@@ -263,15 +230,11 @@ void main() {
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
-        // Step 2: Continue (flat rate auto-selected).
+        // Step 2 review: Continue.
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
-        // Step 3 review: Continue.
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
-
-        // Step 4: CGVU.
+        // Step 3: CGVU.
         expect(find.byType(CgvuAcceptanceWidget), findsOneWidget);
         expect(find.text('Pay Now'), findsOneWidget);
       });
@@ -333,10 +296,6 @@ void main() {
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
-        // Step 2: Continue (flat rate auto-selected).
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
-
         // Should show agreed price ($200.00) instead of listing price ($299.99).
         expect(find.text('\$200.00'), findsOneWidget);
       });
@@ -356,11 +315,7 @@ void main() {
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
-        // Step 2: Continue (flat rate auto-selected).
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
-
-        // Step 3 review: Continue.
+        // Step 2 review: Continue.
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
@@ -368,56 +323,6 @@ void main() {
         expect(
             find.text('You have already accepted the marketplace buyer terms.'),
             findsOneWidget);
-      });
-    });
-
-    group('missing seller address', () {
-      testWidgets(
-          'should show error when seller shipping address is null',
-          (tester) async {
-        // Build page with NO seller shipping address.
-        await tester.pumpWidget(
-          MaterialApp(
-            home: CheckoutPage(
-              listing: _createListing(),
-              sellerShippingAddress: null,
-              transactionRepository: mockTransactionRepo,
-              currentUserId: 'buyer-1',
-              fedexDatasource: mockFedExDatasource,
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        // Fill address and proceed to shipping step.
-        await fillAddress(tester);
-        await tester.ensureVisible(find.text('Continue'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
-
-        // Should show the improved error message.
-        expect(
-          find.textContaining('seller has not set up a shipping address'),
-          findsOneWidget,
-        );
-      });
-    });
-
-    group('flat rate shipping', () {
-      testWidgets('should calculate international flat rate for FR to US',
-          (tester) async {
-        await tester.pumpWidget(buildPage());
-        await tester.pumpAndSettle();
-
-        await fillAddress(tester);
-        await tester.ensureVisible(find.text('Continue'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
-
-        // FR → US = International Shipping.
-        expect(find.text('International Shipping'), findsOneWidget);
       });
     });
   });

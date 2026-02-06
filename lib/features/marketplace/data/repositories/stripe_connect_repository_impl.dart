@@ -35,6 +35,9 @@ class StripeConnectRepositoryImpl implements StripeConnectRepository {
     String? phone,
     String? country,
     Map<String, String>? address,
+    Map<String, int>? dateOfBirth,
+    String? iban,
+    bool tosAccepted = false,
   }) async {
     return _datasource.createStripeConnectAccount(
       userId: userId,
@@ -46,6 +49,9 @@ class StripeConnectRepositoryImpl implements StripeConnectRepository {
       phone: phone,
       country: country,
       address: address,
+      dateOfBirth: dateOfBirth,
+      iban: iban,
+      tosAccepted: tosAccepted,
     );
   }
 

@@ -168,6 +168,7 @@ class MockMarketplaceChatRepository implements MarketplaceChatRepository {
 }
 
 class FakeOfferRepository implements MarketplaceOfferRepository {
+  bool hasAcceptedOffer = false;
   @override
   Future<MarketplaceOffer> createOffer({
     required String listingId,
@@ -202,8 +203,11 @@ class FakeOfferRepository implements MarketplaceOfferRepository {
   @override
   Future<MarketplaceOffer> getOfferById(String offerId) async =>
       throw UnimplementedError();
-}
 
+  @override
+  Future<bool> hasAcceptedOfferForListing(String listingId) async =>
+      hasAcceptedOffer;
+}
 // =============================================================================
 // TEST HELPERS
 // =============================================================================

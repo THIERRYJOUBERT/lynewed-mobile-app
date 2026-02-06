@@ -24,6 +24,7 @@ class FakeOfferRepository implements MarketplaceOfferRepository {
   int createOfferCallCount = 0;
   Exception? createOfferException;
   MarketplaceOffer? pendingOffer;
+  bool hasAcceptedOffer = false;
 
   @override
   Future<MarketplaceOffer> createOffer({
@@ -74,8 +75,12 @@ class FakeOfferRepository implements MarketplaceOfferRepository {
   @override
   Future<MarketplaceOffer> getOfferById(String offerId) async =>
       throw UnimplementedError();
-}
 
+  @override
+  Future<bool> hasAcceptedOfferForListing(String listingId) async =>
+      hasAcceptedOffer;
+
+}
 class FakeChatRepository implements MarketplaceChatRepository {
   @override
   Future<MarketplaceMessage> sendMessage({

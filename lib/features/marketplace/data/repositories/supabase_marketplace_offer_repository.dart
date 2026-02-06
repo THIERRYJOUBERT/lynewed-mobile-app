@@ -36,6 +36,11 @@ class SupabaseMarketplaceOfferRepository
   }) async {
     final buyerId = _currentUserId;
 
+    // Block new offers if an accepted offer already exists on this listing.
+    if (await hasAcceptedOfferForListing(listingId)) {
+      throw StateError('An offer has already been accepted on this listing');
+    }
+
     // Check for existing pending offer.
     final existing = await _client
         .from('marketplace_offers')
@@ -264,22 +269,52 @@ class SupabaseMarketplaceOfferRepository
     final allRows = [...directResponse, ...counterResponse];
     if (allRows.isEmpty) return [];
 
-    // Collect seller IDs for batch profile fetch.
-    final sellerIds = <String>{};
+    // Identify counter-offers (where buyer_id == seller_id, meaning the seller
+    // made a counter-offer stored as "buyer"). For these, the chat partner is
+    // the actual buyer found via the offer message receiver_id.
+    final counterOfferIdsForPartner = <String>[];
     for (final row in allRows) {
-      final listing = row['marketplace_listings'] as Map<String, dynamic>?;
-      if (listing != null && listing['seller_id'] != null) {
-        sellerIds.add(listing['seller_id'] as String);
+      final json = row as Map<String, dynamic>;
+      final listing = json['marketplace_listings'] as Map<String, dynamic>?;
+      final buyerId = json['buyer_id'] as String?;
+      final sellerId = listing?['seller_id'] as String?;
+      if (buyerId != null && buyerId == sellerId) {
+        counterOfferIdsForPartner.add(json['id'] as String);
       }
     }
 
-    // Batch-fetch seller profiles.
+    // For counter-offers, find the actual chat partner (message receiver).
+    final counterOfferPartnerMap = <String, String>{};
+    if (counterOfferIdsForPartner.isNotEmpty) {
+      final msgRows = await _client
+          .from('marketplace_messages')
+          .select('offer_id, receiver_id')
+          .inFilter('offer_id', counterOfferIdsForPartner)
+          .eq('message_type', 'offer');
+      for (final row in msgRows as List) {
+        final offerId = row['offer_id'] as String;
+        final receiverId = row['receiver_id'] as String;
+        counterOfferPartnerMap[offerId] = receiverId;
+      }
+    }
+
+    // Collect all profile IDs needed (sellers + counter-offer partners).
+    final profileIdsNeeded = <String>{};
+    for (final row in allRows) {
+      final listing = row['marketplace_listings'] as Map<String, dynamic>?;
+      if (listing != null && listing['seller_id'] != null) {
+        profileIdsNeeded.add(listing['seller_id'] as String);
+      }
+    }
+    profileIdsNeeded.addAll(counterOfferPartnerMap.values);
+
+    // Batch-fetch profiles.
     final profilesMap = <String, Map<String, dynamic>>{};
-    if (sellerIds.isNotEmpty) {
+    if (profileIdsNeeded.isNotEmpty) {
       final profiles = await _client
           .from('profiles')
           .select('id, full_name, avatar_url')
-          .inFilter('id', sellerIds.toList());
+          .inFilter('id', profileIdsNeeded.toList());
       for (final p in profiles as List) {
         final profile = p as Map<String, dynamic>;
         profilesMap[profile['id'] as String] = profile;
@@ -293,6 +328,14 @@ class SupabaseMarketplaceOfferRepository
       final sellerId = listing?['seller_id'] as String?;
       final sellerProfile = sellerId != null ? profilesMap[sellerId] : null;
 
+      // Determine chat partner: for counter-offers use the actual buyer,
+      // otherwise use the seller.
+      final isCounterOffer = counterOfferPartnerMap.containsKey(offer.id);
+      final partnerId = isCounterOffer
+          ? counterOfferPartnerMap[offer.id]
+          : sellerId;
+      final partnerProfile = partnerId != null ? profilesMap[partnerId] : null;
+
       return OfferDisplayModel(
         offer: offer,
         listingTitle: listing?['title'] as String?,
@@ -300,11 +343,27 @@ class SupabaseMarketplaceOfferRepository
         sellerId: sellerId,
         sellerName: sellerProfile?['full_name'] as String?,
         sellerAvatarUrl: sellerProfile?['avatar_url'] as String?,
+        chatPartnerId: partnerId,
+        chatPartnerName: partnerProfile?['full_name'] as String?,
+        chatPartnerAvatarUrl: partnerProfile?['avatar_url'] as String?,
       );
     }).toList();
 
     // Sort by creation date descending (merged from two queries).
     results.sort((a, b) => b.offer.createdAt.compareTo(a.offer.createdAt));
     return results;
+  }
+
+  @override
+  Future<bool> hasAcceptedOfferForListing(String listingId) async {
+    final response = await _client
+        .from('marketplace_offers')
+        .select('id')
+        .eq('listing_id', listingId)
+        .eq('status', 'accepted')
+        .limit(1)
+        .maybeSingle();
+
+    return response != null;
   }
 }

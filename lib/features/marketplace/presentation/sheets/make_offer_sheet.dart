@@ -105,6 +105,17 @@ class _MakeOfferSheetState extends State<MakeOfferSheet> {
     setState(() => _isLoading = true);
 
     try {
+      // Block if an offer has already been accepted on this listing.
+      final hasAccepted =
+          await _repository.hasAcceptedOfferForListing(widget.listingId);
+
+      if (hasAccepted) {
+        if (!mounted) return;
+        _showError('An offer has already been accepted on this listing');
+        setState(() => _isLoading = false);
+        return;
+      }
+
       // Check for existing pending offer first.
       final existing =
           await _repository.getPendingOfferForListing(widget.listingId);

@@ -225,6 +225,18 @@ class FakeMarketplaceOfferRepository implements MarketplaceOfferRepository {
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return accepted.map((o) => OfferDisplayModel(offer: o)).toList();
   }
+
+  @override
+  Future<bool> hasAcceptedOfferForListing(String listingId) async {
+    if (nextException != null) {
+      final e = nextException!;
+      nextException = null;
+      throw e;
+    }
+    return _offers.any(
+      (o) => o.listingId == listingId && o.status == 'accepted',
+    );
+  }
 }
 
 // =============================================================================
