@@ -259,7 +259,7 @@ class _GuestHomePageState extends State<GuestHomePage> {
                 child: IndexedStack(
                   index: _currentIndex,
                   children: [
-                    const GuestAlbumPage(),
+                    GuestAlbumPage(brideName: _brideName),
                     const GuestMessagesPage(),
                     GuestSettingsPage(
                       onUpgradeToBride: _handleUpgradeToBride,

@@ -60,4 +60,13 @@ abstract class GuestAlbumRepository {
   Future<Result<String?>> getMyAlbumId({
     required String weddingId,
   });
+
+  /// Gets the set of media IDs that have been favorited by the bride.
+  ///
+  /// Queries the photo_favorites table for media belonging to
+  /// the current guest's album.
+  /// Returns an empty set if no favorites exist.
+  Future<Result<Set<String>>> getFavoritedMediaIds({
+    required String weddingId,
+  });
 }

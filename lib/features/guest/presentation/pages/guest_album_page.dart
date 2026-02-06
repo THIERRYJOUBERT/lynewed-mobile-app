@@ -15,6 +15,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+
 import '/core/design/design.dart';
 import '/core/utils/video_utils.dart';
 import '/features/my_wedding/data/datasources/download_data_source_impl.dart';
@@ -26,7 +28,10 @@ import '/features/my_wedding/presentation/widgets/media_picker_sheet.dart';
 import '../../data/repositories/guest_album_repository_impl.dart';
 import '../../domain/entities/guest_media.dart';
 import '../../domain/repositories/guest_album_repository.dart';
-import '../widgets/guest_media_grid.dart';
+import '../widgets/album_filter_chips.dart';
+import '../widgets/album_stats_header.dart';
+import '../widgets/date_group_header.dart';
+import '../widgets/guest_media_tile.dart';
 
 /// Album page for guests.
 ///
@@ -39,7 +44,10 @@ import '../widgets/guest_media_grid.dart';
 /// - Progress indicator during upload
 class GuestAlbumPage extends StatefulWidget {
   /// Creates a guest album page.
-  const GuestAlbumPage({super.key});
+  const GuestAlbumPage({super.key, this.brideName});
+
+  /// Bride's name for personalized UI.
+  final String? brideName;
 
   @override
   State<GuestAlbumPage> createState() => _GuestAlbumPageState();
@@ -56,6 +64,8 @@ class _GuestAlbumPageState extends State<GuestAlbumPage> {
   String? _error;
   String? _weddingId;
   List<GuestMedia> _media = [];
+  Set<String> _favoritedIds = {};
+  AlbumFilter _activeFilter = AlbumFilter.all;
 
   @override
   void initState() {
@@ -118,7 +128,7 @@ class _GuestAlbumPageState extends State<GuestAlbumPage> {
     }
   }
 
-  /// Loads the guest's media from the repository.
+  /// Loads the guest's media and favorites from the repository.
   Future<void> _loadMedia() async {
     if (!mounted || _weddingId == null) return;
 
@@ -127,15 +137,56 @@ class _GuestAlbumPageState extends State<GuestAlbumPage> {
     if (!mounted) return;
 
     result.fold(
-      onSuccess: (media) => setState(() {
-        _media = media;
-        _isLoading = false;
-      }),
+      onSuccess: (media) {
+        setState(() {
+          _media = media;
+          _isLoading = false;
+        });
+        // Load favorites in background (non-blocking)
+        _loadFavorites();
+      },
       onFailure: (failure) => setState(() {
         _error = failure.message;
         _isLoading = false;
       }),
     );
+  }
+
+  /// Loads favorited media IDs from the repository.
+  Future<void> _loadFavorites() async {
+    if (!mounted || _weddingId == null || _media.isEmpty) return;
+
+    final result =
+        await _repository.getFavoritedMediaIds(weddingId: _weddingId!);
+
+    if (!mounted) return;
+
+    result.fold(
+      onSuccess: (ids) => setState(() => _favoritedIds = ids),
+      onFailure: (_) {}, // Silently fail - favorites are non-critical
+    );
+  }
+
+  /// Returns the filtered media list based on the active filter.
+  List<GuestMedia> get _filteredMedia {
+    switch (_activeFilter) {
+      case AlbumFilter.all:
+        return _media;
+      case AlbumFilter.photos:
+        return _media.where((m) => m.isPhoto).toList();
+      case AlbumFilter.videos:
+        return _media.where((m) => m.isVideo).toList();
+    }
+  }
+
+  /// Groups media by date, returning an ordered map.
+  Map<String, List<GuestMedia>> _groupByDate(List<GuestMedia> media) {
+    final groups = <String, List<GuestMedia>>{};
+    for (final item in media) {
+      final key = DateGroupHeader.formatDateLabel(item.createdAt.toLocal());
+      groups.putIfAbsent(key, () => []).add(item);
+    }
+    return groups;
   }
 
   /// Shows the media picker sheet.
@@ -864,75 +915,204 @@ class _GuestAlbumPageState extends State<GuestAlbumPage> {
       );
     }
 
+    if (_media.isEmpty) {
+      return Stack(
+        children: [
+          _buildEmptyState(),
+          _buildFab(),
+        ],
+      );
+    }
+
     return Stack(
       children: [
-        // Content (grid or empty state)
-        if (_media.isEmpty)
-          _buildEmptyState()
-        else
-          GuestMediaGrid(
-            media: _media,
-            onRefresh: _loadMedia,
-            onMediaTap: _onMediaTap,
-            onMediaLongPress: _onMediaLongPress,
-          ),
+        RefreshIndicator(
+          onRefresh: _loadMedia,
+          color: LynewedColors.primary,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              // Stats header
+              SliverToBoxAdapter(
+                child: AlbumStatsHeader(
+                  photoCount: _media.where((m) => m.isPhoto).length,
+                  videoCount: _media.where((m) => m.isVideo).length,
+                  lovedCount: _favoritedIds.length,
+                ),
+              ),
 
-        // FAB for adding media
-        Positioned(
-          right: 0,
-          bottom: 0,
-          child: FloatingActionButton(
-            onPressed: _isUploading ? null : _showMediaPickerSheet,
-            backgroundColor: _isUploading
-                ? LynewedColors.gray300
-                : LynewedColors.primary,
-            child: _isUploading
-                ? SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      value: _uploadProgress,
-                      strokeWidth: 2,
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        LynewedColors.background,
-                      ),
-                    ),
-                  )
-                : Icon(
-                    Icons.add,
-                    color: LynewedColors.background,
-                  ),
+              // Filter chips
+              SliverToBoxAdapter(
+                child: AlbumFilterChips(
+                  activeFilter: _activeFilter,
+                  onFilterChanged: (filter) =>
+                      setState(() => _activeFilter = filter),
+                ),
+              ),
+
+              // Date-grouped masonry grids
+              ..._buildDateGroupedSlivers(),
+
+              // Bottom padding for FAB
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 80),
+              ),
+            ],
           ),
         ),
+
+        // FAB
+        _buildFab(),
       ],
+    );
+  }
+
+  /// Builds the sliver list of date-grouped masonry grids.
+  List<Widget> _buildDateGroupedSlivers() {
+    final filtered = _filteredMedia;
+    if (filtered.isEmpty) {
+      return [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 60),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _activeFilter == AlbumFilter.photos
+                        ? Icons.photo_camera_outlined
+                        : Icons.videocam_outlined,
+                    size: 48,
+                    color: LynewedColors.gray300,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    _activeFilter == AlbumFilter.photos
+                        ? 'No photos yet'
+                        : 'No videos yet',
+                    style: LynewedTextStyles.bodyMedium.copyWith(
+                      color: LynewedColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ];
+    }
+
+    final dateGroups = _groupByDate(filtered);
+    final slivers = <Widget>[];
+
+    for (final entry in dateGroups.entries) {
+      final label = entry.key;
+      final items = entry.value;
+
+      // Date header
+      slivers.add(
+        SliverToBoxAdapter(
+          child: DateGroupHeader(label: label, itemCount: items.length),
+        ),
+      );
+
+      // Masonry grid for this date group
+      slivers.add(
+        SliverMasonryGrid.count(
+          crossAxisCount: 2,
+          mainAxisSpacing: 6,
+          crossAxisSpacing: 6,
+          childCount: items.length,
+          itemBuilder: (context, index) {
+            final item = items[index];
+            return GuestMediaTile(
+              media: item,
+              onTap: () => _onMediaTap(item),
+              onLongPress: () => _onMediaLongPress(item),
+              isFavorited: _favoritedIds.contains(item.id),
+              isHero: index == 0,
+            );
+          },
+        ),
+      );
+    }
+
+    return slivers;
+  }
+
+  /// Builds the FAB for adding media.
+  Widget _buildFab() {
+    return Positioned(
+      right: 0,
+      bottom: 0,
+      child: FloatingActionButton(
+        onPressed: _isUploading ? null : _showMediaPickerSheet,
+        backgroundColor:
+            _isUploading ? LynewedColors.gray300 : LynewedColors.primary,
+        child: _isUploading
+            ? SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  value: _uploadProgress,
+                  strokeWidth: 2,
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    LynewedColors.background,
+                  ),
+                ),
+              )
+            : Icon(
+                Icons.add,
+                color: LynewedColors.background,
+              ),
+      ),
     );
   }
 
   /// Builds the empty state widget.
   Widget _buildEmptyState() {
+    final brideName = widget.brideName ?? 'the wedding';
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.photo_library_outlined,
-            size: 64,
-            color: LynewedColors.gray300,
+          Container(
+            width: 96,
+            height: 96,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: LynewedColors.gray200,
+                width: 1.5,
+              ),
+            ),
+            child: Icon(
+              Icons.camera_alt_outlined,
+              size: 40,
+              color: LynewedColors.gray300,
+            ),
           ),
-          SizedBox(height: LynewedSpacing.lg),
+          const SizedBox(height: 24),
           Text(
-            'Your Wedding Memories',
-            style: LynewedTextStyles.titleSmall.copyWith(
+            'Capture the Moment',
+            style: LynewedTextStyles.headlineMedium.copyWith(
               color: LynewedColors.textPrimary,
             ),
           ),
-          SizedBox(height: LynewedSpacing.sm),
+          const SizedBox(height: 8),
           Text(
-            'Tap the + button to add\nphotos and videos',
+            "Share your photos and videos\nfrom $brideName's wedding",
             style: LynewedTextStyles.bodySmall.copyWith(
               color: LynewedColors.textSecondary,
             ),
             textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 32),
+          LynewedButton(
+            text: 'Add Your First Photo',
+            onPressed: _showMediaPickerSheet,
           ),
         ],
       ),

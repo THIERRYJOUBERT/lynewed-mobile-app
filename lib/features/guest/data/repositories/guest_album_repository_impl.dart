@@ -279,6 +279,52 @@ class GuestAlbumRepositoryImpl implements GuestAlbumRepository {
     }
   }
 
+  @override
+  Future<Result<Set<String>>> getFavoritedMediaIds({
+    required String weddingId,
+  }) async {
+    try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) {
+        return const Failure(AuthFailure('Not authenticated'));
+      }
+
+      // Get the guest's album
+      final albumId = await _getMyAlbumIdInternal(weddingId, userId);
+      if (albumId == null) {
+        return const Success({});
+      }
+
+      // Get all media IDs for this album
+      final mediaResponse = await _client
+          .from('guest_media')
+          .select('id')
+          .eq('album_id', albumId);
+
+      final mediaIds =
+          (mediaResponse as List).map((e) => e['id'] as String).toList();
+
+      if (mediaIds.isEmpty) {
+        return const Success({});
+      }
+
+      // Query photo_favorites for these media IDs
+      final favoritesResponse = await _client
+          .from('photo_favorites')
+          .select('media_id')
+          .inFilter('media_id', mediaIds);
+
+      final favoritedIds = (favoritesResponse as List)
+          .map((e) => e['media_id'] as String)
+          .toSet();
+
+      return Success(favoritedIds);
+    } catch (e) {
+      SecureLogger.error('Failed to get favorited media IDs: $e');
+      return Failure(ServerFailure('Failed to load favorites: $e'));
+    }
+  }
+
   /// Extracts file extension from a path.
   String _getExtension(String path) {
     final lastDot = path.lastIndexOf('.');
