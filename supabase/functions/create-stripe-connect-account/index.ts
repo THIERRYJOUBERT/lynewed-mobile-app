@@ -114,15 +114,98 @@ Deno.serve(async (req: Request) => {
       .eq("user_id", body.user_id)
       .maybeSingle();
 
-    let stripeAccountId: string;
+    let stripeAccountId: string | undefined;
 
     if (existingAccount?.stripe_account_id) {
-      stripeAccountId = existingAccount.stripe_account_id;
-      console.log(
-        `Reusing existing Stripe account ${stripeAccountId} (type: ${existingAccount.account_type}) for user ${body.user_id}`
-      );
-    } else {
-      // Resolve country and currency
+      if (
+        existingAccount.account_type === "express" &&
+        !existingAccount.onboarding_complete
+      ) {
+        // Migration: delete incomplete Express account, recreate as Custom
+        console.log(
+          `Migrating incomplete Express account ${existingAccount.stripe_account_id} to Custom for user ${body.user_id}`
+        );
+        try {
+          await stripe.accounts.del(existingAccount.stripe_account_id);
+        } catch (delError) {
+          console.error("Error deleting Express account from Stripe:", delError);
+        }
+        await supabaseAdmin
+          .from("stripe_accounts")
+          .delete()
+          .eq("user_id", body.user_id)
+          .eq("stripe_account_id", existingAccount.stripe_account_id);
+        // stripeAccountId stays undefined → falls through to create Custom below
+      } else if (!existingAccount.onboarding_complete) {
+        // Existing Custom account, incomplete: update individual fields
+        stripeAccountId = existingAccount.stripe_account_id;
+        console.log(
+          `Updating incomplete Custom account ${stripeAccountId} for user ${body.user_id}`
+        );
+
+        const updateParams: Record<string, unknown> = {};
+        if (body.first_name) updateParams.first_name = body.first_name;
+        if (body.last_name) updateParams.last_name = body.last_name;
+        if (body.phone) updateParams.phone = body.phone;
+        if (body.date_of_birth) {
+          updateParams.dob = {
+            day: body.date_of_birth.day,
+            month: body.date_of_birth.month,
+            year: body.date_of_birth.year,
+          };
+        }
+        if (body.address) {
+          const country = body.country || "FR";
+          updateParams.address = {
+            line1: body.address.line1 || undefined,
+            city: body.address.city || undefined,
+            postal_code: body.address.postal_code || undefined,
+            state: body.address.state || undefined,
+            country: country,
+          };
+        }
+
+        if (Object.keys(updateParams).length > 0) {
+          await stripe.accounts.update(stripeAccountId, {
+            individual:
+              updateParams as Stripe.AccountUpdateParams.Individual,
+          });
+          console.log(
+            `Updated individual fields on Custom account ${stripeAccountId}`
+          );
+        }
+
+        // Attach IBAN if provided
+        if (body.iban) {
+          try {
+            const country = body.country || "FR";
+            const currency = currencyForCountry(country);
+            await stripe.accounts.createExternalAccount(stripeAccountId, {
+              external_account: {
+                object: "bank_account",
+                country: country,
+                currency: currency,
+                account_number: body.iban,
+              },
+            });
+            console.log(
+              `Attached IBAN to existing Custom account ${stripeAccountId}`
+            );
+          } catch (ibanError) {
+            console.error("Error attaching IBAN:", ibanError);
+          }
+        }
+      } else {
+        // Complete account (Express or Custom): reuse as-is
+        stripeAccountId = existingAccount.stripe_account_id;
+        console.log(
+          `Reusing complete account ${stripeAccountId} (type: ${existingAccount.account_type}) for user ${body.user_id}`
+        );
+      }
+    }
+
+    // Create new Custom account if needed (no existing or deleted Express)
+    if (!stripeAccountId) {
       const country = body.country || "FR";
       const currency = currencyForCountry(country);
 

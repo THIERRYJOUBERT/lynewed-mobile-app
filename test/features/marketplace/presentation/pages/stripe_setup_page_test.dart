@@ -125,7 +125,8 @@ void main() {
     });
 
     group('existing incomplete account', () {
-      testWidgets('should show incomplete status widget', (tester) async {
+      testWidgets('should show multi-step form for incomplete account',
+          (tester) async {
         final account = StripeAccount(
           userId: 'user-123',
           stripeAccountId: 'acct_123',
@@ -142,8 +143,15 @@ void main() {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        expect(find.text('Payment Setup Incomplete'), findsOneWidget);
-        expect(find.text('Complete Setup'), findsOneWidget);
+        // Should show the 3-step form, NOT the status widget
+        expect(find.text('Personal'), findsOneWidget);
+        expect(find.text('Address'), findsOneWidget);
+        expect(find.text('Bank'), findsOneWidget);
+        expect(find.text('First Name'), findsOneWidget);
+
+        // Status widget should NOT appear
+        expect(find.text('Payment Setup Incomplete'), findsNothing);
+        expect(find.text('Complete Setup'), findsNothing);
       });
     });
 

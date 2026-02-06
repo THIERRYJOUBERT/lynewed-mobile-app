@@ -110,8 +110,8 @@ class _StripeSetupPageState extends State<StripeSetupPage> {
           await widget.checkStatusUseCase.syncAndGetAccount(widget.userId);
       if (!mounted) return;
 
-      // Pre-fill form from profile if no account yet
-      if (account == null) {
+      // Pre-fill form from profile if no account or incomplete account
+      if (account == null || !account.onboardingComplete) {
         await _prefillFromProfile();
       }
 
@@ -312,7 +312,7 @@ class _StripeSetupPageState extends State<StripeSetupPage> {
                       CircularProgressIndicator(color: LynewedColors.primary),
                 ),
               )
-            else if (_account != null)
+            else if (_account != null && _account!.onboardingComplete)
               Expanded(child: _buildAccountStatus())
             else ...[
               _buildStepIndicator(),
@@ -343,7 +343,9 @@ class _StripeSetupPageState extends State<StripeSetupPage> {
               style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 20),
             ),
           ),
-          if (!_isLoadingAccount && _account != null)
+          if (!_isLoadingAccount &&
+              _account != null &&
+              _account!.onboardingComplete)
             LynewedIconButton(
               icon: const Icon(Icons.refresh, size: 20),
               onPressed: _loadAccount,
