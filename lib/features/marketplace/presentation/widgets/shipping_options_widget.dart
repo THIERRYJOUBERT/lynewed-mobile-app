@@ -170,10 +170,12 @@ class ShippingOptionsWidget extends StatelessWidget {
                           rate.serviceName,
                           style: LynewedTextStyles.titleSmall,
                         ),
-                        if (rate.estimatedDays != null) ...[
+                        if (rate.estimatedDaysLabel != null ||
+                            rate.estimatedDays != null) ...[
                           const SizedBox(height: 4),
                           Text(
-                            '${rate.estimatedDays} business days',
+                            rate.estimatedDaysLabel ??
+                                '${rate.estimatedDays} business days',
                             style: LynewedTextStyles.bodySmall.copyWith(
                               color: LynewedColors.textSecondary,
                             ),

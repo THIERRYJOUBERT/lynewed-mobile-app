@@ -38,6 +38,7 @@ class MessageComposer extends StatefulWidget {
     this.onSendImage,
     this.onSendAudio,
     this.onSendDocument,
+    this.onMakeOffer,
     this.onSendingComplete,
     this.isEnabled = true,
     this.isSending = false,
@@ -56,6 +57,9 @@ class MessageComposer extends StatefulWidget {
 
   /// Callback to send document message (PDF)
   final SendDocumentCallback? onSendDocument;
+
+  /// Callback to open Make Offer sheet (marketplace chat only).
+  final VoidCallback? onMakeOffer;
 
   /// Callback when all sending is complete (for multiple images)
   final VoidCallback? onSendingComplete;
@@ -244,6 +248,18 @@ class _MessageComposerState extends State<MessageComposer> {
                       _pickDocument();
                     },
                   ),
+                // Make Offer option (marketplace chat only)
+                if (widget.onMakeOffer != null) ...[
+                  const SizedBox(height: 12),
+                  _buildAttachmentOption(
+                    icon: Icons.local_offer_outlined,
+                    label: 'Make an Offer',
+                    onTap: () {
+                      Navigator.pop(context);
+                      widget.onMakeOffer!();
+                    },
+                  ),
+                ],
               ],
             ),
           ),

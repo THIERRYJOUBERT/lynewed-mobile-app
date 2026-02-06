@@ -13,7 +13,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '/core/design/design.dart';
 import '/components/nav/nav_bar_brides/nav_bar_brides_widget.dart';
-import '/features/chat/presentation/pages/chat_details_page.dart';
+import 'wedding_groups_page.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/actions/actions.dart' as action_blocks;
 import '/backend/schema/structs/pro_details_struct.dart';
@@ -29,15 +29,14 @@ import '../widgets/wedding_onboarding_widget.dart';
 import '../sheets/wedding_edit_sheet.dart';
 import '../sheets/invite_pro_sheet.dart';
 import '../sheets/note_for_pros_sheet.dart';
-import 'agenda_page.dart';
-import 'budget_page.dart';
 import 'inspirations_page.dart';
 import 'guests_page.dart';
 import 'guest_albums_page.dart';
-import 'wedding_groups_page.dart';
 import 'magazine_selection_page.dart';
-import '../sheets/magazine_photo_picker_sheet.dart';
-import 'magazine_order_detail_page.dart';
+import 'people_page.dart';
+import 'organization_page.dart';
+import '../sheets/create_album_sheet.dart';
+import '../sheets/add_guest_sheet.dart';
 
 /// My Wedding Page - Main page for brides to manage their wedding
 ///
@@ -65,7 +64,6 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
   String? _error;
 
   // Wedding Team data
-  WeddingTeamChatInfo? _teamChatInfo;
   List<WeddingTeamMember> _teamMembers = [];
 
   // Agenda & Budget preview data
@@ -129,9 +127,8 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
   Future<void> _loadWeddingTeamData() async {
     if (_wedding == null) return;
 
-    // Load team chat info, active team members, events, expenses, albums, guests and magazine in parallel
+    // Load active team members, events, expenses, albums, guests and magazine in parallel
     final results = await Future.wait([
-      _repository.getWeddingTeamChat(weddingId: _wedding!.id),
       _repository.getActiveWeddingTeam(weddingId: _wedding!.id),
       _repository.getWeddingEvents(weddingId: _wedding!.id),
       _repository.getWeddingExpenses(weddingId: _wedding!.id),
@@ -141,18 +138,14 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
       _repository.getMagazineOrders(weddingId: _wedding!.id),
     ]);
 
-    final chatResult = results[0] as RepositoryResult<WeddingTeamChatInfo?>;
-    final teamResult = results[1] as RepositoryResult<List<WeddingTeamMember>>;
-    final eventsResult = results[2] as RepositoryResult<List<WeddingEvent>>;
-    final expensesResult = results[3] as RepositoryResult<List<WeddingExpense>>;
-    final albumsResult = results[4] as RepositoryResult<List<InspirationAlbum>>;
-    final guestsResult = results[5] as RepositoryResult<List<WeddingGuest>>;
-    final magazineResult = results[6] as RepositoryResult<List<MagazineSelection>>;
-    final ordersResult = results[7] as RepositoryResult<List<MagazineOrder>>;
+    final teamResult = results[0] as RepositoryResult<List<WeddingTeamMember>>;
+    final eventsResult = results[1] as RepositoryResult<List<WeddingEvent>>;
+    final expensesResult = results[2] as RepositoryResult<List<WeddingExpense>>;
+    final albumsResult = results[3] as RepositoryResult<List<InspirationAlbum>>;
+    final guestsResult = results[4] as RepositoryResult<List<WeddingGuest>>;
+    final magazineResult = results[5] as RepositoryResult<List<MagazineSelection>>;
+    final ordersResult = results[6] as RepositoryResult<List<MagazineOrder>>;
 
-    if (chatResult.isSuccess) {
-      _teamChatInfo = chatResult.data;
-    }
     if (teamResult.isSuccess) {
       _teamMembers = teamResult.data ?? [];
     }
@@ -310,51 +303,28 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Wedding Overview Card - full width, no margins, touches divider
+          // 1. Hero Card - full width
           _buildOverviewCard(),
-          const SizedBox(height: 30.0),
+          // 2. Invite Code Banner - thin bar below hero
+          _buildInviteCodeBanner(),
+          const SizedBox(height: 20.0),
           // Sections with horizontal padding
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ========== PLANNING ==========
-                // Agenda Section
-                _buildAgendaSection(),
+                // 3. People - Pros + Guests horizontal scroll
+                _buildPeopleSection(),
                 const SizedBox(height: 30.0),
-                // Budget Section
-                _buildBudgetSection(),
+                // 4. Organization - Budget + Agenda split card
+                _buildOrganizationSection(),
                 const SizedBox(height: 30.0),
-
-                // ========== PEOPLE & COMMUNICATION ==========
-                // Wedding Team Section
-                _buildWeddingTeamSection(),
+                // 5. Albums - unified horizontal scroll
+                _buildAlbumsSection(),
                 const SizedBox(height: 30.0),
-                // Groups Section
-                _buildGroupsSection(),
-                const SizedBox(height: 30.0),
-                // Guests Section
-                _buildGuestsSection(),
-                const SizedBox(height: 30.0),
-                // Note for Pros Section
-                _buildNoteForProsSection(),
-                const SizedBox(height: 30.0),
-
-                // ========== MEDIA & ALBUMS ==========
-                // Inspirations Section
-                _buildInspirationsSection(),
-                const SizedBox(height: 30.0),
-                // Guest Albums Section
-                _buildGuestAlbumsSection(),
-                const SizedBox(height: 30.0),
-                // Magazine Section
-                _buildMagazineSection(),
-                const SizedBox(height: 30.0),
-
-                // ========== SHARING ==========
-                // Invite Code Section
-                _buildInviteCodeSection(),
+                // 6. Magazine - single entry card
+                _buildMagazineCard(),
                 const SizedBox(height: 20.0),
               ],
             ),
@@ -456,1115 +426,9 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
     );
   }
 
-  /// Wedding Team Section - list of professionals
-  Widget _buildWeddingTeamSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('WEDDING TEAM', style: LynewedTextStyles.sectionTitle),
-            if (_teamMembers.isNotEmpty)
-              GestureDetector(
-                onTap: _openInviteProSheet,
-                child: Text(
-                  '+ Add',
-                  style: LynewedTextStyles.labelLarge.copyWith(
-                    color: LynewedColors.textSecondary,
-                  ),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 10.0),
-        if (_teamMembers.isEmpty)
-          _buildEmptyTeamState()
-        else
-          _buildTeamMembersList(),
-      ],
-    );
-  }
-
-  /// Empty state for wedding team
-  Widget _buildEmptyTeamState() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        color: LynewedColors.surface,
-        borderRadius: BorderRadius.circular(4.0),
-      ),
-      child: Column(
-        children: [
-          const Icon(
-            Icons.people_outline,
-            size: 32.0,
-            color: LynewedColors.gray300,
-          ),
-          const SizedBox(height: 8.0),
-          Text(
-            'No professionals yet',
-            style: LynewedTextStyles.bodyMedium.copyWith(
-              color: LynewedColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 12.0),
-          LynewedButton(
-            text: 'Invite Professionals',
-            onPressed: _openInviteProSheet,
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// List of team members
-  Widget _buildTeamMembersList() {
-    return Column(
-      children: _teamMembers.map((member) => Padding(
-        padding: const EdgeInsets.only(bottom: 10.0),
-        child: _buildProTile(member),
-      )).toList(),
-    );
-  }
-
-  /// Groups Section - Chat groups for wedding communication
-  Widget _buildGroupsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('GROUPS', style: LynewedTextStyles.sectionTitle),
-            GestureDetector(
-              onTap: _openGroupsPage,
-              child: Text(
-                'View all',
-                style: LynewedTextStyles.labelLarge.copyWith(
-                  color: LynewedColors.textSecondary,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4.0),
-        Text(
-          'Chat with your guests and team',
-          style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
-        ),
-        const SizedBox(height: 10.0),
-        // Wedding Team Chat Card
-        if (_teamChatInfo != null)
-          _buildGroupPreviewTile(
-            icon: Icons.groups,
-            name: 'Wedding Team',
-            memberCount: _teamChatInfo!.participantsCount,
-            unreadCount: _teamChatInfo!.unreadCount,
-            onTap: _openTeamChat,
-          ),
-        const SizedBox(height: 8.0),
-        // Manage groups button
-        GestureDetector(
-          onTap: _openGroupsPage,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
-            decoration: BoxDecoration(
-              border: Border.all(color: LynewedColors.gray200),
-              borderRadius: BorderRadius.circular(4.0),
-            ),
-            child: const Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add, size: 18, color: LynewedColors.textSecondary),
-                  SizedBox(width: 8),
-                  Text(
-                    'Manage groups',
-                    style: TextStyle(
-                      color: LynewedColors.textSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Group preview tile
-  Widget _buildGroupPreviewTile({
-    required IconData icon,
-    required String name,
-    required int memberCount,
-    int unreadCount = 0,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(12.0),
-        decoration: BoxDecoration(
-          color: LynewedColors.surface,
-          borderRadius: BorderRadius.circular(4.0),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: LynewedColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, color: LynewedColors.primary, size: 22),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: LynewedTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '$memberCount member${memberCount > 1 ? 's' : ''}',
-                    style: LynewedTextStyles.bodySmall.copyWith(
-                      color: LynewedColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (unreadCount > 0)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: LynewedColors.primary,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  unreadCount > 99 ? '99+' : '$unreadCount',
-                  style: LynewedTextStyles.labelSmall.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            const SizedBox(width: 8),
-            const Icon(Icons.chevron_right, color: LynewedColors.textSecondary),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _openGroupsPage() {
-    if (_wedding == null) return;
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => WeddingGroupsPage(weddingId: _wedding!.id),
-      ),
-    );
-  }
-
-  /// Pro tile - photo, name, profession, chat icon
-  Widget _buildProTile(WeddingTeamMember member) {
-    return GestureDetector(
-      onTap: () => _openProDetails(member.profileId),
-      onLongPress: () => _showProOptionsModal(member),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(12.0),
-        decoration: BoxDecoration(
-          color: LynewedColors.surface,
-          borderRadius: BorderRadius.circular(4.0),
-        ),
-        child: Row(
-          children: [
-            // Avatar
-            ClipRRect(
-              borderRadius: BorderRadius.circular(24.0),
-              child: member.avatarUrl != null && member.avatarUrl!.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: member.avatarUrl!,
-                      width: 48.0,
-                      height: 48.0,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                        width: 48.0,
-                        height: 48.0,
-                        color: LynewedColors.gray200,
-                      ),
-                      errorWidget: (_, __, ___) => Container(
-                        width: 48.0,
-                        height: 48.0,
-                        color: LynewedColors.gray200,
-                        child: const Icon(Icons.person, color: LynewedColors.gray300),
-                      ),
-                    )
-                  : Container(
-                      width: 48.0,
-                      height: 48.0,
-                      color: LynewedColors.gray200,
-                      child: const Icon(Icons.person, color: LynewedColors.gray300),
-                    ),
-            ),
-            const SizedBox(width: 12.0),
-            // Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    member.displayName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: LynewedTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  if (member.profession != null) ...[
-                    const SizedBox(height: 2.0),
-                    Text(
-                      member.profession!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: LynewedTextStyles.labelLarge.copyWith(
-                        color: LynewedColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            // Chat icon
-            GestureDetector(
-              onTap: () => _openChatWithPro(member.profileId),
-              behavior: HitTestBehavior.opaque,
-              child: const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Icon(
-                  Icons.chat_bubble_outline,
-                  color: LynewedColors.textSecondary,
-                  size: 20.0,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Agenda Section
-  Widget _buildAgendaSection() {
-    final hasEvents = _upcomingEvents.isNotEmpty;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('AGENDA', style: LynewedTextStyles.sectionTitle),
-            GestureDetector(
-              onTap: _openAgendaPage,
-              child: Text(
-                'View all',
-                style: LynewedTextStyles.labelLarge.copyWith(
-                  color: LynewedColors.textSecondary,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4.0),
-        Text(
-          hasEvents ? '${_upcomingEvents.length} upcoming event${_upcomingEvents.length > 1 ? 's' : ''}' : 'Your upcoming events and tasks',
-          style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
-        ),
-        const SizedBox(height: 10.0),
-        if (hasEvents)
-          // Show upcoming events list
-          Column(
-            children: [
-              ..._upcomingEvents.map((event) => Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: _buildEventPreviewTile(event),
-              )),
-              const SizedBox(height: 4.0),
-              GestureDetector(
-                onTap: _openAgendaPage,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: LynewedColors.gray200),
-                    borderRadius: BorderRadius.circular(4.0),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'View all events',
-                      style: LynewedTextStyles.labelLarge.copyWith(
-                        color: LynewedColors.textSecondary,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          )
-        else
-          // Empty state
-          GestureDetector(
-            onTap: _openAgendaPage,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20.0),
-              decoration: BoxDecoration(
-                color: LynewedColors.surface,
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              child: Column(
-                children: [
-                  const Icon(Icons.event_outlined, size: 32.0, color: LynewedColors.gray300),
-                  const SizedBox(height: 8.0),
-                  Text(
-                    'No upcoming events',
-                    style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
-                  ),
-                  const SizedBox(height: 12.0),
-                  LynewedButton(
-                    text: 'Add Event',
-                    onPressed: _openAgendaPage,
-                  ),
-                ],
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  /// Event preview tile for agenda section
-  Widget _buildEventPreviewTile(WeddingEvent event) {
-    final dateFormat = DateFormat('MMM d');
-    final timeFormat = DateFormat('HH:mm');
-
-    return GestureDetector(
-      onTap: _openAgendaPage,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(12.0),
-        decoration: BoxDecoration(
-          color: LynewedColors.surface,
-          borderRadius: BorderRadius.circular(4.0),
-        ),
-        child: Row(
-          children: [
-            // Date badge
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: LynewedColors.primary,
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    dateFormat.format(event.eventDate).split(' ')[0].toUpperCase(),
-                    style: LynewedTextStyles.labelSmall.copyWith(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 9,
-                    ),
-                  ),
-                  Text(
-                    dateFormat.format(event.eventDate).split(' ')[1],
-                    style: LynewedTextStyles.bodyMedium.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12.0),
-            // Event info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    event.title,
-                    style: LynewedTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2.0),
-                  Text(
-                    timeFormat.format(event.eventDate),
-                    style: LynewedTextStyles.labelMedium.copyWith(
-                      color: LynewedColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Public indicator
-            if (event.isPublic)
-              const Icon(
-                Icons.visibility_outlined,
-                size: 16,
-                color: LynewedColors.textSecondary,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Budget Section
-  Widget _buildBudgetSection() {
-    final hasBudget = _wedding!.budgetMax != null && _wedding!.budgetMax! > 0;
-    final hasExpenses = _expenses.isNotEmpty;
-    final weddingCurrency = _wedding!.currency;
-    final userCurrency = BudgetFormatter.userCurrency;
-    final currencySymbol = CurrencyData.getSymbol(userCurrency);
-
-    final service = CurrencyService.instance;
-    final totalExpensesDisplay = service.convert(_totalExpenses, from: weddingCurrency, to: userCurrency) ?? _totalExpenses;
-    final totalPaidDisplay = service.convert(_totalPaid, from: weddingCurrency, to: userCurrency) ?? _totalPaid;
-    final budgetMaxDisplay = _wedding!.budgetMax != null
-        ? (service.convert(_wedding!.budgetMax!.toDouble(), from: weddingCurrency, to: userCurrency) ?? _wedding!.budgetMax!.toDouble())
-        : 0.0;
-
-    final progress = hasBudget && budgetMaxDisplay > 0
-        ? (totalExpensesDisplay / budgetMaxDisplay).clamp(0.0, 1.0)
-        : 0.0;
-    final isOverBudget = hasBudget && totalExpensesDisplay > budgetMaxDisplay;
-
-    String subtitle;
-    if (hasExpenses) {
-      subtitle = '${_expenses.length} expense${_expenses.length > 1 ? 's' : ''} tracked';
-    } else {
-      subtitle = 'Track your wedding expenses';
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('BUDGET', style: LynewedTextStyles.sectionTitle),
-            GestureDetector(
-              onTap: _openBudgetPage,
-              child: Text(
-                'View all',
-                style: LynewedTextStyles.labelLarge.copyWith(
-                  color: LynewedColors.textSecondary,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4.0),
-        Text(
-          subtitle,
-          style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
-        ),
-        const SizedBox(height: 10.0),
-        GestureDetector(
-          onTap: _openBudgetPage,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: LynewedColors.surface,
-              borderRadius: BorderRadius.circular(4.0),
-            ),
-            child: hasExpenses || hasBudget
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Total spent row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Total Spent',
-                            style: LynewedTextStyles.bodyMedium.copyWith(
-                              color: LynewedColors.textSecondary,
-                            ),
-                          ),
-                          Text(
-                            _formatAmount(totalExpensesDisplay, currencySymbol),
-                            style: LynewedTextStyles.bodyMedium.copyWith(
-                              fontWeight: FontWeight.w500,
-                              color: isOverBudget ? LynewedColors.error : LynewedColors.textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (hasBudget) ...[
-                        const SizedBox(height: 12.0),
-                        // Progress bar
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4.0),
-                          child: LinearProgressIndicator(
-                            value: progress,
-                            backgroundColor: LynewedColors.gray200,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              isOverBudget ? LynewedColors.error : LynewedColors.textPrimary,
-                            ),
-                            minHeight: 6,
-                          ),
-                        ),
-                        const SizedBox(height: 8.0),
-                        // Budget info row
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              isOverBudget
-                                  ? 'Over by ${_formatAmount(totalExpensesDisplay - budgetMaxDisplay, currencySymbol)}'
-                                  : 'Remaining: ${_formatAmount(budgetMaxDisplay - totalExpensesDisplay, currencySymbol)}',
-                              style: LynewedTextStyles.labelMedium.copyWith(
-                                color: isOverBudget ? LynewedColors.error : LynewedColors.textSecondary,
-                              ),
-                            ),
-                            Text(
-                              'of ${_formatAmount(budgetMaxDisplay, currencySymbol)}',
-                              style: LynewedTextStyles.labelMedium.copyWith(
-                                color: LynewedColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                      const SizedBox(height: 12.0),
-                      // Paid vs Pending mini stats
-                      Row(
-                        children: [
-                          _buildBudgetMiniStat('Paid', _formatAmount(totalPaidDisplay, currencySymbol), LynewedColors.success),
-                          const SizedBox(width: 12.0),
-                          _buildBudgetMiniStat('Pending', _formatAmount(totalExpensesDisplay - totalPaidDisplay, currencySymbol), LynewedColors.warning),
-                        ],
-                      ),
-                    ],
-                  )
-                : Column(
-                    children: [
-                      const Icon(Icons.account_balance_wallet_outlined, size: 32.0, color: LynewedColors.gray300),
-                      const SizedBox(height: 8.0),
-                      Text(
-                        'No expenses yet',
-                        style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
-                      ),
-                      const SizedBox(height: 12.0),
-                      LynewedButton(
-                        text: 'Add Expense',
-                        onPressed: _openBudgetPage,
-                      ),
-                    ],
-                  ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBudgetMiniStat(String label, String value, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(4.0),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 6.0),
-            Expanded(
-              child: Text(
-                '$label: $value',
-                style: LynewedTextStyles.labelSmall.copyWith(
-                  color: LynewedColors.textPrimary,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   String _formatAmount(double amount, String currency) {
     final formatter = NumberFormat('#,##0', 'en_US');
     return '${formatter.format(amount.toInt())} $currency';
-  }
-
-  /// Inspirations Section
-  Widget _buildInspirationsSection() {
-    final hasAlbums = _inspirationAlbums.isNotEmpty;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('INSPIRATIONS', style: LynewedTextStyles.sectionTitle),
-            GestureDetector(
-              onTap: _openInspirationsPage,
-              child: Text(
-                'View all',
-                style: LynewedTextStyles.labelLarge.copyWith(
-                  color: LynewedColors.textSecondary,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4.0),
-        Text(
-          hasAlbums
-              ? '${_inspirationAlbums.length} album${_inspirationAlbums.length > 1 ? 's' : ''}'
-              : 'Your moodboards and saved ideas',
-          style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
-        ),
-        const SizedBox(height: 10.0),
-        if (hasAlbums)
-          Column(
-            children: [
-              ..._inspirationAlbums.take(2).map(
-                    (album) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: _buildInspirationAlbumPreviewTile(album),
-                    ),
-                  ),
-              const SizedBox(height: 4.0),
-              GestureDetector(
-                onTap: _openInspirationsPage,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: LynewedColors.gray200),
-                    borderRadius: BorderRadius.circular(4.0),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'View all albums',
-                      style: LynewedTextStyles.labelLarge.copyWith(
-                        color: LynewedColors.textSecondary,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          )
-        else
-          GestureDetector(
-            onTap: _openInspirationsPage,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20.0),
-              decoration: BoxDecoration(
-                color: LynewedColors.surface,
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              child: Column(
-                children: [
-                  const Icon(Icons.photo_library_outlined, size: 32.0, color: LynewedColors.gray300),
-                  const SizedBox(height: 8.0),
-                  Text(
-                    'Create albums to organize your inspiration',
-                    style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 12.0),
-                  LynewedButton(
-                    text: 'View Inspirations',
-                    onPressed: _openInspirationsPage,
-                  ),
-                ],
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildInspirationAlbumPreviewTile(InspirationAlbum album) {
-    return GestureDetector(
-      onTap: _openInspirationsPage,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(12.0),
-        decoration: BoxDecoration(
-          color: LynewedColors.surface,
-          borderRadius: BorderRadius.circular(4.0),
-        ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4.0),
-              child: album.coverImageUrl != null && album.coverImageUrl!.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: album.coverImageUrl!,
-                      width: 44,
-                      height: 44,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        width: 44,
-                        height: 44,
-                        color: LynewedColors.gray200,
-                        child: const Icon(
-                          Icons.photo_library_outlined,
-                          color: LynewedColors.gray300,
-                          size: 18,
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        width: 44,
-                        height: 44,
-                        color: LynewedColors.gray200,
-                        child: const Icon(
-                          Icons.photo_library_outlined,
-                          color: LynewedColors.gray300,
-                          size: 18,
-                        ),
-                      ),
-                    )
-                  : Container(
-                      width: 44,
-                      height: 44,
-                      color: LynewedColors.gray200,
-                      child: const Icon(
-                        Icons.photo_library_outlined,
-                        color: LynewedColors.gray300,
-                        size: 18,
-                      ),
-                    ),
-            ),
-            const SizedBox(width: 12.0),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          album.name,
-                          style: LynewedTextStyles.bodyMedium.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (album.isPrivate) ...[
-                        const SizedBox(width: 6.0),
-                        const Icon(
-                          Icons.lock_outline,
-                          size: 14,
-                          color: LynewedColors.textSecondary,
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 2.0),
-                  Text(
-                    '${album.imagesCount} image${album.imagesCount != 1 ? 's' : ''}',
-                    style: LynewedTextStyles.labelSmall.copyWith(
-                      color: LynewedColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.chevron_right,
-              size: 20.0,
-              color: LynewedColors.textSecondary,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Guests Section
-  Widget _buildGuestsSection() {
-    final hasGuests = _guests.isNotEmpty;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('GUESTS', style: LynewedTextStyles.sectionTitle),
-            GestureDetector(
-              onTap: _openGuestsPage,
-              child: Text(
-                'View all',
-                style: LynewedTextStyles.labelLarge.copyWith(
-                  color: LynewedColors.textSecondary,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4.0),
-        Text(
-          hasGuests
-              ? '${_guests.length} guest${_guests.length > 1 ? 's' : ''} added'
-              : 'Manage your guest list',
-          style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
-        ),
-        const SizedBox(height: 10.0),
-        if (hasGuests)
-          Column(
-            children: [
-              ..._guests.take(3).map(
-                    (guest) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: _buildGuestPreviewTile(guest),
-                    ),
-                  ),
-              const SizedBox(height: 4.0),
-              GestureDetector(
-                onTap: _openGuestsPage,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: LynewedColors.gray200),
-                    borderRadius: BorderRadius.circular(4.0),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'View all guests',
-                      style: LynewedTextStyles.labelLarge.copyWith(
-                        color: LynewedColors.textSecondary,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          )
-        else
-          GestureDetector(
-            onTap: _openGuestsPage,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20.0),
-              decoration: BoxDecoration(
-                color: LynewedColors.surface,
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              child: Column(
-                children: [
-                  const Icon(Icons.people_outline, size: 32.0, color: LynewedColors.gray300),
-                  const SizedBox(height: 8.0),
-                  Text(
-                    'No guests added yet',
-                    style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
-                  ),
-                  const SizedBox(height: 12.0),
-                  LynewedButton(
-                    text: 'Add Guests',
-                    onPressed: _openGuestsPage,
-                  ),
-                ],
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  /// Guest Albums Section - separate section for guest album access
-  Widget _buildGuestAlbumsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('GUEST ALBUMS', style: LynewedTextStyles.sectionTitle),
-            GestureDetector(
-              onTap: _openGuestAlbumsPage,
-              child: Text(
-                'View all',
-                style: LynewedTextStyles.labelLarge.copyWith(
-                  color: LynewedColors.textSecondary,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4.0),
-        Text(
-          'Photos and videos from your guests',
-          style: LynewedTextStyles.bodySmall.copyWith(
-            color: LynewedColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 10.0),
-        GestureDetector(
-          onTap: _openGuestAlbumsPage,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: LynewedColors.surface,
-              borderRadius: BorderRadius.circular(4.0),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: LynewedColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(4.0),
-                  ),
-                  child: const Icon(
-                    Icons.photo_album_outlined,
-                    color: LynewedColors.primary,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 12.0),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Guest Albums',
-                        style: LynewedTextStyles.bodyMedium.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 2.0),
-                      Text(
-                        'View photos shared by guests',
-                        style: LynewedTextStyles.bodySmall.copyWith(
-                          color: LynewedColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(
-                  Icons.chevron_right,
-                  color: LynewedColors.textSecondary,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Guest preview tile for guests section
-  Widget _buildGuestPreviewTile(WeddingGuest guest) {
-    return GestureDetector(
-      onTap: _openGuestsPage,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(12.0),
-        decoration: BoxDecoration(
-          color: LynewedColors.surface,
-          borderRadius: BorderRadius.circular(4.0),
-        ),
-        child: Row(
-          children: [
-            // Avatar with initials
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: LynewedColors.gray200,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Center(
-                child: Text(
-                  _getGuestInitials(guest.name ?? ''),
-                  style: LynewedTextStyles.labelMedium.copyWith(
-                    color: LynewedColors.textSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12.0),
-            // Guest info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    guest.name ?? 'Unknown',
-                    style: LynewedTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (guest.role != GuestRole.guest) ...[
-                    const SizedBox(height: 2.0),
-                    Text(
-                      _getGuestRoleLabel(guest.role),
-                      style: LynewedTextStyles.labelSmall.copyWith(
-                        color: LynewedColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.chevron_right,
-              size: 20.0,
-              color: LynewedColors.textSecondary,
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   String _getGuestInitials(String name) {
@@ -1576,174 +440,8 @@ class _MyWeddingPageState extends State<MyWeddingPage> {
     return name[0].toUpperCase();
   }
 
-  String _getGuestRoleLabel(GuestRole role) {
-    switch (role) {
-      case GuestRole.bridesmaid:
-        return 'Bridesmaid';
-      case GuestRole.bestMan:
-        return 'Best Man';
-      case GuestRole.family:
-        return 'Family';
-      case GuestRole.witness:
-        return 'Witness';
-      case GuestRole.other:
-        return 'Other';
-      case GuestRole.guest:
-        return 'Guest';
-    }
-  }
-
   // QR Code global key for screenshot
   final GlobalKey _qrKey = GlobalKey();
-
-  /// Invite Code Section - Display invite code and QR code for guests
-  Widget _buildInviteCodeSection() {
-    final inviteCode = _wedding?.inviteCode;
-    final expiresAt = _wedding?.inviteCodeExpiresAt;
-    final hasCode = inviteCode != null && inviteCode.isNotEmpty;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('INVITE CODE', style: LynewedTextStyles.sectionTitle),
-        const SizedBox(height: 4.0),
-        Text(
-          'Share this code with your guests',
-          style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
-        ),
-        const SizedBox(height: 10.0),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20.0),
-          decoration: BoxDecoration(
-            color: LynewedColors.surface,
-            borderRadius: BorderRadius.circular(4.0),
-          ),
-          child: hasCode
-              ? Column(
-                  children: [
-                    // QR Code
-                    RepaintBoundary(
-                      key: _qrKey,
-                      child: Container(
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        child: QrImageView(
-                          data: 'https://lynewed.com/join/$inviteCode',
-                          version: QrVersions.auto,
-                          size: 160.0,
-                          backgroundColor: Colors.white,
-                          eyeStyle: const QrEyeStyle(
-                            eyeShape: QrEyeShape.square,
-                            color: LynewedColors.textPrimary,
-                          ),
-                          dataModuleStyle: const QrDataModuleStyle(
-                            dataModuleShape: QrDataModuleShape.square,
-                            color: LynewedColors.textPrimary,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16.0),
-                    // Invite Code display
-                    GestureDetector(
-                      onTap: () => _copyInviteCode(inviteCode),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: LynewedColors.gray200),
-                          borderRadius: BorderRadius.circular(4.0),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              inviteCode,
-                              style: LynewedTextStyles.headlineSmall.copyWith(
-                                letterSpacing: 4.0,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(width: 12.0),
-                            const Icon(
-                              Icons.copy,
-                              size: 18.0,
-                              color: LynewedColors.textSecondary,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8.0),
-                    Text(
-                      'Tap to copy',
-                      style: LynewedTextStyles.labelSmall.copyWith(
-                        color: LynewedColors.textSecondary,
-                      ),
-                    ),
-                    // Expiration info
-                    if (expiresAt != null) ...[
-                      const SizedBox(height: 12.0),
-                      Text(
-                        'Valid until ${DateFormat('MMMM d, yyyy').format(expiresAt)}',
-                        style: LynewedTextStyles.labelSmall.copyWith(
-                          color: LynewedColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 16.0),
-                    // Action buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _downloadQRCode(inviteCode),
-                            icon: const Icon(Icons.download, size: 18),
-                            label: const Text('Save QR'),
-                            style: LynewedComponentStyles.secondaryButton(
-                              backgroundColor: Colors.transparent,
-                              foregroundColor: LynewedColors.textPrimary,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12.0),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () => _shareInviteCode(inviteCode),
-                            icon: const Icon(Icons.share, size: 18),
-                            label: const Text('Share'),
-                            style: LynewedComponentStyles.primaryButton(),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                )
-              : Column(
-                  children: [
-                    const Icon(Icons.qr_code, size: 48.0, color: LynewedColors.gray300),
-                    const SizedBox(height: 12.0),
-                    Text(
-                      'No invite code generated yet',
-                      style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8.0),
-                    Text(
-                      'The invite code will be generated automatically',
-                      style: LynewedTextStyles.labelSmall.copyWith(color: LynewedColors.textSecondary),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-        ),
-      ],
-    );
-  }
 
   /// Copy invite code to clipboard
   void _copyInviteCode(String code) {
@@ -1844,349 +542,6 @@ Or scan the QR code in the app.
     );
   }
 
-  /// Magazine Section - Create photo magazines from wedding photos
-  Widget _buildMagazineSection() {
-    final hasOrders = _magazineOrders.isNotEmpty;
-    final hasSelections = _magazineSelections.isNotEmpty;
-    final selectionCount = _magazineSelections.length;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('MAGAZINE', style: LynewedTextStyles.sectionTitle),
-            GestureDetector(
-              onTap: _openMagazineSelectionPage,
-              child: Text(
-                'View all',
-                style: LynewedTextStyles.labelLarge.copyWith(
-                  color: LynewedColors.textSecondary,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4.0),
-        Text(
-          hasOrders
-              ? '${_magazineOrders.length} order${_magazineOrders.length > 1 ? 's' : ''}'
-              : hasSelections
-                  ? '$selectionCount photo${selectionCount > 1 ? 's' : ''} selected'
-                  : 'Create a photo magazine from your wedding',
-          style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
-        ),
-        const SizedBox(height: 10.0),
-
-        // Orders sub-section (always visible)
-        LynewedSectionTitle('Orders'),
-        const SizedBox(height: 10.0),
-        if (hasOrders)
-          for (final order in _magazineOrders)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: _buildOrderCard(order),
-            )
-        else
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20.0),
-            decoration: BoxDecoration(
-              color: LynewedColors.surface,
-              borderRadius: BorderRadius.circular(4.0),
-            ),
-            child: Column(
-              children: [
-                const Icon(
-                  Icons.receipt_long_outlined,
-                  size: 32.0,
-                  color: LynewedColors.gray300,
-                ),
-                const SizedBox(height: 8.0),
-                Text(
-                  'No orders yet',
-                  style: LynewedTextStyles.bodyMedium.copyWith(
-                    color: LynewedColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 4.0),
-                Text(
-                  'Your magazine orders will appear here',
-                  style: LynewedTextStyles.bodySmall.copyWith(
-                    color: LynewedColors.gray300,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        const SizedBox(height: 20.0),
-
-        // Selection card or empty state
-        LynewedSectionTitle('Selection'),
-        const SizedBox(height: 10.0),
-        if (hasSelections)
-          GestureDetector(
-            onTap: _openMagazineSelectionPage,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: LynewedColors.surface,
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: LynewedColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(4.0),
-                    ),
-                    child: const Icon(
-                      Icons.auto_stories_outlined,
-                      color: LynewedColors.primary,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 12.0),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '$selectionCount photo${selectionCount > 1 ? 's' : ''} selected',
-                          style: LynewedTextStyles.bodyMedium.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 2.0),
-                        Text(
-                          'Tap to preview or order',
-                          style: LynewedTextStyles.bodySmall.copyWith(
-                            color: LynewedColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right,
-                    color: LynewedColors.textSecondary,
-                  ),
-                ],
-              ),
-            ),
-          )
-        else
-          GestureDetector(
-            onTap: _openMagazineSelectionPage,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20.0),
-              decoration: BoxDecoration(
-                color: LynewedColors.surface,
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              child: Column(
-                children: [
-                  const Icon(
-                    Icons.auto_stories_outlined,
-                    size: 32.0,
-                    color: LynewedColors.gray300,
-                  ),
-                  const SizedBox(height: 8.0),
-                  Text(
-                    'No photos selected yet',
-                    style: LynewedTextStyles.bodyMedium.copyWith(
-                      color: LynewedColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 12.0),
-                  LynewedButton(
-                    text: 'Select Photos',
-                    onPressed: _openMagazinePhotoPicker,
-                  ),
-                ],
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  /// Build an order card for the magazine section.
-  Widget _buildOrderCard(MagazineOrder order) {
-    return GestureDetector(
-      onTap: () => _openOrderDetail(order),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          color: LynewedColors.surface,
-          borderRadius: BorderRadius.circular(4.0),
-        ),
-        child: Row(
-          children: [
-            // Status indicator
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: order.statusColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              child: Icon(
-                _orderStatusIcon(order.status),
-                color: order.statusColor,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 12.0),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: order.statusColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4.0),
-                        ),
-                        child: Text(
-                          order.statusLabel,
-                          style: LynewedTextStyles.labelSmall.copyWith(
-                            color: order.statusColor,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4.0),
-                  Text(
-                    '${order.formatDisplayName} \u2022 ${order.formatSize}',
-                    style: LynewedTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 2.0),
-                  Text(
-                    '${order.photoCount} photos \u2022 ${order.formattedTotal}',
-                    style: LynewedTextStyles.bodySmall.copyWith(
-                      color: LynewedColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.chevron_right,
-              color: LynewedColors.textSecondary,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Get icon for order status.
-  IconData _orderStatusIcon(String status) {
-    switch (status) {
-      case 'paid':
-        return Icons.check_circle_outline;
-      case 'in_production':
-        return Icons.precision_manufacturing_outlined;
-      case 'shipped':
-        return Icons.local_shipping_outlined;
-      case 'delivered':
-        return Icons.inventory_2_outlined;
-      case 'cancelled':
-        return Icons.cancel_outlined;
-      default:
-        return Icons.hourglass_empty;
-    }
-  }
-
-  /// Open order detail page.
-  void _openOrderDetail(MagazineOrder order) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => MagazineOrderDetailPage(order: order),
-      ),
-    );
-  }
-
-  /// Note for Pros Section
-  Widget _buildNoteForProsSection() {
-    final hasNote = _wedding!.noteForPros != null && _wedding!.noteForPros!.isNotEmpty;
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('NOTE FOR PROS', style: LynewedTextStyles.sectionTitle),
-        const SizedBox(height: 4.0),
-        Text(
-          'A message visible to all your professionals',
-          style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
-        ),
-        const SizedBox(height: 10.0),
-        GestureDetector(
-          onTap: _openNoteForProsSheet,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20.0),
-            decoration: BoxDecoration(
-              color: LynewedColors.surface,
-              borderRadius: BorderRadius.circular(4.0),
-            ),
-            child: hasNote
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _wedding!.noteForPros!,
-                        style: LynewedTextStyles.bodyMedium,
-                        maxLines: 20,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8.0),
-                      Text(
-                        'Tap to edit',
-                        style: LynewedTextStyles.labelSmall.copyWith(
-                          color: LynewedColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  )
-                : Column(
-                    children: [
-                      const Icon(Icons.note_outlined, size: 32.0, color: LynewedColors.gray300),
-                      const SizedBox(height: 8.0),
-                      Text(
-                        'Add a note for your professionals',
-                        style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
-                      ),
-                      const SizedBox(height: 12.0),
-                      LynewedButton(
-                        text: 'Add Note',
-                        onPressed: _openNoteForProsSheet,
-                      ),
-                    ],
-                  ),
-          ),
-        ),
-      ],
-    );
-  }
-
   /// Cancelled Wedding View - shown when wedding status is 'cancelled'
   Widget _buildCancelledWeddingView() {
     return Center(
@@ -2226,6 +581,1010 @@ Or scan the QR code in the app.
     );
   }
 
+  // ========== NEW SECTIONS (Redesign V2) ==========
+
+  /// Invite Code Banner - thin bar below hero card
+  Widget _buildInviteCodeBanner() {
+    final inviteCode = _wedding?.inviteCode;
+    final hasCode = inviteCode != null && inviteCode.isNotEmpty;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: LynewedColors.gray200, width: 1),
+        ),
+      ),
+      child: hasCode
+          ? Row(
+              children: [
+                const Icon(
+                  Icons.vpn_key_outlined,
+                  size: 14,
+                  color: LynewedColors.textSecondary,
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => _copyInviteCode(inviteCode),
+                  child: Text(
+                    inviteCode,
+                    style: LynewedTextStyles.bodyMedium.copyWith(
+                      letterSpacing: 2.0,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () => _copyInviteCode(inviteCode),
+                  behavior: HitTestBehavior.opaque,
+                  child: const Padding(
+                    padding: EdgeInsets.all(4.0),
+                    child: Icon(Icons.copy_outlined, size: 16, color: LynewedColors.textSecondary),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: _openQrCodeSheet,
+                  behavior: HitTestBehavior.opaque,
+                  child: const Padding(
+                    padding: EdgeInsets.all(4.0),
+                    child: Icon(Icons.qr_code, size: 16, color: LynewedColors.textSecondary),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => _shareInviteCode(inviteCode),
+                  behavior: HitTestBehavior.opaque,
+                  child: const Padding(
+                    padding: EdgeInsets.all(4.0),
+                    child: Icon(Icons.ios_share, size: 16, color: LynewedColors.textSecondary),
+                  ),
+                ),
+              ],
+            )
+          : Text(
+              'Invite code generating...',
+              style: LynewedTextStyles.bodySmall.copyWith(
+                color: LynewedColors.textSecondary,
+              ),
+            ),
+    );
+  }
+
+  /// QR Code Sheet - shows full QR code with save/share actions
+  void _openQrCodeSheet() {
+    final inviteCode = _wedding?.inviteCode;
+    if (inviteCode == null || inviteCode.isEmpty) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => LynewedSheet(
+        title: 'Invite Code',
+        onClose: () => Navigator.pop(context),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 20),
+            // QR Code
+            RepaintBoundary(
+              key: _qrKey,
+              child: Container(
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: QrImageView(
+                  data: 'https://lynewed.com/join/$inviteCode',
+                  version: QrVersions.auto,
+                  size: 180.0,
+                  backgroundColor: Colors.white,
+                  eyeStyle: const QrEyeStyle(
+                    eyeShape: QrEyeShape.square,
+                    color: LynewedColors.textPrimary,
+                  ),
+                  dataModuleStyle: const QrDataModuleStyle(
+                    dataModuleShape: QrDataModuleShape.square,
+                    color: LynewedColors.textPrimary,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Code display
+            Text(
+              inviteCode,
+              style: LynewedTextStyles.headlineSmall.copyWith(
+                letterSpacing: 4.0,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (_wedding?.inviteCodeExpiresAt != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Valid until ${DateFormat('MMMM d, yyyy').format(_wedding!.inviteCodeExpiresAt!)}',
+                style: LynewedTextStyles.labelSmall.copyWith(
+                  color: LynewedColors.textSecondary,
+                ),
+              ),
+            ],
+            const SizedBox(height: 24),
+            // Action buttons
+            Row(
+              children: [
+                Expanded(
+                  child: LynewedButton(
+                    text: 'Save QR',
+                    onPressed: () => _downloadQRCode(inviteCode),
+                    type: LynewedButtonType.secondary,
+                    icon: Icons.download,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: LynewedButton(
+                    text: 'Share',
+                    onPressed: () => _shareInviteCode(inviteCode),
+                    icon: Icons.share,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// People Section - horizontal scroll of pros + guests
+  Widget _buildPeopleSection() {
+    final hasNote = _wedding!.noteForPros != null && _wedding!.noteForPros!.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header with note icon, + Add, View all
+        Row(
+          children: [
+            const Text('PEOPLE', style: LynewedTextStyles.sectionTitle),
+            const SizedBox(width: 8),
+            // Note for pros icon
+            GestureDetector(
+              onTap: _openNoteForProsSheet,
+              behavior: HitTestBehavior.opaque,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Icon(
+                      Icons.note_outlined,
+                      size: 18,
+                      color: hasNote ? LynewedColors.textPrimary : LynewedColors.textSecondary,
+                    ),
+                  ),
+                  if (!hasNote)
+                    Positioned(
+                      top: 2,
+                      right: 2,
+                      child: Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: LynewedColors.error,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const Spacer(),
+            if (_teamMembers.isNotEmpty || _guests.isNotEmpty)
+              GestureDetector(
+                onTap: _openAddPeopleChoice,
+                child: Text(
+                  '+ Add',
+                  style: LynewedTextStyles.labelLarge.copyWith(
+                    color: LynewedColors.textSecondary,
+                  ),
+                ),
+              ),
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: _openPeoplePage,
+              child: Text(
+                'View all',
+                style: LynewedTextStyles.labelLarge.copyWith(
+                  color: LynewedColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4.0),
+        // Subtitle with counts
+        Text(
+          _buildPeopleSubtitle(),
+          style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
+        ),
+        const SizedBox(height: 10.0),
+        // Horizontal scroll of avatars
+        if (_teamMembers.isEmpty && _guests.isEmpty)
+          _buildEmptyPeopleState()
+        else
+          SizedBox(
+            height: 85,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _teamMembers.length + _guests.take(15).length + 1,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                // First item: Add button
+                if (index == 0) {
+                  return _buildAddPersonButton();
+                }
+                // Pros
+                final proIndex = index - 1;
+                if (proIndex < _teamMembers.length) {
+                  return _buildCompactProAvatar(_teamMembers[proIndex]);
+                }
+                // Guests
+                final guestIndex = proIndex - _teamMembers.length;
+                final guestsToShow = _guests.take(15).toList();
+                return _buildCompactGuestAvatar(guestsToShow[guestIndex]);
+              },
+            ),
+          ),
+      ],
+    );
+  }
+
+  String _buildPeopleSubtitle() {
+    final parts = <String>[];
+    if (_teamMembers.isNotEmpty) {
+      parts.add('${_teamMembers.length} pro${_teamMembers.length > 1 ? 's' : ''}');
+    }
+    if (_guests.isNotEmpty) {
+      parts.add('${_guests.length} guest${_guests.length > 1 ? 's' : ''}');
+    }
+    if (parts.isEmpty) return 'Your wedding team & guests';
+    return parts.join(' \u00b7 ');
+  }
+
+  Widget _buildEmptyPeopleState() {
+    return GestureDetector(
+      onTap: _openPeoplePage,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20.0),
+        decoration: BoxDecoration(
+          color: LynewedColors.surface,
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: Column(
+          children: [
+            const Icon(Icons.people_outline, size: 32.0, color: LynewedColors.gray300),
+            const SizedBox(height: 8.0),
+            Text(
+              'Add your professionals and guests',
+              style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
+            ),
+            const SizedBox(height: 12.0),
+            LynewedButton(
+              text: 'Add People',
+              onPressed: _openAddPeopleChoice,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddPersonButton() {
+    return GestureDetector(
+      onTap: _openAddPeopleChoice,
+      child: SizedBox(
+        width: 64,
+        child: Column(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: LynewedColors.surface,
+                border: Border.all(color: LynewedColors.gray200, width: 1),
+              ),
+              child: const Icon(Icons.add, size: 22, color: LynewedColors.textSecondary),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Add',
+              style: LynewedTextStyles.labelSmall.copyWith(
+                color: LynewedColors.textSecondary,
+                fontSize: 10,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactProAvatar(WeddingTeamMember member) {
+    return GestureDetector(
+      onTap: () => _openProDetails(member.profileId),
+      onLongPress: () => _showProOptionsModal(member),
+      child: SizedBox(
+        width: 64,
+        child: Column(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: LynewedColors.primary, width: 2),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: member.avatarUrl != null && member.avatarUrl!.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: member.avatarUrl!,
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => Container(
+                          color: LynewedColors.gray200,
+                          child: const Icon(Icons.person, size: 20, color: LynewedColors.gray300),
+                        ),
+                        errorWidget: (_, __, ___) => Container(
+                          color: LynewedColors.gray200,
+                          child: const Icon(Icons.person, size: 20, color: LynewedColors.gray300),
+                        ),
+                      )
+                    : Container(
+                        color: LynewedColors.gray200,
+                        child: const Icon(Icons.person, size: 20, color: LynewedColors.gray300),
+                      ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              member.displayName.split(' ').first,
+              style: LynewedTextStyles.labelSmall.copyWith(
+                fontWeight: FontWeight.w500,
+                fontSize: 10,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactGuestAvatar(WeddingGuest guest) {
+    return GestureDetector(
+      onTap: _openGuestsPage,
+      child: SizedBox(
+        width: 64,
+        child: Column(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: LynewedColors.gray200,
+              ),
+              child: Center(
+                child: Text(
+                  _getGuestInitials(guest.name ?? ''),
+                  style: LynewedTextStyles.labelMedium.copyWith(
+                    color: LynewedColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              (guest.name ?? '?').split(' ').first,
+              style: LynewedTextStyles.labelSmall.copyWith(fontSize: 10),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Organization Section - Budget + Agenda side by side
+  Widget _buildOrganizationSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('ORGANIZATION', style: LynewedTextStyles.sectionTitle),
+            GestureDetector(
+              onTap: _openOrganizationPage,
+              child: Text(
+                'View all',
+                style: LynewedTextStyles.labelLarge.copyWith(
+                  color: LynewedColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4.0),
+        Text(
+          _buildOrganizationSubtitle(),
+          style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
+        ),
+        const SizedBox(height: 10.0),
+        _buildOrganizationCard(),
+      ],
+    );
+  }
+
+  String _buildOrganizationSubtitle() {
+    final parts = <String>[];
+    if (_upcomingEvents.isNotEmpty) {
+      parts.add('${_upcomingEvents.length} upcoming');
+    }
+    final hasBudget = _wedding!.budgetMax != null && _wedding!.budgetMax! > 0;
+    if (hasBudget || _expenses.isNotEmpty) {
+      final userCurrency = BudgetFormatter.userCurrency;
+      final service = CurrencyService.instance;
+      final budgetMaxDisplay = _wedding!.budgetMax != null
+          ? (service.convert(_wedding!.budgetMax!.toDouble(), from: _wedding!.currency, to: userCurrency) ?? _wedding!.budgetMax!.toDouble())
+          : 0.0;
+      if (hasBudget && budgetMaxDisplay > 0) {
+        final pct = ((_totalExpenses / budgetMaxDisplay) * 100).round();
+        parts.add('$pct% budget spent');
+      }
+    }
+    if (parts.isEmpty) return 'Budget & upcoming events';
+    return parts.join(' \u00b7 ');
+  }
+
+  Widget _buildOrganizationCard() {
+    final hasBudget = _wedding!.budgetMax != null && _wedding!.budgetMax! > 0;
+    final hasEvents = _upcomingEvents.isNotEmpty;
+    final hasExpenses = _expenses.isNotEmpty;
+
+    if (!hasBudget && !hasExpenses && !hasEvents) {
+      return GestureDetector(
+        onTap: _openOrganizationPage,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20.0),
+          decoration: BoxDecoration(
+            color: LynewedColors.surface,
+            borderRadius: BorderRadius.circular(4.0),
+          ),
+          child: Column(
+            children: [
+              const Icon(Icons.dashboard_customize_outlined, size: 32.0, color: LynewedColors.gray300),
+              const SizedBox(height: 8.0),
+              Text(
+                'Plan your budget and schedule',
+                style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
+              ),
+              const SizedBox(height: 12.0),
+              LynewedButton(
+                text: 'Get Started',
+                onPressed: _openOrganizationPage,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final userCurrency = BudgetFormatter.userCurrency;
+    final currencySymbol = CurrencyData.getSymbol(userCurrency);
+    final service = CurrencyService.instance;
+    final budgetMaxDisplay = _wedding!.budgetMax != null
+        ? (service.convert(_wedding!.budgetMax!.toDouble(), from: _wedding!.currency, to: userCurrency) ?? _wedding!.budgetMax!.toDouble())
+        : 0.0;
+    final progress = hasBudget && budgetMaxDisplay > 0
+        ? (_totalExpenses / budgetMaxDisplay).clamp(0.0, 1.0)
+        : 0.0;
+    final isOverBudget = hasBudget && _totalExpenses > budgetMaxDisplay;
+
+    return GestureDetector(
+      onTap: _openOrganizationPage,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: LynewedColors.surface,
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Left: Budget
+              Expanded(
+                flex: 4,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Budget',
+                      style: LynewedTextStyles.labelLarge.copyWith(
+                        color: LynewedColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    if (hasBudget || hasExpenses) ...[
+                      Text(
+                        '${_formatAmount(_totalExpenses, currencySymbol)} / ${_formatAmount(budgetMaxDisplay, currencySymbol)}',
+                        style: LynewedTextStyles.bodySmall.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: isOverBudget ? LynewedColors.error : LynewedColors.textPrimary,
+                        ),
+                      ),
+                      if (hasBudget) ...[
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4.0),
+                          child: LinearProgressIndicator(
+                            value: progress,
+                            backgroundColor: LynewedColors.gray200,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              isOverBudget ? LynewedColors.error : LynewedColors.textPrimary,
+                            ),
+                            minHeight: 4,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          isOverBudget
+                              ? 'Over by ${_formatAmount(_totalExpenses - budgetMaxDisplay, currencySymbol)}'
+                              : '${_formatAmount(budgetMaxDisplay - _totalExpenses, currencySymbol)} left',
+                          style: LynewedTextStyles.labelSmall.copyWith(
+                            color: isOverBudget ? LynewedColors.error : LynewedColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      // Mini paid/pending
+                      Row(
+                        children: [
+                          Container(
+                            width: 6, height: 6,
+                            decoration: const BoxDecoration(color: LynewedColors.success, shape: BoxShape.circle),
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              _formatAmount(_totalPaid, currencySymbol),
+                              style: LynewedTextStyles.labelSmall,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 6, height: 6,
+                            decoration: const BoxDecoration(color: LynewedColors.warning, shape: BoxShape.circle),
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              _formatAmount(_totalExpenses - _totalPaid, currencySymbol),
+                              style: LynewedTextStyles.labelSmall,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ] else
+                      Text(
+                        'Set budget',
+                        style: LynewedTextStyles.bodySmall.copyWith(
+                          color: LynewedColors.textSecondary,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              // Divider
+              Container(
+                width: 1,
+                margin: const EdgeInsets.symmetric(horizontal: 12),
+                color: LynewedColors.gray200,
+              ),
+              // Right: Next Up (Agenda)
+              Expanded(
+                flex: 5,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Next up',
+                      style: LynewedTextStyles.labelLarge.copyWith(
+                        color: LynewedColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    if (hasEvents)
+                      ..._upcomingEvents.take(3).map((event) {
+                        final dateFormat = DateFormat('MMM d');
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 6.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 4,
+                                height: 4,
+                                margin: const EdgeInsets.only(top: 5),
+                                decoration: const BoxDecoration(
+                                  color: LynewedColors.textPrimary,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                dateFormat.format(event.eventDate),
+                                style: LynewedTextStyles.labelSmall.copyWith(
+                                  color: LynewedColors.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  event.title,
+                                  style: LynewedTextStyles.bodySmall,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      })
+                    else
+                      Text(
+                        'No upcoming events',
+                        style: LynewedTextStyles.bodySmall.copyWith(
+                          color: LynewedColors.textSecondary,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Albums Section - unified horizontal scroll (inspiration + guest albums)
+  Widget _buildAlbumsSection() {
+    final hasAlbums = _inspirationAlbums.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('ALBUMS', style: LynewedTextStyles.sectionTitle),
+            GestureDetector(
+              onTap: _openInspirationsPage,
+              child: Text(
+                'View all',
+                style: LynewedTextStyles.labelLarge.copyWith(
+                  color: LynewedColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4.0),
+        Text(
+          _buildAlbumsSubtitle(),
+          style: LynewedTextStyles.bodySmall.copyWith(color: LynewedColors.textSecondary),
+        ),
+        const SizedBox(height: 10.0),
+        if (!hasAlbums)
+          _buildEmptyAlbumsState()
+        else
+          SizedBox(
+            height: 145,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _inspirationAlbums.length + 2, // +1 for new, +1 for guest albums
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                if (index == 0) return _buildNewAlbumCard();
+                if (index <= _inspirationAlbums.length) {
+                  return _buildAlbumPreviewCard(_inspirationAlbums[index - 1]);
+                }
+                return _buildGuestAlbumsCard();
+              },
+            ),
+          ),
+      ],
+    );
+  }
+
+  String _buildAlbumsSubtitle() {
+    final parts = <String>[];
+    if (_inspirationAlbums.isNotEmpty) {
+      parts.add('${_inspirationAlbums.length} inspiration');
+    }
+    // Guest albums are always available
+    parts.add('guest albums');
+    if (parts.isEmpty) return 'Your moodboards and memories';
+    return parts.join(' \u00b7 ');
+  }
+
+  Widget _buildEmptyAlbumsState() {
+    return GestureDetector(
+      onTap: _openInspirationsPage,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20.0),
+        decoration: BoxDecoration(
+          color: LynewedColors.surface,
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: Column(
+          children: [
+            const Icon(Icons.photo_library_outlined, size: 32.0, color: LynewedColors.gray300),
+            const SizedBox(height: 8.0),
+            Text(
+              'Create moodboards and view guest photos',
+              style: LynewedTextStyles.bodyMedium.copyWith(color: LynewedColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12.0),
+            LynewedButton(
+              text: 'Create Album',
+              onPressed: _openCreateAlbumSheet,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNewAlbumCard() {
+    return GestureDetector(
+      onTap: _openCreateAlbumSheet,
+      child: Container(
+        width: 100,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4.0),
+          border: Border.all(color: LynewedColors.gray200, width: 1),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.add, size: 28, color: LynewedColors.textSecondary),
+            const SizedBox(height: 4),
+            Text(
+              'New',
+              style: LynewedTextStyles.labelSmall.copyWith(
+                color: LynewedColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAlbumPreviewCard(InspirationAlbum album) {
+    return GestureDetector(
+      onTap: _openInspirationsPage,
+      child: SizedBox(
+        width: 120,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Cover image
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4.0),
+              child: album.coverImageUrl != null && album.coverImageUrl!.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: album.coverImageUrl!,
+                      width: 120,
+                      height: 85,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) => Container(
+                        width: 120, height: 85,
+                        color: LynewedColors.gray200,
+                        child: const Icon(Icons.photo_library_outlined, color: LynewedColors.gray300, size: 24),
+                      ),
+                      errorWidget: (_, __, ___) => Container(
+                        width: 120, height: 85,
+                        color: LynewedColors.gray200,
+                        child: const Icon(Icons.photo_library_outlined, color: LynewedColors.gray300, size: 24),
+                      ),
+                    )
+                  : Container(
+                      width: 120, height: 85,
+                      color: LynewedColors.gray200,
+                      child: const Icon(Icons.photo_library_outlined, color: LynewedColors.gray300, size: 24),
+                    ),
+            ),
+            const SizedBox(height: 6),
+            // Name
+            Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    album.name,
+                    style: LynewedTextStyles.labelSmall.copyWith(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 11,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (album.isPrivate) ...[
+                  const SizedBox(width: 4),
+                  const Icon(Icons.lock_outline, size: 10, color: LynewedColors.textSecondary),
+                ],
+              ],
+            ),
+            const SizedBox(height: 2),
+            // Count
+            Text(
+              '${album.imagesCount} image${album.imagesCount != 1 ? 's' : ''}',
+              style: LynewedTextStyles.labelSmall.copyWith(
+                color: LynewedColors.textSecondary,
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGuestAlbumsCard() {
+    return GestureDetector(
+      onTap: _openGuestAlbumsPage,
+      child: Container(
+        width: 120,
+        decoration: BoxDecoration(
+          color: LynewedColors.primary.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(4.0),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: LynewedColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.photo_album_outlined, color: LynewedColors.primary, size: 22),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Guest Photos',
+              style: LynewedTextStyles.labelSmall.copyWith(
+                fontWeight: FontWeight.w500,
+                fontSize: 11,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              'View albums',
+              style: LynewedTextStyles.labelSmall.copyWith(
+                color: LynewedColors.textSecondary,
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Magazine Card - single entry point
+  Widget _buildMagazineCard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('MAGAZINE', style: LynewedTextStyles.sectionTitle),
+        const SizedBox(height: 10.0),
+        GestureDetector(
+          onTap: _openMagazineSelectionPage,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: LynewedColors.surface,
+              borderRadius: BorderRadius.circular(4.0),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: LynewedColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                  child: const Icon(
+                    Icons.auto_stories_outlined,
+                    color: LynewedColors.primary,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12.0),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Photo Magazine',
+                        style: LynewedTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 2.0),
+                      Text(
+                        _buildMagazineSubtitle(),
+                        style: LynewedTextStyles.bodySmall.copyWith(
+                          color: LynewedColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right,
+                  color: LynewedColors.textSecondary,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _buildMagazineSubtitle() {
+    final parts = <String>[];
+    if (_magazineSelections.isNotEmpty) {
+      parts.add('${_magazineSelections.length} photo${_magazineSelections.length > 1 ? 's' : ''} selected');
+    }
+    if (_magazineOrders.isNotEmpty) {
+      parts.add('${_magazineOrders.length} order${_magazineOrders.length > 1 ? 's' : ''}');
+    }
+    if (parts.isEmpty) return 'Create your wedding magazine';
+    return parts.join(' \u00b7 ');
+  }
+
   // ========== ACTIONS ==========
 
   void _openEditSheet() {
@@ -2240,16 +1599,12 @@ Or scan the QR code in the app.
     );
   }
 
-  void _openTeamChat() {
-    if (_teamChatInfo == null) return;
+  void _openWeddingMessages() {
+    if (_wedding?.id == null) return;
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => ChatDetailsPage(
-          roomId: _teamChatInfo!.roomId,
-          isPublicRoom: true,
-          isWeddingTeamChat: true,
-          publicRoomTitle: 'Wedding Team',
-          hideVideoCall: true,
+        builder: (context) => WeddingGroupsPage(
+          weddingId: _wedding!.id,
         ),
       ),
     ).then((_) => _loadWedding());
@@ -2285,27 +1640,6 @@ Or scan the QR code in the app.
     );
   }
 
-  void _openAgendaPage() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => AgendaPage(weddingId: _wedding!.id),
-      ),
-    ).then((_) => _loadWedding());
-  }
-
-  void _openBudgetPage() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => BudgetPage(
-          weddingId: _wedding!.id,
-          budgetMin: _wedding!.budgetMin,
-          budgetMax: _wedding!.budgetMax,
-          currency: _wedding!.currency,
-        ),
-      ),
-    ).then((_) => _loadWedding());
-  }
-
   void _openInspirationsPage() {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -2330,6 +1664,109 @@ Or scan the QR code in the app.
     );
   }
 
+  void _openPeoplePage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PeoplePage(
+          weddingId: _wedding!.id,
+        ),
+      ),
+    ).then((_) => _loadWedding());
+  }
+
+  void _openOrganizationPage({int initialTab = 0}) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => OrganizationPage(
+          weddingId: _wedding!.id,
+          budgetMin: _wedding!.budgetMin,
+          budgetMax: _wedding!.budgetMax,
+          currency: _wedding!.currency,
+          initialTab: initialTab,
+        ),
+      ),
+    ).then((_) => _loadWedding());
+  }
+
+  void _openAddPeopleChoice() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: LynewedColors.background,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: LynewedColors.gray200,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: const Icon(Icons.business_center_outlined),
+                title: const Text('Add Professional'),
+                subtitle: const Text('Invite a wedding professional'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _openInviteProSheet();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.person_add_outlined),
+                title: const Text('Add Guest'),
+                subtitle: const Text('Add a guest to your wedding'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _openAddGuestSheet();
+                },
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openAddGuestSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => FractionallySizedBox(
+        heightFactor: 0.85,
+        child: AddGuestSheet(
+          weddingId: _wedding!.id,
+          onSaved: _loadWedding,
+        ),
+      ),
+    );
+  }
+
+  void _openCreateAlbumSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => FractionallySizedBox(
+        heightFactor: 0.75,
+        child: CreateAlbumSheet(
+          weddingId: _wedding!.id,
+          onCreated: _loadWedding,
+        ),
+      ),
+    );
+  }
+
   void _openMagazineSelectionPage() {
     final currentUserId = Supabase.instance.client.auth.currentUser?.id;
     if (currentUserId == null || _wedding == null) return;
@@ -2344,26 +1781,6 @@ Or scan the QR code in the app.
         ),
       ),
     ).then((_) => _loadWedding());
-  }
-
-  void _openMagazinePhotoPicker() {
-    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
-    if (currentUserId == null || _wedding == null) return;
-
-    MagazinePhotoPickerSheet.show(
-      context,
-      weddingId: _wedding!.id,
-      userId: currentUserId,
-      currentCount: _magazineSelections.length,
-      onPhotosAdded: (count) {
-        _loadWedding(); // Refresh to update magazine selection count
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$count photo${count > 1 ? 's' : ''} added to magazine'),
-          ),
-        );
-      },
-    );
   }
 
   Future<void> _openProDetails(String profileId) async {
@@ -2628,44 +2045,16 @@ Or scan the QR code in the app.
                     'WEDDING',
                     style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 18.0),
                   ),
-                  // Team Chat - group icon with unread badge
-                  if (_teamChatInfo != null)
-                    GestureDetector(
-                      onTap: _openTeamChat,
-                      behavior: HitTestBehavior.opaque,
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          const Icon(
-                            Icons.groups_outlined,
-                            color: LynewedColors.textPrimary,
-                            size: 26.0,
-                          ),
-                          if (_teamChatInfo!.unreadCount > 0)
-                            Positioned(
-                              top: -6,
-                              right: -8,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: LynewedColors.primary,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                constraints: const BoxConstraints(minWidth: 18),
-                                child: Text(
-                                  _teamChatInfo!.unreadCount > 99 ? '99+' : '${_teamChatInfo!.unreadCount}',
-                                  style: LynewedTextStyles.labelSmall.copyWith(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
+                  // Wedding groups - opens MessagesPage on Wedding tab
+                  GestureDetector(
+                    onTap: _openWeddingMessages,
+                    behavior: HitTestBehavior.opaque,
+                    child: const Icon(
+                      Icons.groups_outlined,
+                      color: LynewedColors.textPrimary,
+                      size: 26.0,
                     ),
+                  ),
                 ],
               ),
             ),

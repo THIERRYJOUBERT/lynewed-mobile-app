@@ -20,6 +20,12 @@ import '../widgets/shipping_label_widget.dart';
 /// Shows item info, buyer address, price breakdown, status badge,
 /// and the shipping label section (generate or view).
 class TransactionDetailPage extends StatefulWidget {
+  /// Route name for navigation.
+  static const String routeName = 'TransactionDetail';
+
+  /// Route path for GoRouter registration.
+  static const String routePath = '/marketplace/transaction';
+
   /// The transaction ID to display.
   final String transactionId;
 
@@ -214,6 +220,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
           const SizedBox(height: 10),
           GenerateLabelButton(
             transactionId: tx.id,
+            serviceType: tx.shippingServiceType ?? 'FEDEX_GROUND',
             generateLabelUseCase: _generateLabelUseCase,
             onSuccess: _onLabelGenerated,
           ),
@@ -398,10 +405,16 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
         return 'Label Created';
       case 'shipped':
         return 'Shipped';
+      case 'in_transit':
+        return 'In Transit';
+      case 'out_for_delivery':
+        return 'Out for Delivery';
       case 'delivered':
         return 'Delivered';
       case 'completed':
         return 'Completed';
+      case 'expired':
+        return 'Expired';
       default:
         return status;
     }
@@ -415,10 +428,14 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
         return LynewedColors.textPrimary;
       case 'label_created':
       case 'shipped':
+      case 'in_transit':
+      case 'out_for_delivery':
         return LynewedColors.success;
       case 'delivered':
       case 'completed':
         return LynewedColors.success;
+      case 'expired':
+        return LynewedColors.error;
       default:
         return LynewedColors.textSecondary;
     }
@@ -434,10 +451,16 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
         return Icons.label_outline;
       case 'shipped':
         return Icons.local_shipping;
+      case 'in_transit':
+        return Icons.local_shipping_outlined;
+      case 'out_for_delivery':
+        return Icons.delivery_dining;
       case 'delivered':
         return Icons.inventory_2;
       case 'completed':
         return Icons.check_circle;
+      case 'expired':
+        return Icons.timer_off;
       default:
         return Icons.info_outline;
     }

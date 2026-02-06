@@ -1,13 +1,14 @@
 /// Messages page - Clean Architecture
-/// 
-/// Unified messages page for both Brides and Professionals.
-/// Replaces MessagesBridesWidget and MessagesProWidget.
-/// 
-/// DESIGN SYSTEM v2 APPLIED:
-/// - Header: Back button (left) + Title (left-aligned) + Blocked icon (right)
-/// - Divider under header
-/// - Typography: bodyLarge + w600 for section titles
-/// - Spacing: 30px inter-section, 12px label→content
+///
+/// Unified messages page with 3 tabbed views:
+/// - Tab 0: Messages (private 1-1 conversations + contact requests)
+/// - Tab 1: Wedding (wedding team + group conversations)
+/// - Tab 2: Marketplace (buyer/seller conversations with offers)
+///
+/// Entry points:
+/// - Home header chat icon → initialTab: 0
+/// - MyWedding header group icon → initialTab: 1
+/// - Marketplace offers → initialTab: 2
 library;
 
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ import '/features/marketplace/domain/entities/marketplace_conversation.dart';
 import '/features/marketplace/domain/repositories/marketplace_chat_repository.dart';
 import '/features/marketplace/presentation/pages/marketplace_chat_page.dart';
 import '/features/marketplace/presentation/widgets/conversation_tile_widget.dart';
+import '/features/my_wedding/presentation/pages/wedding_groups_page.dart';
 import '../../domain/entities/entities.dart';
 import '../bloc/conversations_cubit.dart';
 import '../bloc/conversations_state.dart';
@@ -28,9 +30,19 @@ import '../sheets/conversation_actions_sheet.dart';
 import '../sheets/blocked_users_sheet.dart'; // ArchivedSheet
 import 'chat_details_page.dart';
 
-/// Unified Messages page
+/// Unified Messages page with 3 tabs
 class MessagesPage extends StatefulWidget {
-  const MessagesPage({super.key});
+  const MessagesPage({
+    super.key,
+    this.initialTab = 0,
+    this.weddingId,
+  });
+
+  /// Initial tab index (0=Messages, 1=Wedding, 2=Marketplace)
+  final int initialTab;
+
+  /// Wedding ID for "Manage Groups" in Wedding tab
+  final String? weddingId;
 
   static const String routeName = 'Messages';
   static const String routePath = '/messages';
@@ -41,13 +53,19 @@ class MessagesPage extends StatefulWidget {
 
 class _MessagesPageState extends State<MessagesPage> {
   late ConversationsNotifier _notifier;
+  late int _selectedTab;
   List<MarketplaceConversation> _marketplaceConversations = [];
 
-  String get _currentUserId => Supabase.instance.client.auth.currentUser?.id ?? '';
+  String get _currentUserId =>
+      Supabase.instance.client.auth.currentUser?.id ?? '';
+
+  int get _marketplaceUnreadCount =>
+      _marketplaceConversations.fold(0, (sum, c) => sum + c.unreadCount);
 
   @override
   void initState() {
     super.initState();
+    _selectedTab = widget.initialTab.clamp(0, 2);
     _notifier = ConversationsNotifier();
     _notifier.addListener(_onStateChanged);
     _notifier.loadAll();
@@ -84,18 +102,28 @@ class _MessagesPageState extends State<MessagesPage> {
     ]);
   }
 
+  // ============================================================
+  // NAVIGATION HANDLERS
+  // ============================================================
+
   void _onConversationTap(Conversation conversation) async {
+    final isWeddingGroup = conversation.roomType.isWeddingGroup;
+
     await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ChatDetailsPage(
           roomId: conversation.roomId,
-          isPublicRoom: conversation.isPublic,
+          isPublicRoom: conversation.isPublic || isWeddingGroup,
+          isWeddingTeamChat: isWeddingGroup,
+          hideVideoCall: isWeddingGroup,
           otherProfileId: conversation.otherProfileId,
           otherFullName: conversation.otherFullName,
           otherAvatarUrl: conversation.otherAvatarUrl,
           otherRole: conversation.otherRole,
-          publicRoomTitle: conversation.isPublic ? conversation.otherFullName : null,
+          publicRoomTitle: isWeddingGroup
+              ? conversation.displayName
+              : (conversation.isPublic ? conversation.otherFullName : null),
           conversationStatus: conversation.conversationStatus,
           onUnblock: conversation.otherProfileId != null
               ? () => _notifier.unblockUser(conversation.otherProfileId!)
@@ -103,22 +131,20 @@ class _MessagesPageState extends State<MessagesPage> {
         ),
       ),
     );
-    // Refresh conversations when returning from chat (messages were read)
-    if (mounted) {
-      _notifier.refresh();
-    }
+    if (mounted) _notifier.refresh();
   }
 
   void _onConversationLongPress(Conversation conversation) {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    
+
     ConversationActionsSheet.show(
       context: context,
       conversation: conversation,
       onArchive: () => _notifier.archiveConversation(conversation.roomId),
       onBlock: conversation.otherProfileId != null
           ? () async {
-              final success = await _notifier.blockUser(conversation.otherProfileId!);
+              final success =
+                  await _notifier.blockUser(conversation.otherProfileId!);
               if (success && mounted) {
                 scaffoldMessenger.showSnackBar(
                   const SnackBar(
@@ -164,7 +190,6 @@ class _MessagesPageState extends State<MessagesPage> {
   }
 
   void _onRequestTap(ContactRequest request) async {
-    // If current user is the initiator, they're waiting - no action
     if (request.initiatorId == _currentUserId) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -175,13 +200,11 @@ class _MessagesPageState extends State<MessagesPage> {
       return;
     }
 
-    // Navigate to ChatDetailsPage for Bride to review the request
-    // The page will show the initial message and Accept/Decline buttons in the chatbar
     await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ChatDetailsPage(
-          roomId: request.id, // Use request ID as temporary room ID
+          roomId: request.id,
           isPublicRoom: false,
           pendingRequestId: request.id,
           initialMessage: request.initialMessage,
@@ -190,22 +213,12 @@ class _MessagesPageState extends State<MessagesPage> {
           otherAvatarUrl: request.otherAvatarUrl,
           otherRole: request.otherRole,
           viewerIsReviewer: true,
-          onRequestAccepted: () {
-            // Refresh conversations when returning
-            _notifier.refresh();
-          },
-          onRequestDeclined: () {
-            // Refresh conversations when returning
-            _notifier.refresh();
-          },
+          onRequestAccepted: () => _notifier.refresh(),
+          onRequestDeclined: () => _notifier.refresh(),
         ),
       ),
     );
-    
-    // Refresh when returning from chat details
-    if (mounted) {
-      _notifier.refresh();
-    }
+    if (mounted) _notifier.refresh();
   }
 
   void _onMarketplaceConversationTap(MarketplaceConversation conv) async {
@@ -243,11 +256,15 @@ class _MessagesPageState extends State<MessagesPage> {
     );
   }
 
+  // ============================================================
+  // BUILD
+  // ============================================================
+
   @override
   Widget build(BuildContext context) {
     final state = _notifier.state;
-    final archivedCount = state is ConversationsLoaded 
-        ? state.archivedConversations.length + state.blockedUsers.length 
+    final archivedCount = state is ConversationsLoaded
+        ? state.archivedConversations.length + state.blockedUsers.length
         : 0;
 
     return Scaffold(
@@ -255,43 +272,31 @@ class _MessagesPageState extends State<MessagesPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header
             _buildHeader(archivedCount),
-            
-            // Divider - same as LynewedSheet
             const Divider(height: 1, color: LynewedColors.gray200),
-            
+            // Tab selector
+            if (state is ConversationsLoaded) _buildTabSelector(state),
             // Body
-            Expanded(
-              child: _buildBody(state),
-            ),
+            Expanded(child: _buildBody(state)),
           ],
         ),
       ),
     );
   }
 
-  /// Header with back button, title, and archive icon (archived/blocked)
-  /// Matches LynewedSheet header style for consistency
   Widget _buildHeader(int archivedCount) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 20, 20, 12),
       child: Row(
         children: [
-          // Back button - Standard 24x24 icon with 44px tap target
           LynewedComponentStyles.backButton(context),
-          
           const SizedBox(width: 4),
-          
-          // Title - same style as LynewedSheet
           Expanded(
             child: Text(
               'Messages',
               style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 20),
             ),
           ),
-          
-          // Archive icon button (archived/blocked) - circle 44px
           GestureDetector(
             onTap: _showArchivedSheet,
             child: Container(
@@ -309,7 +314,6 @@ class _MessagesPageState extends State<MessagesPage> {
                     size: 22,
                     color: LynewedColors.textSecondary,
                   ),
-                  // Badge for archived count
                   if (archivedCount > 0)
                     Positioned(
                       top: 8,
@@ -332,12 +336,45 @@ class _MessagesPageState extends State<MessagesPage> {
     );
   }
 
+  Widget _buildTabSelector(ConversationsLoaded state) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+      child: Row(
+        children: [
+          LynewedChip(
+            label: 'Messages',
+            selected: _selectedTab == 0,
+            onSelected: (_) => setState(() => _selectedTab = 0),
+            count: state.privateUnreadCount > 0
+                ? state.privateUnreadCount
+                : null,
+          ),
+          const SizedBox(width: 8),
+          LynewedChip(
+            label: 'Wedding',
+            selected: _selectedTab == 1,
+            onSelected: (_) => setState(() => _selectedTab = 1),
+            count: state.weddingUnreadCount > 0
+                ? state.weddingUnreadCount
+                : null,
+          ),
+          const SizedBox(width: 8),
+          LynewedChip(
+            label: 'Marketplace',
+            selected: _selectedTab == 2,
+            onSelected: (_) => setState(() => _selectedTab = 2),
+            count:
+                _marketplaceUnreadCount > 0 ? _marketplaceUnreadCount : null,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBody(ConversationsState state) {
     if (state is ConversationsLoading) {
       return const Center(
-        child: CircularProgressIndicator(
-          color: LynewedColors.primary,
-        ),
+        child: CircularProgressIndicator(color: LynewedColors.primary),
       );
     }
 
@@ -348,18 +385,14 @@ class _MessagesPageState extends State<MessagesPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.error_outline,
-                size: 48,
-                color: LynewedColors.error,
-              ),
+              const Icon(Icons.error_outline,
+                  size: 48, color: LynewedColors.error),
               const SizedBox(height: 16),
               Text(
                 state.message,
                 textAlign: TextAlign.center,
-                style: LynewedTextStyles.bodyMedium.copyWith(
-                  color: LynewedColors.textSecondary,
-                ),
+                style: LynewedTextStyles.bodyMedium
+                    .copyWith(color: LynewedColors.textSecondary),
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -377,19 +410,30 @@ class _MessagesPageState extends State<MessagesPage> {
     }
 
     if (state is ConversationsLoaded) {
-      return _buildConversationsContent(state);
+      return switch (_selectedTab) {
+        0 => _buildMessagesTab(state),
+        1 => _buildWeddingTab(state),
+        2 => _buildMarketplaceTab(),
+        _ => _buildMessagesTab(state),
+      };
     }
 
     return const SizedBox.shrink();
   }
 
-  Widget _buildConversationsContent(ConversationsLoaded state) {
+  // ============================================================
+  // TAB 0: MESSAGES (Private 1-1 conversations)
+  // ============================================================
+
+  Widget _buildMessagesTab(ConversationsLoaded state) {
+    final conversations = state.privateConversations;
+
     return RefreshIndicator(
       onRefresh: _onRefresh,
       color: LynewedColors.primary,
       child: CustomScrollView(
         slivers: [
-          // Contact Requests Section (if any)
+          // Contact Requests Section
           if (state.hasPendingRequests) ...[
             SliverToBoxAdapter(
               child: _buildRequestsSection(state.pendingRequests),
@@ -399,19 +443,8 @@ class _MessagesPageState extends State<MessagesPage> {
             ),
           ],
 
-          // Conversations Section Title - 30px top spacing, 10px bottom
-          const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(20, 30, 20, 10),
-              child: Text(
-                'Conversations',
-                style: LynewedTextStyles.sectionTitle, // 16px, w500
-              ),
-            ),
-          ),
-
-          // Conversations List
-          if (state.activeConversations.isEmpty)
+          // Conversations list
+          if (conversations.isEmpty)
             const SliverFillRemaining(
               hasScrollBody: false,
               child: ChatEmptyState(
@@ -421,82 +454,184 @@ class _MessagesPageState extends State<MessagesPage> {
             )
           else
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    final conversation = state.activeConversations[index];
+                    final conversation = conversations[index];
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: ConversationTile(
                         conversation: conversation,
                         onTap: () => _onConversationTap(conversation),
-                        onLongPress: () => _onConversationLongPress(conversation),
+                        onLongPress: () =>
+                            _onConversationLongPress(conversation),
                       ),
                     );
                   },
-                  childCount: state.activeConversations.length,
+                  childCount: conversations.length,
                 ),
               ),
             ),
 
-          // Marketplace Conversations Section
-          if (_marketplaceConversations.isNotEmpty) ...[
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(20, 30, 20, 10),
-                child: Text(
-                  'Marketplace',
-                  style: LynewedTextStyles.sectionTitle,
-                ),
-              ),
-            ),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final conv = _marketplaceConversations[index];
-                  return ConversationTileWidget(
-                    conversation: conv,
-                    onTap: () => _onMarketplaceConversationTap(conv),
-                  );
-                },
-                childCount: _marketplaceConversations.length,
-              ),
-            ),
-          ],
-
-          // Bottom padding for safe area
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 100),
-          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
     );
   }
 
+  // ============================================================
+  // TAB 1: WEDDING (Wedding group conversations)
+  // ============================================================
+
+  Widget _buildWeddingTab(ConversationsLoaded state) {
+    final conversations = state.weddingConversations;
+
+    return RefreshIndicator(
+      onRefresh: _onRefresh,
+      color: LynewedColors.primary,
+      child: CustomScrollView(
+        slivers: [
+          // Manage Groups button
+          if (widget.weddingId != null)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            WeddingGroupsPage(weddingId: widget.weddingId!),
+                      ),
+                    ),
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: LynewedColors.border),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.settings_outlined,
+                            size: 16,
+                            color: LynewedColors.textSecondary,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Manage Groups',
+                            style: LynewedTextStyles.labelSmall.copyWith(
+                              color: LynewedColors.textPrimary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+          // Wedding conversations list
+          if (conversations.isEmpty)
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: ChatEmptyState(
+                message: 'No wedding conversations yet',
+                icon: Icons.groups_outlined,
+              ),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final conversation = conversations[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: ConversationTile(
+                        conversation: conversation,
+                        onTap: () => _onConversationTap(conversation),
+                        onLongPress: () {},
+                      ),
+                    );
+                  },
+                  childCount: conversations.length,
+                ),
+              ),
+            ),
+
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // TAB 2: MARKETPLACE (Buyer/Seller conversations)
+  // ============================================================
+
+  Widget _buildMarketplaceTab() {
+    return RefreshIndicator(
+      onRefresh: _onRefresh,
+      color: LynewedColors.primary,
+      child: _marketplaceConversations.isEmpty
+          ? const CustomScrollView(
+              slivers: [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: ChatEmptyState(
+                    message: 'No marketplace conversations yet',
+                    icon: Icons.shopping_bag_outlined,
+                  ),
+                ),
+              ],
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.fromLTRB(0, 12, 0, 100),
+              itemCount: _marketplaceConversations.length,
+              itemBuilder: (context, index) {
+                final conv = _marketplaceConversations[index];
+                return ConversationTileWidget(
+                  conversation: conv,
+                  onTap: () => _onMarketplaceConversationTap(conv),
+                );
+              },
+            ),
+    );
+  }
+
+  // ============================================================
+  // SHARED WIDGETS
+  // ============================================================
+
   Widget _buildRequestsSection(List<ContactRequest> requests) {
-    // Filter out requests where current user is the other profile
     final filteredRequests = requests
-        .where((r) => r.proProfileId != _currentUserId || r.brideProfileId != _currentUserId)
+        .where((r) =>
+            r.proProfileId != _currentUserId ||
+            r.brideProfileId != _currentUserId)
         .toList();
 
-    if (filteredRequests.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    if (filteredRequests.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section title - 30px top spacing, 10px bottom
         const Padding(
-          padding: EdgeInsets.fromLTRB(20, 30, 20, 10),
+          padding: EdgeInsets.fromLTRB(20, 16, 20, 10),
           child: Text(
             'Contact Requests',
-            style: LynewedTextStyles.sectionTitle, // 16px, w500
+            style: LynewedTextStyles.sectionTitle,
           ),
         ),
-        
-        // Horizontal list of request avatars
         SizedBox(
           height: 80,
           child: ListView.separated(
@@ -514,8 +649,7 @@ class _MessagesPageState extends State<MessagesPage> {
             },
           ),
         ),
-        
-        const SizedBox(height: 30),
+        const SizedBox(height: 16),
       ],
     );
   }

@@ -1,15 +1,15 @@
 /// Tests for CheckoutPage.
 ///
-/// Verifies multi-step checkout flow: address, shipping, review,
-/// CGVU acceptance, and payment processing.
+/// Verifies multi-step checkout flow: address, shipping (flat rates),
+/// review, CGVU acceptance, and payment processing.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lynewed_beta/features/marketplace/data/datasources/fedex_remote_datasource.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/marketplace_listing.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/shipping_address.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/shipping_rate.dart';
-import 'package:lynewed_beta/features/marketplace/domain/repositories/fedex_repository.dart';
 import 'package:lynewed_beta/features/marketplace/domain/repositories/marketplace_transaction_repository.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/pages/checkout_page.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/widgets/address_form_widget.dart';
@@ -21,11 +21,7 @@ import 'package:mocktail/mocktail.dart';
 class MockTransactionRepository extends Mock
     implements MarketplaceTransactionRepository {}
 
-class MockFedExRepository extends Mock implements FedExRepository {}
-
-class FakeShippingAddress extends Fake implements ShippingAddress {}
-
-class FakeShippingRate extends Fake implements ShippingRate {}
+class MockFedExDatasource extends Mock implements FedExRemoteDatasource {}
 
 MarketplaceListing _createListing({
   String id = 'listing-1',
@@ -53,39 +49,44 @@ MarketplaceListing _createListing({
   );
 }
 
-const _testRates = [
-  ShippingRate(
-    serviceType: 'FEDEX_GROUND',
-    serviceName: 'FedEx Ground',
-    rateCents: 1250,
-    currency: 'USD',
-    estimatedDays: 5,
-  ),
-  ShippingRate(
-    serviceType: 'FEDEX_EXPRESS',
-    serviceName: 'FedEx Express',
-    rateCents: 2500,
-    currency: 'USD',
-    estimatedDays: 2,
-  ),
-];
-
 void main() {
   late MockTransactionRepository mockTransactionRepo;
-  late MockFedExRepository mockFedExRepo;
+  late MockFedExDatasource mockFedExDatasource;
 
   setUpAll(() {
-    registerFallbackValue(FakeShippingAddress());
-    registerFallbackValue(FakeShippingRate());
+    // Register fallback values for mocktail.
+    registerFallbackValue(
+      const ShippingAddress(
+        streetLines: ['123 Main St'],
+        city: 'Test City',
+        postalCode: '12345',
+        countryCode: 'US',
+      ),
+    );
   });
 
   setUp(() {
     mockTransactionRepo = MockTransactionRepository();
-    mockFedExRepo = MockFedExRepository();
+    mockFedExDatasource = MockFedExDatasource();
 
     // Default: buyer has not accepted CGVU.
     when(() => mockTransactionRepo.hasAcceptedBuyerCgvu())
         .thenAnswer((_) async => false);
+
+    // Default: FedEx returns flat rate for FR → US (international shipping).
+    when(() => mockFedExDatasource.calculateRates(
+          fromAddress: any(named: 'fromAddress'),
+          toAddress: any(named: 'toAddress'),
+          category: any(named: 'category'),
+        )).thenAnswer((_) async => [
+          const ShippingRate(
+            serviceType: 'FLAT_RATE_INTERNATIONAL',
+            serviceName: 'International Shipping',
+            rateCents: 3500,
+            currency: 'USD',
+            estimatedDaysLabel: '7-14 business days',
+          ),
+        ]);
   });
 
   Widget buildPage({
@@ -98,11 +99,65 @@ void main() {
         listing: listing ?? _createListing(),
         offerId: offerId,
         agreedPriceCents: agreedPriceCents,
+        sellerShippingAddress: const ShippingAddress(
+          streetLines: ['123 Rue de la Paix'],
+          city: 'Paris',
+          postalCode: '75001',
+          countryCode: 'FR',
+        ),
         transactionRepository: mockTransactionRepo,
-        fedExRepository: mockFedExRepo,
         currentUserId: 'buyer-1',
+        fedexDatasource: mockFedExDatasource,
       ),
     );
+  }
+
+  /// Fills address form fields required for a valid address.
+  ///
+  /// Uses hint-text-based field lookup for robustness against index changes.
+  /// Scrolls to the country dropdown before tapping it (may be off-screen).
+  /// Fills all required fields: name, phone, street, city, postal code, country.
+  Future<void> fillAddress(WidgetTester tester) async {
+    // Full Name (required)
+    final nameField = find.widgetWithText(TextField, 'Full Name *');
+    await tester.enterText(nameField, 'Jane Doe');
+    await tester.pump();
+
+    // Phone Number (required) - find by hint prefix since hint may include format example
+    final phoneField = find.byWidgetPredicate(
+      (w) =>
+          w is TextField &&
+          w.decoration?.hintText != null &&
+          w.decoration!.hintText!.startsWith('Phone'),
+    );
+    await tester.enterText(phoneField, '5551234567');
+    await tester.pump();
+
+    // Street Address
+    final streetField = find.widgetWithText(TextField, 'Street Address');
+    await tester.enterText(streetField, '123 Main St');
+    await tester.pump();
+
+    // City
+    final cityField = find.widgetWithText(TextField, 'City');
+    await tester.enterText(cityField, 'New York');
+    await tester.pump();
+
+    // Postal Code - scroll into view first (might be off-screen).
+    final postalField = find.widgetWithText(TextField, 'Postal Code');
+    await tester.ensureVisible(postalField);
+    await tester.pumpAndSettle();
+    await tester.enterText(postalField, '10001');
+    await tester.pump();
+
+    // Country dropdown: scroll into view, open, then select.
+    final dropdown = find.byType(DropdownButtonFormField<String>);
+    await tester.ensureVisible(dropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(dropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('United States').last);
+    await tester.pumpAndSettle();
   }
 
   group('CheckoutPage', () {
@@ -141,94 +196,51 @@ void main() {
     group('step 2: shipping', () {
       testWidgets('should show shipping options after filling address',
           (tester) async {
-        when(() => mockFedExRepo.calculateRates(
-              fromAddress: any(named: 'fromAddress'),
-              toAddress: any(named: 'toAddress'),
-              category: any(named: 'category'),
-            )).thenAnswer((_) async => _testRates);
-
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        // Fill in address fields to enable Continue.
-        final textFields = find.byType(TextField);
+        await fillAddress(tester);
 
-        // Street Address (index 2)
-        await tester.enterText(textFields.at(2), '123 Main St');
-        await tester.pump();
-
-        // City (index 3)
-        await tester.enterText(textFields.at(3), 'New York');
-        await tester.pump();
-
-        // Postal Code (index 5)
-        await tester.enterText(textFields.at(5), '10001');
-        await tester.pump();
-
-        // Now tap Continue to go to shipping step.
+        // Tap Continue to go to shipping step.
+        await tester.ensureVisible(find.text('Continue'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
         expect(find.byType(ShippingOptionsWidget), findsOneWidget);
       });
 
-      testWidgets('should fetch rates when moving to shipping step',
+      testWidgets('should auto-select flat rate when moving to shipping step',
           (tester) async {
-        when(() => mockFedExRepo.calculateRates(
-              fromAddress: any(named: 'fromAddress'),
-              toAddress: any(named: 'toAddress'),
-              category: any(named: 'category'),
-            )).thenAnswer((_) async => _testRates);
-
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        // Fill required address fields.
-        final textFields = find.byType(TextField);
-        await tester.enterText(textFields.at(2), '123 Main St');
-        await tester.pump();
-        await tester.enterText(textFields.at(3), 'New York');
-        await tester.pump();
-        await tester.enterText(textFields.at(5), '10001');
-        await tester.pump();
+        await fillAddress(tester);
 
+        await tester.ensureVisible(find.text('Continue'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
-        verify(() => mockFedExRepo.calculateRates(
-              fromAddress: any(named: 'fromAddress'),
-              toAddress: any(named: 'toAddress'),
-              category: 'dress',
-            )).called(1);
+        // Flat rate is auto-calculated: FR → US = International Shipping.
+        expect(find.text('International Shipping'), findsOneWidget);
       });
     });
 
     group('step 3: review', () {
-      testWidgets('should show order summary after selecting shipping',
+      testWidgets('should show order summary after shipping step',
           (tester) async {
-        when(() => mockFedExRepo.calculateRates(
-              fromAddress: any(named: 'fromAddress'),
-              toAddress: any(named: 'toAddress'),
-              category: any(named: 'category'),
-            )).thenAnswer((_) async => _testRates);
-
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
         // Step 1: Fill address.
-        final textFields = find.byType(TextField);
-        await tester.enterText(textFields.at(2), '123 Main St');
-        await tester.pump();
-        await tester.enterText(textFields.at(3), 'New York');
-        await tester.pump();
-        await tester.enterText(textFields.at(5), '10001');
-        await tester.pump();
+        await fillAddress(tester);
+        await tester.ensureVisible(find.text('Continue'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
-        // Step 2: Select shipping.
-        await tester.tap(find.text('FedEx Ground'));
-        await tester.pump();
+        // Step 2: Flat rate auto-selected. Continue.
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
@@ -241,32 +253,21 @@ void main() {
     group('step 4: confirm', () {
       testWidgets('should show CGVU acceptance on confirm step',
           (tester) async {
-        when(() => mockFedExRepo.calculateRates(
-              fromAddress: any(named: 'fromAddress'),
-              toAddress: any(named: 'toAddress'),
-              category: any(named: 'category'),
-            )).thenAnswer((_) async => _testRates);
-
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
         // Navigate through steps.
-        final textFields = find.byType(TextField);
-        await tester.enterText(textFields.at(2), '123 Main St');
-        await tester.pump();
-        await tester.enterText(textFields.at(3), 'New York');
-        await tester.pump();
-        await tester.enterText(textFields.at(5), '10001');
-        await tester.pump();
+        await fillAddress(tester);
+        await tester.ensureVisible(find.text('Continue'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('FedEx Ground'));
-        await tester.pump();
+        // Step 2: Continue (flat rate auto-selected).
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
-        // Step 3 review: Continue
+        // Step 3 review: Continue.
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
@@ -286,23 +287,13 @@ void main() {
       });
 
       testWidgets('should show Back button from step 2', (tester) async {
-        when(() => mockFedExRepo.calculateRates(
-              fromAddress: any(named: 'fromAddress'),
-              toAddress: any(named: 'toAddress'),
-              category: any(named: 'category'),
-            )).thenAnswer((_) async => _testRates);
-
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
         // Fill address and navigate to step 2.
-        final textFields = find.byType(TextField);
-        await tester.enterText(textFields.at(2), '123 Main St');
-        await tester.pump();
-        await tester.enterText(textFields.at(3), 'New York');
-        await tester.pump();
-        await tester.enterText(textFields.at(5), '10001');
-        await tester.pump();
+        await fillAddress(tester);
+        await tester.ensureVisible(find.text('Continue'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
@@ -311,23 +302,13 @@ void main() {
 
       testWidgets('should go back to previous step when Back tapped',
           (tester) async {
-        when(() => mockFedExRepo.calculateRates(
-              fromAddress: any(named: 'fromAddress'),
-              toAddress: any(named: 'toAddress'),
-              category: any(named: 'category'),
-            )).thenAnswer((_) async => _testRates);
-
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
         // Fill address and navigate to step 2.
-        final textFields = find.byType(TextField);
-        await tester.enterText(textFields.at(2), '123 Main St');
-        await tester.pump();
-        await tester.enterText(textFields.at(3), 'New York');
-        await tester.pump();
-        await tester.enterText(textFields.at(5), '10001');
-        await tester.pump();
+        await fillAddress(tester);
+        await tester.ensureVisible(find.text('Continue'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
@@ -342,28 +323,17 @@ void main() {
 
     group('agreed price override', () {
       testWidgets('should use agreed price when provided', (tester) async {
-        when(() => mockFedExRepo.calculateRates(
-              fromAddress: any(named: 'fromAddress'),
-              toAddress: any(named: 'toAddress'),
-              category: any(named: 'category'),
-            )).thenAnswer((_) async => _testRates);
-
         await tester.pumpWidget(buildPage(agreedPriceCents: 20000));
         await tester.pumpAndSettle();
 
         // Navigate to review step.
-        final textFields = find.byType(TextField);
-        await tester.enterText(textFields.at(2), '123 Main St');
-        await tester.pump();
-        await tester.enterText(textFields.at(3), 'New York');
-        await tester.pump();
-        await tester.enterText(textFields.at(5), '10001');
-        await tester.pump();
+        await fillAddress(tester);
+        await tester.ensureVisible(find.text('Continue'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('FedEx Ground'));
-        await tester.pump();
+        // Step 2: Continue (flat rate auto-selected).
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
@@ -380,65 +350,41 @@ void main() {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        // The CGVU check happens on init and should mark as already accepted.
-        // Navigate to confirm step to verify.
-        when(() => mockFedExRepo.calculateRates(
-              fromAddress: any(named: 'fromAddress'),
-              toAddress: any(named: 'toAddress'),
-              category: any(named: 'category'),
-            )).thenAnswer((_) async => _testRates);
-
-        final textFields = find.byType(TextField);
-        await tester.enterText(textFields.at(2), '123 Main St');
-        await tester.pump();
-        await tester.enterText(textFields.at(3), 'New York');
-        await tester.pump();
-        await tester.enterText(textFields.at(5), '10001');
-        await tester.pump();
+        await fillAddress(tester);
+        await tester.ensureVisible(find.text('Continue'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('FedEx Ground'));
-        await tester.pump();
+        // Step 2: Continue (flat rate auto-selected).
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
+        // Step 3 review: Continue.
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
         // On confirm step, should show already accepted message.
-        expect(find.textContaining('already accepted'), findsOneWidget);
+        expect(
+            find.text('You have already accepted the marketplace buyer terms.'),
+            findsOneWidget);
       });
     });
 
-    group('shipping rate error', () {
-      testWidgets('should show error when rate calculation fails',
+    group('flat rate shipping', () {
+      testWidgets('should calculate international flat rate for FR to US',
           (tester) async {
-        when(() => mockFedExRepo.calculateRates(
-              fromAddress: any(named: 'fromAddress'),
-              toAddress: any(named: 'toAddress'),
-              category: any(named: 'category'),
-            )).thenThrow(Exception('Network error'));
-
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        // Fill address and navigate.
-        final textFields = find.byType(TextField);
-        await tester.enterText(textFields.at(2), '123 Main St');
-        await tester.pump();
-        await tester.enterText(textFields.at(3), 'New York');
-        await tester.pump();
-        await tester.enterText(textFields.at(5), '10001');
-        await tester.pump();
+        await fillAddress(tester);
+        await tester.ensureVisible(find.text('Continue'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
-        // Should show error.
-        expect(
-          find.textContaining('Failed to calculate shipping rates'),
-          findsOneWidget,
-        );
+        // FR → US = International Shipping.
+        expect(find.text('International Shipping'), findsOneWidget);
       });
     });
   });

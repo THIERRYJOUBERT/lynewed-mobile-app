@@ -18,12 +18,14 @@ import 'package:url_launcher/url_launcher.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
+import '/features/auth/data/datasources/auth_remote_datasource.dart';
 import '/features/chat/presentation/widgets/fullscreen_image_viewer.dart';
 import '/features/chat/presentation/widgets/message_composer.dart';
 import '../../domain/entities/marketplace_message.dart';
 import '../../domain/repositories/marketplace_chat_repository.dart';
 import '../../domain/repositories/marketplace_offer_repository.dart';
 import '../../domain/repositories/marketplace_repository.dart';
+import '../sheets/make_offer_sheet.dart';
 import '../widgets/chat_bubble_widget.dart';
 import '../widgets/offer_bubble_widget.dart';
 import '../widgets/system_message_widget.dart';
@@ -33,9 +35,9 @@ import 'checkout_page.dart';
 ///
 /// Shows messages between the current user and another user about a listing.
 /// Features:
-/// - Listing card with product info at the top
+/// - Listing card with product info and Make Offer button
 /// - Reverse message list with smart spacing and avatars
-/// - Full composer with text, image, audio, and document support
+/// - Full composer with text, image, audio, document, and Make Offer support
 /// - Real-time message updates via Supabase Realtime
 /// - Mark as read on open
 class MarketplaceChatPage extends StatefulWidget {
@@ -49,6 +51,7 @@ class MarketplaceChatPage extends StatefulWidget {
     this.listingCoverUrl,
     this.otherUserName,
     this.otherUserAvatarUrl,
+    this.sellerId,
     this.repository,
     this.offerRepository,
     super.key,
@@ -56,6 +59,9 @@ class MarketplaceChatPage extends StatefulWidget {
 
   /// Route name for navigation.
   static const String routeName = 'MarketplaceChat';
+
+  /// Route path for GoRouter registration.
+  static const String routePath = '/marketplace/chat';
 
   /// The listing this conversation is about.
   final String listingId;
@@ -77,6 +83,10 @@ class MarketplaceChatPage extends StatefulWidget {
 
   /// Optional other user avatar URL.
   final String? otherUserAvatarUrl;
+
+  /// Optional seller ID for the listing (to detect counter-offers).
+  /// If null, will be fetched lazily from the listing.
+  final String? sellerId;
 
   /// Optional chat repository override for testing.
   final MarketplaceChatRepository? repository;
@@ -107,7 +117,14 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
   /// Cache of signed URLs for media attachments keyed by storage path.
   final Map<String, String> _signedUrlCache = {};
 
+  /// Resolved seller ID for the listing (used to detect counter-offers).
+  String? _listingSellerId;
+
   String get _currentUserId => widget.currentUserId ?? currentUserUid;
+
+  /// Whether the current user is the seller of this listing.
+  bool get _isCurrentUserSeller =>
+      _listingSellerId != null && _currentUserId == _listingSellerId;
 
   @override
   void initState() {
@@ -115,9 +132,24 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
     _repository = widget.repository ?? sl<MarketplaceChatRepository>();
     _offerRepository =
         widget.offerRepository ?? sl<MarketplaceOfferRepository>();
+    _listingSellerId = widget.sellerId;
+    if (_listingSellerId == null) _fetchSellerId();
     _loadMessages();
     _subscribeToNewMessages();
     _markAsRead();
+  }
+
+  /// Lazily fetch seller ID from the listing when not provided as param.
+  Future<void> _fetchSellerId() async {
+    try {
+      final marketplaceRepo = sl<MarketplaceRepository>();
+      final listing = await marketplaceRepo.getListingById(widget.listingId);
+      if (listing != null && mounted) {
+        setState(() => _listingSellerId = listing.sellerId);
+      }
+    } catch (_) {
+      // Non-critical: counter-offer detection won't work, but chat remains functional.
+    }
   }
 
   Future<void> _loadMessages() async {
@@ -371,8 +403,9 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
           if (mounted) {
             setState(() => _offerStatuses[msg.offerId!] = offer.status);
           }
-        } catch (_) {
-          // If offer not found, default to expired.
+        } catch (e) {
+          // If offer not found (e.g. RLS blocks access), default to expired.
+          debugPrint('Failed to load offer status for ${msg.offerId}: $e');
           if (mounted) {
             setState(() => _offerStatuses[msg.offerId!] = 'expired');
           }
@@ -463,12 +496,18 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
       final listing = await marketplaceRepo.getListingById(widget.listingId);
       if (listing == null || !mounted) return;
 
+      // Fetch seller's shipping address from profile.
+      final authDs = sl<AuthRemoteDatasource>();
+      final sellerProfile = await authDs.getProfile(listing.sellerId);
+      if (!mounted) return;
+
       Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (_) => CheckoutPage(
             listing: listing,
             offerId: offerId,
             agreedPriceCents: amountCents,
+            sellerShippingAddress: sellerProfile?.shippingAddress,
           ),
         ),
       );
@@ -502,6 +541,27 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
       context,
       imageUrl: signedUrl,
       heroTag: 'marketplace_image_${message.id}',
+    );
+  }
+
+  // ─── Make Offer ───
+
+  void _openMakeOfferSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: LynewedColors.transparent,
+      builder: (_) => MakeOfferSheet(
+        listingId: widget.listingId,
+        listingTitle: widget.listingTitle ?? 'Listing',
+        listingPriceCents: widget.listingPriceCents ?? 0,
+        receiverId: widget.otherUserId,
+        isCounterOffer: _isCurrentUserSeller,
+        onOfferSent: (offer) {
+          // Reload messages to show the new offer bubble.
+          _loadMessages();
+        },
+      ),
     );
   }
 
@@ -545,7 +605,7 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
           const SizedBox(width: 4),
           Expanded(
             child: Text(
-              'Conversation',
+              widget.otherUserName ?? 'Conversation',
               style: LynewedTextStyles.bodyMedium.copyWith(
                 fontWeight: FontWeight.w500,
               ),
@@ -605,7 +665,7 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
               ],
             ),
           ),
-          // Price
+          // Price + Make Offer button
           if (priceText != null) ...[
             const SizedBox(width: 8),
             Text(
@@ -615,6 +675,22 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
               ),
             ),
           ],
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: _openMakeOfferSheet,
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: LynewedColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.local_offer_outlined,
+                color: LynewedColors.primary,
+                size: 20,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -716,6 +792,7 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
             message: message,
             isMe: isMe,
             offerStatus: offerStatus,
+            isCurrentUserSeller: _isCurrentUserSeller,
             senderName: isMe ? null : widget.otherUserName,
             showAvatar: showAvatar,
             needsLargeSpacing: !sameSenderAsPrevious,
@@ -833,6 +910,7 @@ class _MarketplaceChatPageState extends State<MarketplaceChatPage> {
       onSendImage: _sendImageMessage,
       onSendAudio: _sendAudioMessage,
       onSendDocument: _sendDocumentMessage,
+      onMakeOffer: _openMakeOfferSheet,
       onSendingComplete: () {
         if (mounted) setState(() => _isSending = false);
       },

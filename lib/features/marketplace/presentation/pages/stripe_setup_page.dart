@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '/core/design/design.dart';
+import '/core/di/injection_container.dart';
+import '../../../auth/data/datasources/auth_remote_datasource.dart';
 import '../../../payments/domain/entities/stripe_account.dart';
 import '../../domain/usecases/check_stripe_status_use_case.dart';
 import '../../domain/usecases/setup_stripe_connect_use_case.dart';
@@ -96,11 +98,46 @@ class _StripeSetupPageState extends State<StripeSetupPage> {
     });
 
     try {
+      // Fetch profile to pre-fill Stripe Connect form
+      final authDs = sl<AuthRemoteDatasource>();
+      final profile = await authDs.getProfile(widget.userId);
+
+      // Parse display name into first/last
+      String? firstName;
+      String? lastName;
+      if (profile?.displayName != null) {
+        final parts = profile!.displayName!.trim().split(' ');
+        firstName = parts.first;
+        if (parts.length > 1) {
+          lastName = parts.sublist(1).join(' ');
+        }
+      }
+
+      // Build address from shipping_address if available
+      Map<String, String>? addressMap;
+      String? country;
+      if (profile?.shippingAddress != null) {
+        final addr = profile!.shippingAddress!;
+        country = addr.countryCode;
+        addressMap = {
+          if (addr.streetLines.isNotEmpty) 'line1': addr.streetLines.first,
+          'city': addr.city,
+          'postal_code': addr.postalCode,
+          if (addr.stateOrProvinceCode != null)
+            'state': addr.stateOrProvinceCode!,
+        };
+      }
+
       final result = await widget.setupUseCase(
         userId: widget.userId,
         email: widget.email,
         returnUrl: _returnUrl,
         refreshUrl: _refreshUrl,
+        firstName: firstName,
+        lastName: lastName,
+        phone: profile?.shippingAddress?.phoneNumber,
+        country: country,
+        address: addressMap,
       );
 
       final url = result['url'] as String;

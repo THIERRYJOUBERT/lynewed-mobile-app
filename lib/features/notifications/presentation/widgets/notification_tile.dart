@@ -201,14 +201,18 @@ class NotificationTile extends StatelessWidget {
         return Icons.thumb_down_outlined;
       case NotificationType.marketplaceItemSold:
         return Icons.sell_outlined;
+      case NotificationType.marketplaceOfferWithdrawn:
+        return Icons.undo_outlined;
+      case NotificationType.marketplaceOfferExpired:
+        return Icons.timer_off_outlined;
       case NotificationType.marketplaceOrderConfirmed:
         return Icons.receipt_long_outlined;
-      case NotificationType.marketplaceLabelCreated:
+      case NotificationType.marketplacePaymentSucceeded:
+        return Icons.payments_outlined;
+      case NotificationType.marketplaceLabelReady:
         return Icons.label_outlined;
-      case NotificationType.marketplacePackageShipped:
+      case NotificationType.marketplaceTrackingUpdate:
         return Icons.local_shipping_outlined;
-      case NotificationType.marketplacePackageDelivered:
-        return Icons.inventory_2_outlined;
       case NotificationType.marketplaceTransactionComplete:
         return Icons.check_circle_outline;
       case NotificationType.marketplaceNewMessage:
@@ -240,14 +244,18 @@ class NotificationTile extends StatelessWidget {
         return 'Offer declined';
       case NotificationType.marketplaceItemSold:
         return 'Item sold';
+      case NotificationType.marketplaceOfferWithdrawn:
+        return 'Offer withdrawn';
+      case NotificationType.marketplaceOfferExpired:
+        return 'Offer expired';
       case NotificationType.marketplaceOrderConfirmed:
         return 'Order confirmed';
-      case NotificationType.marketplaceLabelCreated:
-        return 'Shipping label created';
-      case NotificationType.marketplacePackageShipped:
-        return 'Package shipped';
-      case NotificationType.marketplacePackageDelivered:
-        return 'Package delivered';
+      case NotificationType.marketplacePaymentSucceeded:
+        return 'Payment received';
+      case NotificationType.marketplaceLabelReady:
+        return 'Shipping label ready';
+      case NotificationType.marketplaceTrackingUpdate:
+        return 'Shipping update';
       case NotificationType.marketplaceTransactionComplete:
         return 'Transaction complete';
       case NotificationType.marketplaceNewMessage:

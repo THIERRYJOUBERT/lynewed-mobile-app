@@ -22,21 +22,24 @@ class ChatRemoteDatasource {
   // CONVERSATIONS
   // ============================================================
 
-  /// Get all private conversations for current user (excludes public rooms)
+  /// Get all conversations for current user (private + wedding groups)
+  /// Excludes public community rooms (fetched separately via getPublicChatRooms)
   /// RPC returns: { items: [...] }
   Future<List<Conversation>> getConversations() async {
     final response = await _client.rpc('get_rooms_with_unread_counts');
-    
+
     if (response == null) return [];
-    
+
     // RPC returns { items: [...] }, extract the items array
     final Map<String, dynamic> data = response as Map<String, dynamic>;
     final List<dynamic> items = data['items'] as List<dynamic>? ?? [];
-    
-    // Filter out public rooms and wedding team chats - MessagesPage only shows private 1-1 conversations
+
+    // Return all conversation types (private, wedding_team, wedding_group_*)
+    // Public community rooms are excluded (fetched via getPublicChatRooms)
+    // Filtering by type for tabs is done in ConversationsLoaded state getters
     return items
         .map((item) => Conversation.fromMap(item as Map<String, dynamic>))
-        .where((conv) => conv.roomType == RoomType.private)
+        .where((conv) => conv.roomType != RoomType.public)
         .toList();
   }
 

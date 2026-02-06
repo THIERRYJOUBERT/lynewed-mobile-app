@@ -86,7 +86,7 @@ Ce projet utilise une **methodologie structuree** avec des workflows, des agents
 
 ```bash
 # Tests
-flutter test                              # Tous les tests (3464 tests)
+flutter test                              # Tous les tests (5193 tests)
 flutter test --no-pub                     # Skip pub check (plus rapide)
 flutter test path/to/test.dart            # Test spécifique
 flutter test --reporter compact           # Output minimal (évite Output too large)
@@ -183,7 +183,7 @@ flutter build ios          # Nécessite un profil de provisioning valide
 
 ### Optimisation des Tests (IMPORTANT)
 
-**Problème** : `flutter test` = "Output too large" même avec `--reporter compact` (3000+ tests)
+**Problème** : `flutter test` = "Output too large" même avec `--reporter compact` (5000+ tests)
 
 #### Stratégie en 3 Niveaux
 
@@ -240,7 +240,7 @@ test/features/weddings_hub_pro/
 
 ```bash
 flutter test                              # Output too large (276KB+)
-flutter test --reporter compact           # Toujours trop gros avec 3000 tests
+flutter test --reporter compact           # Toujours trop gros avec 5000 tests
 flutter test 2>&1 | tail -10              # Le pipe n'empêche pas la saturation
 ```
 
@@ -334,7 +334,7 @@ flutter test 2>&1 | tail -10              # Le pipe n'empêche pas la saturation
 | Métrique | Valeur |
 |----------|--------|
 | Stories | 42/42 (100%) |
-| Tests | 3148+ |
+| Tests | 5193+ |
 | Warnings | 0 |
 | Features CA | **16 modules** |
 

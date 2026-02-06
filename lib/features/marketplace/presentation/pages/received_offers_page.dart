@@ -1,7 +1,8 @@
 /// Received Offers Page - Seller view of offers on a listing.
 ///
-/// Displays all offers received for a specific listing with
-/// Accept/Decline actions for pending offers.
+/// Displays offers received for a specific listing grouped by buyer
+/// in a conversation-style list. Pending offers show "View Offer"
+/// to navigate to chat; resolved offers show a status badge.
 library;
 
 import 'package:flutter/material.dart';
@@ -9,30 +10,35 @@ import 'package:flutter/material.dart';
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
 import '../../domain/entities/offer_display_model.dart';
-import '../../domain/repositories/marketplace_chat_repository.dart';
 import '../../domain/repositories/marketplace_offer_repository.dart';
-import '../widgets/offer_card.dart';
+import '../widgets/buyer_offer_tile.dart';
 import 'marketplace_chat_page.dart';
 
 /// Page showing all offers received for a specific listing.
+///
+/// Offers are grouped by buyer - each tile shows the buyer's most
+/// recent offer with either a "View Offer" button (pending) or
+/// a status badge (accepted/rejected/expired/withdrawn).
 ///
 /// States:
 /// - Loading: circular progress indicator
 /// - Empty: "No offers yet" message
 /// - Error: error message with retry button
-/// - Data: list of offer cards with accept/decline actions
+/// - Data: grouped list of buyer offer tiles
 class ReceivedOffersPage extends StatefulWidget {
   /// Creates a received offers page.
   const ReceivedOffersPage({
     required this.listingId,
     this.listingTitle,
     this.repository,
-    this.chatRepository,
     super.key,
   });
 
   /// Route name for navigation.
   static const String routeName = 'ReceivedOffers';
+
+  /// Route path for GoRouter registration.
+  static const String routePath = '/marketplace/offers/received';
 
   /// The listing ID to show offers for.
   final String listingId;
@@ -43,16 +49,12 @@ class ReceivedOffersPage extends StatefulWidget {
   /// Optional repository override for testing.
   final MarketplaceOfferRepository? repository;
 
-  /// Optional chat repository override for testing.
-  final MarketplaceChatRepository? chatRepository;
-
   @override
   State<ReceivedOffersPage> createState() => _ReceivedOffersPageState();
 }
 
 class _ReceivedOffersPageState extends State<ReceivedOffersPage> {
   late final MarketplaceOfferRepository _repository;
-  late final MarketplaceChatRepository _chatRepository;
 
   bool _isLoading = true;
   String? _errorMessage;
@@ -63,8 +65,6 @@ class _ReceivedOffersPageState extends State<ReceivedOffersPage> {
     super.initState();
     _repository =
         widget.repository ?? sl<MarketplaceOfferRepository>();
-    _chatRepository =
-        widget.chatRepository ?? sl<MarketplaceChatRepository>();
     _loadOffers();
   }
 
@@ -92,90 +92,38 @@ class _ReceivedOffersPageState extends State<ReceivedOffersPage> {
     }
   }
 
-  Future<void> _acceptOffer(OfferDisplayModel model) async {
-    try {
-      await _repository.acceptOffer(model.offer.id);
+  List<_BuyerOfferGroup> _groupOffersByBuyer() {
+    final groups = <String, _BuyerOfferGroup>{};
 
-      // Send system message in the conversation.
-      try {
-        await _chatRepository.sendSystemMessage(
-          listingId: widget.listingId,
-          receiverId: model.offer.buyerId,
-          content: 'Offer accepted!',
+    for (final model in _offers) {
+      final buyerId = model.offer.buyerId;
+      if (groups.containsKey(buyerId)) {
+        groups[buyerId] = groups[buyerId]!.incrementCount();
+      } else {
+        groups[buyerId] = _BuyerOfferGroup(
+          buyerId: buyerId,
+          buyerName: model.buyerName,
+          buyerAvatarUrl: model.buyerAvatarUrl,
+          latestOffer: model,
+          totalCount: 1,
         );
-      } catch (_) {
-        // Non-critical: offer is accepted even if system message fails.
       }
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Offer accepted!',
-            style: LynewedTextStyles.bodySmall.copyWith(
-              color: LynewedColors.textOnDark,
-            ),
-          ),
-        ),
-      );
-      await _loadOffers();
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Failed to accept offer',
-            style: LynewedTextStyles.bodySmall.copyWith(
-              color: LynewedColors.textOnDark,
-            ),
-          ),
-          backgroundColor: LynewedColors.error,
-        ),
-      );
     }
-  }
 
-  Future<void> _rejectOffer(OfferDisplayModel model) async {
-    try {
-      await _repository.rejectOffer(model.offer.id);
+    // Sort: pending first, then resolved, each sub-group by most recent.
+    final result = groups.values.toList()
+      ..sort((a, b) {
+        final aPending =
+            a.latestOffer.offer.isPending && !a.latestOffer.offer.isExpired;
+        final bPending =
+            b.latestOffer.offer.isPending && !b.latestOffer.offer.isExpired;
+        if (aPending && !bPending) return -1;
+        if (!aPending && bPending) return 1;
+        return b.latestOffer.offer.createdAt
+            .compareTo(a.latestOffer.offer.createdAt);
+      });
 
-      // Send system message in the conversation.
-      try {
-        await _chatRepository.sendSystemMessage(
-          listingId: widget.listingId,
-          receiverId: model.offer.buyerId,
-          content: 'Offer declined',
-        );
-      } catch (_) {
-        // Non-critical: offer is rejected even if system message fails.
-      }
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Offer declined',
-            style: LynewedTextStyles.bodySmall.copyWith(
-              color: LynewedColors.textOnDark,
-            ),
-          ),
-        ),
-      );
-      await _loadOffers();
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Failed to decline offer',
-            style: LynewedTextStyles.bodySmall.copyWith(
-              color: LynewedColors.textOnDark,
-            ),
-          ),
-          backgroundColor: LynewedColors.error,
-        ),
-      );
-    }
+    return result;
   }
 
   @override
@@ -286,37 +234,66 @@ class _ReceivedOffersPageState extends State<ReceivedOffersPage> {
     );
   }
 
-  void _openChat(OfferDisplayModel model) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => MarketplaceChatPage(
-          listingId: widget.listingId,
-          otherUserId: model.offer.buyerId,
-          listingTitle: widget.listingTitle,
-          otherUserName: model.buyerName,
-          otherUserAvatarUrl: model.buyerAvatarUrl,
-        ),
-      ),
-    );
+  void _openChat(_BuyerOfferGroup group) {
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute<void>(
+            builder: (_) => MarketplaceChatPage(
+              listingId: widget.listingId,
+              otherUserId: group.buyerId,
+              listingTitle: widget.listingTitle,
+              otherUserName: group.buyerName,
+              otherUserAvatarUrl: group.buyerAvatarUrl,
+            ),
+          ),
+        )
+        .then((_) {
+      if (mounted) _loadOffers();
+    });
   }
 
   Widget _buildOffersList() {
+    final groups = _groupOffersByBuyer();
+
     return ListView.builder(
-      itemCount: _offers.length,
+      itemCount: groups.length,
       itemBuilder: (context, index) {
-        final model = _offers[index];
-        return OfferCard(
-          model: model,
-          viewMode: OfferCardViewMode.seller,
-          onAccept: model.offer.isPending
-              ? () => _acceptOffer(model)
-              : null,
-          onReject: model.offer.isPending
-              ? () => _rejectOffer(model)
-              : null,
-          onTap: () => _openChat(model),
+        final group = groups[index];
+        return BuyerOfferTile(
+          buyerName: group.buyerName,
+          buyerAvatarUrl: group.buyerAvatarUrl,
+          latestOffer: group.latestOffer.offer,
+          totalOfferCount: group.totalCount,
+          onTap: () => _openChat(group),
         );
       },
+    );
+  }
+}
+
+/// Groups offers from the same buyer into a single display unit.
+class _BuyerOfferGroup {
+  const _BuyerOfferGroup({
+    required this.buyerId,
+    required this.latestOffer,
+    required this.totalCount,
+    this.buyerName,
+    this.buyerAvatarUrl,
+  });
+
+  final String buyerId;
+  final String? buyerName;
+  final String? buyerAvatarUrl;
+  final OfferDisplayModel latestOffer;
+  final int totalCount;
+
+  _BuyerOfferGroup incrementCount() {
+    return _BuyerOfferGroup(
+      buyerId: buyerId,
+      buyerName: buyerName,
+      buyerAvatarUrl: buyerAvatarUrl,
+      latestOffer: latestOffer,
+      totalCount: totalCount + 1,
     );
   }
 }

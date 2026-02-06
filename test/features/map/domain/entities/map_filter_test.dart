@@ -224,4 +224,134 @@ void main() {
       expect(toggles.showPros, false);
     });
   });
+
+  group('MapFilter marketplace fields', () {
+    test('defaults should have null marketplace fields', () {
+      const filter = MapFilter.defaults;
+      expect(filter.marketplaceCategory, isNull);
+      expect(filter.marketplaceConditions, isNull);
+      expect(filter.marketplaceMinPrice, isNull);
+      expect(filter.marketplaceMaxPrice, isNull);
+      expect(filter.hasMarketplaceFilter, isFalse);
+    });
+
+    test('should accept marketplace category', () {
+      const filter = MapFilter(marketplaceCategory: 'dress');
+      expect(filter.marketplaceCategory, 'dress');
+      expect(filter.hasMarketplaceFilter, isTrue);
+    });
+
+    test('should accept marketplace conditions list', () {
+      const filter = MapFilter(marketplaceConditions: ['new', 'excellent']);
+      expect(filter.marketplaceConditions, ['new', 'excellent']);
+      expect(filter.hasMarketplaceFilter, isTrue);
+    });
+
+    test('should treat empty conditions as no filter', () {
+      const filter = MapFilter(marketplaceConditions: []);
+      expect(filter.hasMarketplaceFilter, isFalse);
+    });
+
+    test('should accept marketplace price range', () {
+      const filter = MapFilter(
+        marketplaceMinPrice: 1000,
+        marketplaceMaxPrice: 500000,
+      );
+      expect(filter.marketplaceMinPrice, 1000);
+      expect(filter.marketplaceMaxPrice, 500000);
+      expect(filter.hasMarketplaceFilter, isTrue);
+    });
+
+    test('copyWith should update marketplace category', () {
+      const filter = MapFilter.defaults;
+      final updated = filter.copyWith(marketplaceCategory: 'shoes');
+      expect(updated.marketplaceCategory, 'shoes');
+    });
+
+    test('copyWith should clear marketplace category', () {
+      const filter = MapFilter(marketplaceCategory: 'dress');
+      final cleared = filter.copyWith(clearMarketplaceCategory: true);
+      expect(cleared.marketplaceCategory, isNull);
+    });
+
+    test('copyWith should update marketplace conditions', () {
+      const filter = MapFilter.defaults;
+      final updated = filter.copyWith(
+        marketplaceConditions: ['new', 'good'],
+      );
+      expect(updated.marketplaceConditions, ['new', 'good']);
+    });
+
+    test('copyWith should clear marketplace conditions', () {
+      const filter = MapFilter(marketplaceConditions: ['new']);
+      final cleared = filter.copyWith(clearMarketplaceConditions: true);
+      expect(cleared.marketplaceConditions, isNull);
+    });
+
+    test('copyWith should update marketplace price', () {
+      const filter = MapFilter.defaults;
+      final updated = filter.copyWith(
+        marketplaceMinPrice: 500,
+        marketplaceMaxPrice: 10000,
+      );
+      expect(updated.marketplaceMinPrice, 500);
+      expect(updated.marketplaceMaxPrice, 10000);
+    });
+
+    test('copyWith should clear marketplace price', () {
+      const filter = MapFilter(
+        marketplaceMinPrice: 500,
+        marketplaceMaxPrice: 10000,
+      );
+      final cleared = filter.copyWith(clearMarketplacePrice: true);
+      expect(cleared.marketplaceMinPrice, isNull);
+      expect(cleared.marketplaceMaxPrice, isNull);
+    });
+
+    test('copyWith should preserve marketplace fields when not specified', () {
+      const filter = MapFilter(
+        marketplaceCategory: 'dress',
+        marketplaceConditions: ['new'],
+        marketplaceMinPrice: 500,
+        marketplaceMaxPrice: 10000,
+      );
+      final updated = filter.copyWith(budgetMin: 1000);
+      expect(updated.marketplaceCategory, 'dress');
+      expect(updated.marketplaceConditions, ['new']);
+      expect(updated.marketplaceMinPrice, 500);
+      expect(updated.marketplaceMaxPrice, 10000);
+    });
+
+    test('equality should consider marketplace fields', () {
+      const filter1 = MapFilter(marketplaceCategory: 'dress');
+      const filter2 = MapFilter(marketplaceCategory: 'shoes');
+      const filter3 = MapFilter(marketplaceCategory: 'dress');
+
+      expect(filter1, isNot(equals(filter2)));
+      expect(filter1, equals(filter3));
+    });
+
+    test('hashCode should differ when marketplace fields differ', () {
+      const filter1 = MapFilter(marketplaceCategory: 'dress');
+      const filter2 = MapFilter(marketplaceCategory: 'shoes');
+
+      expect(filter1.hashCode, isNot(equals(filter2.hashCode)));
+    });
+
+    test('equality should consider marketplace conditions', () {
+      const filter1 = MapFilter(marketplaceConditions: ['new']);
+      const filter2 = MapFilter(marketplaceConditions: ['excellent']);
+      const filter3 = MapFilter(marketplaceConditions: ['new']);
+
+      expect(filter1, isNot(equals(filter2)));
+      expect(filter1, equals(filter3));
+    });
+
+    test('equality should consider marketplace price', () {
+      const filter1 = MapFilter(marketplaceMinPrice: 500);
+      const filter2 = MapFilter(marketplaceMinPrice: 1000);
+
+      expect(filter1, isNot(equals(filter2)));
+    });
+  });
 }

@@ -101,6 +101,10 @@ class MapFilter {
     this.minRating,
     this.weddingBookFree,
     this.trailerFree,
+    this.marketplaceCategory,
+    this.marketplaceConditions,
+    this.marketplaceMinPrice,
+    this.marketplaceMaxPrice,
   });
 
   /// Professions à afficher (vide = toutes)
@@ -139,6 +143,18 @@ class MapFilter {
   /// null = no filter, true = only pros with free trailer
   final bool? trailerFree;
 
+  /// Marketplace category filter: 'dress', 'shoes', or null for all (EPIC-14)
+  final String? marketplaceCategory;
+
+  /// Marketplace condition filter: ['new', 'excellent', 'good', 'fair'] (EPIC-14)
+  final List<String>? marketplaceConditions;
+
+  /// Marketplace minimum price in cents (EPIC-14)
+  final int? marketplaceMinPrice;
+
+  /// Marketplace maximum price in cents (EPIC-14)
+  final int? marketplaceMaxPrice;
+
   /// Filtres par défaut
   static const defaults = MapFilter();
 
@@ -158,6 +174,13 @@ class MapFilter {
   bool get hasSpecialOffersFilter =>
       weddingBookFree == true || trailerFree == true;
 
+  /// Check if marketplace filter is active (EPIC-14)
+  bool get hasMarketplaceFilter =>
+      marketplaceCategory != null ||
+      (marketplaceConditions != null && marketplaceConditions!.isNotEmpty) ||
+      marketplaceMinPrice != null ||
+      marketplaceMaxPrice != null;
+
   MapFilter copyWith({
     List<Profession>? professions,
     double? budgetMin,
@@ -173,6 +196,13 @@ class MapFilter {
     bool clearWeddingBookFree = false,
     bool? trailerFree,
     bool clearTrailerFree = false,
+    String? marketplaceCategory,
+    bool clearMarketplaceCategory = false,
+    List<String>? marketplaceConditions,
+    bool clearMarketplaceConditions = false,
+    int? marketplaceMinPrice,
+    int? marketplaceMaxPrice,
+    bool clearMarketplacePrice = false,
   }) {
     return MapFilter(
       professions: professions ?? this.professions,
@@ -189,6 +219,18 @@ class MapFilter {
           : (weddingBookFree ?? this.weddingBookFree),
       trailerFree:
           clearTrailerFree ? null : (trailerFree ?? this.trailerFree),
+      marketplaceCategory: clearMarketplaceCategory
+          ? null
+          : (marketplaceCategory ?? this.marketplaceCategory),
+      marketplaceConditions: clearMarketplaceConditions
+          ? null
+          : (marketplaceConditions ?? this.marketplaceConditions),
+      marketplaceMinPrice: clearMarketplacePrice
+          ? null
+          : (marketplaceMinPrice ?? this.marketplaceMinPrice),
+      marketplaceMaxPrice: clearMarketplacePrice
+          ? null
+          : (marketplaceMaxPrice ?? this.marketplaceMaxPrice),
     );
   }
 
@@ -206,7 +248,11 @@ class MapFilter {
         other.toggles == toggles &&
         other.minRating == minRating &&
         other.weddingBookFree == weddingBookFree &&
-        other.trailerFree == trailerFree;
+        other.trailerFree == trailerFree &&
+        other.marketplaceCategory == marketplaceCategory &&
+        listEquals(other.marketplaceConditions, marketplaceConditions) &&
+        other.marketplaceMinPrice == marketplaceMinPrice &&
+        other.marketplaceMaxPrice == marketplaceMaxPrice;
   }
 
   @override
@@ -222,5 +268,11 @@ class MapFilter {
         minRating,
         weddingBookFree,
         trailerFree,
+        marketplaceCategory,
+        marketplaceConditions != null
+            ? Object.hashAll(marketplaceConditions!)
+            : null,
+        marketplaceMinPrice,
+        marketplaceMaxPrice,
       );
 }

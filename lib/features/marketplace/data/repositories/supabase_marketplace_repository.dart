@@ -200,6 +200,34 @@ class SupabaseMarketplaceRepository implements MarketplaceRepository {
   }
 
   @override
+  Future<List<MarketplaceListing>> getSellerListings({
+    required String sellerId,
+    int page = 0,
+    int pageSize = 20,
+  }) async {
+    final response = await _client
+        .from('marketplace_listings')
+        .select('*, marketplace_photos(storage_path, position)')
+        .eq('seller_id', sellerId)
+        .eq('status', 'active')
+        .order('created_at', ascending: false)
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+
+    return (response as List<dynamic>)
+        .cast<Map<String, dynamic>>()
+        .map((json) {
+      final listing = MarketplaceListing.fromJson(json);
+      if (listing.coverPhotoStoragePath != null) {
+        final publicUrl = _client.storage
+            .from('marketplace-listings')
+            .getPublicUrl(listing.coverPhotoStoragePath!);
+        return listing.copyWith(coverPhotoStoragePath: publicUrl);
+      }
+      return listing;
+    }).toList();
+  }
+
+  @override
   Future<int> getListingsCount({String? category}) async {
     var query = _client
         .from('marketplace_listings')

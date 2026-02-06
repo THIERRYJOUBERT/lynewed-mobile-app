@@ -8,6 +8,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lynewed_beta/core/di/injection_container.dart';
+import 'package:lynewed_beta/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:lynewed_beta/features/auth/data/models/user_profile_model.dart';
+import 'package:lynewed_beta/features/auth/domain/entities/user_role.dart';
 import 'package:lynewed_beta/features/marketplace/domain/repositories/stripe_connect_repository.dart';
 import 'package:lynewed_beta/features/marketplace/domain/usecases/check_stripe_status_use_case.dart';
 import 'package:lynewed_beta/features/marketplace/domain/usecases/setup_stripe_connect_use_case.dart';
@@ -24,14 +28,25 @@ class MockCheckStripeStatusUseCase extends Mock
 class MockStripeConnectRepository extends Mock
     implements StripeConnectRepository {}
 
+class MockAuthRemoteDatasource extends Mock implements AuthRemoteDatasource {}
+
 void main() {
   group('StripeSetupPage', () {
     late MockSetupStripeConnectUseCase mockSetupUseCase;
     late MockCheckStripeStatusUseCase mockCheckUseCase;
+    late MockAuthRemoteDatasource mockAuthDatasource;
 
     setUp(() {
       mockSetupUseCase = MockSetupStripeConnectUseCase();
       mockCheckUseCase = MockCheckStripeStatusUseCase();
+      mockAuthDatasource = MockAuthRemoteDatasource();
+
+      // Register mock in service locator
+      sl.registerSingleton<AuthRemoteDatasource>(mockAuthDatasource);
+    });
+
+    tearDown(() async {
+      await sl.reset();
     });
 
     Widget buildPage({
@@ -157,14 +172,33 @@ void main() {
           (tester) async {
         final completer = Completer<Map<String, dynamic>>();
 
+        // Mock the check use case to return no account
         when(() => mockCheckUseCase.syncAndGetAccount('user-123'))
             .thenAnswer((_) async => null);
+
+        // Mock the auth datasource to return a profile (prevents immediate error)
+        when(() => mockAuthDatasource.getProfile('user-123')).thenAnswer(
+          (_) async => UserProfileModel(
+            id: 'user-123',
+            authUserId: 'auth-123',
+            displayName: 'Test Seller',
+            role: UserRole.bride,
+            createdAt: DateTime(2024),
+          ),
+        );
+
+        // Mock the setup use case with a completer (doesn't complete immediately)
         when(
           () => mockSetupUseCase(
             userId: any(named: 'userId'),
             email: any(named: 'email'),
             returnUrl: any(named: 'returnUrl'),
             refreshUrl: any(named: 'refreshUrl'),
+            firstName: any(named: 'firstName'),
+            lastName: any(named: 'lastName'),
+            phone: any(named: 'phone'),
+            country: any(named: 'country'),
+            address: any(named: 'address'),
           ),
         ).thenAnswer((_) => completer.future);
 
@@ -173,12 +207,14 @@ void main() {
 
         // Tap setup button
         await tester.tap(find.text('Setup Payments'));
-        await tester.pump();
+        await tester.pump(); // Start processing the tap
+        await tester.pump(); // Allow setState to rebuild with loading state
 
-        // Should show loading indicator on the button
+        // Should show loading indicator replacing the button
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.text('Setup Payments'), findsNothing);
 
-        // Complete the future with error to avoid launchUrl side effects
+        // Complete with error to prevent launchUrl side effects
         completer.completeError(Exception('test cancel'));
         await tester.pumpAndSettle();
       });

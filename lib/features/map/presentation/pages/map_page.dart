@@ -688,6 +688,20 @@ class _MapPageState extends State<MapPage> {
 
   void _onMarkerTap(MapMarker marker) {
     if (!_mounted) return;
+
+    // Marketplace items: open the full listing detail page directly
+    if (marker.type == MapMarkerType.marketplaceItem) {
+      final listingId = marker.metadata['listingId'] as String?;
+      if (listingId != null && listingId.isNotEmpty) {
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => ListingDetailPage(listingId: listingId),
+          ),
+        );
+      }
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1086,6 +1100,10 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
     final sellerId = metadata['sellerId'] as String?;
     final listingId = metadata['listingId'] as String?;
     final listingTitle = metadata['title'] as String?;
+    final listingPriceCents = (metadata['priceCents'] as num?)?.toInt();
+    final thumbnailUrl = metadata['thumbnailUrl'] as String?;
+    final sellerName = metadata['sellerName'] as String?;
+    final sellerAvatarUrl = metadata['sellerAvatarUrl'] as String?;
     if (sellerId != null && listingId != null) {
       Navigator.of(context).push(
         MaterialPageRoute<void>(
@@ -1093,6 +1111,10 @@ class _MarkerDetailsLoaderState extends State<_MarkerDetailsLoader> {
             listingId: listingId,
             otherUserId: sellerId,
             listingTitle: listingTitle,
+            listingPriceCents: listingPriceCents,
+            listingCoverUrl: thumbnailUrl,
+            otherUserName: sellerName,
+            otherUserAvatarUrl: sellerAvatarUrl,
           ),
         ),
       );

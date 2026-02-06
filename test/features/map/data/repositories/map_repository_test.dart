@@ -58,6 +58,51 @@ void main() {
       expect(result.allMarkers, isEmpty);
       expect(result.totalCount, 0);
     });
+
+    test('should include marketplace in default values', () {
+      const result = MapSearchResult();
+      expect(result.marketplace, isEmpty);
+    });
+
+    test('allMarkers should include marketplace markers', () {
+      const pro = MapMarker(
+        id: 'pro-1',
+        type: MapMarkerType.proFixedLocation,
+        position: gmaps.LatLng(48.8566, 2.3522),
+      );
+      const mp = MapMarker(
+        id: 'mp-1',
+        type: MapMarkerType.marketplaceItem,
+        position: gmaps.LatLng(48.8700, 2.3600),
+      );
+
+      const result = MapSearchResult(
+        fixedLocations: [pro],
+        marketplace: [mp],
+        totalCount: 2,
+      );
+
+      expect(result.allMarkers.length, 2);
+      expect(result.allMarkers, contains(mp));
+    });
+
+    test('copyWith should update marketplace', () {
+      const original = MapSearchResult();
+      const mpMarker = MapMarker(
+        id: 'mp-1',
+        type: MapMarkerType.marketplaceItem,
+        position: gmaps.LatLng(48.8566, 2.3522),
+      );
+
+      final updated = original.copyWith(marketplace: [mpMarker]);
+      expect(updated.marketplace.length, 1);
+      expect(updated.marketplace.first.id, 'mp-1');
+    });
+
+    test('empty should have empty marketplace', () {
+      const result = MapSearchResult.empty;
+      expect(result.marketplace, isEmpty);
+    });
   });
 
   group('MapFilter with Repository', () {

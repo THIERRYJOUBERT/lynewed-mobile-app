@@ -314,6 +314,63 @@ void main() {
 
           expect(conversation.displayName, 'Conversation');
         });
+
+        test('should return publicTitle for wedding team room', () {
+          final conversation = Conversation(
+            roomId: 'room-123',
+            roomType: RoomType.weddingTeam,
+            conversationStatus: ConversationStatus.active,
+            unreadCount: 0,
+            publicTitle: 'My Wedding Team',
+          );
+
+          expect(conversation.displayName, 'My Wedding Team');
+        });
+
+        test('should return default Wedding Team for wedding team without title', () {
+          final conversation = Conversation(
+            roomId: 'room-123',
+            roomType: RoomType.weddingTeam,
+            conversationStatus: ConversationStatus.active,
+            unreadCount: 0,
+          );
+
+          expect(conversation.displayName, 'Wedding Team');
+        });
+
+        test('should return publicTitle for wedding group public', () {
+          final conversation = Conversation(
+            roomId: 'room-123',
+            roomType: RoomType.weddingGroupPublic,
+            conversationStatus: ConversationStatus.active,
+            unreadCount: 0,
+            publicTitle: 'Bridesmaids Chat',
+          );
+
+          expect(conversation.displayName, 'Bridesmaids Chat');
+        });
+
+        test('should return default Group for wedding group without title', () {
+          final conversation = Conversation(
+            roomId: 'room-123',
+            roomType: RoomType.weddingGroupPublic,
+            conversationStatus: ConversationStatus.active,
+            unreadCount: 0,
+          );
+
+          expect(conversation.displayName, 'Group');
+        });
+
+        test('should return default Group for wedding group private without title', () {
+          final conversation = Conversation(
+            roomId: 'room-123',
+            roomType: RoomType.weddingGroupPrivate,
+            conversationStatus: ConversationStatus.active,
+            unreadCount: 0,
+          );
+
+          expect(conversation.displayName, 'Group');
+        });
       });
 
       group('displayAvatarUrl', () {

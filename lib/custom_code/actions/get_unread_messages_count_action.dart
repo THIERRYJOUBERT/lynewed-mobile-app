@@ -8,27 +8,38 @@ import '/backend/supabase/supabase.dart';
 Future<int?> getUnreadMessagesCountAction() async {
   try {
     final client = SupaFlow.client;
-    
-    // Appeler le RPC qui retourne les rooms avec unread counts
+    final currentUserId = client.auth.currentUser?.id;
+    if (currentUserId == null) return 0;
+
+    // Count chat unread (private + wedding rooms) via RPC
     final res = await client.rpc('get_rooms_with_unread_counts');
-    
-    // Calculer le total des messages non lus
+
     int totalUnread = 0;
-    
+
     final list = (res is Map && res['items'] is List)
         ? (res['items'] as List)
         : const [];
-        
+
     for (final row in list) {
       if (row is! Map) continue;
-      
+
       final unreadCount = (row['unreadCount'] is num)
           ? (row['unreadCount'] as num).toInt()
           : 0;
-          
+
       totalUnread += unreadCount;
     }
-    
+
+    // Count marketplace unread messages
+    final marketplaceRes = await client
+        .from('marketplace_messages')
+        .select()
+        .eq('receiver_id', currentUserId)
+        .eq('is_read', false)
+        .count(CountOption.exact);
+
+    totalUnread += marketplaceRes.count;
+
     return totalUnread;
   } catch (e) {
     return 0;

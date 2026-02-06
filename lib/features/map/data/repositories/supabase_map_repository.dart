@@ -47,15 +47,17 @@ class SupabaseMapRepository implements MapRepository {
       final weddings = allMarkers
           .where((m) => m.type == MapMarkerType.wedding)
           .toList();
-
-      // Rating filter is now applied server-side in search_map_bundle RPC
+      final marketplace = allMarkers
+          .where((m) => m.type == MapMarkerType.marketplaceItem)
+          .toList();
 
       return MapSearchResult(
         professionals: const [], // Empty - all pros are in fixedLocations now
         fixedLocations: fixedLocations,
         alerts: alerts,
         weddings: weddings,
-        totalCount: fixedLocations.length + alerts.length + weddings.length,
+        marketplace: marketplace,
+        totalCount: fixedLocations.length + alerts.length + weddings.length + marketplace.length,
       );
     } catch (_) {
       // Return empty result on error - no logging in production

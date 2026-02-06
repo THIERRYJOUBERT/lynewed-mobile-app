@@ -18,6 +18,11 @@ abstract class StripeConnectRepository {
     required String email,
     required String returnUrl,
     required String refreshUrl,
+    String? firstName,
+    String? lastName,
+    String? phone,
+    String? country,
+    Map<String, String>? address,
   });
 
   /// Gets the Stripe account for a user.

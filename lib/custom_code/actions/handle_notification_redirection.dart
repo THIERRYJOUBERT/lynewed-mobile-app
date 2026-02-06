@@ -16,7 +16,11 @@ import '/custom_code/actions/index.dart' as actions;
 import '/index.dart' show ProDetailsWidget;
 import '/features/weddings_hub_pro/presentation/pages/weddings_hub_pro_page.dart';
 import '/features/my_wedding/presentation/pages/my_wedding_page.dart';
+import '/features/marketplace/presentation/pages/buyer_transaction_page.dart';
+import '/features/marketplace/presentation/pages/listing_detail_page.dart';
 import '/features/marketplace/presentation/pages/marketplace_chat_page.dart';
+import '/features/marketplace/presentation/pages/received_offers_page.dart';
+import '/features/marketplace/presentation/pages/transaction_detail_page.dart';
 
 // ignore_for_file: use_build_context_synchronously
 
@@ -466,40 +470,74 @@ Future<void> handleNotificationRedirection(
     case 'marketplaceNewOffer':
       {
         final listingId = data['listing_id'] as String?;
-        if (listingId != null) {
-          router.push('/marketplace/offers/received?listingId=$listingId');
+        if (listingId != null && context.mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => ReceivedOffersPage(listingId: listingId),
+            ),
+          );
         }
       }
       break;
 
     case 'marketplaceOfferAccepted':
     case 'marketplaceOfferRejected':
+    case 'marketplaceOfferExpired':
       {
         final listingId = data['listing_id'] as String?;
-        if (listingId != null) {
-          router.push('/marketplace/listing?listingId=$listingId');
+        if (listingId != null && context.mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => ListingDetailPage(listingId: listingId),
+            ),
+          );
+        }
+      }
+      break;
+
+    case 'marketplaceOfferWithdrawn':
+      {
+        final listingId = data['listing_id'] as String?;
+        if (listingId != null && context.mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => ReceivedOffersPage(listingId: listingId),
+            ),
+          );
         }
       }
       break;
 
     case 'marketplaceItemSold':
-    case 'marketplaceLabelCreated':
+    case 'marketplacePaymentSucceeded':
       {
         final transactionId = data['transaction_id'] as String?;
-        if (transactionId != null) {
-          router.push('/marketplace/transaction?transactionId=$transactionId');
+        if (transactionId != null && context.mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => TransactionDetailPage(
+                transactionId: transactionId,
+              ),
+            ),
+          );
         }
       }
       break;
 
     case 'marketplaceOrderConfirmed':
-    case 'marketplacePackageShipped':
-    case 'marketplacePackageDelivered':
+    case 'marketplaceLabelReady':
+    case 'marketplaceTrackingUpdate':
     case 'marketplaceTransactionComplete':
       {
         final transactionId = data['transaction_id'] as String?;
-        if (transactionId != null) {
-          router.push('/marketplace/purchase?transactionId=$transactionId');
+        if (transactionId != null && context.mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => BuyerTransactionPage(
+                transactionId: transactionId,
+              ),
+            ),
+          );
         }
       }
       break;

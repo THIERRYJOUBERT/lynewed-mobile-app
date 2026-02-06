@@ -7,6 +7,11 @@ library;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '/core/design/design.dart';
+import '/features/marketplace/presentation/pages/buyer_transaction_page.dart';
+import '/features/marketplace/presentation/pages/listing_detail_page.dart';
+import '/features/marketplace/presentation/pages/marketplace_chat_page.dart';
+import '/features/marketplace/presentation/pages/received_offers_page.dart';
+import '/features/marketplace/presentation/pages/transaction_detail_page.dart';
 import '../bloc/notifications_cubit.dart';
 import '../bloc/notifications_state.dart';
 import '../widgets/notification_tile.dart';
@@ -230,7 +235,6 @@ class NotificationsPage extends StatelessWidget {
             arguments: {'roomId': roomId},
           );
         }
-        break;
 
       case NotificationRoute.profile:
         final profileId = nav.params['profileId'] as String?;
@@ -240,7 +244,6 @@ class NotificationsPage extends StatelessWidget {
             arguments: {'profileId': profileId},
           );
         }
-        break;
 
       case NotificationRoute.videoCall:
         final sessionId = nav.params['sessionId'] as String?;
@@ -254,73 +257,74 @@ class NotificationsPage extends StatelessWidget {
             },
           );
         }
-        break;
 
       case NotificationRoute.weddingOfTheWeek:
         Navigator.of(context).pushNamed('/weddingOfTheWeek');
-        break;
 
       case NotificationRoute.replays:
         Navigator.of(context).pushNamed('/replays');
-        break;
 
       case NotificationRoute.notificationsList:
         // Already on notifications page, do nothing
         break;
 
-      case NotificationRoute.marketplaceSellerTransaction:
-        final transactionId = nav.params['transactionId'] as String?;
-        if (transactionId != null) {
-          Navigator.of(context).pushNamed(
-            '/marketplace/transaction',
-            arguments: {'transactionId': transactionId},
+      case NotificationRoute.marketplaceOffers:
+        final listingId = nav.params['listingId'] as String?;
+        if (listingId != null) {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => ReceivedOffersPage(listingId: listingId),
+            ),
           );
         }
-        break;
-
-      case NotificationRoute.marketplaceBuyerTransaction:
-        final transactionId = nav.params['transactionId'] as String?;
-        if (transactionId != null) {
-          Navigator.of(context).pushNamed(
-            '/marketplace/purchase',
-            arguments: {'transactionId': transactionId},
-          );
-        }
-        break;
 
       case NotificationRoute.marketplaceListing:
         final listingId = nav.params['listingId'] as String?;
         if (listingId != null) {
-          Navigator.of(context).pushNamed(
-            '/marketplace/listing',
-            arguments: {'listingId': listingId},
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => ListingDetailPage(listingId: listingId),
+            ),
           );
         }
-        break;
-
-      case NotificationRoute.marketplaceOffers:
-        final listingId = nav.params['listingId'] as String?;
-        if (listingId != null) {
-          Navigator.of(context).pushNamed(
-            '/marketplace/offers',
-            arguments: {'listingId': listingId},
-          );
-        }
-        break;
 
       case NotificationRoute.marketplaceChat:
         final listingId = nav.params['listingId'] as String?;
         final otherUserId = nav.params['otherUserId'] as String?;
         if (listingId != null && otherUserId != null) {
-          Navigator.of(context).pushNamed(
-            '/marketplace/chat',
-            arguments: {
-              'listingId': listingId,
-              'otherUserId': otherUserId,
-            },
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => MarketplaceChatPage(
+                listingId: listingId,
+                otherUserId: otherUserId,
+              ),
+            ),
           );
         }
-        break;
+
+      case NotificationRoute.marketplaceSellerTransaction:
+        final transactionId = nav.params['transactionId'] as String?;
+        if (transactionId != null) {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => TransactionDetailPage(
+                transactionId: transactionId,
+              ),
+            ),
+          );
+        }
+
+      case NotificationRoute.marketplaceBuyerTransaction:
+        final transactionId = nav.params['transactionId'] as String?;
+        if (transactionId != null) {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => BuyerTransactionPage(
+                transactionId: transactionId,
+              ),
+            ),
+          );
+        }
     }
   }
 }

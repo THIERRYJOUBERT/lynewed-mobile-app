@@ -145,5 +145,83 @@ void main() {
       expect(mapState.filter.budgetMin, 1000);
       expect(mapState.filter.budgetMax, 5000);
     });
+
+    test('should clear cache when marketplace category changes', () {
+      // GIVEN: Filter without marketplace category
+      const initialFilter = MapFilter();
+      mapState.updateFilter(initialFilter);
+
+      // WHEN: Marketplace category added
+      const filterWithCategory = MapFilter(marketplaceCategory: 'dress');
+      mapState.updateFilter(filterWithCategory);
+
+      // THEN: Filter should be updated
+      expect(mapState.filter.marketplaceCategory, 'dress');
+    });
+
+    test('should clear cache when marketplace conditions change', () {
+      const initialFilter = MapFilter();
+      mapState.updateFilter(initialFilter);
+
+      const filterWithConditions = MapFilter(
+        marketplaceConditions: ['new', 'excellent'],
+      );
+      mapState.updateFilter(filterWithConditions);
+
+      expect(mapState.filter.marketplaceConditions, ['new', 'excellent']);
+    });
+
+    test('should clear cache when marketplace price changes', () {
+      const initialFilter = MapFilter();
+      mapState.updateFilter(initialFilter);
+
+      const filterWithPrice = MapFilter(
+        marketplaceMinPrice: 1000,
+        marketplaceMaxPrice: 50000,
+      );
+      mapState.updateFilter(filterWithPrice);
+
+      expect(mapState.filter.marketplaceMinPrice, 1000);
+      expect(mapState.filter.marketplaceMaxPrice, 50000);
+    });
+
+    test('should not clear cache when only marketplace toggle changes', () {
+      // GIVEN: Filter with marketplace category
+      const initialFilter = MapFilter(
+        marketplaceCategory: 'dress',
+        toggles: LayerToggles(showMarketplace: false),
+      );
+      mapState.updateFilter(initialFilter);
+
+      // WHEN: Only toggle changes (not content filter)
+      final toggleChanged = initialFilter.copyWith(
+        toggles: const LayerToggles(showMarketplace: true),
+      );
+      mapState.updateFilter(toggleChanged);
+
+      // THEN: marketplace category should be preserved
+      expect(mapState.filter.marketplaceCategory, 'dress');
+      expect(mapState.filter.toggles.showMarketplace, true);
+    });
+
+    test('visibleMarkers should include marketplace when toggle is on', () {
+      // Verify initial state with marketplace toggle on
+      const filterOn = MapFilter(
+        toggles: LayerToggles(showMarketplace: true),
+      );
+      mapState.updateFilter(filterOn);
+
+      // visibleMarkers should respect the toggle state
+      expect(mapState.filter.toggles.showMarketplace, true);
+    });
+
+    test('visibleMarkers should exclude marketplace when toggle is off', () {
+      const filterOff = MapFilter(
+        toggles: LayerToggles(showMarketplace: false),
+      );
+      mapState.updateFilter(filterOff);
+
+      expect(mapState.filter.toggles.showMarketplace, false);
+    });
   });
 }

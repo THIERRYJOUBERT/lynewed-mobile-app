@@ -164,7 +164,7 @@ class FakeMarketplaceOfferRepository implements MarketplaceOfferRepository {
     }
 
     final filtered = _offers
-        .where((o) => o.listingId == listingId)
+        .where((o) => o.listingId == listingId && o.buyerId != currentUserId)
         .toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return filtered.map((o) => OfferDisplayModel(offer: o)).toList();
@@ -311,9 +311,9 @@ void main() {
 
         await repository.acceptOffer(offer.id);
 
-        final offers = await repository.getOffersForListing('listing-1');
-        expect(offers.first.offer.status, 'accepted');
-        expect(offers.first.offer.respondedAt, isNotNull);
+        final accepted = await repository.getOfferById(offer.id);
+        expect(accepted.status, 'accepted');
+        expect(accepted.respondedAt, isNotNull);
       });
 
       test('should reject other pending offers when accepting', () async {
@@ -339,14 +339,11 @@ void main() {
 
         await repo1.acceptOffer(offer1.id);
 
-        final offers = await repo1.getOffersForListing('listing-1');
-        final accepted = offers.where((o) => o.offer.status == 'accepted');
-        final rejected = offers.where((o) => o.offer.status == 'rejected');
+        final accepted = await repo1.getOfferById(offer1.id);
+        final rejected = await repo1.getOfferById('offer-other');
 
-        expect(accepted.length, 1);
-        expect(accepted.first.offer.id, offer1.id);
-        expect(rejected.length, 1);
-        expect(rejected.first.offer.id, 'offer-other');
+        expect(accepted.status, 'accepted');
+        expect(rejected.status, 'rejected');
       });
 
       test('should throw for non-existent offer', () async {
@@ -370,9 +367,9 @@ void main() {
 
         await repository.rejectOffer(offer.id);
 
-        final offers = await repository.getOffersForListing('listing-1');
-        expect(offers.first.offer.status, 'rejected');
-        expect(offers.first.offer.respondedAt, isNotNull);
+        final rejected = await repository.getOfferById(offer.id);
+        expect(rejected.status, 'rejected');
+        expect(rejected.respondedAt, isNotNull);
       });
 
       test('should throw for already rejected offer', () async {
@@ -403,8 +400,8 @@ void main() {
 
         await repository.withdrawOffer(offer.id);
 
-        final offers = await repository.getOffersForListing('listing-1');
-        expect(offers.first.offer.status, 'withdrawn');
+        final withdrawn = await repository.getOfferById(offer.id);
+        expect(withdrawn.status, 'withdrawn');
       });
 
       test('should throw when withdrawing non-owned offer', () async {
@@ -448,12 +445,22 @@ void main() {
 
     group('getOffersForListing', () {
       test('should return offers for a listing', () async {
-        await repository.createOffer(
-          listingId: 'listing-1',
-          amountCents: 20000,
+        // Seller views offers - use a different user as buyer.
+        final sellerRepo =
+            FakeMarketplaceOfferRepository(currentUserId: 'seller-1');
+        sellerRepo._offers.add(
+          MarketplaceOffer(
+            id: 'offer-from-buyer',
+            listingId: 'listing-1',
+            buyerId: 'buyer-1',
+            amountCents: 20000,
+            status: 'pending',
+            expiresAt: DateTime.now().add(const Duration(hours: 48)),
+            createdAt: DateTime.now(),
+          ),
         );
 
-        final offers = await repository.getOffersForListing('listing-1');
+        final offers = await sellerRepo.getOffersForListing('listing-1');
         expect(offers.length, 1);
         expect(offers.first.offer.listingId, 'listing-1');
       });
@@ -462,6 +469,46 @@ void main() {
         final offers =
             await repository.getOffersForListing('non-existent');
         expect(offers, isEmpty);
+      });
+
+      test('should exclude offers where buyer_id equals current user (counter-offers)',
+          () async {
+        // Seller (seller-1) views their listing's offers.
+        final sellerRepo =
+            FakeMarketplaceOfferRepository(currentUserId: 'seller-1');
+
+        // Add a normal buyer offer.
+        sellerRepo._offers.add(
+          MarketplaceOffer(
+            id: 'offer-from-buyer',
+            listingId: 'listing-1',
+            buyerId: 'buyer-2',
+            amountCents: 15000,
+            status: 'pending',
+            expiresAt: DateTime.now().add(const Duration(hours: 48)),
+            createdAt: DateTime.now(),
+          ),
+        );
+
+        // Add seller's own counter-offer (buyer_id = seller-1).
+        sellerRepo._offers.add(
+          MarketplaceOffer(
+            id: 'counter-offer',
+            listingId: 'listing-1',
+            buyerId: 'seller-1',
+            amountCents: 22000,
+            status: 'pending',
+            expiresAt: DateTime.now().add(const Duration(hours: 48)),
+            createdAt: DateTime.now(),
+          ),
+        );
+
+        final offers = await sellerRepo.getOffersForListing('listing-1');
+
+        // Only the buyer's offer should be returned.
+        expect(offers.length, 1);
+        expect(offers.first.offer.id, 'offer-from-buyer');
+        expect(offers.first.offer.buyerId, 'buyer-2');
       });
     });
 

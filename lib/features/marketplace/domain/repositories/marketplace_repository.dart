@@ -74,6 +74,17 @@ abstract class MarketplaceRepository {
     int pageSize = 20,
   });
 
+  /// Gets active listings for a specific seller with pagination.
+  ///
+  /// Returns listings with status 'active' for the given [sellerId],
+  /// ordered by creation date (newest first).
+  /// [page] is 0-indexed, [pageSize] defaults to 20.
+  Future<List<MarketplaceListing>> getSellerListings({
+    required String sellerId,
+    int page = 0,
+    int pageSize = 20,
+  });
+
   /// Gets count of active listings with optional category filter.
   ///
   /// Used for empty state or stats.

@@ -58,7 +58,7 @@ class ShippingAddress {
     );
   }
 
-  /// Converts to JSON.
+  /// Converts to JSON (snake_case keys for Supabase DB storage).
   Map<String, dynamic> toJson() {
     return {
       'street_lines': streetLines,
@@ -68,6 +68,23 @@ class ShippingAddress {
       'state_or_province_code': stateOrProvinceCode,
       'person_name': personName,
       'phone_number': phoneNumber,
+    };
+  }
+
+  /// Converts to camelCase JSON for FedEx Edge Functions.
+  ///
+  /// The Edge Function `fedex-calculate-rate` expects camelCase keys
+  /// in address objects (e.g., `streetLines`, `postalCode`).
+  Map<String, dynamic> toFedExJson() {
+    return {
+      'streetLines': streetLines,
+      'city': city,
+      'postalCode': postalCode,
+      'countryCode': countryCode,
+      if (stateOrProvinceCode != null)
+        'stateOrProvinceCode': stateOrProvinceCode,
+      if (personName != null) 'personName': personName,
+      if (phoneNumber != null) 'phoneNumber': phoneNumber,
     };
   }
 

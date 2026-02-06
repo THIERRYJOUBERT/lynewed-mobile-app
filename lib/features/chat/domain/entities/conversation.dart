@@ -78,6 +78,9 @@ class Conversation {
     if (isPublic) {
       return publicTitle ?? 'Salon public';
     }
+    if (roomType.isWeddingGroup) {
+      return publicTitle ?? (roomType == RoomType.weddingTeam ? 'Wedding Team' : 'Group');
+    }
     return otherFullName ?? 'Conversation';
   }
 

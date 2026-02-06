@@ -12,11 +12,19 @@ class PlaceDetailsDataStruct extends BaseStruct {
     String? city,
     String? country,
     String? countryCode,
+    String? postalCode,
+    String? stateCode,
+    String? streetNumber,
+    String? route,
   })  : _coords = coords,
         _formattedAddress = formattedAddress,
         _city = city,
         _country = country,
-        _countryCode = countryCode;
+        _countryCode = countryCode,
+        _postalCode = postalCode,
+        _stateCode = stateCode,
+        _streetNumber = streetNumber,
+        _route = route;
 
   // "coords" field.
   LatLng? _coords;
@@ -53,6 +61,34 @@ class PlaceDetailsDataStruct extends BaseStruct {
 
   bool hasCountryCode() => _countryCode != null;
 
+  // "postalCode" field.
+  String? _postalCode;
+  String get postalCode => _postalCode ?? '';
+  set postalCode(String? val) => _postalCode = val;
+
+  bool hasPostalCode() => _postalCode != null;
+
+  // "stateCode" field.
+  String? _stateCode;
+  String get stateCode => _stateCode ?? '';
+  set stateCode(String? val) => _stateCode = val;
+
+  bool hasStateCode() => _stateCode != null;
+
+  // "streetNumber" field.
+  String? _streetNumber;
+  String get streetNumber => _streetNumber ?? '';
+  set streetNumber(String? val) => _streetNumber = val;
+
+  bool hasStreetNumber() => _streetNumber != null;
+
+  // "route" field (street name).
+  String? _route;
+  String get route => _route ?? '';
+  set route(String? val) => _route = val;
+
+  bool hasRoute() => _route != null;
+
   static PlaceDetailsDataStruct fromMap(Map<String, dynamic> data) =>
       PlaceDetailsDataStruct(
         coords: data['coords'] as LatLng?,
@@ -60,6 +96,10 @@ class PlaceDetailsDataStruct extends BaseStruct {
         city: data['city'] as String?,
         country: data['country'] as String?,
         countryCode: data['countryCode'] as String?,
+        postalCode: data['postalCode'] as String?,
+        stateCode: data['stateCode'] as String?,
+        streetNumber: data['streetNumber'] as String?,
+        route: data['route'] as String?,
       );
 
   static PlaceDetailsDataStruct? maybeFromMap(dynamic data) => data is Map
@@ -72,6 +112,10 @@ class PlaceDetailsDataStruct extends BaseStruct {
         'city': _city,
         'country': _country,
         'countryCode': _countryCode,
+        'postalCode': _postalCode,
+        'stateCode': _stateCode,
+        'streetNumber': _streetNumber,
+        'route': _route,
       }.withoutNulls;
 
   @override
@@ -94,6 +138,22 @@ class PlaceDetailsDataStruct extends BaseStruct {
         ),
         'countryCode': serializeParam(
           _countryCode,
+          ParamType.String,
+        ),
+        'postalCode': serializeParam(
+          _postalCode,
+          ParamType.String,
+        ),
+        'stateCode': serializeParam(
+          _stateCode,
+          ParamType.String,
+        ),
+        'streetNumber': serializeParam(
+          _streetNumber,
+          ParamType.String,
+        ),
+        'route': serializeParam(
+          _route,
           ParamType.String,
         ),
       }.withoutNulls;
@@ -126,6 +186,26 @@ class PlaceDetailsDataStruct extends BaseStruct {
           ParamType.String,
           false,
         ),
+        postalCode: deserializeParam(
+          data['postalCode'],
+          ParamType.String,
+          false,
+        ),
+        stateCode: deserializeParam(
+          data['stateCode'],
+          ParamType.String,
+          false,
+        ),
+        streetNumber: deserializeParam(
+          data['streetNumber'],
+          ParamType.String,
+          false,
+        ),
+        route: deserializeParam(
+          data['route'],
+          ParamType.String,
+          false,
+        ),
       );
 
   @override
@@ -138,12 +218,25 @@ class PlaceDetailsDataStruct extends BaseStruct {
         formattedAddress == other.formattedAddress &&
         city == other.city &&
         country == other.country &&
-        countryCode == other.countryCode;
+        countryCode == other.countryCode &&
+        postalCode == other.postalCode &&
+        stateCode == other.stateCode &&
+        streetNumber == other.streetNumber &&
+        route == other.route;
   }
 
   @override
-  int get hashCode => const ListEquality()
-      .hash([coords, formattedAddress, city, country, countryCode]);
+  int get hashCode => const ListEquality().hash([
+        coords,
+        formattedAddress,
+        city,
+        country,
+        countryCode,
+        postalCode,
+        stateCode,
+        streetNumber,
+        route,
+      ]);
 }
 
 PlaceDetailsDataStruct createPlaceDetailsDataStruct({
@@ -152,6 +245,10 @@ PlaceDetailsDataStruct createPlaceDetailsDataStruct({
   String? city,
   String? country,
   String? countryCode,
+  String? postalCode,
+  String? stateCode,
+  String? streetNumber,
+  String? route,
 }) =>
     PlaceDetailsDataStruct(
       coords: coords,
@@ -159,4 +256,8 @@ PlaceDetailsDataStruct createPlaceDetailsDataStruct({
       city: city,
       country: country,
       countryCode: countryCode,
+      postalCode: postalCode,
+      stateCode: stateCode,
+      streetNumber: streetNumber,
+      route: route,
     );

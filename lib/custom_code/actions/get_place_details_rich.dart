@@ -55,11 +55,15 @@ Future<PlaceDetailsDataStruct?> getPlaceDetailsRich(
       String city = '';
       String country = '';
       String countryCode = '';
-      
+      String postalCode = '';
+      String stateCode = '';
+      String streetNumber = '';
+      String route = '';
+
       if (place.addressComponents != null) {
         for (var component in place.addressComponents!) {
           final types = component.types;
-          
+
           // SDK 0.4.x: types est List<String>, pas List<AddressComponentType>
           if (types.contains('locality')) {
             city = component.name;
@@ -69,10 +73,26 @@ Future<PlaceDetailsDataStruct?> getPlaceDetailsRich(
             // Fallbacks pour les cas où 'locality' n'est pas présent
             city = component.name;
           }
-          
+
           if (types.contains('country')) {
             country = component.name;
             countryCode = component.shortName;
+          }
+
+          if (types.contains('postal_code')) {
+            postalCode = component.name;
+          }
+
+          if (types.contains('administrative_area_level_1')) {
+            stateCode = component.shortName;
+          }
+
+          if (types.contains('street_number')) {
+            streetNumber = component.name;
+          }
+
+          if (types.contains('route')) {
+            route = component.name;
           }
         }
       }
@@ -83,6 +103,10 @@ Future<PlaceDetailsDataStruct?> getPlaceDetailsRich(
         city: city,
         country: country,
         countryCode: countryCode,
+        postalCode: postalCode.isNotEmpty ? postalCode : null,
+        stateCode: stateCode.isNotEmpty ? stateCode : null,
+        streetNumber: streetNumber.isNotEmpty ? streetNumber : null,
+        route: route.isNotEmpty ? route : null,
       );
     }
     return null;

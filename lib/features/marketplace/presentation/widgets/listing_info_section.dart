@@ -103,13 +103,13 @@ class ListingInfoSection extends StatelessWidget {
           SizedBox(height: LynewedSpacing.md),
         ],
 
-        // Location section
-        const LynewedSectionTitle('Location'),
+        // Ships from section
+        const LynewedSectionTitle('Ships from'),
         SizedBox(height: LynewedSpacing.sm),
         Row(
           children: [
             const Icon(
-              Icons.location_on,
+              Icons.local_shipping_outlined,
               size: 18,
               color: LynewedColors.gray300,
             ),

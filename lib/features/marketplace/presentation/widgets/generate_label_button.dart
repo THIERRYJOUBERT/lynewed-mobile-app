@@ -18,6 +18,9 @@ class GenerateLabelButton extends StatefulWidget {
   /// The transaction ID to generate a label for.
   final String transactionId;
 
+  /// The FedEx service type to use (e.g. FEDEX_GROUND, FEDEX_EXPRESS_SAVER).
+  final String serviceType;
+
   /// Callback invoked when label generation succeeds.
   final void Function(ShippingLabel label) onSuccess;
 
@@ -27,6 +30,7 @@ class GenerateLabelButton extends StatefulWidget {
   const GenerateLabelButton({
     required this.transactionId,
     required this.onSuccess,
+    this.serviceType = 'FEDEX_GROUND',
     this.generateLabelUseCase,
     super.key,
   });
@@ -56,7 +60,7 @@ class _GenerateLabelButtonState extends State<GenerateLabelButton> {
     try {
       final label = await _useCase(
         transactionId: widget.transactionId,
-        serviceType: 'FEDEX_GROUND',
+        serviceType: widget.serviceType,
       );
       if (mounted) {
         setState(() {

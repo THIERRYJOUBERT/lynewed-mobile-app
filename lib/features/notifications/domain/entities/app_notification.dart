@@ -11,9 +11,10 @@ library;
 ///   wishlistAdd, videoIncoming
 /// - Broadcast: wedPublished, replayPublished
 /// - Marketplace: marketplaceNewOffer, marketplaceOfferAccepted,
-///   marketplaceOfferRejected, marketplaceItemSold, marketplaceOrderConfirmed,
-///   marketplaceLabelCreated, marketplacePackageShipped,
-///   marketplacePackageDelivered, marketplaceTransactionComplete
+///   marketplaceOfferRejected, marketplaceOfferWithdrawn,
+///   marketplaceOfferExpired, marketplaceItemSold, marketplaceOrderConfirmed,
+///   marketplacePaymentSucceeded, marketplaceLabelReady,
+///   marketplaceTrackingUpdate, marketplaceTransactionComplete
 enum NotificationType {
   /// New message in a private conversation
   chatMessage,
@@ -45,20 +46,26 @@ enum NotificationType {
   /// Seller rejected buyer's offer
   marketplaceOfferRejected,
 
+  /// Buyer withdrew their offer (notifies seller)
+  marketplaceOfferWithdrawn,
+
+  /// Buyer's offer expired after 48h (notifies buyer)
+  marketplaceOfferExpired,
+
   /// Seller's item was purchased
   marketplaceItemSold,
 
   /// Buyer's order is confirmed
   marketplaceOrderConfirmed,
 
-  /// Seller created shipping label
-  marketplaceLabelCreated,
+  /// Seller received payment for an item
+  marketplacePaymentSucceeded,
 
-  /// Package has been shipped
-  marketplacePackageShipped,
+  /// Shipping label created, ready for buyer to track
+  marketplaceLabelReady,
 
-  /// Package was delivered
-  marketplacePackageDelivered,
+  /// Tracking update (shipped, in_transit, delivered, etc.)
+  marketplaceTrackingUpdate,
 
   /// Transaction completed, funds released
   marketplaceTransactionComplete,
@@ -254,6 +261,7 @@ class AppNotification {
 
       case NotificationType.marketplaceOfferAccepted:
       case NotificationType.marketplaceOfferRejected:
+      case NotificationType.marketplaceOfferExpired:
         final listingId = data['listing_id'] as String?;
         if (listingId == null) return null;
         return NotificationNavigation(
@@ -261,8 +269,16 @@ class AppNotification {
           params: {'listingId': listingId},
         );
 
+      case NotificationType.marketplaceOfferWithdrawn:
+        final listingId = data['listing_id'] as String?;
+        if (listingId == null) return null;
+        return NotificationNavigation(
+          route: NotificationRoute.marketplaceOffers,
+          params: {'listingId': listingId},
+        );
+
       case NotificationType.marketplaceItemSold:
-      case NotificationType.marketplaceLabelCreated:
+      case NotificationType.marketplacePaymentSucceeded:
         final transactionId = data['transaction_id'] as String?;
         if (transactionId == null) return null;
         return NotificationNavigation(
@@ -271,8 +287,8 @@ class AppNotification {
         );
 
       case NotificationType.marketplaceOrderConfirmed:
-      case NotificationType.marketplacePackageShipped:
-      case NotificationType.marketplacePackageDelivered:
+      case NotificationType.marketplaceLabelReady:
+      case NotificationType.marketplaceTrackingUpdate:
       case NotificationType.marketplaceTransactionComplete:
         final transactionId = data['transaction_id'] as String?;
         if (transactionId == null) return null;

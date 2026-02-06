@@ -229,31 +229,49 @@ void main() {
         expect(find.byIcon(Icons.receipt_long_outlined), findsOneWidget);
       });
 
-      testWidgets('should display correct icon for marketplaceLabelCreated',
+      testWidgets('should display correct icon for marketplaceOfferWithdrawn',
           (tester) async {
         final notification = createTestNotification(
-          type: NotificationType.marketplaceLabelCreated,
+          type: NotificationType.marketplaceOfferWithdrawn,
+        );
+        await tester.pumpWidget(buildTestWidget(notification: notification));
+        expect(find.byIcon(Icons.undo_outlined), findsOneWidget);
+      });
+
+      testWidgets('should display correct icon for marketplaceOfferExpired',
+          (tester) async {
+        final notification = createTestNotification(
+          type: NotificationType.marketplaceOfferExpired,
+        );
+        await tester.pumpWidget(buildTestWidget(notification: notification));
+        expect(find.byIcon(Icons.timer_off_outlined), findsOneWidget);
+      });
+
+      testWidgets('should display correct icon for marketplacePaymentSucceeded',
+          (tester) async {
+        final notification = createTestNotification(
+          type: NotificationType.marketplacePaymentSucceeded,
+        );
+        await tester.pumpWidget(buildTestWidget(notification: notification));
+        expect(find.byIcon(Icons.payments_outlined), findsOneWidget);
+      });
+
+      testWidgets('should display correct icon for marketplaceLabelReady',
+          (tester) async {
+        final notification = createTestNotification(
+          type: NotificationType.marketplaceLabelReady,
         );
         await tester.pumpWidget(buildTestWidget(notification: notification));
         expect(find.byIcon(Icons.label_outlined), findsOneWidget);
       });
 
-      testWidgets('should display correct icon for marketplacePackageShipped',
+      testWidgets('should display correct icon for marketplaceTrackingUpdate',
           (tester) async {
         final notification = createTestNotification(
-          type: NotificationType.marketplacePackageShipped,
+          type: NotificationType.marketplaceTrackingUpdate,
         );
         await tester.pumpWidget(buildTestWidget(notification: notification));
         expect(find.byIcon(Icons.local_shipping_outlined), findsOneWidget);
-      });
-
-      testWidgets('should display correct icon for marketplacePackageDelivered',
-          (tester) async {
-        final notification = createTestNotification(
-          type: NotificationType.marketplacePackageDelivered,
-        );
-        await tester.pumpWidget(buildTestWidget(notification: notification));
-        expect(find.byIcon(Icons.inventory_2_outlined), findsOneWidget);
       });
 
       testWidgets(
@@ -326,36 +344,58 @@ void main() {
       });
 
       testWidgets(
-          'should display "Shipping label created" for marketplaceLabelCreated',
+          'should display "Offer withdrawn" for marketplaceOfferWithdrawn',
           (tester) async {
         final notification = createTestNotification(
-          type: NotificationType.marketplaceLabelCreated,
+          type: NotificationType.marketplaceOfferWithdrawn,
           title: '',
         );
         await tester.pumpWidget(buildTestWidget(notification: notification));
-        expect(find.text('Shipping label created'), findsOneWidget);
+        expect(find.text('Offer withdrawn'), findsOneWidget);
       });
 
       testWidgets(
-          'should display "Package shipped" for marketplacePackageShipped',
+          'should display "Offer expired" for marketplaceOfferExpired',
           (tester) async {
         final notification = createTestNotification(
-          type: NotificationType.marketplacePackageShipped,
+          type: NotificationType.marketplaceOfferExpired,
           title: '',
         );
         await tester.pumpWidget(buildTestWidget(notification: notification));
-        expect(find.text('Package shipped'), findsOneWidget);
+        expect(find.text('Offer expired'), findsOneWidget);
       });
 
       testWidgets(
-          'should display "Package delivered" for marketplacePackageDelivered',
+          'should display "Payment received" for marketplacePaymentSucceeded',
           (tester) async {
         final notification = createTestNotification(
-          type: NotificationType.marketplacePackageDelivered,
+          type: NotificationType.marketplacePaymentSucceeded,
           title: '',
         );
         await tester.pumpWidget(buildTestWidget(notification: notification));
-        expect(find.text('Package delivered'), findsOneWidget);
+        expect(find.text('Payment received'), findsOneWidget);
+      });
+
+      testWidgets(
+          'should display "Shipping label ready" for marketplaceLabelReady',
+          (tester) async {
+        final notification = createTestNotification(
+          type: NotificationType.marketplaceLabelReady,
+          title: '',
+        );
+        await tester.pumpWidget(buildTestWidget(notification: notification));
+        expect(find.text('Shipping label ready'), findsOneWidget);
+      });
+
+      testWidgets(
+          'should display "Shipping update" for marketplaceTrackingUpdate',
+          (tester) async {
+        final notification = createTestNotification(
+          type: NotificationType.marketplaceTrackingUpdate,
+          title: '',
+        );
+        await tester.pumpWidget(buildTestWidget(notification: notification));
+        expect(find.text('Shipping update'), findsOneWidget);
       });
 
       testWidgets(

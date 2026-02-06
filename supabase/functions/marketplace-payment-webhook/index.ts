@@ -114,6 +114,7 @@ Deno.serve(async (req: Request) => {
           stripe_payment_intent_id: paymentIntent.id,
           shipping_to_address: shippingToAddress,
           shipping_from_address: shippingFromAddress,
+          shipping_service_type: metadata.shipping_service || 'FEDEX_GROUND',
           paid_at: new Date().toISOString(),
         })
         .select()
@@ -134,6 +135,14 @@ Deno.serve(async (req: Request) => {
         .eq('id', metadata.listing_id);
 
       // FIX C-01: Use correct notifications_outbox schema (event_type, event_key, payload)
+      // Fetch listing title for notification messages
+      const { data: listingData } = await supabase
+        .from('marketplace_listings')
+        .select('title')
+        .eq('id', metadata.listing_id)
+        .maybeSingle();
+      const listingTitle = listingData?.title || 'item';
+
       // Notify seller
       await supabase.from('notifications_outbox').insert({
         event_type: 'marketplace_item_sold',
@@ -142,6 +151,7 @@ Deno.serve(async (req: Request) => {
           recipient_id: metadata.seller_id,
           transaction_id: transaction.id,
           listing_id: metadata.listing_id,
+          listing_title: listingTitle,
           amount_cents: parseInt(metadata.item_price_cents),
         },
       });
@@ -154,6 +164,7 @@ Deno.serve(async (req: Request) => {
           recipient_id: metadata.buyer_id,
           transaction_id: transaction.id,
           listing_id: metadata.listing_id,
+          listing_title: listingTitle,
           amount_cents: parseInt(metadata.item_price_cents),
         },
       });

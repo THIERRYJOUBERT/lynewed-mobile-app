@@ -198,7 +198,8 @@ class MarkerIconGenerator {
   }
 
   // ============================================================
-  // MARKETPLACE MARKER - Purple circle with dress/shoes icon (EPIC-13)
+  // MARKETPLACE MARKER - Product thumbnail with purple border (EPIC-14)
+  // Fallback: purple circle with dress/shoes icon
   // ============================================================
 
   Future<gmaps.BitmapDescriptor> _createMarketplaceIcon(
@@ -211,23 +212,37 @@ class MarkerIconGenerator {
     // Shadow
     _drawShadow(canvas, center, size);
 
-    // Purple background
+    // White background circle (visible behind image as loading state)
     final bgPaint = Paint()
-      ..color = const Color(0xFFE1BEE7) // Purple 100
+      ..color = Colors.white
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, radius, bgPaint);
 
-    // Icon based on category (dress or shoes)
-    // Category comes from marker.metadata['category']
-    final category = marker.metadata['category'] as String? ?? 'dress';
-    final icon = category == 'shoes'
-        ? Icons.shopping_bag_outlined // Shoes icon
-        : Icons.checkroom_outlined; // Dress icon
+    // Try to load product thumbnail image
+    ui.Image? thumbnailImage;
+    if (marker.style.avatarUrl != null && marker.style.avatarUrl!.isNotEmpty) {
+      thumbnailImage = await _loadImage(marker.style.avatarUrl!);
+    }
 
-    _drawFlutterIcon(
-        canvas, center, radius * 0.6, icon, const Color(0xFF7B1FA2));
+    if (thumbnailImage != null) {
+      // Draw product photo clipped to circle
+      _drawClippedImage(canvas, center, radius - 1, thumbnailImage);
+    } else {
+      // Fallback: purple background with category icon
+      final fallbackBg = Paint()
+        ..color = const Color(0xFFE1BEE7) // Purple 100
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(center, radius, fallbackBg);
 
-    // Purple border
+      final category = marker.metadata['category'] as String? ?? 'dress';
+      final icon = category == 'shoes'
+          ? Icons.shopping_bag_outlined
+          : Icons.checkroom_outlined;
+      _drawFlutterIcon(
+          canvas, center, radius * 0.6, icon, const Color(0xFF7B1FA2));
+    }
+
+    // Purple border (always visible, frames the photo)
     final borderPaint = Paint()
       ..color = const Color(0xFF7B1FA2) // Purple 700
       ..style = PaintingStyle.stroke

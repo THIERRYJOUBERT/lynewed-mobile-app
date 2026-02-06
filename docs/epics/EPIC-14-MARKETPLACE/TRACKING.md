@@ -22,6 +22,7 @@
 | 2026-02-05 | **/challenge --auto --deep** - Audit complet: 52 issues trouvées (8 CRITICAL, 10 HIGH, 19 MEDIUM, 15 LOW) |
 | 2026-02-05 | **Corrections appliquées** - 7 Edge Functions corrigées & déployées, 2 migrations SQL sécurité, 16 fichiers Flutter fixés, drain marketplace handlers ajoutés. Score 62% → ~92% |
 | 2026-02-05 | **Post-validation: offres↔chat Vinted** - DB migration (offer/system message types + offer_id FK), domain/data/presentation layers, 2 nouveaux widgets (OfferBubbleWidget, SystemMessageWidget), 7 pages modifiées, 11 tests corrigés. 763 tests marketplace passent. |
+| 2026-02-06 | **Project cleanup final** - Withdraw offer button, profile column names fix, seller listings page, buyer offer tile, phone formatter, organization/people pages, flat-rate shipping, tests fixés. 5193 tests passent, 0 warnings. |
 
 ---
 
@@ -203,7 +204,7 @@
 | Edge Functions | 5 (create-stripe-connect-account, stripe-connect-webhook, fedex-calculate-rate, fedex-create-shipment, fedex-track-shipment) |
 | Cron jobs | 1 (fedex-tracking-poll - hourly) |
 | Tests marketplace | 500+ (all passing) |
-| Tests projet total | 3069+ (all passing) |
+| Tests projet total | 5193+ (all passing) |
 | Lint warnings | 0 |
 | Fichiers Flutter crees | 50+ (entities, repos, datasources, use cases, pages, widgets, tests) |
 | Pages UI | 12 (feed, detail, create listing, chat, checkout, seller dashboard, etc.) |
@@ -320,7 +321,7 @@ Avant de deployer en production:
 - **EPIC-13 synergies** : L'integration carte (markers, datasource, filter chips) etait deja a 90% grace a EPIC-13, reduisant S24 a 3 changements
 - **Entities immutables + copyWith** : Pattern Dart solide pour tous les modeles marketplace
 - **Design System Lynewed** : Reutilisation massive des LynewedButton, LynewedSheet, LynewedTextField → coherence UI
-- **TDD systematique** : 500+ tests marketplace, 0 regressions sur les 3069+ tests projet
+- **TDD systematique** : 500+ tests marketplace, 0 regressions sur les 5193+ tests projet
 
 ### A ameliorer
 

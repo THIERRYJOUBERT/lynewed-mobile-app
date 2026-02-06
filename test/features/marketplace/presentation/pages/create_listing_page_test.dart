@@ -5,6 +5,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lynewed_beta/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:lynewed_beta/features/marketplace/data/sizes_data.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/marketplace_listing.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/marketplace_photo.dart';
@@ -22,6 +23,8 @@ class MockMarketplaceRepository extends Mock implements MarketplaceRepository {}
 class MockCheckStripeStatusUseCase extends Mock
     implements CheckStripeStatusUseCase {}
 
+class MockAuthRemoteDatasource extends Mock implements AuthRemoteDatasource {}
+
 class FakeMarketplaceListing extends Fake implements MarketplaceListing {}
 
 class FakeMarketplacePhoto extends Fake implements MarketplacePhoto {}
@@ -29,6 +32,7 @@ class FakeMarketplacePhoto extends Fake implements MarketplacePhoto {}
 void main() {
   late MockMarketplaceRepository mockRepository;
   late MockCheckStripeStatusUseCase mockCheckStripe;
+  late MockAuthRemoteDatasource mockAuthDatasource;
 
   setUpAll(() {
     registerFallbackValue(FakeMarketplaceListing());
@@ -38,6 +42,7 @@ void main() {
   setUp(() {
     mockRepository = MockMarketplaceRepository();
     mockCheckStripe = MockCheckStripeStatusUseCase();
+    mockAuthDatasource = MockAuthRemoteDatasource();
   });
 
   Widget buildPage() {
@@ -45,6 +50,7 @@ void main() {
       home: CreateListingPage(
         repository: mockRepository,
         checkStripeStatusUseCase: mockCheckStripe,
+        authDatasource: mockAuthDatasource,
         userId: 'test-user-123',
       ),
     );
@@ -394,6 +400,7 @@ void main() {
                       builder: (_) => CreateListingPage(
                         repository: mockRepository,
                         checkStripeStatusUseCase: mockCheckStripe,
+                        authDatasource: mockAuthDatasource,
                         userId: 'test-user-123',
                       ),
                     ),
@@ -570,6 +577,7 @@ void main() {
         home: CreateListingPage(
           repository: mockRepository,
           checkStripeStatusUseCase: mockCheckStripe,
+          authDatasource: mockAuthDatasource,
           userId: 'test-user-123',
           existingListing: existingListing,
         ),
@@ -634,6 +642,7 @@ void main() {
                     builder: (_) => CreateListingPage(
                       repository: mockRepository,
                       checkStripeStatusUseCase: mockCheckStripe,
+                      authDatasource: mockAuthDatasource,
                       userId: 'test-user-123',
                       existingListing: existingListing,
                     ),
@@ -710,6 +719,7 @@ void main() {
                     builder: (_) => CreateListingPage(
                       repository: mockRepository,
                       checkStripeStatusUseCase: mockCheckStripe,
+                      authDatasource: mockAuthDatasource,
                       userId: 'test-user-123',
                       existingListing: existingListing,
                     ),
@@ -782,6 +792,7 @@ void main() {
                     builder: (_) => CreateListingPage(
                       repository: mockRepository,
                       checkStripeStatusUseCase: mockCheckStripe,
+                      authDatasource: mockAuthDatasource,
                       userId: 'test-user-123',
                     ),
                   ),

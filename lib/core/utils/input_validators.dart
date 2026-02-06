@@ -232,11 +232,11 @@ class InputValidators {
 
   // ============== PHONE VALIDATION ==============
 
-  /// Validates a phone number.
+  /// Validates a phone number (optional).
   ///
   /// Checks:
   /// - Length <= 20 characters (if provided)
-  /// - Only contains valid phone characters: digits, +, -, (), spaces
+  /// - Only contains valid phone characters: digits, +, -, (), spaces, dots
   ///
   /// Note: This is an optional field, so null/empty returns null.
   ///
@@ -247,6 +247,26 @@ class InputValidators {
       return null;
     }
 
+    return _validatePhoneFormat(value);
+  }
+
+  /// Validates a required phone number.
+  ///
+  /// Same format checks as [validatePhone] but returns error if empty.
+  ///
+  /// Returns null if valid, error message if invalid.
+  static String? validatePhoneRequired(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Phone number is required';
+    }
+
+    return _validatePhoneFormat(value);
+  }
+
+  /// Shared phone format validation logic.
+  static String? _validatePhoneFormat(String? value) {
+    if (value == null) return null;
+
     final trimmed = value.trim();
 
     // Check length first to prevent DoS
@@ -254,8 +274,8 @@ class InputValidators {
       return 'Phone number is too long (max $maxPhoneLength characters)';
     }
 
-    // Allow digits, +, -, (), spaces
-    final phoneRegex = RegExp(r'^[0-9+\-\(\)\s]+$');
+    // Allow digits, +, -, (), spaces, dots (for FR format like 06.12.34.56.78)
+    final phoneRegex = RegExp(r'^[0-9+\-\(\)\s.]+$');
     if (!phoneRegex.hasMatch(trimmed)) {
       return 'Please enter a valid phone number';
     }

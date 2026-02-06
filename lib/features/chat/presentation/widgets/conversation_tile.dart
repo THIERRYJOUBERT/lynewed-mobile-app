@@ -112,8 +112,13 @@ class ConversationTile extends StatelessWidget {
   }
 
   Widget _buildAvatar() {
+    // Wedding group rooms show group icon instead of person avatar
+    if (conversation.roomType.isWeddingGroup) {
+      return _buildGroupAvatar();
+    }
+
     final avatarUrl = conversation.displayAvatarUrl;
-    
+
     return Container(
       width: 50,
       height: 50,
@@ -131,6 +136,35 @@ class ConversationTile extends StatelessWidget {
               )
             : _buildAvatarPlaceholder(),
       ),
+    );
+  }
+
+  Widget _buildGroupAvatar() {
+    final IconData icon;
+    final Color color;
+    switch (conversation.roomType) {
+      case RoomType.weddingTeam:
+        icon = Icons.groups;
+        color = LynewedColors.primary;
+      case RoomType.weddingGroupPublic:
+        icon = Icons.public;
+        color = LynewedColors.primary;
+      case RoomType.weddingGroupPrivate:
+        icon = Icons.lock_outline;
+        color = LynewedColors.textSecondary;
+      default:
+        icon = Icons.groups;
+        color = LynewedColors.primary;
+    }
+
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color.withValues(alpha: 0.1),
+      ),
+      child: Icon(icon, color: color, size: 26),
     );
   }
 

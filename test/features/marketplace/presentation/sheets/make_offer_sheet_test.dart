@@ -187,7 +187,7 @@ void main() {
                   listingId: listingId,
                   listingTitle: listingTitle,
                   listingPriceCents: listingPriceCents,
-                  sellerId: 'seller-1',
+                  receiverId: 'seller-1',
                   repository: fakeRepository,
                   chatRepository: fakeChatRepository,
                 ),

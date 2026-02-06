@@ -30,6 +30,7 @@ class MarketplaceTransaction {
     this.fedexTrackingNumber,
     this.fedexLabelUrl,
     this.fedexRateId,
+    this.shippingServiceType,
     required this.shippingFromAddress,
     required this.shippingToAddress,
     required this.status,
@@ -88,6 +89,9 @@ class MarketplaceTransaction {
 
   /// FedEx rate ID used for this shipment.
   final String? fedexRateId;
+
+  /// FedEx shipping service type (e.g. FEDEX_GROUND, FEDEX_EXPRESS_SAVER).
+  final String? shippingServiceType;
 
   /// Shipping origin address (seller).
   final ShippingAddress shippingFromAddress;
@@ -159,6 +163,7 @@ class MarketplaceTransaction {
       fedexTrackingNumber: json['fedex_tracking_number'] as String?,
       fedexLabelUrl: json['fedex_label_url'] as String?,
       fedexRateId: json['fedex_rate_id'] as String?,
+      shippingServiceType: json['shipping_service_type'] as String?,
       shippingFromAddress: ShippingAddress.fromJson(
         json['shipping_from_address'] as Map<String, dynamic>,
       ),
@@ -201,6 +206,7 @@ class MarketplaceTransaction {
       'fedex_tracking_number': fedexTrackingNumber,
       'fedex_label_url': fedexLabelUrl,
       'fedex_rate_id': fedexRateId,
+      'shipping_service_type': shippingServiceType,
       'shipping_from_address': shippingFromAddress.toJson(),
       'shipping_to_address': shippingToAddress.toJson(),
       'status': status,
@@ -242,6 +248,7 @@ class MarketplaceTransaction {
     String? fedexTrackingNumber,
     String? fedexLabelUrl,
     String? fedexRateId,
+    String? shippingServiceType,
     ShippingAddress? shippingFromAddress,
     ShippingAddress? shippingToAddress,
     String? status,
@@ -270,6 +277,7 @@ class MarketplaceTransaction {
       fedexTrackingNumber: fedexTrackingNumber ?? this.fedexTrackingNumber,
       fedexLabelUrl: fedexLabelUrl ?? this.fedexLabelUrl,
       fedexRateId: fedexRateId ?? this.fedexRateId,
+      shippingServiceType: shippingServiceType ?? this.shippingServiceType,
       shippingFromAddress: shippingFromAddress ?? this.shippingFromAddress,
       shippingToAddress: shippingToAddress ?? this.shippingToAddress,
       status: status ?? this.status,

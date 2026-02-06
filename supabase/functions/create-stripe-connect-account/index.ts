@@ -11,6 +11,17 @@ interface CreateAccountRequest {
   email: string;
   return_url: string;
   refresh_url: string;
+  // Pre-fill fields from user profile
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  country?: string;
+  address?: {
+    line1?: string;
+    city?: string;
+    postal_code?: string;
+    state?: string;
+  };
 }
 
 Deno.serve(async (req: Request) => {
@@ -87,14 +98,36 @@ Deno.serve(async (req: Request) => {
       stripeAccountId = existingAccount.stripe_account_id;
       console.log(`Reusing existing Stripe account ${stripeAccountId} for user ${body.user_id}`);
     } else {
+      // Pre-fill individual data to minimize onboarding form (~2 min instead of ~15 min)
       const account = await stripe.accounts.create({
         type: 'express',
+        country: body.country || undefined,
         email: body.email,
+        business_type: 'individual',
+        business_profile: {
+          mcc: '5621', // Women's ready-to-wear clothing
+          product_description: 'Pre-owned wedding dresses and accessories on Lynewed marketplace',
+        },
+        individual: {
+          first_name: body.first_name || undefined,
+          last_name: body.last_name || undefined,
+          email: body.email,
+          phone: body.phone || undefined,
+          address: body.address ? {
+            line1: body.address.line1 || undefined,
+            city: body.address.city || undefined,
+            postal_code: body.address.postal_code || undefined,
+            state: body.address.state || undefined,
+            country: body.country || undefined,
+          } : undefined,
+        },
         capabilities: {
           card_payments: { requested: true },
           transfers: { requested: true },
         },
-        business_type: 'individual',
+        settings: {
+          payouts: { schedule: { interval: 'daily' as const } },
+        },
       });
 
       stripeAccountId = account.id;
@@ -122,6 +155,9 @@ Deno.serve(async (req: Request) => {
       refresh_url: body.refresh_url,
       return_url: body.return_url,
       type: 'account_onboarding',
+      collection_options: {
+        future_requirements: 'omit', // Only show currently required fields
+      },
     });
 
     console.log(`Created onboarding link for account ${stripeAccountId}`);

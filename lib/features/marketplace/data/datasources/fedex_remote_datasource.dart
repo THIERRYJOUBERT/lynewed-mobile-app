@@ -64,8 +64,8 @@ class SupabaseFedExRemoteDatasource implements FedExRemoteDatasource {
     final response = await _supabase.functions.invoke(
       'fedex-calculate-rate',
       body: {
-        'from_address': fromAddress.toJson(),
-        'to_address': toAddress.toJson(),
+        'from_address': fromAddress.toFedExJson(),
+        'to_address': toAddress.toFedExJson(),
         'category': category,
       },
     );

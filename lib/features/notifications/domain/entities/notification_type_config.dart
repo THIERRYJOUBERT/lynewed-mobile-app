@@ -134,6 +134,36 @@ class NotificationTypesConfig {
       visibleForPro: true,
     ),
     
+    // marketplaceNewOffer - Offer activity (new, accepted, rejected, withdrawn, expired)
+    NotificationTypeConfig(
+      type: 'marketplaceNewOffer',
+      titleKey: 'Marketplace offers',
+      descriptionBrideKey: 'Get notified about offers on your listings (new, accepted, rejected, withdrawn, expired).',
+      descriptionProKey: 'Get notified about offers on your listings (new, accepted, rejected, withdrawn, expired).',
+      visibleForBride: true,
+      visibleForPro: true,
+    ),
+
+    // marketplaceItemSold - Sales & orders (sold, confirmed, payment)
+    NotificationTypeConfig(
+      type: 'marketplaceItemSold',
+      titleKey: 'Sales & orders',
+      descriptionBrideKey: 'Get notified when your items are sold or your orders are confirmed.',
+      descriptionProKey: 'Get notified when your items are sold or your orders are confirmed.',
+      visibleForBride: true,
+      visibleForPro: true,
+    ),
+
+    // marketplaceTrackingUpdate - Shipping (label, tracking, delivery)
+    NotificationTypeConfig(
+      type: 'marketplaceTrackingUpdate',
+      titleKey: 'Shipping updates',
+      descriptionBrideKey: 'Get notified about shipping label creation, tracking updates, and delivery.',
+      descriptionProKey: 'Get notified about shipping label creation, tracking updates, and delivery.',
+      visibleForBride: true,
+      visibleForPro: true,
+    ),
+
     // marketplaceNewMessage - Both roles (sellers AND buyers can receive messages)
     NotificationTypeConfig(
       type: 'marketplaceNewMessage',

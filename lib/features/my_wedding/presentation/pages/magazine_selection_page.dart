@@ -10,13 +10,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '/core/design/design.dart';
 import '../../data/repositories/my_wedding_repository_impl.dart';
 import '../../domain/entities/entities.dart';
-import '../../domain/entities/magazine_selection.dart';
 import '../../domain/repositories/my_wedding_repository.dart';
 import '../bloc/magazine_selection_cubit.dart';
 import '../bloc/magazine_selection_state.dart';
 import '../sheets/magazine_photo_picker_sheet.dart';
 import '../widgets/reorderable_magazine_grid.dart';
 import 'magazine_checkout_page.dart';
+import 'magazine_order_detail_page.dart';
 import 'magazine_preview_page.dart';
 
 /// Page for managing magazine photo selection.
@@ -49,6 +49,7 @@ class MagazineSelectionPage extends StatefulWidget {
 class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
   late MagazineSelectionCubit _cubit;
   late MyWeddingRepository _repository;
+  List<MagazineOrder> _orders = [];
 
   @override
   void initState() {
@@ -63,6 +64,7 @@ class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _cubit.loadSelections();
+      _loadOrders();
     });
   }
 
@@ -163,6 +165,97 @@ class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
     );
   }
 
+  Future<void> _loadOrders() async {
+    final result = await _repository.getMagazineOrders(
+      weddingId: widget.weddingId,
+    );
+    if (!mounted) return;
+    if (result.isSuccess) {
+      setState(() => _orders = result.data ?? []);
+    }
+  }
+
+  void _openOrdersList() {
+    if (_orders.length == 1) {
+      // Go directly to order detail
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => MagazineOrderDetailPage(order: _orders.first),
+        ),
+      );
+      return;
+    }
+
+    // Show list in a bottom sheet
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: LynewedColors.background,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: LynewedColors.gray200,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text('Orders', style: LynewedTextStyles.sheetTitle),
+              const SizedBox(height: 12),
+              ..._orders.map((order) => ListTile(
+                    leading: Icon(
+                      _orderStatusIcon(order.status),
+                      color: _orderStatusColor(order.status),
+                    ),
+                    title: Text('Order #${order.id.substring(0, 8)}'),
+                    subtitle: Text(order.status.replaceAll('_', ' ')),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => MagazineOrderDetailPage(order: order),
+                        ),
+                      );
+                    },
+                  )),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  IconData _orderStatusIcon(String status) {
+    return switch (status) {
+      'paid' || 'processing' => Icons.hourglass_top,
+      'printed' || 'shipped' => Icons.local_shipping_outlined,
+      'delivered' => Icons.check_circle_outline,
+      'cancelled' => Icons.cancel_outlined,
+      _ => Icons.receipt_outlined,
+    };
+  }
+
+  Color _orderStatusColor(String status) {
+    return switch (status) {
+      'paid' || 'processing' => LynewedColors.warning,
+      'printed' || 'shipped' => LynewedColors.primary,
+      'delivered' => LynewedColors.success,
+      'cancelled' => LynewedColors.error,
+      _ => LynewedColors.textSecondary,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
@@ -232,6 +325,17 @@ class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
               style: LynewedTextStyles.sheetTitle.copyWith(fontSize: 20),
             ),
           ),
+          // Orders button
+          if (_orders.isNotEmpty)
+            TextButton(
+              onPressed: _openOrdersList,
+              child: Text(
+                'Orders (${_orders.length})',
+                style: LynewedTextStyles.labelLarge.copyWith(
+                  color: LynewedColors.textSecondary,
+                ),
+              ),
+            ),
           // Clear button
           if (!state.isEmpty)
             TextButton(

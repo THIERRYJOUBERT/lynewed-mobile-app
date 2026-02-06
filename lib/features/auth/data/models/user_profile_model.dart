@@ -3,6 +3,7 @@
 /// Maps between Supabase profiles table and domain UserProfile entity.
 library;
 
+import '../../../marketplace/domain/entities/shipping_address.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/entities/user_role.dart';
 
@@ -47,6 +48,9 @@ class UserProfileModel {
   /// Last update timestamp.
   final DateTime? updatedAt;
 
+  /// Shipping address for marketplace sellers.
+  final ShippingAddress? shippingAddress;
+
   /// Creates a user profile model.
   const UserProfileModel({
     required this.id,
@@ -61,6 +65,7 @@ class UserProfileModel {
     this.onboardingStep,
     required this.createdAt,
     this.updatedAt,
+    this.shippingAddress,
   });
 
   /// Creates a UserProfileModel from a JSON map (Supabase row).
@@ -79,6 +84,10 @@ class UserProfileModel {
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
+          : null,
+      shippingAddress: json['shipping_address'] != null
+          ? ShippingAddress.fromJson(
+              Map<String, dynamic>.from(json['shipping_address'] as Map))
           : null,
     );
   }
@@ -112,6 +121,7 @@ class UserProfileModel {
       onboardingStep: onboardingStep,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      shippingAddress: shippingAddress,
     );
   }
 

@@ -93,21 +93,122 @@ const Map<String, String> categoryLabels = {
   'shoes': 'Shoes',
 };
 
-/// Available countries for listing location.
-const List<String> countryOptions = [
-  'United States',
-  'United Kingdom',
-  'France',
-  'Germany',
-  'Italy',
-  'Spain',
-  'Canada',
-  'Australia',
-  'Netherlands',
-  'Belgium',
-  'Switzerland',
-  'Austria',
-  'Portugal',
-  'Ireland',
-  'Sweden',
+/// Represents a country with its ISO 3166-1 alpha-2 code and display name.
+class CountryOption {
+  /// Creates a country option.
+  const CountryOption({required this.code, required this.name});
+
+  /// ISO 3166-1 alpha-2 country code (e.g., 'US', 'FR').
+  final String code;
+
+  /// Full display name (e.g., 'United States', 'France').
+  final String name;
+}
+
+/// Available countries for the marketplace with ISO codes.
+const List<CountryOption> marketplaceCountries = [
+  CountryOption(code: 'US', name: 'United States'),
+  CountryOption(code: 'GB', name: 'United Kingdom'),
+  CountryOption(code: 'FR', name: 'France'),
+  CountryOption(code: 'DE', name: 'Germany'),
+  CountryOption(code: 'IT', name: 'Italy'),
+  CountryOption(code: 'ES', name: 'Spain'),
+  CountryOption(code: 'CA', name: 'Canada'),
+  CountryOption(code: 'AU', name: 'Australia'),
+  CountryOption(code: 'NL', name: 'Netherlands'),
+  CountryOption(code: 'BE', name: 'Belgium'),
+  CountryOption(code: 'CH', name: 'Switzerland'),
+  CountryOption(code: 'AT', name: 'Austria'),
+  CountryOption(code: 'PT', name: 'Portugal'),
+  CountryOption(code: 'IE', name: 'Ireland'),
+  CountryOption(code: 'SE', name: 'Sweden'),
 ];
+
+/// Available countries for listing location (backward-compatible string list).
+List<String> get countryOptions =>
+    marketplaceCountries.map((c) => c.name).toList();
+
+/// Returns the country code for a given country name, or null if not found.
+String? countryCodeFromName(String? name) {
+  if (name == null) return null;
+  final match = marketplaceCountries
+      .where((c) => c.name.toLowerCase() == name.toLowerCase());
+  return match.isNotEmpty ? match.first.code : null;
+}
+
+/// Returns the country name for a given country code, or null if not found.
+String? countryNameFromCode(String? code) {
+  if (code == null) return null;
+  final match = marketplaceCountries
+      .where((c) => c.code.toLowerCase() == code.toLowerCase());
+  return match.isNotEmpty ? match.first.name : null;
+}
+
+/// European country codes for region-based shipping calculation.
+const Set<String> _europeanCountries = {
+  'GB', 'FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'CH', 'AT', 'PT', 'IE', 'SE',
+};
+
+/// North American country codes for region-based shipping calculation.
+const Set<String> _northAmericanCountries = {'US', 'CA'};
+
+/// Flat-rate shipping costs for the marketplace.
+///
+/// Rates are based on origin and destination country pair:
+/// - Same country: $15 (1500 cents), 3-5 business days
+/// - Same region (Europe↔Europe, NorthAmerica↔NorthAmerica): $25 (2500 cents), 5-7 days
+/// - International (cross-region): $35 (3500 cents), 7-14 days
+class MarketplaceShippingCosts {
+  MarketplaceShippingCosts._();
+
+  /// Shipping cost in cents for same country.
+  static const int sameCountryCents = 1500;
+
+  /// Shipping cost in cents for same region.
+  static const int sameRegionCents = 2500;
+
+  /// Shipping cost in cents for international.
+  static const int internationalCents = 3500;
+
+  /// Calculates the shipping cost in cents between two country codes.
+  static int calculateCents(String fromCode, String toCode) {
+    final from = fromCode.toUpperCase();
+    final to = toCode.toUpperCase();
+
+    if (from == to) return sameCountryCents;
+    if (_sameRegion(from, to)) return sameRegionCents;
+    return internationalCents;
+  }
+
+  /// Returns the estimated delivery days as a display string.
+  static String estimatedDays(String fromCode, String toCode) {
+    final from = fromCode.toUpperCase();
+    final to = toCode.toUpperCase();
+
+    if (from == to) return '3-5 business days';
+    if (_sameRegion(from, to)) return '5-7 business days';
+    return '7-14 business days';
+  }
+
+  /// Returns a human-readable label for the shipping tier.
+  static String tierLabel(String fromCode, String toCode) {
+    final from = fromCode.toUpperCase();
+    final to = toCode.toUpperCase();
+
+    if (from == to) return 'Domestic Shipping';
+    if (_sameRegion(from, to)) return 'Regional Shipping';
+    return 'International Shipping';
+  }
+
+  static bool _sameRegion(String from, String to) {
+    if (_europeanCountries.contains(from) &&
+        _europeanCountries.contains(to)) {
+      return true;
+    }
+    if (_northAmericanCountries.contains(from) &&
+        _northAmericanCountries.contains(to)) {
+      return true;
+    }
+    return false;
+  }
+}

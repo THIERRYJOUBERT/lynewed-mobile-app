@@ -65,6 +65,24 @@ class ConversationsLoaded extends ConversationsState {
   /// Get total unread count (active conversations only)
   int get totalUnreadCount => activeConversations.fold(0, (sum, c) => sum + c.unreadCount);
 
+  /// Private 1-1 conversations only (Tab: Messages)
+  List<Conversation> get privateConversations => activeConversations
+      .where((c) => c.roomType == RoomType.private)
+      .toList();
+
+  /// Wedding group conversations only (Tab: Wedding)
+  List<Conversation> get weddingConversations => activeConversations
+      .where((c) => c.roomType.isWeddingGroup)
+      .toList();
+
+  /// Unread count for private conversations
+  int get privateUnreadCount =>
+      privateConversations.fold(0, (sum, c) => sum + c.unreadCount);
+
+  /// Unread count for wedding conversations
+  int get weddingUnreadCount =>
+      weddingConversations.fold(0, (sum, c) => sum + c.unreadCount);
+
   /// Has pending requests
   bool get hasPendingRequests => pendingRequests.isNotEmpty;
 

@@ -27,7 +27,7 @@ Deno.serve(async (req: Request) => {
     // Find expired offers (pending + past expires_at)
     const { data: expiredOffers, error: fetchError } = await supabase
       .from('marketplace_offers')
-      .select('id, buyer_id, listing_id, amount_cents')
+      .select('id, buyer_id, listing_id, amount_cents, marketplace_listings(title)')
       .eq('status', 'pending')
       .lt('expires_at', new Date().toISOString());
 
@@ -51,7 +51,7 @@ Deno.serve(async (req: Request) => {
     if (updateError) throw new Error(updateError.message);
 
     // FIX C-01: Use correct notifications_outbox schema (event_type, event_key, payload)
-    const notifications = expiredOffers.map((offer: { id: string; buyer_id: string; listing_id: string; amount_cents: number }) => ({
+    const notifications = expiredOffers.map((offer: { id: string; buyer_id: string; listing_id: string; amount_cents: number; marketplace_listings: { title: string } | null }) => ({
       event_type: 'marketplace_offer_expired',
       event_key: `marketplace:offer_expired:${offer.id}`,
       payload: {
@@ -59,6 +59,7 @@ Deno.serve(async (req: Request) => {
         offer_id: offer.id,
         listing_id: offer.listing_id,
         amount_cents: offer.amount_cents,
+        listing_title: offer.marketplace_listings?.title || 'item',
       },
     }));
 

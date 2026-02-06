@@ -1,6 +1,7 @@
-/// FilterSheet - Reusable filter bottom sheet for map
-/// 
-/// Clean replacement for add_filter_sheet_widget.dart (693 lines → ~300 lines)
+/// FilterSheet - Contextual filter bottom sheet for map
+///
+/// Shows professional filters when Professionals toggle is active,
+/// marketplace filters when Marketplace toggle is active, or both.
 library;
 
 import 'package:flutter/material.dart';
@@ -9,7 +10,8 @@ import '/core/design/design.dart';
 import '/core/design/widgets/widgets.dart';
 import '/core/utils/budget_formatter.dart';
 import '/core/services/currency_service.dart';
-import '/backend/schema/enums/enums.dart' as backend_enums show Profession, getAvailableProfessions;
+import '/backend/schema/enums/enums.dart' as backend_enums
+    show Profession, getAvailableProfessions;
 import '/flutter_flow/profession_display_helper.dart';
 import '../../domain/entities/entities.dart';
 import '/features/reviews/presentation/widgets/rating_filter_chips.dart';
@@ -17,7 +19,16 @@ import '/features/reviews/presentation/widgets/rating_filter_chips.dart';
 /// Callback quand les filtres sont appliqués
 typedef OnFilterApply = void Function(MapFilter filter);
 
-/// Sheet de filtres pour la map
+/// Marketplace condition options
+const _conditionOptions = ['new', 'excellent', 'good', 'fair'];
+const _conditionLabels = {
+  'new': 'New with tags',
+  'excellent': 'Excellent',
+  'good': 'Good',
+  'fair': 'Fair',
+};
+
+/// Sheet de filtres pour la map - contextuel selon les toggles actifs
 class FilterSheet extends StatefulWidget {
   const FilterSheet({
     super.key,
@@ -39,6 +50,11 @@ class FilterSheet extends StatefulWidget {
 class _FilterSheetState extends State<FilterSheet> {
   late MapFilter _filter;
   late Set<Profession> _selectedProfessions;
+
+  bool get _showProsSection =>
+      _filter.toggles.showPros || _filter.toggles.showFixedLocations;
+  bool get _showMarketplaceSection => _filter.toggles.showMarketplace;
+  bool get _isBride => widget.userRole == 'bride';
 
   @override
   void initState() {
@@ -62,58 +78,81 @@ class _FilterSheetState extends State<FilterSheet> {
         builder: (context, scrollController) {
           return Column(
             children: [
-              // Handle
               _buildHandle(),
-
-              // Header
               _buildHeader(context),
-
-              // Content - Simplified: Only Professions, Budget, Distance
-              // Layer toggles are now chips in map_page.dart bottom bar
               Expanded(
                 child: ListView(
                   controller: scrollController,
                   padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
                   children: [
-                    // Professions filter
-                    _buildSection(
-                      title: 'Filter by profession',
-                      child: _buildProfessionChips(),
-                    ),
+                    // Professional filters (contextual)
+                    if (_showProsSection) ...[
+                      if (_showMarketplaceSection) _buildSectionDivider('Professionals'),
+                      _buildSection(
+                        title: 'Filter by profession',
+                        child: _buildProfessionChips(),
+                      ),
+                      if (_isBride) ...[
+                        LynewedGap.verticalXxl,
+                        _buildSection(
+                          title: 'Budget range',
+                          child: _buildBudgetSlider(),
+                        ),
+                      ],
+                      if (_isBride) ...[
+                        LynewedGap.verticalXxl,
+                        _buildSection(
+                          title: 'Rating',
+                          child: _buildRatingFilter(),
+                        ),
+                      ],
+                      if (_isBride) ...[
+                        LynewedGap.verticalXxl,
+                        _buildSection(
+                          title: 'Special offers',
+                          child: _buildSpecialOffersFilter(),
+                        ),
+                      ],
+                    ],
 
-                    // Budget (only for brides)
-                    if (widget.userRole == 'bride') ...[
+                    // Marketplace filters (contextual)
+                    if (_showMarketplaceSection) ...[
+                      if (_showProsSection) const SizedBox(height: 30),
+                      _buildSectionDivider('Marketplace'),
+                      _buildSection(
+                        title: 'Category',
+                        child: _buildMarketplaceCategoryChips(),
+                      ),
                       LynewedGap.verticalXxl,
                       _buildSection(
-                        title: 'Budget range',
-                        child: _buildBudgetSlider(),
+                        title: 'Price range',
+                        child: _buildMarketplacePriceSlider(),
+                      ),
+                      LynewedGap.verticalXxl,
+                      _buildSection(
+                        title: 'Condition',
+                        child: _buildMarketplaceConditionChips(),
                       ),
                     ],
 
-                    // Rating filter (only for brides)
-                    if (widget.userRole == 'bride') ...[
-                      LynewedGap.verticalXxl,
-                      _buildSection(
-                        title: 'Rating',
-                        child: _buildRatingFilter(),
+                    // Empty state
+                    if (!_showProsSection && !_showMarketplaceSection)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 60),
+                        child: Center(
+                          child: Text(
+                            'Activate a layer to see filters',
+                            style: LynewedTextStyles.bodyMedium.copyWith(
+                              color: LynewedColors.textSecondary,
+                            ),
+                          ),
+                        ),
                       ),
-                    ],
 
-                    // Special offers filter (EPIC-13 APP-07)
-                    if (widget.userRole == 'bride') ...[
-                      LynewedGap.verticalXxl,
-                      _buildSection(
-                        title: 'Special offers',
-                        child: _buildSpecialOffersFilter(),
-                      ),
-                    ],
-
-                    const SizedBox(height: 80), // Space for button
+                    const SizedBox(height: 80),
                   ],
                 ),
               ),
-
-              // Apply button
               _buildApplyButton(context),
             ],
           );
@@ -159,6 +198,38 @@ class _FilterSheetState extends State<FilterSheet> {
     );
   }
 
+  /// Section divider with label - shown when both pro and marketplace are active
+  Widget _buildSectionDivider(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: LynewedColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              label,
+              style: LynewedTextStyles.labelMedium.copyWith(
+                color: LynewedColors.primary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Container(
+              height: 1,
+              color: LynewedColors.gray200,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSection({required String title, required Widget child}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,17 +241,19 @@ class _FilterSheetState extends State<FilterSheet> {
     );
   }
 
+  // ==========================================================================
+  // Professional filters (existing)
+  // ==========================================================================
+
   Widget _buildProfessionChips() {
-    // Get available professions from backend enum (market-filtered)
-    final availableProfessions = backend_enums.getAvailableProfessions(widget.userMarket);
-    
-    // Convert selected map professions to backend profession names for comparison
-    final selectedNames = _selectedProfessions.map((p) => p.name.toUpperCase()).toSet();
-    
+    final availableProfessions =
+        backend_enums.getAvailableProfessions(widget.userMarket);
+    final selectedNames =
+        _selectedProfessions.map((p) => p.name.toUpperCase()).toSet();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Selected count indicator
         if (_selectedProfessions.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
@@ -196,7 +269,6 @@ class _FilterSheetState extends State<FilterSheet> {
           runSpacing: LynewedSpacing.sm,
           children: availableProfessions.map((backendProf) {
             final isSelected = selectedNames.contains(backendProf.name);
-            // Using Design System chip styling - Standardized 4px radius
             return FilterChip(
               label: Text(
                 getProfessionDisplayName(backendProf),
@@ -209,16 +281,15 @@ class _FilterSheetState extends State<FilterSheet> {
               backgroundColor: LynewedColors.gray200,
               selectedColor: LynewedColors.primary,
               checkmarkColor: Colors.white,
-              showCheckmark: false, // Design preference for cleaner look with color change
+              showCheckmark: false,
               side: BorderSide.none,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4), // 4px max radius
+                borderRadius: BorderRadius.circular(4),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6), // Uniformized padding
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               onSelected: (selected) {
                 setState(() {
-                  // Convert backend profession to map profession
                   final mapProf = _backendToMapProfession(backendProf);
                   if (mapProf != null) {
                     if (selected) {
@@ -238,10 +309,8 @@ class _FilterSheetState extends State<FilterSheet> {
       ],
     );
   }
-  
-  /// Convert backend Profession enum to Map module Profession enum
+
   Profession? _backendToMapProfession(backend_enums.Profession backendProf) {
-    // Handle all cases explicitly
     switch (backendProf) {
       case backend_enums.Profession.PHOTOGRAPHER:
         return Profession.photographer;
@@ -271,17 +340,14 @@ class _FilterSheetState extends State<FilterSheet> {
         return Profession.eventDesigner;
       case backend_enums.Profession.OTHER:
         return Profession.other;
-      // Global professions (available everywhere)
       case backend_enums.Profession.MUSIC:
         return Profession.music;
       case backend_enums.Profession.STATIONERY:
         return Profession.stationery;
-      // India-only professions
       case backend_enums.Profession.CATERER:
         return Profession.caterer;
       case backend_enums.Profession.BRIDALWEARDESIGNER:
         return Profession.bridalWearDesigner;
-      // Global-only professions (not in India)
       case backend_enums.Profession.JEWELLER:
         return Profession.jeweller;
       case backend_enums.Profession.CONTENTCREATOR:
@@ -292,7 +358,8 @@ class _FilterSheetState extends State<FilterSheet> {
   Widget _buildBudgetSlider() {
     final userCurrency = BudgetFormatter.userCurrency;
     final min = _filter.budgetMin ?? 0;
-    final max = _filter.budgetMax ?? CurrencyService.instance.getMaxBudgetForCurrency(userCurrency);
+    final max = _filter.budgetMax ??
+        CurrencyService.instance.getMaxBudgetForCurrency(userCurrency);
 
     return LynewedBudgetSlider(
       lowerValue: min,
@@ -316,7 +383,6 @@ class _FilterSheetState extends State<FilterSheet> {
       onChanged: (value) {
         setState(() {
           if (value == null) {
-            // Clear minRating when "Any rating" is selected
             _filter = _filter.copyWith(clearMinRating: true);
           } else {
             _filter = _filter.copyWith(minRating: value);
@@ -326,11 +392,9 @@ class _FilterSheetState extends State<FilterSheet> {
     );
   }
 
-  /// Special offers checkboxes (EPIC-13 APP-07)
   Widget _buildSpecialOffersFilter() {
     return Column(
       children: [
-        // Wedding book free checkbox
         CheckboxListTile(
           value: _filter.weddingBookFree ?? false,
           onChanged: (value) {
@@ -357,8 +421,6 @@ class _FilterSheetState extends State<FilterSheet> {
           contentPadding: EdgeInsets.zero,
           activeColor: LynewedColors.primary,
         ),
-
-        // Trailer free checkbox
         CheckboxListTile(
           value: _filter.trailerFree ?? false,
           onChanged: (value) {
@@ -389,6 +451,164 @@ class _FilterSheetState extends State<FilterSheet> {
     );
   }
 
+  // ==========================================================================
+  // Marketplace filters (EPIC-14)
+  // ==========================================================================
+
+  Widget _buildMarketplaceCategoryChips() {
+    return Wrap(
+      spacing: LynewedSpacing.sm,
+      runSpacing: LynewedSpacing.sm,
+      children: [
+        _buildMarketplaceChip(
+          label: 'Dress',
+          icon: Icons.checkroom_outlined,
+          isSelected: _filter.marketplaceCategory == 'dress',
+          onTap: () {
+            setState(() {
+              if (_filter.marketplaceCategory == 'dress') {
+                _filter = _filter.copyWith(clearMarketplaceCategory: true);
+              } else {
+                _filter = _filter.copyWith(marketplaceCategory: 'dress');
+              }
+            });
+          },
+        ),
+        _buildMarketplaceChip(
+          label: 'Shoes',
+          icon: Icons.shopping_bag_outlined,
+          isSelected: _filter.marketplaceCategory == 'shoes',
+          onTap: () {
+            setState(() {
+              if (_filter.marketplaceCategory == 'shoes') {
+                _filter = _filter.copyWith(clearMarketplaceCategory: true);
+              } else {
+                _filter = _filter.copyWith(marketplaceCategory: 'shoes');
+              }
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMarketplaceChip({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? LynewedColors.primary : LynewedColors.gray200,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? Colors.white : LynewedColors.textPrimary,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: LynewedTextStyles.bodyMedium.copyWith(
+                color: isSelected ? Colors.white : LynewedColors.textPrimary,
+                fontWeight: isSelected ? FontWeight.w500 : FontWeight.w300,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMarketplacePriceSlider() {
+    final minPrice = (_filter.marketplaceMinPrice ?? 0) / 100;
+    final maxPrice = (_filter.marketplaceMaxPrice ?? 5000000) / 100;
+
+    return LynewedRangeSlider(
+      lowerValue: minPrice,
+      upperValue: maxPrice.clamp(0, 50000),
+      minValue: 0,
+      maxValue: 50000,
+      step: 100,
+      formatValue: (v) => '\$${v.toInt()}',
+      onChanged: (lower, upper) {
+        setState(() {
+          final minCents = lower > 0 ? (lower * 100).toInt() : null;
+          final maxCents = upper < 50000 ? (upper * 100).toInt() : null;
+
+          if (minCents == null && maxCents == null) {
+            _filter = _filter.copyWith(clearMarketplacePrice: true);
+          } else {
+            _filter = _filter.copyWith(
+              marketplaceMinPrice: minCents,
+              marketplaceMaxPrice: maxCents,
+            );
+          }
+        });
+      },
+    );
+  }
+
+  Widget _buildMarketplaceConditionChips() {
+    final selectedConditions = _filter.marketplaceConditions ?? [];
+    return Wrap(
+      spacing: LynewedSpacing.sm,
+      runSpacing: LynewedSpacing.sm,
+      children: _conditionOptions.map((condition) {
+        final isSelected = selectedConditions.contains(condition);
+        return FilterChip(
+          label: Text(
+            _conditionLabels[condition] ?? condition,
+            style: LynewedTextStyles.bodyMedium.copyWith(
+              color: isSelected ? Colors.white : LynewedColors.textPrimary,
+              fontWeight: isSelected ? FontWeight.w500 : FontWeight.w300,
+            ),
+          ),
+          selected: isSelected,
+          backgroundColor: LynewedColors.gray200,
+          selectedColor: LynewedColors.primary,
+          checkmarkColor: Colors.white,
+          showCheckmark: false,
+          side: BorderSide.none,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          onSelected: (selected) {
+            setState(() {
+              final newConditions = List<String>.from(selectedConditions);
+              if (selected) {
+                newConditions.add(condition);
+              } else {
+                newConditions.remove(condition);
+              }
+              if (newConditions.isEmpty) {
+                _filter =
+                    _filter.copyWith(clearMarketplaceConditions: true);
+              } else {
+                _filter =
+                    _filter.copyWith(marketplaceConditions: newConditions);
+              }
+            });
+          },
+        );
+      }).toList(),
+    );
+  }
+
+  // ==========================================================================
+  // Apply / Reset
+  // ==========================================================================
+
   Widget _buildApplyButton(BuildContext context) {
     return SafeArea(
       child: Padding(
@@ -411,7 +631,9 @@ class _FilterSheetState extends State<FilterSheet> {
 
   void _resetFilters() {
     setState(() {
-      _filter = MapFilter.defaults;
+      _filter = MapFilter.defaults.copyWith(
+        toggles: _filter.toggles, // Keep current toggles
+      );
       _selectedProfessions.clear();
     });
   }

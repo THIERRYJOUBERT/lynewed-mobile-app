@@ -357,6 +357,9 @@ void main() {
       expect(types, contains('connectionRequestAccepted'));
       expect(types, contains('wishlistAdd'));
       expect(types, contains('videoIncoming'));
+      expect(types, contains('marketplaceNewOffer'));
+      expect(types, contains('marketplaceItemSold'));
+      expect(types, contains('marketplaceTrackingUpdate'));
       expect(types, contains('marketplaceNewMessage'));
       expect(types, contains('wedPublished'));
       expect(types, contains('replayPublished'));
@@ -373,10 +376,13 @@ void main() {
         role: UserRole.bride,
       );
 
-      // chatMessage, connectionRequest, videoIncoming, marketplaceNewMessage, wedPublished, replayPublished should be visible
+      // chatMessage, connectionRequest, videoIncoming, marketplace*, wedPublished, replayPublished should be visible
       expect(types.any((c) => c.type == 'chatMessage'), true);
       expect(types.any((c) => c.type == 'connectionRequest'), true);
       expect(types.any((c) => c.type == 'videoIncoming'), true);
+      expect(types.any((c) => c.type == 'marketplaceNewOffer'), true);
+      expect(types.any((c) => c.type == 'marketplaceItemSold'), true);
+      expect(types.any((c) => c.type == 'marketplaceTrackingUpdate'), true);
       expect(types.any((c) => c.type == 'marketplaceNewMessage'), true);
       expect(types.any((c) => c.type == 'wedPublished'), true);
       expect(types.any((c) => c.type == 'replayPublished'), true);

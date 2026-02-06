@@ -125,17 +125,20 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Get seller address from profile for FedEx (FIX H-04)
+    // Get seller address from profile JSONB (complete address for FedEx)
     const { data: sellerProfile } = await supabaseAdmin
       .from('profiles')
-      .select('full_name, city, country')
+      .select('full_name, shipping_address')
       .eq('id', listing.seller_id)
       .single();
 
-    const shippingFromAddress = {
-      city: sellerProfile?.city || listing.shipping_from_city || '',
-      countryCode: sellerProfile?.country || listing.shipping_from_country || '',
-      personName: sellerProfile?.full_name || 'Seller',
+    // Use complete shipping_address from profile, fallback to minimal data
+    const shippingFromAddress = sellerProfile?.shipping_address || {
+      street_lines: [],
+      city: '',
+      postal_code: '',
+      country_code: '',
+      person_name: sellerProfile?.full_name || 'Seller',
     };
 
     // FIX M-02: Idempotency key to prevent duplicate checkout sessions
@@ -152,7 +155,7 @@ Deno.serve(async (req: Request) => {
         {
           price_data: {
             currency: 'usd',
-            product_data: { name: 'Marketplace Purchase' },
+            product_data: { name: (listing.title || 'Marketplace Purchase').substring(0, 100) },
             unit_amount: itemPriceCents,
           },
           quantity: 1,

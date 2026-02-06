@@ -42,14 +42,14 @@ class SystemMessageWidget extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
-            color: LynewedColors.gray100.withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(12),
+            color: LynewedColors.surface,
+            borderRadius: BorderRadius.circular(LynewedBorders.xs),
           ),
           child: Text(
             message.content,
             style: LynewedTextStyles.labelSmall.copyWith(
               color: LynewedColors.textSecondary,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w400,
               fontSize: 12,
             ),
             textAlign: TextAlign.center,

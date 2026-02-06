@@ -1,7 +1,8 @@
-/// Make Offer Sheet - Bottom sheet for buyers to submit an offer.
+/// Make Offer Sheet - Bottom sheet for submitting an offer or counter-offer.
 ///
 /// Displays listing price, amount input, optional message, and expiration notice.
 /// Validates input and checks for duplicate pending offers before submitting.
+/// Works for both buyers (making offers) and sellers (counter-proposals).
 library;
 
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/services.dart';
 
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
+import '../../domain/entities/marketplace_offer.dart';
 import '../../domain/repositories/marketplace_chat_repository.dart';
 import '../../domain/repositories/marketplace_offer_repository.dart';
 
@@ -17,13 +19,19 @@ import '../../domain/repositories/marketplace_offer_repository.dart';
 /// Receives the listing info for display and a repository for persistence.
 /// Shows listed price, offer amount input, optional message, and
 /// expiration notice. Validates before submitting.
+///
+/// Supports both buyer offers and seller counter-proposals via [isCounterOffer].
+/// When [onOfferSent] is provided, calls the callback instead of showing a
+/// snackbar (used when opened from the chat page).
 class MakeOfferSheet extends StatefulWidget {
   /// Creates a make offer sheet.
   const MakeOfferSheet({
     required this.listingId,
     required this.listingTitle,
     required this.listingPriceCents,
-    required this.sellerId,
+    required this.receiverId,
+    this.isCounterOffer = false,
+    this.onOfferSent,
     this.repository,
     this.chatRepository,
     super.key,
@@ -38,8 +46,15 @@ class MakeOfferSheet extends StatefulWidget {
   /// Listed price in cents for display.
   final int listingPriceCents;
 
-  /// The seller's user ID (for creating conversation).
-  final String sellerId;
+  /// The user who will receive the offer message.
+  final String receiverId;
+
+  /// Whether this is a counter-offer from the seller.
+  final bool isCounterOffer;
+
+  /// Called after the offer is successfully created. When provided, the sheet
+  /// pops without showing a snackbar (the caller handles feedback).
+  final void Function(MarketplaceOffer offer)? onOfferSent;
 
   /// Optional repository override for testing.
   final MarketplaceOfferRepository? repository;
@@ -115,7 +130,7 @@ class _MakeOfferSheetState extends State<MakeOfferSheet> {
       try {
         await _chatRepository.sendOfferMessage(
           listingId: widget.listingId,
-          receiverId: widget.sellerId,
+          receiverId: widget.receiverId,
           offerId: offer.id,
           amountCents: amountCents,
           message: message.isNotEmpty ? message : null,
@@ -125,17 +140,25 @@ class _MakeOfferSheetState extends State<MakeOfferSheet> {
       }
 
       if (!mounted) return;
-      Navigator.pop(context, true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Offer sent successfully!',
-            style: LynewedTextStyles.bodySmall.copyWith(
-              color: LynewedColors.textOnDark,
+
+      if (widget.onOfferSent != null) {
+        // Called from chat page: callback handles feedback, just pop.
+        widget.onOfferSent!(offer);
+        Navigator.pop(context);
+      } else {
+        // Called from listing detail: pop with result + show snackbar.
+        Navigator.pop(context, true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Offer sent successfully!',
+              style: LynewedTextStyles.bodySmall.copyWith(
+                color: LynewedColors.textOnDark,
+              ),
             ),
           ),
-        ),
-      );
+        );
+      }
     } catch (e) {
       if (!mounted) return;
       _showError(e.toString());
@@ -159,8 +182,16 @@ class _MakeOfferSheetState extends State<MakeOfferSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isCounter = widget.isCounterOffer;
+    final title = isCounter ? 'Make a Counter-Offer' : 'Make an Offer';
+    final messageHint = isCounter
+        ? 'Add a note to the buyer...'
+        : 'Add a note to the seller...';
+    final buttonText = isCounter ? 'Send Counter-Offer' : 'Send Offer';
+    final sendingText = isCounter ? 'Sending...' : 'Sending...';
+
     return LynewedSheet(
-      title: 'Make an Offer',
+      title: title,
       onClose: () => Navigator.pop(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,7 +209,7 @@ class _MakeOfferSheetState extends State<MakeOfferSheet> {
           SizedBox(height: LynewedSpacing.formSectionGap),
 
           // Offer amount input.
-          const LynewedSectionTitle('Your Offer (USD)'),
+          LynewedSectionTitle(isCounter ? 'Your Counter-Offer (USD)' : 'Your Offer (USD)'),
           SizedBox(height: LynewedSpacing.labelFieldGap),
           LynewedTextField(
             controller: _amountController,
@@ -197,7 +228,7 @@ class _MakeOfferSheetState extends State<MakeOfferSheet> {
           SizedBox(height: LynewedSpacing.labelFieldGap),
           LynewedTextField(
             controller: _messageController,
-            hint: 'Add a note to the seller...',
+            hint: messageHint,
             maxLines: 3,
           ),
 
@@ -217,7 +248,7 @@ class _MakeOfferSheetState extends State<MakeOfferSheet> {
           SizedBox(
             width: double.infinity,
             child: LynewedButton(
-              text: _isLoading ? 'Sending...' : 'Send Offer',
+              text: _isLoading ? sendingText : buttonText,
               onPressed: _isLoading ? null : _submitOffer,
               isLoading: _isLoading,
             ),

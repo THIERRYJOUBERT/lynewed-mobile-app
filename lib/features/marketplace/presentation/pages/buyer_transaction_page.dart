@@ -21,6 +21,12 @@ import '../widgets/buyer_tracking_timeline.dart';
 /// Shows status badge, tracking timeline (when tracking number exists),
 /// delivery address, and price summary (item + shipping = total paid).
 class BuyerTransactionPage extends StatefulWidget {
+  /// Route name for navigation.
+  static const String routeName = 'BuyerTransaction';
+
+  /// Route path for GoRouter registration.
+  static const String routePath = '/marketplace/purchase';
+
   /// The transaction ID to display.
   final String transactionId;
 

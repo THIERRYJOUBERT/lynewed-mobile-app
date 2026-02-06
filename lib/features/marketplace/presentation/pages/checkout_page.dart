@@ -13,10 +13,10 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
+import '../../data/datasources/fedex_remote_datasource.dart';
 import '../../domain/entities/marketplace_listing.dart';
 import '../../domain/entities/shipping_address.dart';
 import '../../domain/entities/shipping_rate.dart';
-import '../../domain/repositories/fedex_repository.dart';
 import '../../domain/repositories/marketplace_transaction_repository.dart';
 import '../widgets/address_form_widget.dart';
 import '../widgets/cgvu_acceptance_widget.dart';
@@ -33,8 +33,9 @@ class CheckoutPage extends StatefulWidget {
     required this.listing,
     this.offerId,
     this.agreedPriceCents,
+    this.sellerShippingAddress,
     this.transactionRepository,
-    this.fedExRepository,
+    this.fedexDatasource,
     this.currentUserId,
     super.key,
   });
@@ -48,11 +49,14 @@ class CheckoutPage extends StatefulWidget {
   /// Agreed price in cents (from offer), overrides listing price.
   final int? agreedPriceCents;
 
+  /// Seller's shipping address (from profile) for FedEx rate calculation.
+  final ShippingAddress? sellerShippingAddress;
+
   /// Optional transaction repository override for testing.
   final MarketplaceTransactionRepository? transactionRepository;
 
-  /// Optional FedEx repository override for testing.
-  final FedExRepository? fedExRepository;
+  /// Optional FedEx datasource override for testing.
+  final FedExRemoteDatasource? fedexDatasource;
 
   /// Optional current user ID override for testing.
   final String? currentUserId;
@@ -63,7 +67,7 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   late final MarketplaceTransactionRepository _transactionRepo;
-  late final FedExRepository _fedExRepo;
+  late final FedExRemoteDatasource _fedexDatasource;
 
   // Step management
   int _currentStep = 0;
@@ -96,7 +100,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
     super.initState();
     _transactionRepo = widget.transactionRepository ??
         sl<MarketplaceTransactionRepository>();
-    _fedExRepo = widget.fedExRepository ?? sl<FedExRepository>();
+    _fedexDatasource =
+        widget.fedexDatasource ?? sl<FedExRemoteDatasource>();
     _checkCgvuStatus();
   }
 
@@ -116,8 +121,17 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
   }
 
-  Future<void> _fetchShippingRates() async {
+  Future<void> _calculateShippingRates() async {
     if (_shippingAddress == null) return;
+
+    final sellerAddress = widget.sellerShippingAddress;
+    if (sellerAddress == null) {
+      setState(() {
+        _ratesError = 'Seller shipping address not available';
+        _isLoadingRates = false;
+      });
+      return;
+    }
 
     setState(() {
       _isLoadingRates = true;
@@ -127,18 +141,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
     });
 
     try {
-      // TODO(marketplace): Seller address should come from the listing's
-      // shipping_from_address field or the seller's profile address for
-      // accurate FedEx rate calculation. Currently using partial listing data.
-      final fromAddress = ShippingAddress(
-        streetLines: const [''],
-        city: widget.listing.city ?? '',
-        postalCode: '',
-        countryCode: widget.listing.countryCode ?? 'US',
-      );
-
-      final rates = await _fedExRepo.calculateRates(
-        fromAddress: fromAddress,
+      final rates = await _fedexDatasource.calculateRates(
+        fromAddress: sellerAddress,
         toAddress: _shippingAddress!,
         category: widget.listing.category,
       );
@@ -146,13 +150,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
       if (!mounted) return;
       setState(() {
         _shippingRates = rates;
+        _selectedRate = rates.isNotEmpty ? rates.first : null;
         _isLoadingRates = false;
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _isLoadingRates = false;
-        _ratesError = 'Failed to calculate shipping rates. Please try again.';
+        _ratesError = 'Could not calculate shipping rates. Please try again.';
       });
     }
   }
@@ -229,8 +234,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   void _nextStep() {
     if (_currentStep == 0 && _shippingAddress != null) {
-      // Moving from address to shipping: fetch rates
-      _fetchShippingRates();
+      // Moving from address to shipping: fetch real FedEx rates
+      _calculateShippingRates();
     }
 
     if (_currentStep < _totalSteps - 1) {
@@ -398,7 +403,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       },
       isLoading: _isLoadingRates,
       errorMessage: _ratesError,
-      onRetry: _fetchShippingRates,
+      onRetry: _calculateShippingRates,
     );
   }
 

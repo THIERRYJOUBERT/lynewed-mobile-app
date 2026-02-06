@@ -1,7 +1,7 @@
 /// Unread Counter Service - Global realtime counter management
-/// 
-/// Singleton service that listens to chat_messages changes via Supabase Realtime
-/// and updates FFAppState.unreadMessagesCount automatically.
+///
+/// Singleton service that listens to chat_messages and marketplace_messages
+/// changes via Supabase Realtime and updates FFAppState.unreadMessagesCount.
 /// 
 /// Usage:
 /// - Initialize once at app startup: UnreadCounterService.instance.initialize()
@@ -40,32 +40,56 @@ class UnreadCounterService {
     _isInitialized = true;
   }
 
-  /// Setup realtime subscription for chat_messages
+  /// Setup realtime subscriptions for chat_messages and marketplace_messages
   void _setupRealtimeSubscription() {
     _channel?.unsubscribe();
-    
+
     _channel = _client
         .channel('unread_counter_global')
+        // Chat: new message from someone else
         .onPostgresChanges(
           event: PostgresChangeEvent.insert,
           schema: 'public',
           table: 'chat_messages',
           callback: (payload) {
-            // Only refresh if message is from someone else
             final senderId = payload.newRecord['profile_id'] as String?;
             if (senderId != _currentUserId) {
               _debouncedRefresh();
             }
           },
         )
+        // Chat: user read messages (last_read_at updated)
         .onPostgresChanges(
           event: PostgresChangeEvent.update,
           schema: 'public',
           table: 'chat_room_participants',
           callback: (payload) {
-            // Refresh when last_read_at is updated (user read messages)
             final profileId = payload.newRecord['profile_id'] as String?;
             if (profileId == _currentUserId) {
+              _debouncedRefresh();
+            }
+          },
+        )
+        // Marketplace: new message received
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'marketplace_messages',
+          callback: (payload) {
+            final receiverId = payload.newRecord['receiver_id'] as String?;
+            if (receiverId == _currentUserId) {
+              _debouncedRefresh();
+            }
+          },
+        )
+        // Marketplace: message read (is_read updated)
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'marketplace_messages',
+          callback: (payload) {
+            final receiverId = payload.newRecord['receiver_id'] as String?;
+            if (receiverId == _currentUserId) {
               _debouncedRefresh();
             }
           },

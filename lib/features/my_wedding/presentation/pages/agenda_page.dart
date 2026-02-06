@@ -10,9 +10,11 @@ class AgendaPage extends StatefulWidget {
   const AgendaPage({
     super.key,
     required this.weddingId,
+    this.showHeader = true,
   });
 
   final String weddingId;
+  final bool showHeader;
 
   static const String routeName = 'agenda';
   static const String routePath = '/agenda';
@@ -147,8 +149,10 @@ class _AgendaPageState extends State<AgendaPage> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
-            const Divider(height: 1, color: LynewedColors.gray200),
+            if (widget.showHeader) ...[
+              _buildHeader(),
+              const Divider(height: 1, color: LynewedColors.gray200),
+            ],
             Expanded(child: _buildContent()),
           ],
         ),

@@ -14,6 +14,7 @@ class MapSearchResult {
     this.fixedLocations = const [],
     this.alerts = const [],
     this.weddings = const [],
+    this.marketplace = const [],
     this.totalCount = 0,
     this.hasMore = false,
   });
@@ -22,6 +23,10 @@ class MapSearchResult {
   final List<MapMarker> fixedLocations;
   final List<MapMarker> alerts;
   final List<MapMarker> weddings;
+
+  /// Marketplace listing markers (EPIC-14)
+  final List<MapMarker> marketplace;
+
   final int totalCount;
   final bool hasMore;
 
@@ -31,6 +36,7 @@ class MapSearchResult {
         ...fixedLocations,
         ...alerts,
         ...weddings,
+        ...marketplace,
       ];
 
   /// Vide
@@ -41,6 +47,7 @@ class MapSearchResult {
     List<MapMarker>? fixedLocations,
     List<MapMarker>? alerts,
     List<MapMarker>? weddings,
+    List<MapMarker>? marketplace,
     int? totalCount,
     bool? hasMore,
   }) {
@@ -49,6 +56,7 @@ class MapSearchResult {
       fixedLocations: fixedLocations ?? this.fixedLocations,
       alerts: alerts ?? this.alerts,
       weddings: weddings ?? this.weddings,
+      marketplace: marketplace ?? this.marketplace,
       totalCount: totalCount ?? this.totalCount,
       hasMore: hasMore ?? this.hasMore,
     );

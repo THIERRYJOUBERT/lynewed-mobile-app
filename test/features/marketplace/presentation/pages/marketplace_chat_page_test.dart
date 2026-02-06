@@ -392,7 +392,7 @@ void main() {
     // ==========================================================
 
     group('header', () {
-      testWidgets('should show Conversation as header title',
+      testWidgets('should show Conversation as header title when no name',
           (tester) async {
         mockRepository.messagesToReturn = [];
 
@@ -400,6 +400,19 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Conversation'), findsOneWidget);
+      });
+
+      testWidgets('should show seller name in header when provided',
+          (tester) async {
+        mockRepository.messagesToReturn = [];
+
+        await tester.pumpWidget(
+          buildPage(otherUserName: 'Marie Dupont'),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Marie Dupont'), findsOneWidget);
+        expect(find.text('Conversation'), findsNothing);
       });
     });
 
@@ -436,7 +449,8 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Sophie Martin'), findsOneWidget);
+        // Seller name appears in both the header and the listing card
+        expect(find.text('Sophie Martin'), findsNWidgets(2));
       });
 
       testWidgets('should hide listing card when no info provided',

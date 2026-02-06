@@ -207,6 +207,40 @@ void main() {
         final longPhone = '1' * 21;
         expect(InputValidators.validatePhone(longPhone), isNotNull);
       });
+
+      test('returns null for phone with dots (FR format)', () {
+        expect(InputValidators.validatePhone('06.12.34.56.78'), isNull);
+      });
+    });
+
+    group('validatePhoneRequired', () {
+      test('returns error for null value', () {
+        expect(InputValidators.validatePhoneRequired(null), isNotNull);
+      });
+
+      test('returns error for empty string', () {
+        expect(InputValidators.validatePhoneRequired(''), isNotNull);
+      });
+
+      test('returns error for whitespace only', () {
+        expect(InputValidators.validatePhoneRequired('   '), isNotNull);
+      });
+
+      test('returns null for valid phone numbers', () {
+        expect(InputValidators.validatePhoneRequired('+33 6 12 34 56 78'), isNull);
+        expect(InputValidators.validatePhoneRequired('(555) 123-4567'), isNull);
+        expect(InputValidators.validatePhoneRequired('06.12.34.56.78'), isNull);
+        expect(InputValidators.validatePhoneRequired('0612345678'), isNull);
+      });
+
+      test('returns error for phone with invalid characters', () {
+        expect(InputValidators.validatePhoneRequired('abc123'), isNotNull);
+      });
+
+      test('returns error for phone exceeding max length', () {
+        final longPhone = '1' * 21;
+        expect(InputValidators.validatePhoneRequired(longPhone), isNotNull);
+      });
     });
 
     group('validateSearchQuery', () {

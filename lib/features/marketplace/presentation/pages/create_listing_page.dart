@@ -17,13 +17,16 @@ import 'package:uuid/uuid.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
+import '../../../auth/data/datasources/auth_remote_datasource.dart';
 import '../../data/sizes_data.dart';
 import '../../domain/entities/marketplace_listing.dart';
 import '../../domain/entities/marketplace_photo.dart';
+import '../../domain/entities/shipping_address.dart';
 import '../../domain/repositories/marketplace_repository.dart';
 import '../../domain/usecases/check_stripe_status_use_case.dart';
 import '../../domain/usecases/setup_stripe_connect_use_case.dart';
 import 'stripe_setup_page.dart';
+import '../widgets/address_form_widget.dart';
 import '../widgets/brand_autocomplete_widget.dart';
 import '../widgets/cgvu_seller_dialog.dart';
 import '../widgets/condition_selector_widget.dart';
@@ -43,6 +46,7 @@ class CreateListingPage extends StatefulWidget {
     this.userId,
     this.repository,
     this.checkStripeStatusUseCase,
+    this.authDatasource,
     this.existingListing,
   });
 
@@ -57,6 +61,9 @@ class CreateListingPage extends StatefulWidget {
 
   /// Optional stripe status use case override for testing.
   final CheckStripeStatusUseCase? checkStripeStatusUseCase;
+
+  /// Optional auth datasource override for testing.
+  final AuthRemoteDatasource? authDatasource;
 
   /// The current authenticated user's ID. Falls back to [currentUserUid] if not provided.
   final String? userId;
@@ -98,6 +105,7 @@ class CreateListingPageState extends State<CreateListingPage> {
   // Dependencies
   late final MarketplaceRepository _repository;
   late final CheckStripeStatusUseCase _checkStripeStatusUseCase;
+  late final AuthRemoteDatasource _authDatasource;
 
   /// Whether we are editing an existing listing.
   bool get _isEditMode => widget.existingListing != null;
@@ -108,6 +116,7 @@ class CreateListingPageState extends State<CreateListingPage> {
     _repository = widget.repository ?? sl<MarketplaceRepository>();
     _checkStripeStatusUseCase =
         widget.checkStripeStatusUseCase ?? sl<CheckStripeStatusUseCase>();
+    _authDatasource = widget.authDatasource ?? sl<AuthRemoteDatasource>();
 
     if (widget.existingListing != null) {
       _populateFromListing(widget.existingListing!);
@@ -248,6 +257,7 @@ class CreateListingPageState extends State<CreateListingPage> {
             ? _selectedSleeveLength
             : null,
         country: _selectedCountry ?? 'Unknown',
+        countryCode: countryCodeFromName(_selectedCountry),
         status: 'draft',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
@@ -332,6 +342,13 @@ class CreateListingPageState extends State<CreateListingPage> {
         return;
       }
 
+      // 3b. Check shipping address
+      final hasShippingAddress = await _checkShippingAddress();
+      if (!hasShippingAddress) {
+        setState(() => _isPublishing = false);
+        return;
+      }
+
       // 4. Create listing first (to get the ID)
       final userId = widget.userId ?? currentUserUid;
       final listing = MarketplaceListing(
@@ -351,6 +368,7 @@ class CreateListingPageState extends State<CreateListingPage> {
         sleeveLength:
             _selectedCategory == 'dress' ? _selectedSleeveLength : null,
         country: _selectedCountry!,
+        countryCode: countryCodeFromName(_selectedCountry),
         status: 'active',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
@@ -438,6 +456,94 @@ class CreateListingPageState extends State<CreateListingPage> {
       }
       return false;
     }
+  }
+
+  /// Checks if the seller has a shipping address in their profile.
+  ///
+  /// If not, opens a bottom sheet to collect it. Returns true if the address
+  /// exists or was just saved.
+  Future<bool> _checkShippingAddress() async {
+    final userId = widget.userId ?? currentUserUid;
+    try {
+      final profile = await _authDatasource.getProfile(userId);
+      if (profile?.shippingAddress != null) return true;
+
+      if (!mounted) return false;
+
+      // Show bottom sheet to collect shipping address.
+      final address = await _showShippingAddressSheet();
+      if (address == null) return false;
+
+      // Save to profile.
+      await _authDatasource.updateProfile(userId, {
+        'shipping_address': address.toJson(),
+      });
+      return true;
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content:
+                Text('Could not verify shipping address. Please try again.'),
+          ),
+        );
+      }
+      return false;
+    }
+  }
+
+  /// Shows a bottom sheet to collect the seller's shipping address.
+  Future<ShippingAddress?> _showShippingAddressSheet() async {
+    ShippingAddress? result;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        ShippingAddress? currentAddress;
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return LynewedSheet(
+              title: 'Shipping Address',
+              onClose: () => Navigator.pop(ctx),
+              bottomAction: LynewedButton(
+                text: 'Save Address',
+                onPressed: currentAddress != null
+                    ? () {
+                        result = currentAddress;
+                        Navigator.pop(ctx);
+                      }
+                    : null,
+                width: double.infinity,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Add your shipping address to sell on the marketplace. '
+                      'This will be used for all your listings.',
+                      style: LynewedTextStyles.bodySmall.copyWith(
+                        color: LynewedColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    AddressFormWidget(
+                      onAddressChanged: (addr) {
+                        setSheetState(() => currentAddress = addr);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    return result;
   }
 
   Future<void> _confirmDeleteListing() async {
@@ -837,6 +943,13 @@ class CreateListingPageState extends State<CreateListingPage> {
           onChanged: (country) {
             setState(() => _selectedCountry = country);
           },
+        ),
+        const SizedBox(height: LynewedSpacing.sm),
+        Text(
+          'This is the country from which you will ship the item.',
+          style: LynewedTextStyles.bodySmall.copyWith(
+            color: LynewedColors.textSecondary,
+          ),
         ),
       ],
     );

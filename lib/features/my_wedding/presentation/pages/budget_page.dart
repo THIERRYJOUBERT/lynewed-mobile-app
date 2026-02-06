@@ -16,12 +16,14 @@ class BudgetPage extends StatefulWidget {
     this.budgetMin,
     this.budgetMax,
     this.currency,
+    this.showHeader = true,
   });
 
   final String weddingId;
   final double? budgetMin;
   final double? budgetMax;
   final String? currency;
+  final bool showHeader;
 
   static const String routeName = 'budget';
   static const String routePath = '/budget';
@@ -147,8 +149,10 @@ class _BudgetPageState extends State<BudgetPage> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
-            const Divider(height: 1, color: LynewedColors.gray200),
+            if (widget.showHeader) ...[
+              _buildHeader(),
+              const Divider(height: 1, color: LynewedColors.gray200),
+            ],
             if (!_isLoading && _error == null) _buildTotalsHeader(),
             Expanded(child: _buildContent()),
           ],

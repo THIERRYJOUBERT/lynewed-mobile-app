@@ -147,6 +147,7 @@ class SupabaseMarketplaceOfferRepository
         .from('marketplace_offers')
         .select('*, profiles!marketplace_offers_buyer_id_fkey(full_name, avatar_url)')
         .eq('listing_id', listingId)
+        .neq('buyer_id', _currentUserId) // Exclude seller's own counter-offers
         .order('created_at', ascending: false);
 
     return (response as List<dynamic>).map((row) {

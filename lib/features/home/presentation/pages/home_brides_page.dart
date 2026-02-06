@@ -23,6 +23,7 @@ import '/features/my_wedding/data/repositories/my_wedding_repository_impl.dart';
 import '/features/my_wedding/domain/repositories/my_wedding_repository.dart';
 import '../widgets/wedding_summary_card.dart';
 import '../widgets/quick_actions_row.dart';
+import '/features/chat/presentation/pages/messages_page.dart';
 
 /// The main home page for bride users.
 ///
@@ -448,7 +449,10 @@ class _HomeBridesPageState extends State<HomeBridesPage> {
   }
 
   void _navigateToMessages() {
-    // TODO: Navigate to Messages page
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const MessagesPage()),
+    );
   }
 
   void _navigateToInspirations() {

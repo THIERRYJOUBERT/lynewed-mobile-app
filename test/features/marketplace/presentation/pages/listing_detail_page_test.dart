@@ -411,6 +411,36 @@ void main() {
         expect(find.text('View Listings'), findsOneWidget);
       });
 
+      testWidgets(
+          'should navigate to SellerListingsPage when View Listings is tapped',
+          (tester) async {
+        setupSuccessfulMocks();
+        // Mock getSellerListings for the SellerListingsPage that will be pushed.
+        when(() => mockRepository.getSellerListings(
+              sellerId: any(named: 'sellerId'),
+              page: any(named: 'page'),
+              pageSize: any(named: 'pageSize'),
+            )).thenAnswer((_) async => <MarketplaceListing>[]);
+
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        final scrollable = find.byType(Scrollable).first;
+        await tester.scrollUntilVisible(
+          find.text('View Listings'),
+          200,
+          scrollable: scrollable,
+        );
+
+        await tester.tap(find.text('View Listings'));
+        await tester.pumpAndSettle();
+
+        // Verify SellerListingsPage is pushed (shows seller name in header).
+        expect(find.text('Alice Martin'), findsWidgets);
+        // The "coming soon" snackbar should NOT appear.
+        expect(find.text('Seller listings coming soon'), findsNothing);
+      });
+
       testWidgets('should show first letter as avatar fallback',
           (tester) async {
         setupSuccessfulMocks();
@@ -469,7 +499,7 @@ void main() {
         // Scroll past details section to ensure sleeve_length would have been rendered.
         final scrollable = find.byType(Scrollable).first;
         await tester.scrollUntilVisible(
-          find.text('Location'),
+          find.text('Ships from'),
           200,
           scrollable: scrollable,
         );
@@ -492,7 +522,7 @@ void main() {
 
         final scrollable = find.byType(Scrollable).first;
         await tester.scrollUntilVisible(
-          find.text('Location'),
+          find.text('Ships from'),
           200,
           scrollable: scrollable,
         );
@@ -532,7 +562,7 @@ void main() {
         // Scroll down to see everything.
         final scrollable = find.byType(Scrollable).first;
         await tester.scrollUntilVisible(
-          find.text('Location'),
+          find.text('Ships from'),
           200,
           scrollable: scrollable,
         );
@@ -551,7 +581,7 @@ void main() {
 
         final scrollable = find.byType(Scrollable).first;
         await tester.scrollUntilVisible(
-          find.text('Location'),
+          find.text('Ships from'),
           200,
           scrollable: scrollable,
         );

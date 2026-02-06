@@ -545,15 +545,19 @@ void main() {
         expect(NotificationType.values,
             contains(NotificationType.marketplaceOfferRejected));
         expect(NotificationType.values,
+            contains(NotificationType.marketplaceOfferWithdrawn));
+        expect(NotificationType.values,
+            contains(NotificationType.marketplaceOfferExpired));
+        expect(NotificationType.values,
             contains(NotificationType.marketplaceItemSold));
         expect(NotificationType.values,
             contains(NotificationType.marketplaceOrderConfirmed));
         expect(NotificationType.values,
-            contains(NotificationType.marketplaceLabelCreated));
+            contains(NotificationType.marketplacePaymentSucceeded));
         expect(NotificationType.values,
-            contains(NotificationType.marketplacePackageShipped));
+            contains(NotificationType.marketplaceLabelReady));
         expect(NotificationType.values,
-            contains(NotificationType.marketplacePackageDelivered));
+            contains(NotificationType.marketplaceTrackingUpdate));
         expect(NotificationType.values,
             contains(NotificationType.marketplaceTransactionComplete));
       });
@@ -580,16 +584,24 @@ void main() {
           NotificationType.marketplaceOrderConfirmed,
         );
         expect(
-          NotificationTypeExtension.fromString('marketplaceLabelCreated'),
-          NotificationType.marketplaceLabelCreated,
+          NotificationTypeExtension.fromString('marketplaceOfferWithdrawn'),
+          NotificationType.marketplaceOfferWithdrawn,
         );
         expect(
-          NotificationTypeExtension.fromString('marketplacePackageShipped'),
-          NotificationType.marketplacePackageShipped,
+          NotificationTypeExtension.fromString('marketplaceOfferExpired'),
+          NotificationType.marketplaceOfferExpired,
         );
         expect(
-          NotificationTypeExtension.fromString('marketplacePackageDelivered'),
-          NotificationType.marketplacePackageDelivered,
+          NotificationTypeExtension.fromString('marketplacePaymentSucceeded'),
+          NotificationType.marketplacePaymentSucceeded,
+        );
+        expect(
+          NotificationTypeExtension.fromString('marketplaceLabelReady'),
+          NotificationType.marketplaceLabelReady,
+        );
+        expect(
+          NotificationTypeExtension.fromString('marketplaceTrackingUpdate'),
+          NotificationType.marketplaceTrackingUpdate,
         );
         expect(
           NotificationTypeExtension.fromString(
@@ -735,14 +747,52 @@ void main() {
       });
 
       test(
-          'marketplaceLabelCreated should navigate to seller transaction',
+          'marketplaceOfferExpired should navigate to listing with listingId',
           () {
         final notification = AppNotification(
           id: 'notif-1',
-          type: NotificationType.marketplaceLabelCreated,
-          title: 'Label created',
+          type: NotificationType.marketplaceOfferExpired,
+          title: 'Offer expired',
           body: 'Body',
-          data: const {'transaction_id': 'tx-456'},
+          data: const {'listing_id': 'listing-exp'},
+          createdAt: testDateTime,
+        );
+
+        final nav = notification.navigation;
+
+        expect(nav, isNotNull);
+        expect(nav!.route, NotificationRoute.marketplaceListing);
+        expect(nav.params['listingId'], 'listing-exp');
+      });
+
+      test(
+          'marketplaceOfferWithdrawn should navigate to offers with listingId',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplaceOfferWithdrawn,
+          title: 'Offer withdrawn',
+          body: 'Body',
+          data: const {'listing_id': 'listing-wd'},
+          createdAt: testDateTime,
+        );
+
+        final nav = notification.navigation;
+
+        expect(nav, isNotNull);
+        expect(nav!.route, NotificationRoute.marketplaceOffers);
+        expect(nav.params['listingId'], 'listing-wd');
+      });
+
+      test(
+          'marketplacePaymentSucceeded should navigate to seller transaction',
+          () {
+        final notification = AppNotification(
+          id: 'notif-1',
+          type: NotificationType.marketplacePaymentSucceeded,
+          title: 'Payment received',
+          body: 'Body',
+          data: const {'transaction_id': 'tx-pay'},
           createdAt: testDateTime,
         );
 
@@ -750,7 +800,7 @@ void main() {
 
         expect(nav, isNotNull);
         expect(nav!.route, NotificationRoute.marketplaceSellerTransaction);
-        expect(nav.params['transactionId'], 'tx-456');
+        expect(nav.params['transactionId'], 'tx-pay');
       });
 
       test(
@@ -788,14 +838,14 @@ void main() {
       });
 
       test(
-          'marketplacePackageShipped should navigate to buyer transaction',
+          'marketplaceLabelReady should navigate to buyer transaction',
           () {
         final notification = AppNotification(
           id: 'notif-1',
-          type: NotificationType.marketplacePackageShipped,
-          title: 'Package shipped',
+          type: NotificationType.marketplaceLabelReady,
+          title: 'Label ready',
           body: 'Body',
-          data: const {'transaction_id': 'tx-ship'},
+          data: const {'transaction_id': 'tx-label'},
           createdAt: testDateTime,
         );
 
@@ -803,18 +853,18 @@ void main() {
 
         expect(nav, isNotNull);
         expect(nav!.route, NotificationRoute.marketplaceBuyerTransaction);
-        expect(nav.params['transactionId'], 'tx-ship');
+        expect(nav.params['transactionId'], 'tx-label');
       });
 
       test(
-          'marketplacePackageDelivered should navigate to buyer transaction',
+          'marketplaceTrackingUpdate should navigate to buyer transaction',
           () {
         final notification = AppNotification(
           id: 'notif-1',
-          type: NotificationType.marketplacePackageDelivered,
-          title: 'Package delivered',
+          type: NotificationType.marketplaceTrackingUpdate,
+          title: 'Tracking update',
           body: 'Body',
-          data: const {'transaction_id': 'tx-deliv'},
+          data: const {'transaction_id': 'tx-track'},
           createdAt: testDateTime,
         );
 
@@ -822,7 +872,7 @@ void main() {
 
         expect(nav, isNotNull);
         expect(nav!.route, NotificationRoute.marketplaceBuyerTransaction);
-        expect(nav.params['transactionId'], 'tx-deliv');
+        expect(nav.params['transactionId'], 'tx-track');
       });
 
       test(

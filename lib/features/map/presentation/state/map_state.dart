@@ -64,6 +64,7 @@ class MapState extends ChangeNotifier {
   final Map<String, MapMarker> _fixedLocationsCache = {};
   final Map<String, MapMarker> _alertsCache = {};
   final Map<String, MapMarker> _weddingsCache = {};
+  final Map<String, MapMarker> _marketplaceCache = {};
 
   gmaps.LatLng _center;
   gmaps.LatLng get center => _center;
@@ -118,7 +119,11 @@ class MapState extends ChangeNotifier {
         _filter.budgetMax != newFilter.budgetMax ||
         _filter.minRating != newFilter.minRating ||
         _filter.weddingBookFree != newFilter.weddingBookFree ||
-        _filter.trailerFree != newFilter.trailerFree;
+        _filter.trailerFree != newFilter.trailerFree ||
+        _filter.marketplaceCategory != newFilter.marketplaceCategory ||
+        _filter.marketplaceConditions != newFilter.marketplaceConditions ||
+        _filter.marketplaceMinPrice != newFilter.marketplaceMinPrice ||
+        _filter.marketplaceMaxPrice != newFilter.marketplaceMaxPrice;
     
     _filter = newFilter;
     
@@ -214,16 +219,21 @@ class MapState extends ChangeNotifier {
       for (final m in result.weddings) {
         _weddingsCache[m.id] = m;
       }
-      
+      for (final m in result.marketplace) {
+        _marketplaceCache[m.id] = m;
+      }
+
       // Update searchResult with FULL cache contents
       _searchResult = MapSearchResult(
         professionals: const [], // Empty - all pros in fixedLocations
         fixedLocations: _fixedLocationsCache.values.toList(),
         alerts: _alertsCache.values.toList(),
         weddings: _weddingsCache.values.toList(),
-        totalCount: _fixedLocationsCache.length + 
-                   _alertsCache.length + 
-                   _weddingsCache.length,
+        marketplace: _marketplaceCache.values.toList(),
+        totalCount: _fixedLocationsCache.length +
+                   _alertsCache.length +
+                   _weddingsCache.length +
+                   _marketplaceCache.length,
       );
       
       _loadingState = MapLoadingState.loaded;
@@ -240,6 +250,7 @@ class MapState extends ChangeNotifier {
     _fixedLocationsCache.clear();
     _alertsCache.clear();
     _weddingsCache.clear();
+    _marketplaceCache.clear();
     _searchResult = MapSearchResult.empty;
     notifyListeners();
   }
@@ -262,7 +273,10 @@ class MapState extends ChangeNotifier {
     if (_filter.toggles.showWeddings) {
       markers.addAll(_searchResult.weddings);
     }
-    
+    if (_filter.toggles.showMarketplace) {
+      markers.addAll(_searchResult.marketplace);
+    }
+
     return markers;
   }
   

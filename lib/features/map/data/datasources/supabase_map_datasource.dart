@@ -69,6 +69,11 @@ class SupabaseMapDatasource {
       // null = no filter, true = only pros with this offer
       'weddingBookFree': filter.weddingBookFree,
       'trailerFree': filter.trailerFree,
+      // Marketplace filters (EPIC-14)
+      'marketplaceCategory': filter.marketplaceCategory,
+      'marketplaceConditions': filter.marketplaceConditions ?? [],
+      'marketplaceMinPrice': filter.marketplaceMinPrice?.toString(),
+      'marketplaceMaxPrice': filter.marketplaceMaxPrice?.toString(),
     };
 
     final response = await _client.rpc('search_map_bundle', params: {
@@ -93,24 +98,50 @@ class SupabaseMapDatasource {
       final type = _parseMarkerType(m['type'] as String?);
       final styleInfo = m['styleInfo'] as Map<String, dynamic>? ?? {};
       
+      // Build metadata based on marker type
+      final Map<String, dynamic> metadata;
+      if (type == MapMarkerType.marketplaceItem) {
+        // Marketplace markers carry rich metadata from RPC styleInfo
+        metadata = {
+          'listingId': styleInfo['listingId'] as String?,
+          'title': styleInfo['title'] as String?,
+          'priceCents': (styleInfo['priceCents'] as num?)?.toInt(),
+          'currency': styleInfo['currency'] as String?,
+          'category': styleInfo['category'] as String?,
+          'condition': styleInfo['condition'] as String?,
+          'size': styleInfo['size'] as String?,
+          'designerBrand': styleInfo['designerBrand'] as String?,
+          'city': styleInfo['city'] as String?,
+          'country': styleInfo['country'] as String?,
+          'sellerName': styleInfo['sellerName'] as String?,
+          'sellerAvatarUrl': styleInfo['sellerAvatarUrl'] as String?,
+          'sellerId': styleInfo['sellerId'] as String?,
+          'thumbnailUrl': styleInfo['thumbnailUrl'] as String?,
+        };
+      } else {
+        metadata = {
+          'isOwn': styleInfo['isOwn'] == true,
+          'locationLabel': styleInfo['locationLabel'] as String?,
+        };
+      }
+
       return MapMarker(
         id: m['id']?.toString() ?? '',
         type: type,
         position: position,
         style: MarkerStyle(
-          avatarUrl: styleInfo['avatarUrl'] as String?,
+          // For marketplace items, use thumbnailUrl as avatar for map marker rendering
+          avatarUrl: type == MapMarkerType.marketplaceItem
+              ? (styleInfo['thumbnailUrl'] as String?)
+              : (styleInfo['avatarUrl'] as String?),
           borderColorHex: styleInfo['borderColorHex'] as String?,
           // Label for initials display (fallback to name from metadata)
-          label: styleInfo['label'] as String? ?? 
-                 styleInfo['name'] as String? ?? 
+          label: styleInfo['label'] as String? ??
+                 styleInfo['name'] as String? ??
                  styleInfo['displayName'] as String?,
           profileId: styleInfo['profileId'] as String?,
         ),
-        metadata: {
-          'isOwn': styleInfo['isOwn'] == true,
-          // Fixed location label (full address) for display in sheet
-          'locationLabel': styleInfo['locationLabel'] as String?,
-        },
+        metadata: metadata,
       );
     }).whereType<MapMarker>().toList();
   }

@@ -179,6 +179,16 @@ class _FakeMarketplaceRepository implements MarketplaceRepository {
   Future<int> getFilteredListingsCount(ListingFilter filter) async => 0;
 
   @override
+  Future<List<MarketplaceListing>> getSellerListings({
+    required String sellerId,
+    int page = 0,
+    int pageSize = 20,
+  }) async {
+    if (shouldThrow) throw Exception(errorMessage);
+    return listings;
+  }
+
+  @override
   Future<void> deleteListing(String id) async {
     throw UnimplementedError();
   }

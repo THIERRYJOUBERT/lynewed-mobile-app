@@ -15,6 +15,10 @@ import '/features/marketplace/presentation/pages/create_listing_page.dart';
 import '/features/marketplace/presentation/pages/listing_detail_page.dart';
 import '/features/marketplace/presentation/pages/marketplace_feed_page.dart';
 import '/features/marketplace/presentation/pages/my_offers_page.dart';
+import '/features/marketplace/presentation/pages/received_offers_page.dart';
+import '/features/marketplace/presentation/pages/marketplace_chat_page.dart';
+import '/features/marketplace/presentation/pages/transaction_detail_page.dart';
+import '/features/marketplace/presentation/pages/buyer_transaction_page.dart';
 import '/features/my_wedding/presentation/pages/order_confirmation_page.dart';
 import '/features/notifications/presentation/bloc/notifications_cubit.dart';
 import '/features/wishlist/presentation/pages/wishlist_pro_page.dart';
@@ -485,6 +489,50 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: MyOffersPage.routeName,
           path: MyOffersPage.routePath,
           builder: (context, params) => const MyOffersPage(),
+        ),
+        // Marketplace - Received Offers (seller view, EPIC-14)
+        FFRoute(
+          name: ReceivedOffersPage.routeName,
+          path: ReceivedOffersPage.routePath,
+          builder: (context, params) => ReceivedOffersPage(
+            listingId:
+                params.getParam('listingId', ParamType.String) ?? '',
+          ),
+        ),
+        // Marketplace - Chat (EPIC-14)
+        FFRoute(
+          name: MarketplaceChatPage.routeName,
+          path: MarketplaceChatPage.routePath,
+          builder: (context, params) => MarketplaceChatPage(
+            listingId:
+                params.getParam('listingId', ParamType.String) ?? '',
+            otherUserId:
+                params.getParam('otherUserId', ParamType.String) ?? '',
+            listingTitle:
+                params.getParam('listingTitle', ParamType.String),
+            otherUserName:
+                params.getParam('otherUserName', ParamType.String),
+            otherUserAvatarUrl:
+                params.getParam('otherUserAvatarUrl', ParamType.String),
+          ),
+        ),
+        // Marketplace - Transaction Detail (seller view, EPIC-14)
+        FFRoute(
+          name: TransactionDetailPage.routeName,
+          path: TransactionDetailPage.routePath,
+          builder: (context, params) => TransactionDetailPage(
+            transactionId:
+                params.getParam('transactionId', ParamType.String) ?? '',
+          ),
+        ),
+        // Marketplace - Buyer Transaction (EPIC-14)
+        FFRoute(
+          name: BuyerTransactionPage.routeName,
+          path: BuyerTransactionPage.routePath,
+          builder: (context, params) => BuyerTransactionPage(
+            transactionId:
+                params.getParam('transactionId', ParamType.String) ?? '',
+          ),
         ),
         // Magazine Order Success (EPIC-12: deep link from Stripe Checkout)
         FFRoute(

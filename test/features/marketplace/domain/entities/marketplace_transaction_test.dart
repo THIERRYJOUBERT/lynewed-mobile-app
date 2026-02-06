@@ -520,6 +520,7 @@ void main() {
           'fedex_tracking_number',
           'fedex_label_url',
           'fedex_rate_id',
+          'shipping_service_type',
           'shipping_from_address',
           'shipping_to_address',
           'status',

@@ -98,9 +98,9 @@ class WeddingGroupTile extends StatelessWidget {
                         if (group.isDefault)
                           _buildBadge('Default', LynewedColors.textSecondary)
                         else if (group.isPublic)
-                          _buildBadge('Public', LynewedColors.success)
+                          _buildBadge('Public', LynewedColors.textSecondary)
                         else
-                          _buildBadge('Private', LynewedColors.warning),
+                          _buildBadge('Private', LynewedColors.textSecondary),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -157,8 +157,8 @@ class WeddingGroupTile extends StatelessWidget {
 
   Color _getGroupColor() {
     if (group.isDefault) return LynewedColors.primary;
-    if (group.isPublic) return LynewedColors.success;
-    return LynewedColors.warning;
+    if (group.isPublic) return LynewedColors.primary;
+    return LynewedColors.textSecondary;
   }
 
   IconData _getGroupIcon() {
@@ -300,14 +300,14 @@ class WeddingGroupCompactTile extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: (group.isPublic ? LynewedColors.success : LynewedColors.warning)
+                color: (group.isPublic ? LynewedColors.primary : LynewedColors.textSecondary)
                     .withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 group.isPublic ? Icons.public : Icons.lock_outline,
                 size: 18,
-                color: group.isPublic ? LynewedColors.success : LynewedColors.warning,
+                color: group.isPublic ? LynewedColors.primary : LynewedColors.textSecondary,
               ),
             ),
             const SizedBox(width: 12),

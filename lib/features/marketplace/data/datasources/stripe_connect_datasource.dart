@@ -22,6 +22,11 @@ abstract class StripeConnectDatasource {
     required String email,
     required String returnUrl,
     required String refreshUrl,
+    String? firstName,
+    String? lastName,
+    String? phone,
+    String? country,
+    Map<String, String>? address,
   });
 
   /// Syncs the Stripe account status from the Stripe API.
@@ -46,6 +51,11 @@ class SupabaseStripeConnectDatasource implements StripeConnectDatasource {
     required String email,
     required String returnUrl,
     required String refreshUrl,
+    String? firstName,
+    String? lastName,
+    String? phone,
+    String? country,
+    Map<String, String>? address,
   }) async {
     final response = await _supabase.functions.invoke(
       'create-stripe-connect-account',
@@ -54,6 +64,11 @@ class SupabaseStripeConnectDatasource implements StripeConnectDatasource {
         'email': email,
         'return_url': returnUrl,
         'refresh_url': refreshUrl,
+        if (firstName != null) 'first_name': firstName,
+        if (lastName != null) 'last_name': lastName,
+        if (phone != null) 'phone': phone,
+        if (country != null) 'country': country,
+        if (address != null) 'address': address,
       },
     );
 

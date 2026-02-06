@@ -35,13 +35,21 @@ Deno.serve(async (req: Request) => {
     const category = (tx.listing as Record<string, string>)?.category || 'other';
     const packageDetails = PKG[category] || PKG.other;
 
-    const shipment = await fedex.createShipment({ shipper: { ...tx.shipping_from_address, personName: 'Seller' }, recipient: { ...tx.shipping_to_address, personName: 'Buyer' }, serviceType: body.service_type, packageDetails, referenceId: tx.id });
+    // Use person_name/personName from addresses, fallback to profile names
+    const fromAddr = tx.shipping_from_address as Record<string, unknown>;
+    const toAddr = tx.shipping_to_address as Record<string, unknown>;
+    const shipperName = (fromAddr.person_name || fromAddr.personName || 'Seller') as string;
+    const recipientName = (toAddr.person_name || toAddr.personName || 'Buyer') as string;
+    const shipperPhone = (fromAddr.phone_number || fromAddr.phoneNumber || '') as string;
+    const recipientPhone = (toAddr.phone_number || toAddr.phoneNumber || '') as string;
+
+    const shipment = await fedex.createShipment({ shipper: { ...fromAddr, personName: shipperName, phoneNumber: shipperPhone || undefined }, recipient: { ...toAddr, personName: recipientName, phoneNumber: recipientPhone || undefined }, serviceType: body.service_type, packageDetails, referenceId: tx.id });
 
     // Upload label to Storage
     const labelFileName = `${user.id}/${tx.id}_${shipment.trackingNumber}.pdf`;
     const labelBuffer = Uint8Array.from(atob(shipment.labelBase64!), c => c.charCodeAt(0));
     await supabaseAdmin.storage.from('marketplace-labels').upload(labelFileName, labelBuffer, { contentType: 'application/pdf', upsert: true });
-    const { data: urlData } = await supabaseAdmin.storage.from('marketplace-labels').createSignedUrl(labelFileName, 60 * 60 * 24 * 7);
+    const { data: urlData } = await supabaseAdmin.storage.from('marketplace-labels').createSignedUrl(labelFileName, 60 * 60 * 24 * 30);
     const labelUrl = urlData?.signedUrl || '';
 
     // Update transaction
@@ -56,7 +64,7 @@ Deno.serve(async (req: Request) => {
       event_type: 'marketplace_label_ready',
       event_key: `marketplace:label_ready:${tx.id}`,
       payload: {
-        recipient_id: tx.seller_id,
+        recipient_id: tx.buyer_id,
         transaction_id: tx.id,
         tracking_number: shipment.trackingNumber,
         label_url: labelUrl,

@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
+import '../../../auth/data/datasources/auth_remote_datasource.dart';
 import '../../domain/entities/marketplace_listing.dart';
 import '../../domain/entities/seller_profile.dart';
 import '../../domain/repositories/marketplace_repository.dart';
@@ -17,6 +18,7 @@ import '../widgets/action_buttons_bar.dart';
 import '../widgets/listing_info_section.dart';
 import '../widgets/photo_carousel.dart';
 import '../widgets/seller_info_widget.dart';
+import 'seller_listings_page.dart';
 import 'checkout_page.dart';
 import 'create_listing_page.dart';
 import 'marketplace_chat_page.dart';
@@ -117,21 +119,6 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
         _errorMessage = 'Failed to load listing';
       });
     }
-  }
-
-  void _showComingSoon(String feature) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '$feature coming soon',
-          style: LynewedTextStyles.bodySmall.copyWith(
-            color: LynewedColors.textOnDark,
-          ),
-        ),
-        duration: const Duration(seconds: 2),
-      ),
-    );
   }
 
   void _openFullScreenViewer(int index) {
@@ -248,7 +235,16 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                   SellerInfoWidget(
                     seller: _seller!,
                     onViewListings: () {
-                      _showComingSoon('Seller listings');
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => SellerListingsPage(
+                            sellerId: _seller!.id,
+                            sellerName: _seller!.name,
+                            sellerAvatarUrl: _seller!.avatarUrl,
+                            sellerListingsCount: _seller!.listingsCount,
+                          ),
+                        ),
+                      );
                     },
                   ),
                   SizedBox(height: LynewedSpacing.xxl),
@@ -295,21 +291,42 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
           listingCoverUrl: _photoUrls.isNotEmpty ? _photoUrls.first : null,
           otherUserName: _seller?.name,
           otherUserAvatarUrl: _seller?.avatarUrl,
+          sellerId: _listing!.sellerId,
         ),
       ),
     );
   }
 
-  void _openCheckout() {
+  Future<void> _openCheckout() async {
     if (_listing == null || _isProcessing) return;
     setState(() => _isProcessing = true);
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => CheckoutPage(listing: _listing!),
-      ),
-    ).then((_) {
-      if (mounted) setState(() => _isProcessing = false);
-    });
+
+    try {
+      // Fetch seller's shipping address from profile
+      final authDs = sl<AuthRemoteDatasource>();
+      final sellerProfile = await authDs.getProfile(_listing!.sellerId);
+      final sellerAddress = sellerProfile?.shippingAddress;
+
+      if (!mounted) return;
+
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => CheckoutPage(
+            listing: _listing!,
+            sellerShippingAddress: sellerAddress,
+          ),
+        ),
+      ).then((_) {
+        if (mounted) setState(() => _isProcessing = false);
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not load seller info')),
+        );
+      }
+    }
   }
 
   /// Returns the current user ID.
@@ -396,7 +413,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
         listingId: _listing!.id,
         listingTitle: _listing!.title,
         listingPriceCents: _listing!.priceCents,
-        sellerId: _listing!.sellerId,
+        receiverId: _listing!.sellerId,
       ),
     ).then((result) {
       if (result == true && mounted) {

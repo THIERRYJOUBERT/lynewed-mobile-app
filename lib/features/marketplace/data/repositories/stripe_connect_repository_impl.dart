@@ -30,12 +30,22 @@ class StripeConnectRepositoryImpl implements StripeConnectRepository {
     required String email,
     required String returnUrl,
     required String refreshUrl,
+    String? firstName,
+    String? lastName,
+    String? phone,
+    String? country,
+    Map<String, String>? address,
   }) async {
     return _datasource.createStripeConnectAccount(
       userId: userId,
       email: email,
       returnUrl: returnUrl,
       refreshUrl: refreshUrl,
+      firstName: firstName,
+      lastName: lastName,
+      phone: phone,
+      country: country,
+      address: address,
     );
   }
 

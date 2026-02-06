@@ -19,6 +19,7 @@ class ShippingRate {
     required this.currency,
     this.estimatedDelivery,
     this.estimatedDays,
+    this.estimatedDaysLabel,
   });
 
   /// FedEx service type code (e.g., 'FEDEX_GROUND', 'FEDEX_EXPRESS').
@@ -38,6 +39,10 @@ class ShippingRate {
 
   /// Estimated number of transit days (optional).
   final int? estimatedDays;
+
+  /// Human-readable estimated delivery label (e.g., '3-5 business days').
+  /// When provided, used instead of [estimatedDays] for display.
+  final String? estimatedDaysLabel;
 
   /// Price formatted as dollars (e.g., 1250 -> 12.50).
   double get priceInDollars => rateCents / 100;
@@ -64,6 +69,7 @@ class ShippingRate {
     String? currency,
     DateTime? estimatedDelivery,
     int? estimatedDays,
+    String? estimatedDaysLabel,
   }) {
     return ShippingRate(
       serviceType: serviceType ?? this.serviceType,
@@ -72,6 +78,7 @@ class ShippingRate {
       currency: currency ?? this.currency,
       estimatedDelivery: estimatedDelivery ?? this.estimatedDelivery,
       estimatedDays: estimatedDays ?? this.estimatedDays,
+      estimatedDaysLabel: estimatedDaysLabel ?? this.estimatedDaysLabel,
     );
   }
 
@@ -86,7 +93,8 @@ class ShippingRate {
           rateCents == other.rateCents &&
           currency == other.currency &&
           estimatedDelivery == other.estimatedDelivery &&
-          estimatedDays == other.estimatedDays;
+          estimatedDays == other.estimatedDays &&
+          estimatedDaysLabel == other.estimatedDaysLabel;
 
   @override
   int get hashCode => Object.hash(
@@ -96,6 +104,7 @@ class ShippingRate {
         currency,
         estimatedDelivery,
         estimatedDays,
+        estimatedDaysLabel,
       );
 
   @override

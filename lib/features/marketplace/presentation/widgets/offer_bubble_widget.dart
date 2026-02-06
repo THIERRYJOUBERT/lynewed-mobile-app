@@ -22,6 +22,7 @@ class OfferBubbleWidget extends StatelessWidget {
     required this.message,
     required this.isMe,
     this.offerStatus = 'pending',
+    this.isCurrentUserSeller = false,
     this.senderName,
     this.showAvatar = true,
     this.needsLargeSpacing = false,
@@ -40,6 +41,10 @@ class OfferBubbleWidget extends StatelessWidget {
 
   /// Current status of the linked offer.
   final String offerStatus;
+
+  /// Whether the current user is the seller of the listing.
+  /// Used to determine who sees "Proceed to Checkout" (always the buyer).
+  final bool isCurrentUserSeller;
 
   /// Sender name for display.
   final String? senderName;
@@ -73,8 +78,8 @@ class OfferBubbleWidget extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.only(
-        left: isMe ? 48.0 : LynewedSpacing.md,
-        right: isMe ? LynewedSpacing.md : 48.0,
+        left: isMe ? 72.0 : LynewedSpacing.md,
+        right: isMe ? LynewedSpacing.md : 72.0,
         top: topSpacing,
       ),
       child: Row(
@@ -127,14 +132,11 @@ class OfferBubbleWidget extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: LynewedColors.background,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(LynewedBorders.xs),
         border: Border.all(
-          color: _isPending
-              ? LynewedColors.primary.withValues(alpha: 0.3)
-              : _isAccepted
-                  ? LynewedColors.success.withValues(alpha: 0.3)
-                  : LynewedColors.gray200,
-          width: 1.5,
+          color: _isAccepted
+              ? LynewedColors.success.withValues(alpha: 0.3)
+              : LynewedColors.border,
         ),
       ),
       child: Column(
@@ -144,13 +146,11 @@ class OfferBubbleWidget extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: _isPending
-                  ? LynewedColors.primary.withValues(alpha: 0.06)
-                  : _isAccepted
-                      ? LynewedColors.success.withValues(alpha: 0.06)
-                      : LynewedColors.gray100.withValues(alpha: 0.5),
+              color: _isAccepted
+                  ? LynewedColors.success.withValues(alpha: 0.06)
+                  : LynewedColors.surface,
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(11),
+                top: Radius.circular(3),
               ),
             ),
             child: Row(
@@ -159,24 +159,27 @@ class OfferBubbleWidget extends StatelessWidget {
                   Icons.local_offer_outlined,
                   size: 16,
                   color: _isPending
-                      ? LynewedColors.primary
+                      ? LynewedColors.textPrimary
                       : _isAccepted
                           ? LynewedColors.success
                           : LynewedColors.textSecondary,
                 ),
                 const SizedBox(width: 6),
-                Text(
-                  isMe ? 'Your Offer' : 'Offer Received',
-                  style: LynewedTextStyles.labelLarge.copyWith(
-                    color: _isPending
-                        ? LynewedColors.primary
-                        : _isAccepted
-                            ? LynewedColors.success
-                            : LynewedColors.textSecondary,
-                    fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Text(
+                    isMe ? 'Your Offer' : 'Offer Received',
+                    style: LynewedTextStyles.labelLarge.copyWith(
+                      color: _isPending
+                          ? LynewedColors.textPrimary
+                          : _isAccepted
+                              ? LynewedColors.success
+                              : LynewedColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
                 _buildStatusBadge(),
               ],
             ),
@@ -189,7 +192,7 @@ class OfferBubbleWidget extends StatelessWidget {
               '\$$dollars',
               style: LynewedTextStyles.headlineMedium.copyWith(
                 color: LynewedColors.textPrimary,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -256,7 +259,7 @@ class OfferBubbleWidget extends StatelessWidget {
                 ),
               ),
             ),
-          ] else if (_isAccepted && isMe) ...[
+          ] else if (_isAccepted && !isCurrentUserSeller) ...[
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
@@ -282,7 +285,7 @@ class OfferBubbleWidget extends StatelessWidget {
 
     if (_isPending) {
       label = 'Pending';
-      color = LynewedColors.warning;
+      color = const Color(0xFFD4A017);
     } else if (_isAccepted) {
       label = 'Accepted';
       color = LynewedColors.success;

@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 
+import '../../../marketplace/domain/entities/shipping_address.dart';
 import 'user_role.dart';
 
 /// Represents a user's profile data.
@@ -50,6 +51,9 @@ class UserProfile {
   /// Last update timestamp.
   final DateTime? updatedAt;
 
+  /// Shipping address for marketplace sellers (stored in profiles table).
+  final ShippingAddress? shippingAddress;
+
   /// Creates a user profile.
   const UserProfile({
     required this.id,
@@ -64,6 +68,7 @@ class UserProfile {
     this.onboardingStep,
     required this.createdAt,
     this.updatedAt,
+    this.shippingAddress,
   });
 
   /// Returns true if this user is a bride.
@@ -89,6 +94,7 @@ class UserProfile {
     int? onboardingStep,
     DateTime? createdAt,
     DateTime? updatedAt,
+    ShippingAddress? shippingAddress,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -103,6 +109,7 @@ class UserProfile {
       onboardingStep: onboardingStep ?? this.onboardingStep,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      shippingAddress: shippingAddress ?? this.shippingAddress,
     );
   }
 
@@ -121,7 +128,8 @@ class UserProfile {
         other.isOnboardingComplete == isOnboardingComplete &&
         other.onboardingStep == onboardingStep &&
         other.createdAt == createdAt &&
-        other.updatedAt == updatedAt;
+        other.updatedAt == updatedAt &&
+        other.shippingAddress == shippingAddress;
   }
 
   @override
@@ -138,6 +146,7 @@ class UserProfile {
         onboardingStep,
         createdAt,
         updatedAt,
+        shippingAddress,
       );
 
   @override

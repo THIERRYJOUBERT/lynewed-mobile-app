@@ -210,7 +210,8 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
     // Fetch all messages involving the current user, most recent first.
     final response = await _client
         .from('marketplace_messages')
-        .select('*, marketplace_listings!inner(title, id)')
+        .select(
+            '*, marketplace_listings!inner(title, id, marketplace_photos(storage_path, position))')
         .or('sender_id.eq.$currentUserId,receiver_id.eq.$currentUserId')
         .order('created_at', ascending: false);
 
@@ -236,6 +237,24 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
             msg['marketplace_listings'] as Map<String, dynamic>?;
         final listingTitle = listingData?['title'] as String? ?? 'Listing';
 
+        // Extract cover photo URL from joined marketplace_photos.
+        String? listingCoverUrl;
+        final photos = listingData?['marketplace_photos'] as List<dynamic>?;
+        if (photos != null && photos.isNotEmpty) {
+          final coverPhoto = photos.cast<Map<String, dynamic>>().where(
+            (p) => p['position'] == 0,
+          );
+          final storagePath = coverPhoto.isNotEmpty
+              ? coverPhoto.first['storage_path'] as String?
+              : (photos.first as Map<String, dynamic>)['storage_path']
+                  as String?;
+          if (storagePath != null) {
+            listingCoverUrl = _client.storage
+                .from('marketplace-listings')
+                .getPublicUrl(storagePath);
+          }
+        }
+
         // Generate appropriate preview text based on message type.
         final messageType = msg['message_type'] as String? ?? 'text';
         String? preview;
@@ -250,6 +269,7 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
         conversationMap[key] = _ConversationData(
           listingId: listingId,
           listingTitle: listingTitle,
+          listingCoverUrl: listingCoverUrl,
           otherUserId: otherUserId,
           lastMessage: preview,
           lastMessageTime: msg['created_at'] != null
@@ -286,6 +306,7 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
       return MarketplaceConversation(
         listingId: data.listingId,
         listingTitle: data.listingTitle,
+        listingCoverUrl: data.listingCoverUrl,
         otherUserId: data.otherUserId,
         otherUserName: profile?['full_name'] as String? ?? 'Unknown',
         otherUserAvatarUrl: profile?['avatar_url'] as String?,
@@ -395,6 +416,7 @@ class _ConversationData {
   _ConversationData({
     required this.listingId,
     required this.listingTitle,
+    this.listingCoverUrl,
     required this.otherUserId,
     this.lastMessage,
     this.lastMessageTime,
@@ -403,6 +425,7 @@ class _ConversationData {
 
   final String listingId;
   final String listingTitle;
+  final String? listingCoverUrl;
   final String otherUserId;
   final String? lastMessage;
   final DateTime? lastMessageTime;

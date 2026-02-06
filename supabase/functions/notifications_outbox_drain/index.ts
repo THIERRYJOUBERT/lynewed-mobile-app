@@ -169,6 +169,7 @@ const EVENT_TO_NOTIFICATION_TYPE = {
   marketplace_new_offer: "marketplaceNewOffer",
   marketplace_offer_accepted: "marketplaceOfferAccepted",
   marketplace_offer_rejected: "marketplaceOfferRejected",
+  marketplace_offer_withdrawn: "marketplaceOfferWithdrawn",
 };
 const I18N_TEMPLATES = {
   chatMessage: {
@@ -349,6 +350,15 @@ const I18N_TEMPLATES = {
     body: (ctx, locale)=>locale === "fr"
       ? `Votre offre sur "${ctx.listing_title || "article"}" a été refusée.`
       : `Your offer on "${ctx.listing_title || "item"}" was declined.`
+  },
+  marketplaceOfferWithdrawn: {
+    title: {
+      en: "Offer Withdrawn",
+      fr: "Offre retirée"
+    },
+    body: (ctx, locale)=>locale === "fr"
+      ? `Un acheteur a retiré son offre sur "${ctx.listing_title || "article"}".`
+      : `A buyer withdrew their offer on "${ctx.listing_title || "item"}".`
   },
 };
 // --- HELPERS DB ---
@@ -1020,6 +1030,7 @@ async function processEvent(ev) {
     case "marketplace_new_offer":
     case "marketplace_offer_accepted":
     case "marketplace_offer_rejected":
+    case "marketplace_offer_withdrawn":
       actions = await processMarketplaceEvent(ev);
       break;
 
