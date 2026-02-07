@@ -27,7 +27,14 @@ void main() async {
   usePathUrlStrategy();
 
   // Load environment variables (SECURITY: API keys)
-  await dotenv.load(fileName: ".env");
+  // .env must be listed in pubspec.yaml assets to be bundled in release builds
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint('FATAL: Failed to load .env file: $e');
+    debugPrint('Ensure .env is listed in pubspec.yaml assets section');
+    rethrow;
+  }
 
   // Initialize dependency injection
   await initDependencies();

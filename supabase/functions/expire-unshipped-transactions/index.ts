@@ -2,8 +2,9 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 /// Edge Function: expire-unshipped-transactions
-/// Called daily by pg_cron to expire paid transactions not shipped within 14 days.
-/// Updates status to 'expired', re-activates listing, and notifies both parties.
+/// Called daily by pg_cron. Two jobs:
+/// 1. Expire paid transactions not shipped within 14 days → re-activate listing.
+/// 2. Auto-complete delivered transactions after 7 days → set listing to "sold".
 
 Deno.serve(async (req: Request) => {
   // Verify cron secret for protection
@@ -112,12 +113,83 @@ Deno.serve(async (req: Request) => {
 
     console.log(`Expired ${expiredTxs.length} unshipped transactions`);
 
-    return new Response(JSON.stringify({ expired_count: expiredTxs.length }), {
+    // --- Auto-complete: delivered transactions > 7 days → completed + listing "sold" ---
+    const completionCutoff = new Date();
+    completionCutoff.setDate(completionCutoff.getDate() - 7);
+
+    const { data: deliveredTxs, error: deliveredError } = await supabase
+      .from('marketplace_transactions')
+      .select('id, listing_id, buyer_id, seller_id')
+      .eq('status', 'delivered')
+      .lt('delivered_at', completionCutoff.toISOString());
+
+    if (deliveredError) {
+      console.error('Failed to fetch delivered txs:', deliveredError.message);
+    }
+
+    let completedCount = 0;
+    if (deliveredTxs && deliveredTxs.length > 0) {
+      const now = new Date().toISOString();
+      const completedIds = deliveredTxs.map((tx: { id: string }) => tx.id);
+      const completedListingIds = deliveredTxs.map((tx: { listing_id: string }) => tx.listing_id);
+
+      // Complete transactions
+      await supabase.from('marketplace_transactions')
+        .update({ status: 'completed', completed_at: now, updated_at: now })
+        .in('id', completedIds);
+
+      // Set listings to "sold"
+      await supabase.from('marketplace_listings')
+        .update({ status: 'sold' })
+        .in('id', completedListingIds);
+
+      // Fetch listing titles for notifications
+      const { data: completedListings } = await supabase
+        .from('marketplace_listings')
+        .select('id, title')
+        .in('id', completedListingIds);
+
+      const completedTitleMap = new Map(
+        (completedListings || []).map((l: { id: string; title: string }) => [l.id, l.title])
+      );
+
+      // Notify both parties
+      const completionNotifs = deliveredTxs.flatMap(
+        (tx: { id: string; listing_id: string; buyer_id: string; seller_id: string }) => {
+          const title = completedTitleMap.get(tx.listing_id) || 'item';
+          return [
+            {
+              event_type: 'marketplace_transaction_complete',
+              event_key: `marketplace:complete:buyer:${tx.id}`,
+              payload: { recipient_id: tx.buyer_id, transaction_id: tx.id, listing_title: title },
+            },
+            {
+              event_type: 'marketplace_transaction_complete',
+              event_key: `marketplace:complete:seller:${tx.id}`,
+              payload: { recipient_id: tx.seller_id, transaction_id: tx.id, listing_title: title },
+            },
+          ];
+        }
+      );
+
+      const { error: completionNotifError } = await supabase
+        .from('notifications_outbox')
+        .insert(completionNotifs);
+
+      if (completionNotifError) {
+        console.error('Failed to insert completion notifications:', completionNotifError.message);
+      }
+
+      completedCount = deliveredTxs.length;
+      console.log(`Auto-completed ${completedCount} delivered transactions`);
+    }
+
+    return new Response(JSON.stringify({ expired_count: expiredTxs.length, completed_count: completedCount }), {
       status: 200,
       headers: { 'Content-Type': 'application/json', 'Connection': 'keep-alive' },
     });
   } catch (error) {
-    console.error('Expire unshipped transactions error:', error);
+    console.error('Transaction maintenance error:', error);
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json', 'Connection': 'keep-alive' },

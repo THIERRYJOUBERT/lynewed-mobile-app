@@ -20,6 +20,8 @@ import '/features/marketplace/presentation/pages/marketplace_chat_page.dart';
 import '/features/marketplace/presentation/pages/transaction_detail_page.dart';
 import '/features/marketplace/presentation/pages/buyer_transaction_page.dart';
 import '/features/marketplace/presentation/pages/my_purchases_page.dart';
+import '/features/marketplace/presentation/pages/order_confirmation_page.dart'
+    as marketplace_order;
 import '/features/my_wedding/presentation/pages/order_confirmation_page.dart';
 import '/features/notifications/presentation/bloc/notifications_cubit.dart';
 import '/features/wishlist/presentation/pages/wishlist_pro_page.dart';
@@ -547,6 +549,16 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: '/magazineOrderSuccess',
           builder: (context, params) => OrderConfirmationPage(
             sessionId: params.getParam('sessionId', ParamType.String) ?? '',
+            onDone: () => GoRouter.of(context).go('/'),
+          ),
+        ),
+        // Marketplace Order Confirmation (deep link from Stripe Checkout)
+        FFRoute(
+          name: 'MarketplaceOrderConfirmation',
+          path: '/marketplace/order-confirmation',
+          builder: (context, params) =>
+              marketplace_order.OrderConfirmationPage(
+            sessionId: params.getParam('sessionId', ParamType.String),
             onDone: () => GoRouter.of(context).go('/'),
           ),
         ),

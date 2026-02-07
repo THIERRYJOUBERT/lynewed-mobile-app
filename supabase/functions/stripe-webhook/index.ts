@@ -103,9 +103,68 @@ async function piStatus(db: SupabaseClient, pi: Stripe.PaymentIntent, status: st
   await db.from("purchases").update({ status, updated_at: new Date().toISOString() }).eq("stripe_payment_intent_id", pi.id);
 }
 async function piSucceeded(db: SupabaseClient, pi: Stripe.PaymentIntent) {
+  const m = pi.metadata || {};
+  // Marketplace payments create marketplace_transactions, not purchases rows
+  if (m.product_type === 'marketplace') {
+    await handleMarketplacePaymentSucceeded(db, pi);
+    return;
+  }
   const now = new Date().toISOString();
   const { data: p } = await db.from("purchases").update({ status: "succeeded", paid_at: now, updated_at: now, stripe_charge_id: typeof pi.latest_charge === 'string' ? pi.latest_charge : null }).eq("stripe_payment_intent_id", pi.id).select("user_id, amount_cents, currency, product_type").single();
   if (p) await db.from("notifications_outbox").insert({ recipient_id: p.user_id, event_type: "payment_succeeded", payload: { amount: p.amount_cents / 100, currency: p.currency, product_type: p.product_type } });
+}
+
+async function handleMarketplacePaymentSucceeded(db: SupabaseClient, pi: Stripe.PaymentIntent) {
+  const m = pi.metadata || {};
+  // Idempotency: skip if transaction already exists
+  const { data: existing } = await db.from('marketplace_transactions').select('id').eq('stripe_payment_intent_id', pi.id).maybeSingle();
+  if (existing) { console.log(`Marketplace tx already exists for ${pi.id}`); return; }
+
+  let shippingToAddress = {};
+  let shippingFromAddress = {};
+  try { shippingToAddress = JSON.parse(m.shipping_to_address || '{}'); } catch (_) {}
+  try { shippingFromAddress = JSON.parse(m.shipping_from_address || '{}'); } catch (_) {}
+
+  const { data: transaction, error: txError } = await db.from('marketplace_transactions').insert({
+    listing_id: m.listing_id,
+    offer_id: m.offer_id || null,
+    buyer_id: m.buyer_id,
+    seller_id: m.seller_id,
+    item_price_cents: parseInt(m.item_price_cents),
+    shipping_cost_cents: parseInt(m.shipping_cents),
+    platform_fee_cents: parseInt(m.platform_fee_cents),
+    seller_payout_cents: parseInt(m.seller_payout_cents),
+    total_paid_cents: pi.amount,
+    status: 'paid',
+    stripe_payment_intent_id: pi.id,
+    stripe_charge_id: typeof pi.latest_charge === 'string' ? pi.latest_charge : null,
+    shipping_to_address: shippingToAddress,
+    shipping_from_address: shippingFromAddress,
+    shipping_service_type: m.shipping_service || 'FEDEX_GROUND',
+    paid_at: new Date().toISOString(),
+  }).select().single();
+
+  if (txError) { console.error('Failed to create marketplace tx:', txError); throw txError; }
+
+  // Confirm listing reserved
+  await db.from('marketplace_listings').update({ status: 'reserved' }).eq('id', m.listing_id);
+
+  // Fetch listing title for notifications
+  const listingTitle = await getListingTitle(db, m.listing_id);
+
+  // Notify seller
+  await db.from('notifications_outbox').insert({
+    event_type: 'marketplace_item_sold',
+    event_key: `marketplace:item_sold:${transaction.id}`,
+    payload: { recipient_id: m.seller_id, transaction_id: transaction.id, listing_id: m.listing_id, listing_title: listingTitle, amount_cents: parseInt(m.item_price_cents) },
+  });
+  // Notify buyer
+  await db.from('notifications_outbox').insert({
+    event_type: 'marketplace_order_confirmed',
+    event_key: `marketplace:order_confirmed:${transaction.id}`,
+    payload: { recipient_id: m.buyer_id, transaction_id: transaction.id, listing_id: m.listing_id, listing_title: listingTitle, amount_cents: parseInt(m.item_price_cents) },
+  });
+  console.log(`Created marketplace tx ${transaction.id} for PI ${pi.id}`);
 }
 async function piFailed(db: SupabaseClient, pi: Stripe.PaymentIntent) {
   const msg = pi.last_payment_error?.message || "Payment failed";
@@ -118,12 +177,17 @@ async function piRequiresAction(db: SupabaseClient, pi: Stripe.PaymentIntent) {
 }
 
 async function checkoutCompleted(db: SupabaseClient, s: Stripe.Checkout.Session) {
+  // Marketplace checkouts are fully handled by piSucceeded → handleMarketplacePaymentSucceeded
+  const piId = typeof s.payment_intent === 'string' ? s.payment_intent : null;
+  if (piId) {
+    const pi = await stripe.paymentIntents.retrieve(piId);
+    if (pi.metadata?.product_type === 'marketplace') return;
+  }
   const { data: ex } = await db.from("purchases").select("id").eq("stripe_checkout_session_id", s.id).single();
   const m = s.metadata || {};
   const amt = s.amount_total || 0;
   const fee = m.seller_id ? Math.floor(amt * PLATFORM_FEE_RATE) : 0;
   const now = new Date().toISOString();
-  const piId = typeof s.payment_intent === 'string' ? s.payment_intent : null;
   if (ex) {
     await db.from("purchases").update({ status: "succeeded", paid_at: now, updated_at: now, stripe_payment_intent_id: piId }).eq("id", ex.id);
   } else if (m.user_id && m.product_type) {
