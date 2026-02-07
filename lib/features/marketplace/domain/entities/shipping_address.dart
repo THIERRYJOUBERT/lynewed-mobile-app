@@ -46,16 +46,25 @@ class ShippingAddress {
   final String? phoneNumber;
 
   /// Creates from JSON.
+  ///
+  /// Tolerates both snake_case (DB) and camelCase (FedEx) keys,
+  /// with safe defaults for missing fields.
   factory ShippingAddress.fromJson(Map<String, dynamic> json) {
     return ShippingAddress(
-      streetLines: List<String>.from(json['street_lines'] as List),
-      city: json['city'] as String,
-      postalCode: json['postal_code'] as String,
-      countryCode: json['country_code'] as String,
-      stateOrProvinceCode: json['state_or_province_code'] as String?,
-      personName: json['person_name'] as String?,
-      phoneNumber: json['phone_number'] as String?,
+      streetLines: _parseStreetLines(json['street_lines'] ?? json['streetLines']),
+      city: (json['city'] as String?) ?? '',
+      postalCode: (json['postal_code'] ?? json['postalCode'] as String?) ?? '',
+      countryCode: (json['country_code'] ?? json['countryCode'] as String?) ?? '',
+      stateOrProvinceCode:
+          (json['state_or_province_code'] ?? json['stateOrProvinceCode']) as String?,
+      personName: (json['person_name'] ?? json['personName']) as String?,
+      phoneNumber: (json['phone_number'] ?? json['phoneNumber']) as String?,
     );
+  }
+
+  static List<String> _parseStreetLines(dynamic value) {
+    if (value is List) return List<String>.from(value);
+    return [];
   }
 
   /// Converts to JSON (snake_case keys for Supabase DB storage).
