@@ -1,7 +1,7 @@
 # TRACKING - EPIC-15-BUGFIX
 
 > Status : 🟡 In Progress
-> Stories : 4/10 completees
+> Stories : 7/10 completees
 > Derniere MAJ : 2026-02-16
 
 ---
@@ -20,6 +20,9 @@
 | 2026-02-16 | S03 Phase 2 DONE - assetlinks.json deploye (SHA-256 reel), vercel.json Content-Type fixe. Deep links 100% operationnels |
 | 2026-02-16 | S01 DONE - Credentials validees (curl OK), 4 secrets configures Supabase, error handling ameliore, 4 Edge Functions redeployees |
 | 2026-02-16 | S05 DONE - Edge Function send-wedding-invitation deployee (Resend + QR code, template EN, domaine lynewed.com). EPIC-09/S06 mise a jour avec note deprecation |
+| 2026-02-16 | S04 DONE - Modal CGUV upload photos guest (dialog bloquant, scroll obligatoire, 14 tests widget, guard race condition) |
+| 2026-02-16 | S08 DONE - Carte optimisee (fallback icons, LRU cache LinkedHashMap, thread-safety Lock, 13 tests, BUG-05 + BUG-13 resolus) |
+| 2026-02-16 | S07 DONE - Lien "Track on FedEx" cote seller (transaction_detail_page), 3 tests widget, pattern identique buyer |
 
 ---
 
@@ -32,7 +35,7 @@
 | S01 - FedEx OAuth debug | ✅ Done | Claude | 2026-02-16 | 2026-02-16 |
 | S02 - Backfill invite codes | ✅ Done | Claude | 2026-02-16 | 2026-02-16 |
 | S03 - Deep links diagnostic | ✅ Done | Claude | 2026-02-16 | 2026-02-16 |
-| S04 - CGUV photos modal | 🔵 Todo | - | - | - |
+| S04 - CGUV photos modal | ✅ Done | Claude | 2026-02-16 | 2026-02-16 |
 
 ### Vague 2 - Completer les flux (depend Vague 1)
 
@@ -40,8 +43,8 @@
 |-------|--------|----------|------------|-----------|
 | S05 - Edge Fn invitation Resend | ✅ Done | Claude | 2026-02-16 | 2026-02-16 |
 | S06 - FedEx shipping dynamique | 🔵 Todo | - | - | - |
-| S07 - FedEx tracking cron | 🔵 Todo | - | - | - |
-| S08 - Carte optimisation | 🔵 Todo | - | - | - |
+| S07 - FedEx tracking lien | ✅ Done | Claude | 2026-02-16 | 2026-02-16 |
+| S08 - Carte optimisation | ✅ Done | Claude | 2026-02-16 | 2026-02-16 |
 
 ### Vague 3 - Polish fonctionnel
 
@@ -94,8 +97,8 @@
 
 ### UI (Stories S04, S08, S09, S10)
 
-- [ ] Modal CGUV upload photos guest
-- [ ] Carte optimisee (fallback icons, cache)
+- [x] Modal CGUV upload photos guest (dialog bloquant, 14 tests widget)
+- [x] Carte optimisee (fallback icons, LRU cache, thread-safety, 13 tests)
 - [ ] Selecteur quantite magazine
 - [ ] Fixes mineurs (onglet marketplace pro, chat prenom, border radius)
 
@@ -112,9 +115,9 @@
 | Metrique | Valeur |
 |----------|--------|
 | Stories totales | 10 |
-| Stories completees | 2 |
-| Bugs bloquants resolus | 2/3 (~~invite codes~~, ~~FedEx~~, deep links) |
-| Bugs fonctionnels resolus | 0/5 (CGUV, invitation, shipping, tracking, carte) |
+| Stories completees | 6 |
+| Bugs bloquants resolus | 3/3 (~~invite codes~~, ~~FedEx~~, ~~deep links~~) |
+| Bugs fonctionnels resolus | 3/5 (~~CGUV~~, ~~invitation~~, shipping, tracking, ~~carte~~) |
 | Bugs mineurs resolus | 0/3 (marketplace tab, prenom, border radius) |
 | Tests ajoutes | - |
 
