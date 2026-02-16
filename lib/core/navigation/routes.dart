@@ -243,12 +243,12 @@ abstract final class AppRoutes {
   static String weddingDeepLink(String weddingId) =>
       '/myWedding?weddingId=$weddingId';
 
-  /// Deep link for joining wedding: lynewed.app/join/{code}
+  /// Deep link for joining wedding: lynewed.com/join/{code}
   /// Used for query param format.
   static String joinWeddingDeepLink(String code) =>
       '/joinWedding?code=$code';
 
-  /// Deep link for joining wedding with path param: lynewed.app/join/{code}
+  /// Deep link for joining wedding with path param: lynewed.com/join/{code}
   /// Used for path param format (from external deep links).
   static String joinWeddingPathDeepLink(String code) => '/join/$code';
 }

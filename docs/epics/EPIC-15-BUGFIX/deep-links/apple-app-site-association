@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "G234APMW4U.com.lynewed.app",
+        "paths": ["/join/*"]
+      }
+    ]
+  }
+}

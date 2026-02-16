@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.lynewed.app",
+      "sha256_cert_fingerprints": [
+        "A2:5B:89:F6:E9:43:4A:DF:47:F3:2C:7F:72:F7:16:DC:6D:F4:5C:1B:86:06:95:90:88:D5:98:C7:7B:EF:06:44"
+      ]
+    }
+  }
+]
