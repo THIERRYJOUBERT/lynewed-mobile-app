@@ -10,11 +10,22 @@ export class FedExClient {
   constructor(config: FedExConfig) { this.config = config; this.baseUrl = config.environment === 'sandbox' ? 'https://apis-sandbox.fedex.com' : 'https://apis.fedex.com'; }
   private async getToken(): Promise<string> {
     if (this.accessToken && this.tokenExpiry && new Date() < this.tokenExpiry) return this.accessToken;
+    console.log('Fetching new FedEx OAuth2 token...');
     const response = await fetch(`${this.baseUrl}/oauth/token`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'client_credentials', client_id: this.config.clientId, client_secret: this.config.clientSecret }) });
-    if (!response.ok) throw new Error(`FedEx OAuth failed: ${await response.text()}`);
+    if (!response.ok) {
+      const rawBody = await response.text();
+      console.error(`FedEx OAuth failed (HTTP ${response.status}):`, rawBody);
+      try {
+        const errData = JSON.parse(rawBody);
+        const code = errData.errors?.[0]?.code || `HTTP_${response.status}`;
+        const message = errData.errors?.[0]?.message || rawBody;
+        throw new Error(JSON.stringify({ error: `FedEx OAuth failed: ${code} - ${message}`, code }));
+      } catch (e) { if (e instanceof SyntaxError) throw new Error(JSON.stringify({ error: `FedEx OAuth failed: ${rawBody}`, code: `HTTP_${response.status}` })); throw e; }
+    }
     const data = await response.json();
     this.accessToken = data.access_token;
     this.tokenExpiry = new Date(Date.now() + 55 * 60 * 1000);
+    console.log('FedEx OAuth2 token obtained');
     return this.accessToken!;
   }
   async trackShipment(trackingNumber: string): Promise<TrackingEvent[]> {

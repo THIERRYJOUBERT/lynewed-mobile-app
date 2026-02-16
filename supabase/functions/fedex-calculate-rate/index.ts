@@ -80,8 +80,9 @@ Deno.serve(async (req: Request) => {
     }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error calculating rates:", error);
-    let errorMessage = (error as Error).message;
-    if (errorMessage.includes('timeout')) errorMessage = 'Request timeout. Please try again.';
-    return new Response(JSON.stringify({ error: errorMessage }), { status: 500, headers: { "Content-Type": "application/json" } });
+    const msg = (error as Error).message;
+    if (msg.includes('timeout')) return new Response(JSON.stringify({ error: 'Request timeout. Please try again.' }), { status: 500, headers: { "Content-Type": "application/json" } });
+    try { const parsed = JSON.parse(msg); return new Response(JSON.stringify(parsed), { status: 500, headers: { "Content-Type": "application/json" } }); } catch { /* not JSON */ }
+    return new Response(JSON.stringify({ error: msg }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 });

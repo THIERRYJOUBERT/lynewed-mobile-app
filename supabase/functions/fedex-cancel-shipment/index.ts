@@ -28,6 +28,7 @@ class FedExClient {
   private async getToken(): Promise<string> {
     if (this.accessToken && this.tokenExpiry && new Date() < this.tokenExpiry)
       return this.accessToken;
+    console.log("Fetching new FedEx OAuth2 token...");
     const response = await fetch(`${this.baseUrl}/oauth/token`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -37,11 +38,28 @@ class FedExClient {
         client_secret: this.config.clientSecret,
       }),
     });
-    if (!response.ok)
-      throw new Error(`FedEx OAuth failed: ${await response.text()}`);
+    if (!response.ok) {
+      const rawBody = await response.text();
+      console.error(`FedEx OAuth failed (HTTP ${response.status}):`, rawBody);
+      try {
+        const errData = JSON.parse(rawBody);
+        const code = errData.errors?.[0]?.code || `HTTP_${response.status}`;
+        const message = errData.errors?.[0]?.message || rawBody;
+        throw new Error(
+          JSON.stringify({ error: `FedEx OAuth failed: ${code} - ${message}`, code })
+        );
+      } catch (e) {
+        if (e instanceof SyntaxError)
+          throw new Error(
+            JSON.stringify({ error: `FedEx OAuth failed: ${rawBody}`, code: `HTTP_${response.status}` })
+          );
+        throw e;
+      }
+    }
     const data = await response.json();
     this.accessToken = data.access_token;
     this.tokenExpiry = new Date(Date.now() + 55 * 60 * 1000);
+    console.log("FedEx OAuth2 token obtained");
     return this.accessToken!;
   }
 
@@ -227,8 +245,10 @@ Deno.serve(async (req: Request) => {
     );
   } catch (error) {
     console.error("Cancel shipment error:", error);
+    const msg = (error as Error).message;
+    try { const parsed = JSON.parse(msg); return new Response(JSON.stringify(parsed), { status: 500, headers: { "Content-Type": "application/json" } }); } catch { /* not JSON */ }
     return new Response(
-      JSON.stringify({ error: (error as Error).message }),
+      JSON.stringify({ error: msg }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }

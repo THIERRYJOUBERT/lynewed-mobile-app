@@ -1,7 +1,7 @@
 # TRACKING - EPIC-15-BUGFIX
 
 > Status : 🟡 In Progress
-> Stories : 1/10 completees
+> Stories : 2/10 completees
 > Derniere MAJ : 2026-02-16
 
 ---
@@ -17,6 +17,7 @@
 | 2026-02-16 | S09 (brides sur carte) supprimee - fonctionne deja si mariage public → 10 stories finales |
 | 2026-02-16 | S02 DONE - Trigger verifie, fonction retry loop deployee, 7 mariages backfilles, TEST1234 regenere |
 | 2026-02-16 | S03 Phase 1 DONE - Templates .well-known/ prets, commentaires corriges, guide deploiement cree. Phase 2 bloquee (deploiement serveur Thierry) |
+| 2026-02-16 | S01 DONE - Credentials validees (curl OK), 4 secrets configures Supabase, error handling ameliore, 4 Edge Functions redeployees |
 
 ---
 
@@ -26,7 +27,7 @@
 
 | Story | Status | Assignee | Date Start | Date Done |
 |-------|--------|----------|------------|-----------|
-| S01 - FedEx OAuth debug | 🔵 Todo | - | - | - |
+| S01 - FedEx OAuth debug | ✅ Done | Claude | 2026-02-16 | 2026-02-16 |
 | S02 - Backfill invite codes | ✅ Done | Claude | 2026-02-16 | 2026-02-16 |
 | S03 - Deep links diagnostic | ✅ Done (Phase 1) | Claude | 2026-02-16 | 2026-02-16 |
 | S04 - CGUV photos modal | 🔵 Todo | - | - | - |
@@ -73,7 +74,7 @@
 
 ### INFRA (Stories S01, S03, S07)
 
-- [ ] Secrets FedEx verifies/corriges dans Supabase
+- [x] Secrets FedEx verifies/corriges dans Supabase (4 secrets configures via CLI)
 - [ ] Fichiers .well-known diagnostiques sur lynewed.com
 - [ ] Cron job tracking FedEx configure
 
@@ -109,8 +110,8 @@
 | Metrique | Valeur |
 |----------|--------|
 | Stories totales | 10 |
-| Stories completees | 1 |
-| Bugs bloquants resolus | 1/3 (~~invite codes~~, FedEx, deep links) |
+| Stories completees | 2 |
+| Bugs bloquants resolus | 2/3 (~~invite codes~~, ~~FedEx~~, deep links) |
 | Bugs fonctionnels resolus | 0/5 (CGUV, invitation, shipping, tracking, carte) |
 | Bugs mineurs resolus | 0/3 (marketplace tab, prenom, border radius) |
 | Tests ajoutes | - |
