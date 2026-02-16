@@ -1,0 +1,110 @@
+# Sources - EPIC-15-BUGFIX
+# Created: 2026-02-16
+# Method: Manual analysis (client feedback + code investigation)
+
+primary_source:
+  type: client_feedback
+  path: docs/THIERRY-FEEDBACK-2026-02-16.md
+  description: Document de feedback challenge avec causes racines prouvees dans le code
+  origin: Mail Thierry + Whimsical screenshots (8) + analyse code approfondie
+
+secondary_sources:
+  - type: epic
+    path: docs/epics/EPIC-09-INVITATIONS/
+    sections: [invite_code, deep_links, guest_flow]
+    relevance: BUG-01 (systeme invitation)
+
+  - type: epic
+    path: docs/epics/EPIC-14-MARKETPLACE/
+    sections: [fedex, stripe, checkout, shipping]
+    relevance: BUG-02, BUG-03, BUG-04, BUG-08 (marketplace/FedEx)
+
+  - type: epic
+    path: docs/epics/EPIC-10-PHOTOS-VIDEOS/
+    sections: [guest_album, upload_flow]
+    relevance: BUG-09 (CGUV upload photos)
+
+  - type: epic
+    path: docs/epics/EPIC-12-MAGAZINES/
+    sections: [magazine_order, checkout]
+    relevance: BUG-07 (quantite magazine)
+
+  - type: epic
+    path: docs/epics/EPIC-13-MAP-FILTERS/
+    sections: [map_markers, filters, zoom]
+    relevance: BUG-05, BUG-06, BUG-13 (carte)
+
+code_investigations:
+  - feature: invite_code_generation
+    files:
+      - supabase/migrations/20260129000004_create_generate_invite_code.sql
+      - supabase/migrations/20260128000002_add_wedding_invite_columns.sql
+      - lib/features/my_wedding/presentation/pages/my_wedding_page.dart
+      - lib/features/my_wedding/data/datasources/supabase_my_wedding_datasource.dart
+    findings: Trigger BEFORE INSERT OK, but pre-migration weddings have NULL codes
+
+  - feature: fedex_integration
+    files:
+      - supabase/functions/fedex-create-shipment/fedex-client.ts
+      - supabase/functions/fedex-calculate-rate/fedex-client.ts
+      - supabase/functions/fedex-track-shipment/fedex-client.ts
+      - lib/features/marketplace/data/sizes_data.dart
+      - lib/features/marketplace/presentation/pages/checkout_page.dart
+    findings: OAuth impl OK, credentials likely not in Supabase secrets. Rate function exists but not wired to checkout.
+
+  - feature: stripe_connect
+    files:
+      - supabase/functions/create-stripe-connect-account/index.ts
+      - supabase/functions/marketplace-create-payment/index.ts
+      - supabase/functions/marketplace-payment-webhook/index.ts
+    findings: No bugs found. Commission 10% works correctly via destination charges.
+
+  - feature: deep_links
+    files:
+      - ios/Runner/Runner.entitlements
+      - android/app/src/main/AndroidManifest.xml
+      - lib/core/navigation/deep_link_handler.dart
+    findings: Config correct, missing .well-known files on lynewed.com server
+
+  - feature: guest_upload_cguv
+    files:
+      - lib/features/guest/presentation/pages/guest_album_page.dart
+      - lib/features/marketplace/presentation/widgets/cgvu_acceptance_widget.dart
+      - lib/features/my_wedding/presentation/dialogs/magazine_cgvu_dialog.dart
+    findings: No CGUV before upload. Infrastructure exists (cgvu_acceptances table, widget). Pattern from magazine dialog reusable.
+
+  - feature: map_stability
+    files:
+      - lib/features/map/presentation/widgets/lynewed_map_widget.dart
+      - lib/features/map/presentation/state/map_state.dart
+      - lib/features/map/data/datasources/supabase_map_datasource.dart
+      - lib/features/map/presentation/services/marker_icon_generator.dart
+    findings: No fallback icon on generation failure. 2000 markers at zoom ≤5 causes OOM. Min zoom 1.0 too low.
+
+  - feature: marketplace_access
+    files:
+      - lib/features/home/presentation/widgets/nav_bar_pro_widget.dart
+      - lib/features/marketplace/presentation/pages/marketplace_feed_page.dart
+      - lib/features/marketplace/presentation/widgets/category_chips.dart
+    findings: No marketplace tab in pro nav (correct), but no role guard on marketplace route. Only 3 categories (All, Dresses, Shoes).
+
+gaps:
+  - id: GAP-01
+    description: Access to lynewed.com server for .well-known deployment
+    impact: BLOCKING for S03/S05
+    action: Ask Thierry for server access or DNS config
+
+  - id: GAP-02
+    description: Email service choice (Resend vs SendGrid)
+    impact: BLOCKING for S05
+    action: Technical decision needed
+
+  - id: GAP-03
+    description: Apple Team ID and Android SHA256 fingerprint
+    impact: BLOCKING for S03
+    action: Extract from Apple Developer and keystore
+
+  - id: GAP-04
+    description: Magazine shipping calculation details
+    impact: LOW - Q4 from Thierry
+    action: Investigate EPIC-12 implementation

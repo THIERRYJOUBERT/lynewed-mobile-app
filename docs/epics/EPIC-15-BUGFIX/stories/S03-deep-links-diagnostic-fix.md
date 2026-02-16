@@ -6,7 +6,7 @@
 > **Source** : BUG-01c
 > **Dependances** : Aucune
 > **Bloque** : S05 (Edge Function send-wedding-invitation)
-> **Status** : DONE (Phase 1) - Phase 2 bloquée par déploiement serveur
+> **Status** : DONE (Phase 1 + Phase 2)
 
 ---
 

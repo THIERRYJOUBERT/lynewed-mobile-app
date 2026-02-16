@@ -25,6 +25,9 @@ import '/features/my_wedding/presentation/widgets/caption_input_widget.dart';
 import '/features/my_wedding/presentation/widgets/download_button.dart';
 import '/features/my_wedding/presentation/widgets/full_screen_media_viewer.dart';
 import '/features/my_wedding/presentation/widgets/media_picker_sheet.dart';
+import '/core/constants/cgvu_texts.dart';
+import '/features/my_wedding/domain/usecases/accept_cgvu_use_case.dart';
+import '../dialogs/media_upload_cgvu_dialog.dart';
 import '../../data/repositories/guest_album_repository_impl.dart';
 import '../../domain/entities/guest_media.dart';
 import '../../domain/repositories/guest_album_repository.dart';
@@ -66,6 +69,7 @@ class _GuestAlbumPageState extends State<GuestAlbumPage> {
   List<GuestMedia> _media = [];
   Set<String> _favoritedIds = {};
   AlbumFilter _activeFilter = AlbumFilter.all;
+  bool _cgvuAccepted = false;
 
   @override
   void initState() {
@@ -73,9 +77,51 @@ class _GuestAlbumPageState extends State<GuestAlbumPage> {
     _repository = GuestAlbumRepositoryImpl();
     _downloadUseCase = DownloadMediaUseCase(DownloadDataSourceImpl());
 
+    _checkInitialCgvuAcceptance();
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _loadWeddingAndMedia();
     });
+  }
+
+  /// Checks CGVU acceptance status at page init (cache warm-up).
+  Future<void> _checkInitialCgvuAcceptance() async {
+    try {
+      final useCase = const AcceptCgvuUseCase();
+      final alreadyAccepted = await useCase.hasAccepted(
+        cgvuType: guestMediaUploadCgvuType,
+        cgvuVersion: guestMediaUploadCgvuVersion,
+      );
+      if (!mounted) return;
+      setState(() => _cgvuAccepted = alreadyAccepted);
+    } catch (_) {
+      // If DB check fails, stay false -> dialog will show
+      if (!mounted) return;
+      setState(() => _cgvuAccepted = false);
+    }
+  }
+
+  /// Ensures CGVU is accepted before allowing upload.
+  ///
+  /// Returns true if upload can proceed, false otherwise.
+  /// Guards against parallel uploads and shows CGVU dialog if needed.
+  Future<bool> _ensureCgvuAccepted() async {
+    // Guard against parallel uploads
+    if (_isUploading) {
+      _showErrorSnackBar('Please wait for current upload to finish');
+      return false;
+    }
+
+    if (_cgvuAccepted) return true;
+
+    if (!mounted) return false;
+    final accepted = await showMediaUploadCgvuDialog(
+      context: context,
+      onAccepted: () {},
+    );
+    if (accepted && mounted) {
+      setState(() => _cgvuAccepted = true);
+    }
+    return accepted;
   }
 
   /// Loads the wedding ID and then the media.
@@ -201,6 +247,7 @@ class _GuestAlbumPageState extends State<GuestAlbumPage> {
 
   /// Picks and uploads multiple media from gallery.
   Future<void> _pickAndUploadMultipleMedia() async {
+    if (!await _ensureCgvuAccepted()) return;
     try {
       // pickMultipleMedia allows selecting both photos and videos
       final pickedFiles = await _imagePicker.pickMultipleMedia();
@@ -483,6 +530,7 @@ class _GuestAlbumPageState extends State<GuestAlbumPage> {
 
   /// Picks and uploads a photo from gallery.
   Future<void> _pickAndUploadPhoto() async {
+    if (!await _ensureCgvuAccepted()) return;
     try {
       final pickedFile = await _imagePicker.pickImage(
         source: ImageSource.gallery,
@@ -518,6 +566,7 @@ class _GuestAlbumPageState extends State<GuestAlbumPage> {
 
   /// Picks and uploads a video from gallery.
   Future<void> _pickAndUploadVideo() async {
+    if (!await _ensureCgvuAccepted()) return;
     try {
       final pickedFile = await _imagePicker.pickVideo(
         source: ImageSource.gallery,

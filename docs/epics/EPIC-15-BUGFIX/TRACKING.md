@@ -24,6 +24,7 @@
 | 2026-02-16 | S08 DONE - Carte optimisee (fallback icons, LRU cache LinkedHashMap, thread-safety Lock, 13 tests, BUG-05 + BUG-13 resolus) |
 | 2026-02-16 | S07 DONE - Lien "Track on FedEx" cote seller (transaction_detail_page), 3 tests widget, pattern identique buyer |
 | 2026-02-16 | S06 DONE - FedEx dynamic shipping rates (weightKg entity+UI, GetSellerShippingAddress use case, checkout 4-step flow, error+retry, 17 checkout tests) |
+| 2026-02-16 | S09 DONE - Magazine quantity selector (dropdown 1-10, server-side clamp, Stripe line_items quantity, webhook+DB, 20+ tests) |
 
 ---
 
@@ -51,7 +52,7 @@
 
 | Story | Status | Assignee | Date Start | Date Done |
 |-------|--------|----------|------------|-----------|
-| S09 - Quantite magazine | 🔵 Todo | - | - | - |
+| S09 - Quantite magazine | ✅ Done | Claude | 2026-02-16 | 2026-02-16 |
 | S10 - Fixes mineurs batch | 🔵 Todo | - | - | - |
 
 ---
@@ -100,7 +101,7 @@
 
 - [x] Modal CGUV upload photos guest (dialog bloquant, 14 tests widget)
 - [x] Carte optimisee (fallback icons, LRU cache, thread-safety, 13 tests)
-- [ ] Selecteur quantite magazine
+- [x] Selecteur quantite magazine (dropdown 1-10, prix dynamique, server-side clamp)
 - [ ] Fixes mineurs (onglet marketplace pro, chat prenom, border radius)
 
 ### TEST (Transversal)
@@ -116,7 +117,7 @@
 | Metrique | Valeur |
 |----------|--------|
 | Stories totales | 10 |
-| Stories completees | 6 |
+| Stories completees | 9 |
 | Bugs bloquants resolus | 3/3 (~~invite codes~~, ~~FedEx~~, ~~deep links~~) |
 | Bugs fonctionnels resolus | 3/5 (~~CGUV~~, ~~invitation~~, shipping, tracking, ~~carte~~) |
 | Bugs mineurs resolus | 0/3 (marketplace tab, prenom, border radius) |
