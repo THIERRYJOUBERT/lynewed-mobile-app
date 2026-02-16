@@ -141,5 +141,45 @@ void main() {
         )),
       );
     });
+
+    test('should throw when streetLines is empty', () async {
+      const badAddress = ShippingAddress(
+        streetLines: [],
+        city: 'New York',
+        postalCode: '10001',
+        countryCode: 'US',
+      );
+      when(() => mockDatasource.getProfile('seller-123'))
+          .thenAnswer((_) async => createProfile(address: badAddress));
+
+      expect(
+        () => useCase('seller-123'),
+        throwsA(isA<SellerAddressException>().having(
+          (e) => e.message,
+          'message',
+          contains('street address'),
+        )),
+      );
+    });
+
+    test('should throw when streetLines contains only blank strings', () async {
+      const badAddress = ShippingAddress(
+        streetLines: ['  ', ''],
+        city: 'New York',
+        postalCode: '10001',
+        countryCode: 'US',
+      );
+      when(() => mockDatasource.getProfile('seller-123'))
+          .thenAnswer((_) async => createProfile(address: badAddress));
+
+      expect(
+        () => useCase('seller-123'),
+        throwsA(isA<SellerAddressException>().having(
+          (e) => e.message,
+          'message',
+          contains('street address'),
+        )),
+      );
+    });
   });
 }

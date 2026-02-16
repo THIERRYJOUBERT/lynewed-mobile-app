@@ -40,6 +40,13 @@ class GetSellerShippingAddress {
       );
     }
 
+    if (address.streetLines.isEmpty ||
+        address.streetLines.every((line) => line.trim().isEmpty)) {
+      throw const SellerAddressException(
+        'Seller address missing street address',
+      );
+    }
+
     if (address.countryCode.isEmpty) {
       throw const SellerAddressException(
         'Seller address missing country code',

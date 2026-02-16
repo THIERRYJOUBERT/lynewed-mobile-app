@@ -130,7 +130,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   /// Retrieves the seller's shipping address, then calls FedEx rate API
   /// with both addresses and the listing's category/weight.
   Future<void> _fetchShippingRates() async {
-    if (_shippingAddress == null) return;
+    if (_shippingAddress == null || _isLoadingRates) return;
 
     setState(() {
       _isLoadingRates = true;
@@ -152,21 +152,30 @@ class _CheckoutPageState extends State<CheckoutPage> {
       );
 
       if (!mounted) return;
+
+      if (rates.isEmpty) {
+        setState(() {
+          _isLoadingRates = false;
+          _ratesError =
+              'No shipping options available for this route. Please try a different address.';
+        });
+        return;
+      }
+
       setState(() {
         _fedexRates = rates;
         _isLoadingRates = false;
-        // Auto-select cheapest rate.
-        if (rates.isNotEmpty) {
-          final sorted = List<ShippingRate>.from(rates)
-            ..sort((a, b) => a.rateCents.compareTo(b.rateCents));
-          _selectedRate = sorted.first;
-        }
+        // Auto-select the cheapest rate for user convenience.
+        final sorted = List<ShippingRate>.from(rates)
+          ..sort((a, b) => a.rateCents.compareTo(b.rateCents));
+        _selectedRate = sorted.first;
       });
-    } on SellerAddressException catch (e) {
+    } on SellerAddressException catch (_) {
       if (!mounted) return;
       setState(() {
         _isLoadingRates = false;
-        _ratesError = 'Seller shipping address issue: ${e.message}';
+        _ratesError =
+            'Unable to calculate shipping for this listing. Please contact the seller.';
       });
     } catch (e) {
       if (!mounted) return;

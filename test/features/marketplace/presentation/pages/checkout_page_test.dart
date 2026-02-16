@@ -277,9 +277,33 @@ void main() {
         expect(find.text('Retry'), findsOneWidget);
       });
 
-      testWidgets('should show seller address error message', (tester) async {
+      testWidgets('should show generic seller address error message',
+          (tester) async {
         when(() => mockGetSellerAddress(any())).thenThrow(
-            const SellerAddressException('Seller shipping address not configured'));
+            const SellerAddressException(
+                'Seller shipping address not configured'));
+
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        await goToShippingStep(tester);
+
+        // Should show generic message (no internal details leaked).
+        expect(
+            find.text(
+                'Unable to calculate shipping for this listing. Please contact the seller.'),
+            findsOneWidget);
+        expect(find.text('Retry'), findsOneWidget);
+      });
+
+      testWidgets('should show error when FedEx returns empty rates',
+          (tester) async {
+        when(() => mockCalculateRate(
+              fromAddress: any(named: 'fromAddress'),
+              toAddress: any(named: 'toAddress'),
+              category: any(named: 'category'),
+              weightKg: any(named: 'weightKg'),
+            )).thenAnswer((_) async => <ShippingRate>[]);
 
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
@@ -287,7 +311,9 @@ void main() {
         await goToShippingStep(tester);
 
         expect(
-            find.textContaining('Seller shipping address issue'), findsOneWidget);
+            find.text(
+                'No shipping options available for this route. Please try a different address.'),
+            findsOneWidget);
         expect(find.text('Retry'), findsOneWidget);
       });
 
