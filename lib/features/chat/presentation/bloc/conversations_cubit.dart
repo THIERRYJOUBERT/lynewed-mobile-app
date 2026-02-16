@@ -30,6 +30,13 @@ class ConversationsNotifier extends ChangeNotifier {
   ConversationsState _state = const ConversationsInitial();
   ConversationsState get state => _state;
 
+  /// Sets state directly for testing purposes only.
+  @visibleForTesting
+  set testState(ConversationsState newState) {
+    _state = newState;
+    notifyListeners();
+  }
+
   void _emit(ConversationsState newState) {
     _state = newState;
     notifyListeners();

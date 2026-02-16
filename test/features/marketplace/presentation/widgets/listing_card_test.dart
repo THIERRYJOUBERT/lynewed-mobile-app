@@ -138,5 +138,26 @@ void main() {
         expect(find.text('Fair'), findsOneWidget);
       });
     });
+
+    group('border radius', () {
+      testWidgets('should have borderRadius of 4 on card container',
+          (tester) async {
+        await tester.pumpWidget(buildCard());
+
+        final container = tester.widget<Container>(
+          find.descendant(
+            of: find.byType(ListingCard),
+            matching: find.byType(Container).first,
+          ),
+        );
+
+        final decoration = container.decoration as BoxDecoration?;
+        expect(decoration, isNotNull);
+        expect(
+          decoration!.borderRadius,
+          BorderRadius.circular(4),
+        );
+      });
+    });
   });
 }

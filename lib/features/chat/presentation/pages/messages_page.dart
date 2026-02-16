@@ -12,9 +12,13 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
+import '/features/auth/domain/entities/user_role.dart' as auth_entities;
+import '/features/auth/presentation/bloc/auth_cubit.dart';
+import '/features/auth/presentation/bloc/auth_state.dart';
 import '/features/marketplace/domain/entities/marketplace_conversation.dart';
 import '/features/marketplace/domain/repositories/marketplace_chat_repository.dart';
 import '/features/marketplace/presentation/pages/marketplace_chat_page.dart';
@@ -36,6 +40,7 @@ class MessagesPage extends StatefulWidget {
     super.key,
     this.initialTab = 0,
     this.weddingId,
+    this.notifier,
   });
 
   /// Initial tab index (0=Messages, 1=Wedding, 2=Marketplace)
@@ -43,6 +48,9 @@ class MessagesPage extends StatefulWidget {
 
   /// Wedding ID for "Manage Groups" in Wedding tab
   final String? weddingId;
+
+  /// Optional notifier for testing (created internally if null).
+  final ConversationsNotifier? notifier;
 
   static const String routeName = 'Messages';
   static const String routePath = '/messages';
@@ -66,10 +74,12 @@ class _MessagesPageState extends State<MessagesPage> {
   void initState() {
     super.initState();
     _selectedTab = widget.initialTab.clamp(0, 2);
-    _notifier = ConversationsNotifier();
+    _notifier = widget.notifier ?? ConversationsNotifier();
     _notifier.addListener(_onStateChanged);
-    _notifier.loadAll();
-    _loadMarketplaceConversations();
+    if (widget.notifier == null) {
+      _notifier.loadAll();
+      _loadMarketplaceConversations();
+    }
   }
 
   void _onStateChanged() {
@@ -79,7 +89,9 @@ class _MessagesPageState extends State<MessagesPage> {
   @override
   void dispose() {
     _notifier.removeListener(_onStateChanged);
-    _notifier.dispose();
+    if (widget.notifier == null) {
+      _notifier.dispose();
+    }
     super.dispose();
   }
 
@@ -267,20 +279,28 @@ class _MessagesPageState extends State<MessagesPage> {
         ? state.archivedConversations.length + state.blockedUsers.length
         : 0;
 
-    return Scaffold(
-      backgroundColor: LynewedColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(archivedCount),
-            const Divider(height: 1, color: LynewedColors.gray200),
-            // Tab selector
-            if (state is ConversationsLoaded) _buildTabSelector(state),
-            // Body
-            Expanded(child: _buildBody(state)),
-          ],
-        ),
-      ),
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (context, authState) {
+        final isProfessional = authState is Authenticated &&
+            authState.profile?.role == auth_entities.UserRole.professional;
+
+        return Scaffold(
+          backgroundColor: LynewedColors.background,
+          body: SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(archivedCount),
+                const Divider(height: 1, color: LynewedColors.gray200),
+                // Tab selector
+                if (state is ConversationsLoaded)
+                  _buildTabSelector(state, isProfessional: isProfessional),
+                // Body
+                Expanded(child: _buildBody(state)),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -336,7 +356,10 @@ class _MessagesPageState extends State<MessagesPage> {
     );
   }
 
-  Widget _buildTabSelector(ConversationsLoaded state) {
+  Widget _buildTabSelector(
+    ConversationsLoaded state, {
+    bool isProfessional = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
       child: Row(
@@ -358,14 +381,16 @@ class _MessagesPageState extends State<MessagesPage> {
                 ? state.weddingUnreadCount
                 : null,
           ),
-          const SizedBox(width: 8),
-          LynewedChip(
-            label: 'Marketplace',
-            selected: _selectedTab == 2,
-            onSelected: (_) => setState(() => _selectedTab = 2),
-            count:
-                _marketplaceUnreadCount > 0 ? _marketplaceUnreadCount : null,
-          ),
+          if (!isProfessional) ...[
+            const SizedBox(width: 8),
+            LynewedChip(
+              label: 'Marketplace',
+              selected: _selectedTab == 2,
+              onSelected: (_) => setState(() => _selectedTab = 2),
+              count:
+                  _marketplaceUnreadCount > 0 ? _marketplaceUnreadCount : null,
+            ),
+          ],
         ],
       ),
     );

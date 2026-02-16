@@ -54,7 +54,7 @@ class ListingCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: LynewedColors.background,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: LynewedBorders.borderRadiusXs,
           boxShadow: [
             BoxShadow(
               color: LynewedColors.primary.withValues(alpha: 0.05),
