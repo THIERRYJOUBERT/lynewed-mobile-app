@@ -48,6 +48,7 @@ void main() {
           fromAddress: any(named: 'fromAddress'),
           toAddress: any(named: 'toAddress'),
           category: any(named: 'category'),
+          weightKg: any(named: 'weightKg'),
         ),
       ).thenAnswer(
         (_) async => [
@@ -78,12 +79,52 @@ void main() {
       expect(result[0].serviceType, 'FEDEX_GROUND');
     });
 
+    test('should pass weightKg to repository when provided', () async {
+      when(
+        () => mockRepository.calculateRates(
+          fromAddress: any(named: 'fromAddress'),
+          toAddress: any(named: 'toAddress'),
+          category: any(named: 'category'),
+          weightKg: any(named: 'weightKg'),
+        ),
+      ).thenAnswer(
+        (_) async => [
+          const ShippingRate(
+            serviceType: 'FEDEX_GROUND',
+            serviceName: 'FedEx Ground',
+            rateCents: 1500,
+            currency: 'USD',
+          ),
+        ],
+      );
+
+      final result = await useCase(
+        fromAddress: fromAddress,
+        toAddress: toAddress,
+        category: 'dress',
+        weightKg: 4.5,
+      );
+
+      verify(
+        () => mockRepository.calculateRates(
+          fromAddress: fromAddress,
+          toAddress: toAddress,
+          category: 'dress',
+          weightKg: 4.5,
+        ),
+      ).called(1);
+
+      expect(result.length, 1);
+      expect(result[0].rateCents, 1500);
+    });
+
     test('should propagate repository exceptions', () async {
       when(
         () => mockRepository.calculateRates(
           fromAddress: any(named: 'fromAddress'),
           toAddress: any(named: 'toAddress'),
           category: any(named: 'category'),
+          weightKg: any(named: 'weightKg'),
         ),
       ).thenThrow(Exception('FedEx API error'));
 

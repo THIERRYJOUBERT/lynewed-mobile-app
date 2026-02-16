@@ -34,6 +34,7 @@ class MarketplaceListing {
     required this.updatedAt,
     this.soldAt,
     this.coverPhotoStoragePath,
+    this.weightKg,
   });
 
   /// Unique identifier (UUID from database).
@@ -102,6 +103,15 @@ class MarketplaceListing {
   /// The path can be used to construct a public URL via Supabase storage.
   final String? coverPhotoStoragePath;
 
+  /// Item weight in kilograms (optional).
+  ///
+  /// If null, FedEx API will use category defaults:
+  /// - dress: 3.0 kg
+  /// - shoes: 2.0 kg
+  ///
+  /// Valid range: 0.1 - 50.0 kg (enforced by DB constraint).
+  final double? weightKg;
+
   /// Price formatted as dollars (e.g., 29999 -> 299.99).
   double get priceInDollars => priceCents / 100;
 
@@ -159,6 +169,9 @@ class MarketplaceListing {
           ? DateTime.parse(json['sold_at'] as String)
           : null,
       coverPhotoStoragePath: coverPath,
+      weightKg: json['weight_kg'] != null
+          ? double.parse(json['weight_kg'].toString())
+          : null,
     );
   }
 
@@ -181,6 +194,7 @@ class MarketplaceListing {
       'latitude': latitude,
       'longitude': longitude,
       'status': status,
+      if (weightKg != null) 'weight_kg': weightKg,
     };
   }
 
@@ -224,6 +238,7 @@ class MarketplaceListing {
     DateTime? updatedAt,
     DateTime? soldAt,
     String? coverPhotoStoragePath,
+    double? weightKg,
   }) {
     return MarketplaceListing(
       id: id ?? this.id,
@@ -248,6 +263,7 @@ class MarketplaceListing {
       soldAt: soldAt ?? this.soldAt,
       coverPhotoStoragePath:
           coverPhotoStoragePath ?? this.coverPhotoStoragePath,
+      weightKg: weightKg ?? this.weightKg,
     );
   }
 }

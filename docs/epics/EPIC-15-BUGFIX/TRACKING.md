@@ -1,7 +1,7 @@
 # TRACKING - EPIC-15-BUGFIX
 
 > Status : 🟡 In Progress
-> Stories : 7/10 completees
+> Stories : 8/10 completees
 > Derniere MAJ : 2026-02-16
 
 ---
@@ -23,6 +23,7 @@
 | 2026-02-16 | S04 DONE - Modal CGUV upload photos guest (dialog bloquant, scroll obligatoire, 14 tests widget, guard race condition) |
 | 2026-02-16 | S08 DONE - Carte optimisee (fallback icons, LRU cache LinkedHashMap, thread-safety Lock, 13 tests, BUG-05 + BUG-13 resolus) |
 | 2026-02-16 | S07 DONE - Lien "Track on FedEx" cote seller (transaction_detail_page), 3 tests widget, pattern identique buyer |
+| 2026-02-16 | S06 DONE - FedEx dynamic shipping rates (weightKg entity+UI, GetSellerShippingAddress use case, checkout 4-step flow, error+retry, 17 checkout tests) |
 
 ---
 
@@ -42,7 +43,7 @@
 | Story | Status | Assignee | Date Start | Date Done |
 |-------|--------|----------|------------|-----------|
 | S05 - Edge Fn invitation Resend | ✅ Done | Claude | 2026-02-16 | 2026-02-16 |
-| S06 - FedEx shipping dynamique | 🔵 Todo | - | - | - |
+| S06 - FedEx shipping dynamique | ✅ Done | Claude | 2026-02-16 | 2026-02-16 |
 | S07 - FedEx tracking lien | ✅ Done | Claude | 2026-02-16 | 2026-02-16 |
 | S08 - Carte optimisation | ✅ Done | Claude | 2026-02-16 | 2026-02-16 |
 
