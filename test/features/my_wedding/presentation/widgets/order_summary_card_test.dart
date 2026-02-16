@@ -15,6 +15,7 @@ void main() {
       int photoCount = 25,
       int spreadCount = 0,
       int magazinePriceCents = 5900,
+      int quantity = 1,
       String? coverPhotoUrl,
       String? weddingTitle,
     }) {
@@ -25,6 +26,7 @@ void main() {
             photoCount: photoCount,
             spreadCount: spreadCount,
             magazinePriceCents: magazinePriceCents,
+            quantity: quantity,
             coverPhotoUrl: coverPhotoUrl,
             weddingTitle: weddingTitle,
           ),
@@ -138,6 +140,58 @@ void main() {
 
         expect(find.text('COLLECTOR Wedding Magazine'), findsOneWidget);
         expect(find.text('25x32cm \u2022 8 spreads'), findsOneWidget);
+      });
+    });
+
+    group('quantity display', () {
+      testWidgets('should show quantity row when quantity > 1',
+          (tester) async {
+        await tester.pumpWidget(buildWidget(
+          magazinePriceCents: 5900,
+          quantity: 3,
+        ));
+        await tester.pump();
+
+        expect(find.text('Quantity'), findsOneWidget);
+        expect(find.text('x 3'), findsOneWidget);
+      });
+
+      testWidgets('should show subtotal when quantity > 1',
+          (tester) async {
+        await tester.pumpWidget(buildWidget(
+          magazinePriceCents: 5900,
+          quantity: 3,
+        ));
+        await tester.pump();
+
+        expect(find.text('Subtotal'), findsOneWidget);
+        expect(find.text(r'$177.00'), findsOneWidget);
+      });
+
+      testWidgets('should not show quantity row when quantity is 1',
+          (tester) async {
+        await tester.pumpWidget(buildWidget(
+          magazinePriceCents: 5900,
+          quantity: 1,
+        ));
+        await tester.pump();
+
+        expect(find.text('Quantity'), findsNothing);
+        expect(find.text('Subtotal'), findsNothing);
+      });
+
+      testWidgets('should show unit price as Magazine line for quantity > 1',
+          (tester) async {
+        await tester.pumpWidget(buildWidget(
+          magazinePriceCents: 5900,
+          quantity: 2,
+        ));
+        await tester.pump();
+
+        expect(find.text('Magazine (ICONIC)'), findsOneWidget);
+        expect(find.text(r'$59.00'), findsOneWidget);
+        expect(find.text('Subtotal'), findsOneWidget);
+        expect(find.text(r'$118.00'), findsOneWidget);
       });
     });
 

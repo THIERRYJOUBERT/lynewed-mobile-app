@@ -15,6 +15,7 @@ interface CheckoutRequest {
   magazine_title: string;
   magazine_date?: string;
   cover_photo_id?: string;
+  quantity?: number;
   success_url: string;
   cancel_url: string;
 }
@@ -118,6 +119,9 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // SECURITY: Validate and clamp quantity (1-10)
+    const quantity = Math.min(Math.max(Math.round(body.quantity || 1), 1), 10);
+
     // SECURITY: Calculate prices SERVER-SIDE (never trust client)
     const magazinePriceCents = FORMAT_PRICES[body.magazine_format];
 
@@ -179,7 +183,7 @@ Deno.serve(async (req: Request) => {
             },
             unit_amount: magazinePriceCents, // SERVER-SIDE calculated
           },
-          quantity: 1,
+          quantity: quantity,
         },
       ],
       shipping_address_collection: {
@@ -230,6 +234,7 @@ Deno.serve(async (req: Request) => {
         magazine_title: body.magazine_title,
         magazine_date: body.magazine_date || "",
         cover_photo_id: body.cover_photo_id || "",
+        quantity: quantity.toString(),
       },
       success_url: body.success_url,
       cancel_url: body.cancel_url,

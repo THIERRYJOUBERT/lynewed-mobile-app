@@ -269,9 +269,22 @@ class _MagazineCheckoutPageState extends State<MagazineCheckoutPage> {
             photoCount: state.photoCount,
             spreadCount: widget.spreadCount,
             magazinePriceCents: state.magazinePriceCents,
+            quantity: state.quantity,
             coverPhotoUrl: state.coverPhotoUrl,
             weddingTitle: state.weddingTitle,
           ),
+          const SizedBox(height: 30),
+
+          // Quantity Selector
+          Text(
+            'QUANTITY',
+            style: LynewedTextStyles.sectionTitle.copyWith(
+              letterSpacing: 1.2,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildQuantitySelector(state),
           const SizedBox(height: 30),
 
           // CGVU Acceptance
@@ -347,6 +360,36 @@ class _MagazineCheckoutPageState extends State<MagazineCheckoutPage> {
     );
   }
 
+  Widget _buildQuantitySelector(MagazineCheckoutState state) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: LynewedColors.background,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: LynewedColors.border),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Number of copies', style: LynewedTextStyles.bodyMedium),
+          DropdownButton<int>(
+            value: state.quantity,
+            underline: const SizedBox.shrink(),
+            style: LynewedTextStyles.bodyMedium.copyWith(
+              color: LynewedColors.textPrimary,
+            ),
+            items: List.generate(10, (i) => i + 1)
+                .map((q) => DropdownMenuItem(value: q, child: Text('$q')))
+                .toList(),
+            onChanged: (value) {
+              if (value != null) _cubit.updateQuantity(value);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBottomBar(MagazineCheckoutState state) {
     return Container(
       padding: EdgeInsets.fromLTRB(
@@ -366,7 +409,7 @@ class _MagazineCheckoutPageState extends State<MagazineCheckoutPage> {
         ],
       ),
       child: LynewedButton(
-        text: 'Checkout — ${state.magazinePriceFormatted}',
+        text: 'Checkout — ${state.totalPriceFormatted}',
         onPressed: state.canProceed ? () => _cubit.initiateCheckout() : null,
         width: double.infinity,
         icon: Icons.lock_outline,

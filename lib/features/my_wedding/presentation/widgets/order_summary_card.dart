@@ -18,6 +18,7 @@ class OrderSummaryCard extends StatelessWidget {
     required this.photoCount,
     this.spreadCount = 0,
     required this.magazinePriceCents,
+    this.quantity = 1,
     this.coverPhotoUrl,
     this.weddingTitle,
   });
@@ -31,8 +32,11 @@ class OrderSummaryCard extends StatelessWidget {
   /// Actual number of spreads (content pages, excluding cover).
   final int spreadCount;
 
-  /// Magazine price in cents.
+  /// Magazine price in cents (unit price).
   final int magazinePriceCents;
+
+  /// Number of copies ordered.
+  final int quantity;
 
   /// Cover photo URL for preview (optional).
   final String? coverPhotoUrl;
@@ -104,8 +108,20 @@ class OrderSummaryCard extends StatelessWidget {
           _buildPriceRow(
             'Magazine (${format.name})',
             _formatCents(magazinePriceCents),
-            isTotal: true,
+            isTotal: quantity == 1,
           ),
+          if (quantity > 1) ...[
+            const SizedBox(height: 4),
+            _buildPriceRow('Quantity', 'x $quantity'),
+            const SizedBox(height: 8),
+            const Divider(height: 1, color: LynewedColors.border),
+            const SizedBox(height: 8),
+            _buildPriceRow(
+              'Subtotal',
+              _formatCents(magazinePriceCents * quantity),
+              isTotal: true,
+            ),
+          ],
           const SizedBox(height: 8),
           Text(
             'Shipping calculated at checkout',

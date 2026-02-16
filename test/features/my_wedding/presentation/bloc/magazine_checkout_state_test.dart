@@ -286,6 +286,177 @@ void main() {
       });
     });
 
+    group('quantity', () {
+      test('should default quantity to 1', () {
+        final state = MagazineCheckoutState(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: testFormat,
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+        );
+
+        expect(state.quantity, 1);
+      });
+
+      test('should accept custom quantity', () {
+        final state = MagazineCheckoutState(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: testFormat,
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+          quantity: 5,
+        );
+
+        expect(state.quantity, 5);
+      });
+
+      test('should calculate totalPriceCents as unitPrice x quantity', () {
+        final state = MagazineCheckoutState(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: MagazineFormats.iconic, // 5900 cents
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+          quantity: 3,
+        );
+
+        expect(state.totalPriceCents, 17700); // 5900 × 3
+      });
+
+      test('should calculate totalPriceCents for quantity 1', () {
+        final state = MagazineCheckoutState(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: MagazineFormats.iconic,
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+        );
+
+        expect(state.totalPriceCents, 5900); // 5900 × 1
+      });
+
+      test('should format totalPriceFormatted correctly', () {
+        final state = MagazineCheckoutState(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: MagazineFormats.iconic,
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+          quantity: 3,
+        );
+
+        expect(state.totalPriceFormatted, r'$177');
+      });
+
+      test('should format totalPriceFormatted for guest_edition x 5', () {
+        final state = MagazineCheckoutState(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: MagazineFormats.guestEdition, // 2900 cents
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+          quantity: 5,
+        );
+
+        expect(state.totalPriceCents, 14500);
+        expect(state.totalPriceFormatted, r'$145');
+      });
+
+      test('should include quantity in canProceed check', () {
+        final state = MagazineCheckoutState(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: testFormat,
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+          cgvuAccepted: true,
+          quantity: 3,
+        );
+
+        expect(state.canProceed, true);
+      });
+    });
+
+    group('copyWith quantity', () {
+      test('should copy with updated quantity', () {
+        final original = MagazineCheckoutState(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: testFormat,
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+        );
+
+        final updated = original.copyWith(quantity: 4);
+
+        expect(updated.quantity, 4);
+        expect(updated.weddingId, 'wedding-123');
+      });
+
+      test('should preserve quantity when not specified in copyWith', () {
+        final original = MagazineCheckoutState(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: testFormat,
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+          quantity: 7,
+        );
+
+        final updated = original.copyWith(cgvuAccepted: true);
+
+        expect(updated.quantity, 7);
+      });
+    });
+
+    group('equality with quantity', () {
+      test('should be equal when quantity matches', () {
+        final state1 = MagazineCheckoutState(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: testFormat,
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+          quantity: 3,
+        );
+
+        final state2 = MagazineCheckoutState(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: testFormat,
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+          quantity: 3,
+        );
+
+        expect(state1, equals(state2));
+      });
+
+      test('should not be equal when quantity differs', () {
+        final state1 = MagazineCheckoutState(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: testFormat,
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+          quantity: 2,
+        );
+
+        final state2 = MagazineCheckoutState(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: testFormat,
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+          quantity: 5,
+        );
+
+        expect(state1, isNot(equals(state2)));
+      });
+    });
+
     group('hashCode', () {
       test('should be same for equal states', () {
         final state1 = MagazineCheckoutState(

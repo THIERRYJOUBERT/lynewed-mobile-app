@@ -21,6 +21,7 @@ class MagazineOrder {
     required this.status,
     required this.photoCount,
     required this.magazineTitle,
+    this.quantity = 1,
     required this.createdAt,
     this.paidAt,
     this.productionStartedAt,
@@ -60,6 +61,9 @@ class MagazineOrder {
 
   /// Order status: 'pending', 'paid', 'in_production', 'shipped', 'delivered', 'cancelled'.
   final String status;
+
+  /// Number of copies ordered.
+  final int quantity;
 
   /// Number of photos in the magazine.
   final int photoCount;
@@ -234,6 +238,7 @@ class MagazineOrder {
       totalPaidCents: json['total_paid_cents'] as int,
       currency: json['currency'] as String? ?? 'USD',
       status: json['status'] as String,
+      quantity: json['quantity'] as int? ?? 1,
       photoCount: json['photo_count'] as int,
       magazineTitle: json['magazine_title'] as String,
       createdAt: DateTime.parse(json['created_at'] as String),

@@ -36,6 +36,7 @@ class MagazineCheckoutState {
     this.weddingDate,
     this.coverPhotoId,
     this.coverPhotoUrl,
+    this.quantity = 1,
     this.cgvuAccepted = false,
     this.step = CheckoutStep.addressEntry,
     this.checkoutUrl,
@@ -68,6 +69,9 @@ class MagazineCheckoutState {
   /// Cover photo URL for preview (optional).
   final String? coverPhotoUrl;
 
+  /// Number of magazine copies to order (1-10).
+  final int quantity;
+
   /// Whether CGVU/Terms are accepted.
   final bool cgvuAccepted;
 
@@ -86,14 +90,25 @@ class MagazineCheckoutState {
   /// Error message if something went wrong.
   final String? errorMessage;
 
-  /// Returns the magazine price in cents.
+  /// Returns the unit magazine price in cents.
   int get magazinePriceCents => format.priceCents;
 
-  /// Returns the formatted magazine price.
+  /// Returns the formatted unit magazine price.
   String get magazinePriceFormatted => format.priceFormatted;
 
+  /// Returns the total price in cents (unit price x quantity).
+  int get totalPriceCents => format.priceCents * quantity;
+
+  /// Returns the formatted total price.
+  String get totalPriceFormatted {
+    final dollars = totalPriceCents ~/ 100;
+    final cents = totalPriceCents % 100;
+    if (cents == 0) return '\$$dollars';
+    return '\$$dollars.${cents.toString().padLeft(2, '0')}';
+  }
+
   /// Returns whether the checkout can proceed.
-  bool get canProceed => cgvuAccepted && !isProcessing;
+  bool get canProceed => cgvuAccepted && !isProcessing && quantity >= 1;
 
   /// Returns whether we're currently processing.
   bool get isProcessing => step == CheckoutStep.processing;
@@ -111,6 +126,7 @@ class MagazineCheckoutState {
     MagazineFormat? format,
     int? photoCount,
     String? weddingTitle,
+    int? quantity,
     DateTime? weddingDate,
     bool clearWeddingDate = false,
     String? coverPhotoId,
@@ -134,6 +150,7 @@ class MagazineCheckoutState {
       format: format ?? this.format,
       photoCount: photoCount ?? this.photoCount,
       weddingTitle: weddingTitle ?? this.weddingTitle,
+      quantity: quantity ?? this.quantity,
       weddingDate:
           clearWeddingDate ? null : (weddingDate ?? this.weddingDate),
       coverPhotoId:
@@ -161,6 +178,7 @@ class MagazineCheckoutState {
         other.format == format &&
         other.photoCount == photoCount &&
         other.weddingTitle == weddingTitle &&
+        other.quantity == quantity &&
         other.weddingDate == weddingDate &&
         other.coverPhotoId == coverPhotoId &&
         other.coverPhotoUrl == coverPhotoUrl &&
@@ -179,6 +197,7 @@ class MagazineCheckoutState {
         format,
         photoCount,
         weddingTitle,
+        quantity,
         weddingDate,
         coverPhotoId,
         coverPhotoUrl,
