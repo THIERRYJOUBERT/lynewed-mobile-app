@@ -1,13 +1,19 @@
 # Story S06: Creer Edge Function send-wedding-invitation (Resend)
 
+> **DEPRECATED** - See EPIC-15-BUGFIX/S05 for the production implementation.
+> This spec was never implemented. The actual deployed Edge Function is in
+> `supabase/functions/send-wedding-invitation/index.ts` (created by EPIC-15/S05).
+> Key differences: domain is `lynewed.com` (not `lynewed.app` as originally spec'd), template is in English (not French),
+> dates formatted in `en-US` (not `fr-FR`).
+
 ## Description
 En tant que systeme, je veux pouvoir envoyer des emails d'invitation aux guests via une Edge Function, afin de permettre aux mariees d'inviter leurs proches.
 
 ## Criteres d'Acceptance (Gherkin)
 
-- [ ] Given a guest with email "pierre@example.com" When the Edge Function send-wedding-invitation is called with guest_id and wedding_id Then an email should be sent to "pierre@example.com" And the email subject should be "Vous etes invite(e) au mariage de Marie !" And the email body should contain the invite code "ABCD1234" And the email should contain a QR code image And the email should contain a deep link "https://lynewed.app/join/ABCD1234" And wedding_guests.status should be updated to 'invited' And wedding_guests.invited_at should be set to current timestamp
+- [ ] Given a guest with email "pierre@example.com" When the Edge Function send-wedding-invitation is called with guest_id and wedding_id Then an email should be sent to "pierre@example.com" And the email subject should be "Vous etes invite(e) au mariage de Marie !" And the email body should contain the invite code "ABCD1234" And the email should contain a QR code image And the email should contain a deep link "https://lynewed.com/join/ABCD1234" And wedding_guests.status should be updated to 'invited' And wedding_guests.invited_at should be set to current timestamp
 - [ ] Given the invitation email is generated Then it should contain: Header "Vous etes invite(e) au mariage de Marie !", Instructions "Telechargez l'app Lynewed et rejoignez le mariage.", Code "Code mariage : ABCD1234", QR Code encoding the deep link, Button "Rejoindre le mariage" linking to deep link, Footer "Ce code expire dans 30 jours"
-- [ ] Given the QR code is generated When scanning the QR code Then it should resolve to "https://lynewed.app/join/ABCD1234"
+- [ ] Given the QR code is generated When scanning the QR code Then it should resolve to "https://lynewed.com/join/ABCD1234"
 - [ ] Given a guest with invalid email "not-an-email" When the Edge Function is called Then it should return an error "invalid_email" And no email should be sent And wedding_guests.status should remain unchanged
 - [ ] Given Resend rate limit has been exceeded When the Edge Function is called Then it should return an error "rate_limited" And the response should include retry_after timestamp
 - [ ] Given a non-existent guest_id When the Edge Function is called Then it should return an error "guest_not_found"
@@ -99,7 +105,7 @@ serve(async (req: Request) => {
 
     const inviteCode = guest.weddings.invite_code;
     const brideName = guest.weddings.profiles.first_name;
-    const deepLink = `https://lynewed.app/join/${inviteCode}`;
+    const deepLink = `https://lynewed.com/join/${inviteCode}`;
     const expiresAt = new Date(guest.weddings.invite_code_expires_at);
 
     // Generate QR code as data URL
@@ -125,7 +131,7 @@ serve(async (req: Request) => {
 
     // Send email
     const { data: emailData, error: emailError } = await resend.emails.send({
-      from: 'Lynewed <noreply@lynewed.app>',
+      from: 'Lynewed <noreply@lynewed.com>',
       to: guest.email,
       subject: `Vous etes invite(e) au mariage de ${brideName} !`,
       html: generateEmailTemplate({
@@ -310,7 +316,7 @@ curl -X POST http://localhost:54321/functions/v1/send-wedding-invitation \
 ## Dependances
 
 - EPIC-06 complete (colonnes invite_code, invited_at)
-- Compte Resend configure avec domaine lynewed.app verifie
+- Compte Resend configure avec domaine lynewed.com verifie
 
 ## Stories Dependantes
 
@@ -321,9 +327,9 @@ curl -X POST http://localhost:54321/functions/v1/send-wedding-invitation \
 ### Configuration domaine
 
 Pour que les emails arrivent correctement (pas en spam):
-1. Verifier le domaine lynewed.app dans Resend dashboard
+1. Verifier le domaine lynewed.com dans Resend dashboard
 2. Configurer les enregistrements DNS (SPF, DKIM, DMARC)
-3. Utiliser une adresse from: coherente (noreply@lynewed.app)
+3. Utiliser une adresse from: coherente (noreply@lynewed.com)
 
 ### Rate limits Resend
 
