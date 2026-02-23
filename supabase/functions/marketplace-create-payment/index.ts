@@ -132,14 +132,14 @@ Deno.serve(async (req: Request) => {
       .eq('id', listing.seller_id)
       .single();
 
-    // Use complete shipping_address from profile, fallback to minimal data
-    const shippingFromAddress = sellerProfile?.shipping_address || {
-      street_lines: [],
-      city: '',
-      postal_code: '',
-      country_code: '',
-      person_name: sellerProfile?.full_name || 'Seller',
-    };
+    // Validate seller has a complete shipping address (required for FedEx label generation)
+    const shippingFromAddress = sellerProfile?.shipping_address;
+    if (!shippingFromAddress?.city || !shippingFromAddress?.street_lines?.length) {
+      return new Response(JSON.stringify({ error: 'Seller has not configured their shipping address. Please set up your address in your profile before selling.' }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", "Connection": "keep-alive" },
+      });
+    }
 
     // FIX M-02: Idempotency key to prevent duplicate checkout sessions
     const idempotencyKey = `checkout_${body.listing_id}_${user.id}_${Date.now()}`;

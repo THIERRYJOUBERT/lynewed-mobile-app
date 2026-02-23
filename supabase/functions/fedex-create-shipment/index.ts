@@ -1,9 +1,32 @@
 // EPIC-14 S12: Generate FedEx Shipping Label
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { FedExClient } from "./fedex-client.ts";
+import { FedExClient, type Address } from "./fedex-client.ts";
 
 interface CreateShipmentRequest { transaction_id: string; service_type: string; }
+
+/** Maps a DB address (snake_case keys) to the FedEx Address interface (camelCase). */
+function mapAddress(addr: Record<string, unknown>, name: string, phone: string): Address {
+  return {
+    streetLines: (addr.street_lines || addr.streetLines || []) as string[],
+    city: (addr.city || '') as string,
+    postalCode: (addr.postal_code || addr.postalCode || '') as string,
+    countryCode: (addr.country_code || addr.countryCode || '') as string,
+    stateOrProvinceCode: (addr.state_or_province_code || addr.stateOrProvinceCode) as string | undefined,
+    personName: name,
+    phoneNumber: phone || undefined,
+  };
+}
+
+/** Validates that required FedEx address fields are present. Returns error messages. */
+function validateAddress(addr: Address, label: string): string[] {
+  const errors: string[] = [];
+  if (!addr.streetLines?.length || !addr.streetLines[0]) errors.push(`${label}: street address is required`);
+  if (!addr.city) errors.push(`${label}: city is required`);
+  if (!addr.postalCode) errors.push(`${label}: postal code is required`);
+  if (!addr.countryCode) errors.push(`${label}: country code is required`);
+  return errors;
+}
 
 const PKG: Record<string, { weight: { units: 'KG'; value: number }; dimensions: { units: 'CM'; length: number; width: number; height: number } }> = {
   dress: { weight: { units: 'KG', value: 3 }, dimensions: { units: 'CM', length: 60, width: 40, height: 20 } },
@@ -35,15 +58,37 @@ Deno.serve(async (req: Request) => {
     const category = (tx.listing as Record<string, string>)?.category || 'other';
     const packageDetails = PKG[category] || PKG.other;
 
-    // Use person_name/personName from addresses, fallback to profile names
-    const fromAddr = tx.shipping_from_address as Record<string, unknown>;
+    // Resolve seller address: refresh from profile if transaction has empty address (old transactions)
+    let fromAddr = tx.shipping_from_address as Record<string, unknown>;
+    const fromStreetLines = (fromAddr.street_lines || fromAddr.streetLines) as string[] | undefined;
+    if (!fromAddr.city && (!fromStreetLines?.length)) {
+      console.log('Seller address empty in transaction, refreshing from profile...');
+      const { data: sellerProfile } = await supabaseAdmin.from('profiles').select('shipping_address, full_name').eq('id', tx.seller_id).single();
+      if (sellerProfile?.shipping_address && sellerProfile.shipping_address.city) {
+        fromAddr = sellerProfile.shipping_address as Record<string, unknown>;
+        await supabaseAdmin.from('marketplace_transactions').update({ shipping_from_address: fromAddr, updated_at: new Date().toISOString() }).eq('id', body.transaction_id);
+        console.log('Seller address refreshed from profile');
+      }
+    }
+
     const toAddr = tx.shipping_to_address as Record<string, unknown>;
     const shipperName = (fromAddr.person_name || fromAddr.personName || 'Seller') as string;
     const recipientName = (toAddr.person_name || toAddr.personName || 'Buyer') as string;
     const shipperPhone = (fromAddr.phone_number || fromAddr.phoneNumber || '') as string;
     const recipientPhone = (toAddr.phone_number || toAddr.phoneNumber || '') as string;
 
-    const shipment = await fedex.createShipment({ shipper: { ...fromAddr, personName: shipperName, phoneNumber: shipperPhone || undefined }, recipient: { ...toAddr, personName: recipientName, phoneNumber: recipientPhone || undefined }, serviceType: body.service_type, packageDetails, referenceId: tx.id });
+    // Map snake_case DB fields to camelCase FedEx Address interface
+    const shipperAddress = mapAddress(fromAddr, shipperName, shipperPhone);
+    const recipientAddress = mapAddress(toAddr, recipientName, recipientPhone);
+
+    // Validate addresses before calling FedEx
+    const validationErrors = [...validateAddress(shipperAddress, 'Shipper'), ...validateAddress(recipientAddress, 'Recipient')];
+    if (validationErrors.length > 0) {
+      console.error('Address validation failed:', validationErrors);
+      return new Response(JSON.stringify({ error: `Address validation failed: ${validationErrors.join(', ')}` }), { status: 400, headers: { "Content-Type": "application/json" } });
+    }
+
+    const shipment = await fedex.createShipment({ shipper: shipperAddress, recipient: recipientAddress, serviceType: body.service_type, packageDetails, referenceId: tx.id });
 
     // Upload label to Storage
     const labelFileName = `${user.id}/${tx.id}_${shipment.trackingNumber}.pdf`;

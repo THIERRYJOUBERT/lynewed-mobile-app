@@ -1,7 +1,7 @@
 /// Tests for HomeBridesPage.
 ///
 /// Verifies the home page for brides:
-/// - Header with greeting and notification badge
+/// - Header with LYNEWED logo and notification badge
 /// - WeddingSummaryCard integration
 /// - QuickActionsRow integration
 /// - Pull-to-refresh functionality
@@ -113,7 +113,7 @@ void main() {
     });
 
     group('Header', () {
-      testWidgets('should display greeting with user name', (tester) async {
+      testWidgets('should display LYNEWED logo in header', (tester) async {
         // Arrange
         when(() => mockAuthRepository.getCurrentProfile())
             .thenAnswer((_) async => Success(brideProfile));
@@ -136,8 +136,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Assert - should contain greeting
-        expect(find.textContaining('Hello'), findsWidgets);
+        // Assert - should contain LYNEWED logo
+        expect(find.text('LYNEWED'), findsOneWidget);
 
         // Cleanup
         await authCubit.close();

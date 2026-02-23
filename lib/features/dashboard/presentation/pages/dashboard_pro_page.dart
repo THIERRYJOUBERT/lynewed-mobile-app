@@ -218,39 +218,26 @@ class _DashboardProPageState extends State<DashboardProPage>
       alignment: Alignment.topCenter,
       child: Container(
         width: double.infinity,
-        height: 110.0,
         decoration: const BoxDecoration(color: LynewedColors.background),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
+              padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 0.0),
+              child: Column(
                 children: [
-                  // Title with "Pro" badge
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'HOME',
-                        style:
-                            LynewedTextStyles.sheetTitle.copyWith(fontSize: 18.0),
-                      ),
-                      const SizedBox(width: 8.0),
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 2.0),
-                        child: Text(
-                          'Pro',
-                          style: LynewedTextStyles.bodyMedium,
-                        ),
-                      ),
-                    ],
+                  // Logo
+                  Text(
+                    'LYNEWED',
+                    style: LynewedTextStyles.headlineSmall.copyWith(
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 3.0,
+                    ),
                   ),
-                  // Action icons
+                  const SizedBox(height: 10.0),
+                  // Action icons (centered)
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       if (_isUltimate) ...[
                         _buildHeaderIcon(

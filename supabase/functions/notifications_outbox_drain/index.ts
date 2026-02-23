@@ -7,7 +7,7 @@
 // - Les notifications BROADCAST (Wedding of the Week, Replays) sont gérées par
 //   l'Edge Function send-broadcast-notification appelée depuis l'Admin Panel
 // 
-// TYPES ACTIFS: chatMessage, connectionRequest, connectionRequestAccepted, wishlistAdd, videoIncoming
+// TYPES ACTIFS: chatMessage, connectionRequest, connectionRequestAccepted, wishlistAdd, videoIncoming, eventReminder
 // TYPES BROADCAST (Admin Panel): broadcast avec deep links lynewed://[page]
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
@@ -158,6 +158,9 @@ const EVENT_TO_NOTIFICATION_TYPE = {
   // wedPublished: SUPPRIMÉ - Géré par send-broadcast-notification (Admin Panel)
   // replayPublished: SUPPRIMÉ - Géré par send-broadcast-notification (Admin Panel)
 
+  // --- EVENT REMINDERS (EPIC-08) ---
+  event_reminder: "eventReminder",
+
   // --- MARKETPLACE EVENTS ---
   marketplaceMessageCreated: "marketplaceNewMessage",
   marketplace_item_sold: "marketplaceItemSold",
@@ -258,6 +261,25 @@ const I18N_TEMPLATES = {
     body: (ctx, locale)=>locale === "fr"
       ? `Le mariage de ${ctx.bride_name || "une mariée"} a été annulé.`
       : `${ctx.bride_name || "A bride"}'s wedding has been cancelled.`
+  },
+
+  // --- EVENT REMINDERS (EPIC-08) ---
+  eventReminder: {
+    title: {
+      en: "Reminder",
+      fr: "Rappel"
+    },
+    body: (ctx, locale) => {
+      const durations = {
+        '1_week': locale === 'fr' ? '1 semaine' : '1 week',
+        '1_day': locale === 'fr' ? '1 jour' : '1 day',
+        '1_hour': locale === 'fr' ? '1 heure' : '1 hour',
+      };
+      const duration = durations[ctx.reminder_type] || ctx.reminder_type;
+      return locale === 'fr'
+        ? `${ctx.event_title || 'Événement'} dans ${duration}`
+        : `${ctx.event_title || 'Event'} in ${duration}`;
+    }
   },
 
   // --- MARKETPLACE EVENTS ---
@@ -906,6 +928,65 @@ async function processWeddingEvent(ev) {
   console.log(`[processWeddingEvent] ${eventType}: ${actions.inApp.length} in-app, ${actions.push.length} push`);
   return actions;
 }
+// --- EVENT REMINDER PROCESSOR (EPIC-08) ---
+async function processEventReminder(ev) {
+  const actions = { inApp: [], push: [] };
+  const type = EVENT_TO_NOTIFICATION_TYPE[ev.event_type];
+  if (!type) return actions;
+
+  const payload = ev.payload || {};
+  const recipientId = payload.user_id;
+  if (!recipientId) {
+    console.warn(`[processEventReminder] Missing user_id in payload`);
+    return actions;
+  }
+
+  const setting = await getNotificationSetting(recipientId, type);
+  if (!setting.in_app && !setting.push) return actions;
+
+  const locale = await getUserLocale(recipientId);
+  const tmpl = I18N_TEMPLATES[type];
+  const title = tmpl.title[locale] || tmpl.title.en;
+  const ctx = {
+    event_title: payload.event_title,
+    reminder_type: payload.reminder_type,
+  };
+  const body = tmpl.body(ctx, locale);
+
+  const basePayload = {
+    event_id: payload.event_id,
+    reminder_type: payload.reminder_type,
+  };
+
+  if (setting.in_app) {
+    actions.inApp.push({
+      profile_id: recipientId,
+      type,
+      payload: basePayload,
+    });
+  }
+
+  if (setting.push) {
+    const tokens = await getDeviceTokens(recipientId);
+    tokens.forEach((t) => actions.push.push({
+      token: t.token,
+      platform: t.platform,
+      title,
+      body,
+      isHighPriority: false,
+      ttlSeconds: 300,
+      data: {
+        type,
+        event_id: String(payload.event_id || ""),
+        reminder_type: String(payload.reminder_type || ""),
+      },
+    }));
+  }
+
+  console.log(`[processEventReminder] ${actions.inApp.length} in-app, ${actions.push.length} push`);
+  return actions;
+}
+
 // --- MARKETPLACE MESSAGE PROCESSOR ---
 async function processMarketplaceMessageCreated(ev) {
   const actions = { inApp: [], push: [] };
@@ -1102,6 +1183,11 @@ async function processEvent(ev) {
     case "wedding_pro_left":
     case "wedding_cancelled":
       actions = await processWeddingEvent(ev);
+      break;
+
+    // --- EVENT REMINDERS (EPIC-08) ---
+    case "event_reminder":
+      actions = await processEventReminder(ev);
       break;
 
     // --- MARKETPLACE EVENTS ---

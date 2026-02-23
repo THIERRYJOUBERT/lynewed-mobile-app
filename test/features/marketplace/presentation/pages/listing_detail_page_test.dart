@@ -11,8 +11,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/marketplace_listing.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/seller_profile.dart';
+import 'package:lynewed_beta/features/marketplace/domain/repositories/marketplace_offer_repository.dart';
 import 'package:lynewed_beta/features/marketplace/domain/repositories/marketplace_repository.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/pages/listing_detail_page.dart';
+import 'package:lynewed_beta/core/di/injection_container.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/widgets/action_buttons_bar.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/widgets/listing_info_section.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/widgets/photo_carousel.dart';
@@ -21,6 +23,9 @@ import 'package:mocktail/mocktail.dart';
 
 class MockMarketplaceRepository extends Mock
     implements MarketplaceRepository {}
+
+class MockMarketplaceOfferRepository extends Mock
+    implements MarketplaceOfferRepository {}
 
 /// Creates a test listing with optional overrides.
 MarketplaceListing _createListing({
@@ -69,9 +74,16 @@ const _testPhotoUrls = <String>[];
 
 void main() {
   late MockMarketplaceRepository mockRepository;
+  late MockMarketplaceOfferRepository mockOfferRepository;
 
   setUp(() {
     mockRepository = MockMarketplaceRepository();
+    mockOfferRepository = MockMarketplaceOfferRepository();
+    sl.registerSingleton<MarketplaceOfferRepository>(mockOfferRepository);
+  });
+
+  tearDown(() async {
+    await sl.reset();
   });
 
   /// Helper to set up common mock responses.
@@ -86,6 +98,8 @@ void main() {
         .thenAnswer((_) async => seller ?? _testSeller);
     when(() => mockRepository.getPhotoUrls(any()))
         .thenAnswer((_) async => photoUrls ?? _testPhotoUrls);
+    when(() => mockOfferRepository.hasAcceptedOfferForListing(any()))
+        .thenAnswer((_) async => false);
   }
 
   Widget buildPage({String listingId = 'listing-1'}) {
@@ -168,6 +182,8 @@ void main() {
             .thenAnswer((_) async => _testSeller);
         when(() => mockRepository.getPhotoUrls(any()))
             .thenAnswer((_) async => _testPhotoUrls);
+        when(() => mockOfferRepository.hasAcceptedOfferForListing(any()))
+            .thenAnswer((_) async => false);
 
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();

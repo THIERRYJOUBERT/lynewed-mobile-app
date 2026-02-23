@@ -1,7 +1,6 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@4.0.0";
-import QRCode from "https://esm.sh/qrcode@1.5.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,7 +26,7 @@ function generateEmailHtml(
   guestName: string,
   brideName: string,
   inviteCode: string,
-  qrCodeDataUrl: string,
+  qrCodeUrl: string,
   expiresAt: string | null
 ): string {
   const formattedDate = expiresAt
@@ -81,7 +80,7 @@ function generateEmailHtml(
 
       <!-- QR Code -->
       <div style="text-align: center; margin-bottom: 30px;">
-        <img src="${qrCodeDataUrl}" alt="QR Code" style="width: 200px; height: 200px; border-radius: 8px;" />
+        <img src="${qrCodeUrl}" alt="QR Code" style="width: 200px; height: 200px; border-radius: 8px;" />
         <p style="color: #666666; font-size: 12px; margin: 12px 0 0;">
           Scan this QR code with your phone
         </p>
@@ -174,7 +173,7 @@ const handler = async (req: Request): Promise<Response> => {
           invite_code_expires_at,
           bride_profile_id,
           profiles!bride_profile_id (
-            first_name
+            full_name
           )
         )
       `
@@ -212,28 +211,21 @@ const handler = async (req: Request): Promise<Response> => {
       return jsonResponse({ error: "invalid_invite_code" }, 400);
     }
 
-    // --- AC-4: Generate QR code ---
+    // --- AC-4: Generate QR code URL ---
     const deepLink = `https://lynewed.com/join/${inviteCode}`;
-    const qrCodeDataUrl = await QRCode.toDataURL(deepLink, {
-      width: 200,
-      margin: 2,
-      color: {
-        dark: "#000000",
-        light: "#FFFFFF",
-      },
-    });
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(deepLink)}`;
 
     // --- AC-3: Generate English email template ---
     const guestName = (guest.name as string) || "Guest";
     const brideProfile = wedding.profiles as Record<string, unknown> | null;
-    const brideName = (brideProfile?.first_name as string) || "the bride";
+    const brideName = (brideProfile?.full_name as string) || "the bride";
     const expiresAt = wedding.invite_code_expires_at as string | null;
 
     const html = generateEmailHtml(
       guestName,
       brideName,
       inviteCode,
-      qrCodeDataUrl,
+      qrCodeUrl,
       expiresAt
     );
 
@@ -298,4 +290,4 @@ const handler = async (req: Request): Promise<Response> => {
   }
 };
 
-serve(handler);
+Deno.serve(handler);
