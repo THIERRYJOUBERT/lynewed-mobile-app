@@ -190,7 +190,11 @@ class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.6,
+        ),
         decoration: const BoxDecoration(
           color: LynewedColors.background,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -211,23 +215,33 @@ class _MagazineSelectionPageState extends State<MagazineSelectionPage> {
               const SizedBox(height: 16),
               Text('Orders', style: LynewedTextStyles.sheetTitle),
               const SizedBox(height: 12),
-              ..._orders.map((order) => ListTile(
-                    leading: Icon(
-                      _orderStatusIcon(order.status),
-                      color: _orderStatusColor(order.status),
-                    ),
-                    title: Text('Order #${order.id.substring(0, 8)}'),
-                    subtitle: Text(order.status.replaceAll('_', ' ')),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => MagazineOrderDetailPage(order: order),
-                        ),
-                      );
-                    },
-                  )),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _orders.length,
+                  itemBuilder: (context, index) {
+                    final order = _orders[index];
+                    return ListTile(
+                      leading: Icon(
+                        _orderStatusIcon(order.status),
+                        color: _orderStatusColor(order.status),
+                      ),
+                      title: Text('Order #${order.id.substring(0, 8)}'),
+                      subtitle: Text(order.status.replaceAll('_', ' ')),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                MagazineOrderDetailPage(order: order),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
               const SizedBox(height: 20),
             ],
           ),

@@ -297,7 +297,7 @@ class _GuestSettingsPageState extends State<GuestSettingsPage> {
                                   ),
                             ),
                             Text(
-                              'v1.2.4',
+                              'v1.3.2',
                               style: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
