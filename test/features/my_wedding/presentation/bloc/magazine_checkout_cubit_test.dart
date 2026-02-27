@@ -134,6 +134,84 @@ void main() {
       );
     });
 
+    group('updateQuantity', () {
+      blocTest<MagazineCheckoutCubit, MagazineCheckoutState>(
+        'should update quantity to valid value',
+        build: () => MagazineCheckoutCubit(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: testFormat,
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+          supabaseClient: mockSupabase,
+        ),
+        act: (cubit) => cubit.updateQuantity(3),
+        expect: () => [
+          isA<MagazineCheckoutState>()
+              .having((s) => s.quantity, 'quantity', 3),
+        ],
+      );
+
+      blocTest<MagazineCheckoutCubit, MagazineCheckoutState>(
+        'should not emit when quantity is 0',
+        build: () => MagazineCheckoutCubit(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: testFormat,
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+          supabaseClient: mockSupabase,
+        ),
+        act: (cubit) => cubit.updateQuantity(0),
+        expect: () => [],
+      );
+
+      blocTest<MagazineCheckoutCubit, MagazineCheckoutState>(
+        'should not emit when quantity exceeds 10',
+        build: () => MagazineCheckoutCubit(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: testFormat,
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+          supabaseClient: mockSupabase,
+        ),
+        act: (cubit) => cubit.updateQuantity(11),
+        expect: () => [],
+      );
+
+      blocTest<MagazineCheckoutCubit, MagazineCheckoutState>(
+        'should accept boundary value 10',
+        build: () => MagazineCheckoutCubit(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: testFormat,
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+          supabaseClient: mockSupabase,
+        ),
+        act: (cubit) => cubit.updateQuantity(10),
+        expect: () => [
+          isA<MagazineCheckoutState>()
+              .having((s) => s.quantity, 'quantity', 10),
+        ],
+      );
+
+      test('should initialize with quantity 1 by default', () {
+        final cubit = MagazineCheckoutCubit(
+          weddingId: 'wedding-123',
+          brideUserId: 'user-123',
+          format: testFormat,
+          photoCount: 25,
+          weddingTitle: 'Wedding',
+          supabaseClient: mockSupabase,
+        );
+
+        expect(cubit.state.quantity, 1);
+        cubit.close();
+      });
+    });
+
     group('onPaymentSuccess', () {
       blocTest<MagazineCheckoutCubit, MagazineCheckoutState>(
         'should set state to success when sessionId matches',

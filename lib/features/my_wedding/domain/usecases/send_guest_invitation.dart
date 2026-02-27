@@ -83,9 +83,17 @@ class SendGuestInvitation {
       case 'rate_limited':
         return 'Too many requests, please try again later';
       case 'email_service_error':
-        return 'Email service error';
+        return 'Email service error, please try again';
+      case 'email_service_not_configured':
+        return 'Email service not configured';
       case 'unauthorized':
         return 'Unauthorized';
+      case 'missing_parameters':
+        return 'Missing guest or wedding information';
+      case 'invalid_invite_code':
+        return 'Wedding invite code is missing, please contact support';
+      case 'internal_error':
+        return 'Server error, please try again later';
       default:
         return 'Failed to send invitation';
     }

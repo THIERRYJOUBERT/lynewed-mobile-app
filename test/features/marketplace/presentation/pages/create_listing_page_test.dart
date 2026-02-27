@@ -548,6 +548,47 @@ void main() {
       final state = CreateListingPageState();
       expect(state.validateCountry('France'), isNull);
     });
+
+    test('validateWeight returns null for null (optional)', () {
+      final state = CreateListingPageState();
+      expect(state.validateWeight(null), isNull);
+    });
+
+    test('validateWeight returns null for empty string (optional)', () {
+      final state = CreateListingPageState();
+      expect(state.validateWeight(''), isNull);
+      expect(state.validateWeight('  '), isNull);
+    });
+
+    test('validateWeight returns error for 0', () {
+      final state = CreateListingPageState();
+      expect(state.validateWeight('0'), contains('between 0.1 and 50'));
+    });
+
+    test('validateWeight returns error for negative', () {
+      final state = CreateListingPageState();
+      expect(state.validateWeight('-1'), contains('between 0.1 and 50'));
+    });
+
+    test('validateWeight returns null for 0.1 (min)', () {
+      final state = CreateListingPageState();
+      expect(state.validateWeight('0.1'), isNull);
+    });
+
+    test('validateWeight returns null for 50 (max)', () {
+      final state = CreateListingPageState();
+      expect(state.validateWeight('50'), isNull);
+    });
+
+    test('validateWeight returns error for 51', () {
+      final state = CreateListingPageState();
+      expect(state.validateWeight('51'), contains('between 0.1 and 50'));
+    });
+
+    test('validateWeight returns error for non-numeric', () {
+      final state = CreateListingPageState();
+      expect(state.validateWeight('abc'), contains('valid number'));
+    });
   });
 
   group('Edit mode', () {

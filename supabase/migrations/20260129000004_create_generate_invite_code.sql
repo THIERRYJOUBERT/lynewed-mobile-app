@@ -64,8 +64,24 @@ CREATE OR REPLACE FUNCTION regenerate_wedding_invite_code(p_wedding_id UUID)
 RETURNS VARCHAR(8) AS $$
 DECLARE
   new_code VARCHAR(8);
+  max_attempts INTEGER := 10;
+  attempt INTEGER := 0;
 BEGIN
-  new_code := generate_invite_code_value();
+  LOOP
+    new_code := generate_invite_code_value();
+    attempt := attempt + 1;
+
+    -- Check uniqueness before update
+    EXIT WHEN NOT EXISTS (
+      SELECT 1 FROM weddings
+      WHERE invite_code = new_code
+      AND id != p_wedding_id
+    );
+
+    IF attempt >= max_attempts THEN
+      RAISE EXCEPTION 'Could not generate unique invite code for wedding % after % attempts', p_wedding_id, max_attempts;
+    END IF;
+  END LOOP;
 
   UPDATE weddings
   SET invite_code = new_code,

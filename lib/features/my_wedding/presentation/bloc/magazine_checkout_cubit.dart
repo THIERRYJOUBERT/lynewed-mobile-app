@@ -38,6 +38,12 @@ class MagazineCheckoutCubit extends Cubit<MagazineCheckoutState> {
 
   final SupabaseClient _supabase;
 
+  /// Updates the quantity of magazines to order (1-10).
+  void updateQuantity(int quantity) {
+    if (quantity < 1 || quantity > 10) return;
+    emit(state.copyWith(quantity: quantity));
+  }
+
   /// Toggles CGVU acceptance.
   void toggleCgvuAccepted() {
     emit(state.copyWith(cgvuAccepted: !state.cgvuAccepted, clearError: true));
@@ -69,6 +75,7 @@ class MagazineCheckoutCubit extends Cubit<MagazineCheckoutState> {
           'magazine_title': state.weddingTitle,
           'magazine_date': state.weddingDate?.toIso8601String(),
           'cover_photo_id': state.coverPhotoId,
+          'quantity': state.quantity,
           'success_url': 'lynewed://magazine-order-success?session_id={CHECKOUT_SESSION_ID}',
           'cancel_url': 'lynewed://magazine-checkout',
         },

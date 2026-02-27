@@ -223,7 +223,11 @@ class _LynewedMiniMapState extends State<LynewedMiniMap> {
       final picture = recorder.endRecording();
       final img = await picture.toImage(size.toInt(), size.toInt());
       final png = await img.toByteData(format: ui.ImageByteFormat.png);
-      return gmaps.BitmapDescriptor.bytes(png!.buffer.asUint8List());
+      return gmaps.BitmapDescriptor.bytes(
+        png!.buffer.asUint8List(),
+        width: 44,
+        height: 44,
+      );
     } catch (_) {
       return gmaps.BitmapDescriptor.defaultMarker;
     }

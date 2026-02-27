@@ -150,6 +150,7 @@ class _MockFedExRepository implements FedExRepository {
     required ShippingAddress fromAddress,
     required ShippingAddress toAddress,
     required String category,
+    double? weightKg,
   }) async {
     throw UnimplementedError();
   }
@@ -316,7 +317,8 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(ShippingLabelWidget), findsOneWidget);
-        expect(find.text('794644790138'), findsOneWidget);
+        // Tracking number appears in both ShippingLabelWidget and tracking link section.
+        expect(find.text('794644790138'), findsWidgets);
       });
 
       testWidgets(
@@ -411,6 +413,56 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.textContaining('\$30.00'), findsOneWidget);
+      });
+    });
+
+    group('S07: FedEx tracking link (seller)', () {
+      testWidgets('should show tracking section when tracking number exists',
+          (tester) async {
+        final repo = _MockTransactionRepository(
+          transaction: _createTransaction(
+            status: 'label_created',
+            fedexLabelUrl: 'https://example.com/label.pdf',
+            fedexTrackingNumber: '794644790138',
+          ),
+        );
+
+        await tester.pumpWidget(buildPage(repository: repo));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Package Tracking'), findsOneWidget);
+        expect(find.text('794644790138'), findsWidgets);
+        expect(find.text('Track on FedEx'), findsOneWidget);
+      });
+
+      testWidgets('should hide tracking section when tracking number is null',
+          (tester) async {
+        final repo = _MockTransactionRepository(
+          transaction: _createTransaction(
+            status: 'label_created',
+            fedexLabelUrl: 'https://example.com/label.pdf',
+            fedexTrackingNumber: null,
+          ),
+        );
+
+        await tester.pumpWidget(buildPage(repository: repo));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Package Tracking'), findsNothing);
+        expect(find.text('Track on FedEx'), findsNothing);
+      });
+
+      testWidgets('should hide tracking section for paid status without tracking',
+          (tester) async {
+        final repo = _MockTransactionRepository(
+          transaction: _createTransaction(status: 'paid'),
+        );
+
+        await tester.pumpWidget(buildPage(repository: repo));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Package Tracking'), findsNothing);
+        expect(find.text('Track on FedEx'), findsNothing);
       });
     });
 

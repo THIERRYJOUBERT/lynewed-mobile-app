@@ -39,6 +39,7 @@ import '../../features/marketplace/domain/repositories/marketplace_repository.da
 import '../../features/marketplace/domain/repositories/marketplace_transaction_repository.dart';
 import '../../features/marketplace/domain/repositories/stripe_connect_repository.dart';
 import '../../features/marketplace/domain/usecases/calculate_shipping_rate_use_case.dart';
+import '../../features/marketplace/domain/usecases/get_seller_shipping_address.dart';
 import '../../features/marketplace/domain/usecases/check_stripe_status_use_case.dart';
 import '../../features/marketplace/domain/usecases/generate_shipping_label_use_case.dart';
 import '../../features/marketplace/domain/usecases/approve_refund_use_case.dart';
@@ -238,6 +239,9 @@ Future<void> _initMarketplaceFedEx() async {
   );
 
   // Use Cases
+  sl.registerLazySingleton<GetSellerShippingAddress>(
+    () => GetSellerShippingAddress(sl<AuthRemoteDatasource>()),
+  );
   sl.registerLazySingleton<CalculateShippingRateUseCase>(
     () => CalculateShippingRateUseCase(sl<FedExRepository>()),
   );

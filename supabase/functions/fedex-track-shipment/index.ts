@@ -113,6 +113,8 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ tracked: transactions.length, successful: results.filter(r => r.success).length, total_new_events: totalNew, results }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error tracking:", error);
-    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { "Content-Type": "application/json" } });
+    const msg = (error as Error).message;
+    try { const parsed = JSON.parse(msg); return new Response(JSON.stringify(parsed), { status: 500, headers: { "Content-Type": "application/json" } }); } catch { /* not JSON */ }
+    return new Response(JSON.stringify({ error: msg }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 });

@@ -5,6 +5,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '/core/design/design.dart';
 import '/core/di/injection_container.dart';
@@ -344,6 +345,11 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
           ],
           const SizedBox(height: 30),
           _buildShippingSection(),
+          if (_transaction!.fedexTrackingNumber != null &&
+              _transaction!.fedexTrackingNumber!.isNotEmpty) ...[
+            const SizedBox(height: 30),
+            _buildTrackingLinkSection(),
+          ],
           const SizedBox(height: 30),
           _buildShippingAddressSection(),
           const SizedBox(height: 30),
@@ -479,6 +485,58 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
 
     // For other states (pending, etc.), show nothing.
     return const SizedBox.shrink();
+  }
+
+  Future<void> _openFedExTracking() async {
+    final trackingNumber = _transaction?.fedexTrackingNumber;
+    if (trackingNumber == null) return;
+    final url = Uri.parse(
+      'https://www.fedex.com/fedextrack/?trknbr=$trackingNumber',
+    );
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Widget _buildTrackingLinkSection() {
+    final trackingNumber = _transaction!.fedexTrackingNumber!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const LynewedSectionTitle('Package Tracking'),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: LynewedComponentStyles.cardDecoration(),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.local_shipping,
+                size: 18,
+                color: LynewedColors.textSecondary,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  trackingNumber,
+                  style: LynewedTextStyles.titleSmall.copyWith(fontSize: 14),
+                ),
+              ),
+              GestureDetector(
+                onTap: _openFedExTracking,
+                child: Text(
+                  'Track on FedEx',
+                  style: LynewedTextStyles.bodySmall.copyWith(
+                    color: LynewedColors.primary,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildShippingAddressSection() {

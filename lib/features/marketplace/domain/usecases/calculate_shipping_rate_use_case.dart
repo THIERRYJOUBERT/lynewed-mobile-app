@@ -32,11 +32,13 @@ class CalculateShippingRateUseCase {
     required ShippingAddress fromAddress,
     required ShippingAddress toAddress,
     required String category,
+    double? weightKg,
   }) async {
     return _repository.calculateRates(
       fromAddress: fromAddress,
       toAddress: toAddress,
       category: category,
+      weightKg: weightKg,
     );
   }
 }

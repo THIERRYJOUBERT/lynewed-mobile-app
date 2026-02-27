@@ -149,6 +149,7 @@ class _MockFedExRepository implements FedExRepository {
     required ShippingAddress fromAddress,
     required ShippingAddress toAddress,
     required String category,
+    double? weightKg,
   }) async {
     return [];
   }

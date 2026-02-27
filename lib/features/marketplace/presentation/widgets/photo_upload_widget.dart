@@ -202,7 +202,7 @@ class _PhotoUploadWidgetState extends State<PhotoUploadWidget> {
     required String path,
     required Key key,
   }) {
-    return ReorderableDragStartListener(
+    return ReorderableDelayedDragStartListener(
       key: key,
       index: index,
       child: Container(

@@ -73,10 +73,10 @@ class _QrScannerContentState extends State<_QrScannerContent> {
 
   /// Extracts the invitation code from a Lynewed URL.
   ///
-  /// Expected format: https://lynewed.app/join/ABCD1234
+  /// Expected format: https://lynewed.com/join/ABCD1234
   String? _extractCodeFromUrl(String url) {
-    // Pattern to match lynewed.app/join/{code}
-    final regex = RegExp(r'lynewed\.app/join/([A-Za-z0-9]{8})');
+    // Pattern to match lynewed.app/join/{code} or lynewed.com/join/{code}
+    final regex = RegExp(r'lynewed\.(?:app|com)/join/([A-Za-z0-9]{8})');
     final match = regex.firstMatch(url);
 
     if (match != null && match.groupCount >= 1) {

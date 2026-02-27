@@ -1,7 +1,7 @@
 /// Home page for brides.
 ///
 /// The main landing page for bride users, displaying:
-/// - Header with greeting and notification badge
+/// - Header with LYNEWED logo and notification badge
 /// - Wedding summary card with countdown
 /// - Quick action buttons for navigation
 /// - Feed preview section
@@ -171,7 +171,7 @@ class _HomeBridesPageState extends State<HomeBridesPage> {
       child: Column(
         children: [
           // Header
-          _buildHeader(displayName),
+          _buildHeader(),
           const Divider(height: 1.0, color: LynewedColors.gray200),
           // Main content
           Expanded(
@@ -225,74 +225,49 @@ class _HomeBridesPageState extends State<HomeBridesPage> {
     );
   }
 
-  Widget _buildHeader(String? displayName) {
-    final greeting = _getGreeting();
-    final name = displayName ?? 'there';
-
+  Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 14.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
+      padding: const EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 8.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Greeting
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  greeting,
-                  style: LynewedTextStyles.labelMedium.copyWith(
-                    color: LynewedColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 2.0),
-                Text(
-                  'Hello, $name',
-                  style: LynewedTextStyles.headlineSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+          // Logo
+          Text(
+            'LYNEWED',
+            style: LynewedTextStyles.headlineSmall.copyWith(
+              fontWeight: FontWeight.w700,
+              letterSpacing: 3.0,
             ),
           ),
-          // Notification icon with badge
-          GestureDetector(
-            onTap: _navigateToNotifications,
-            behavior: HitTestBehavior.opaque,
-            child: Consumer<NotificationsNotifier>(
-              builder: (context, notifier, _) {
-                return NotificationCountBadge(
-                  count: notifier.unreadCount,
-                  child: const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Icon(
-                      Icons.notifications_outlined,
-                      color: LynewedColors.textPrimary,
-                      size: 24.0,
-                    ),
-                  ),
-                );
-              },
-            ),
+          const SizedBox(height: 10.0),
+          // Notification icon with badge (centered)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: _navigateToNotifications,
+                behavior: HitTestBehavior.opaque,
+                child: Consumer<NotificationsNotifier>(
+                  builder: (context, notifier, _) {
+                    return NotificationCountBadge(
+                      count: notifier.unreadCount,
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Icon(
+                          Icons.notifications_outlined,
+                          color: LynewedColors.textPrimary,
+                          size: 24.0,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
-  }
-
-  String _getGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) {
-      return 'Good morning';
-    } else if (hour < 17) {
-      return 'Good afternoon';
-    } else {
-      return 'Good evening';
-    }
   }
 
   Widget _buildSectionHeader(String title, {VoidCallback? onViewAll}) {

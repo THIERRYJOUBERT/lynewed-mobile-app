@@ -220,3 +220,29 @@ Lynewed may update these terms at any time. Continued use constitutes acceptance
 
 By scrolling to the bottom and checking the box below, you confirm you have read and accept these Marketplace Buyer Terms.
 ''';
+
+/// Guest media upload consent version.
+///
+/// Version 1.0 - Initial version for EPIC-15 guest upload consent.
+/// Update version number when modifying these terms.
+const String guestMediaUploadCgvuVersion = '1.0';
+
+/// CGVU type identifier for guest media upload.
+const String guestMediaUploadCgvuType = 'guest_media_upload';
+
+/// Full text of guest media upload consent.
+const String guestMediaUploadCgvuText = '''
+By uploading photos or videos, you confirm that you have obtained the consent
+of all individuals appearing in your content and that you authorize their
+display within this private wedding gallery.
+
+These moments will be accessible to the couple and their guests, and may be
+used to create curated albums, magazines or digital memories celebrating
+the wedding.
+
+Lynewed provides a secure hosting space to collect and share wedding memories.
+Users remain solely responsible for the content they upload and for obtaining
+all necessary rights, consents and authorizations. Lynewed does not verify
+ownership or permissions and cannot be held liable for any unauthorized use,
+claims, disputes, or damages arising from uploaded content.
+''';

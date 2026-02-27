@@ -19,6 +19,7 @@ class LynewedBorders {
   static const BorderRadius borderRadiusSm = BorderRadius.all(Radius.circular(sm));
   static const BorderRadius borderRadiusMd = BorderRadius.all(Radius.circular(md));
   static const BorderRadius borderRadiusLg = BorderRadius.all(Radius.circular(lg));
+  static const BorderRadius borderRadiusXs = BorderRadius.all(Radius.circular(xs));
   static const BorderRadius borderRadiusXl = BorderRadius.all(Radius.circular(xl));
 
   // Top borders (for sheets and modals)

@@ -25,11 +25,13 @@ class FedExRepositoryImpl implements FedExRepository {
     required ShippingAddress fromAddress,
     required ShippingAddress toAddress,
     required String category,
+    double? weightKg,
   }) async {
     return _datasource.calculateRates(
       fromAddress: fromAddress,
       toAddress: toAddress,
       category: category,
+      weightKg: weightKg,
     );
   }
 

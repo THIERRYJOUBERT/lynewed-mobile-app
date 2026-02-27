@@ -59,74 +59,77 @@ class _BulkInviteDialogState extends State<BulkInviteDialog> {
   }
 
   Widget _buildConfirmationDialog() {
-    final count = _guestsWithEmail.length;
+    final guests = _guestsWithEmail;
+    final count = guests.length;
+    final preview = guests.take(5).toList();
 
     return AlertDialog(
       title: const Text('Invite All Guests'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            count == 1
-                ? '1 invitation will be sent'
-                : '$count invitations will be sent',
-            style: LynewedTextStyles.bodyMedium,
-          ),
-          const SizedBox(height: 16),
-          // Preview list
-          Container(
-            constraints: const BoxConstraints(maxHeight: 200),
-            decoration: BoxDecoration(
-              color: LynewedColors.surface,
-              borderRadius: BorderRadius.circular(8),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              count == 1
+                  ? '1 invitation will be sent'
+                  : '$count invitations will be sent',
+              style: LynewedTextStyles.bodyMedium,
             ),
-            child: ListView.separated(
-              shrinkWrap: true,
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                color: LynewedColors.surface,
+                borderRadius: BorderRadius.circular(8),
+              ),
               padding: const EdgeInsets.all(12),
-              itemCount: _guestsWithEmail.length.clamp(0, 5),
-              separatorBuilder: (_, __) => const Divider(height: 16),
-              itemBuilder: (context, index) {
-                final guest = _guestsWithEmail[index];
-                return Row(
-                  children: [
-                    const Icon(Icons.person_outline, size: 20, color: LynewedColors.textSecondary),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            guest.name ?? 'Guest',
-                            style: LynewedTextStyles.bodySmall.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (int i = 0; i < preview.length; i++) ...[
+                    if (i > 0) const Divider(height: 16),
+                    Row(
+                      children: [
+                        const Icon(Icons.person_outline, size: 20, color: LynewedColors.textSecondary),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                preview[i].name ?? 'Guest',
+                                style: LynewedTextStyles.bodySmall.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              if (preview[i].email != null)
+                                Text(
+                                  preview[i].email!,
+                                  style: LynewedTextStyles.labelSmall.copyWith(
+                                    color: LynewedColors.textSecondary,
+                                  ),
+                                ),
+                            ],
                           ),
-                          Text(
-                            guest.email!,
-                            style: LynewedTextStyles.labelSmall.copyWith(
-                              color: LynewedColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ],
-                );
-              },
-            ),
-          ),
-          if (_guestsWithEmail.length > 5)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                '+ ${_guestsWithEmail.length - 5} more',
-                style: LynewedTextStyles.bodySmall.copyWith(
-                  color: LynewedColors.textSecondary,
-                ),
+                ],
               ),
             ),
-        ],
+            if (count > 5)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  '+ ${count - 5} more',
+                  style: LynewedTextStyles.bodySmall.copyWith(
+                    color: LynewedColors.textSecondary,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
       actions: [
         TextButton(

@@ -369,6 +369,27 @@ void main() {
       });
     });
 
+    group('quantity', () {
+      test('should parse quantity from JSON', () {
+        final json = Map<String, dynamic>.from(testJson);
+        json['quantity'] = 3;
+        final order = MagazineOrder.fromJson(json);
+        expect(order.quantity, 3);
+      });
+
+      test('should default quantity to 1 when missing from JSON', () {
+        final order = MagazineOrder.fromJson(testJson);
+        expect(order.quantity, 1);
+      });
+
+      test('should default quantity to 1 when null in JSON', () {
+        final json = Map<String, dynamic>.from(testJson);
+        json['quantity'] = null;
+        final order = MagazineOrder.fromJson(json);
+        expect(order.quantity, 1);
+      });
+    });
+
     group('equality', () {
       test('should be equal when id and status match', () {
         final order1 = MagazineOrder.fromJson(testJson);

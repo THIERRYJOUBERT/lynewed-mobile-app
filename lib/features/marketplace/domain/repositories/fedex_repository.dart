@@ -18,6 +18,7 @@ abstract class FedExRepository {
     required ShippingAddress fromAddress,
     required ShippingAddress toAddress,
     required String category,
+    double? weightKg,
   });
 
   /// Creates a shipment and generates a shipping label.

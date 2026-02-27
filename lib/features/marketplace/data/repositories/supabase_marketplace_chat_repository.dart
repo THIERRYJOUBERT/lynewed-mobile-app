@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/entities/marketplace_conversation.dart';
@@ -291,7 +292,7 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
 
     final profilesResponse = await _client
         .from('profiles')
-        .select('id, full_name, avatar_url')
+        .select('id, full_name, avatar_url, role')
         .inFilter('id', otherUserIds);
 
     final profilesMap = <String, Map<String, dynamic>>{};
@@ -308,7 +309,7 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
         listingTitle: data.listingTitle,
         listingCoverUrl: data.listingCoverUrl,
         otherUserId: data.otherUserId,
-        otherUserName: profile?['full_name'] as String? ?? 'Unknown',
+        otherUserName: extractDisplayName(profile),
         otherUserAvatarUrl: profile?['avatar_url'] as String?,
         lastMessage: data.lastMessage,
         lastMessageTime: data.lastMessageTime,
@@ -395,6 +396,17 @@ class SupabaseMarketplaceChatRepository implements MarketplaceChatRepository {
     _channel = null;
     _streamController?.close();
     _streamController = null;
+  }
+
+  /// Extracts a display name from a profile map.
+  ///
+  /// Falls back through: full_name → 'User'.
+  @visibleForTesting
+  static String extractDisplayName(Map<String, dynamic>? profile) {
+    if (profile == null) return 'User';
+    final fullName = profile['full_name'] as String?;
+    if (fullName != null && fullName.isNotEmpty) return fullName;
+    return 'User';
   }
 
   /// Extracts a human-readable preview from offer message JSON content.

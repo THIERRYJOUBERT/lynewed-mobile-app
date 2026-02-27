@@ -420,14 +420,14 @@ class _PeoplePageState extends State<PeoplePage>
       text: 'Invite all (${pendingWithEmail.length})',
       icon: Icons.send_outlined,
       type: LynewedButtonType.secondary,
-      onPressed: () => showDialog(
-        context: context,
-        builder: (context) => BulkInviteDialog(
+      onPressed: () async {
+        await showBulkInviteDialog(
+          context: context,
           weddingId: widget.weddingId,
           pendingGuests: pendingWithEmail,
-          onInvitationsSent: _loadGuests,
-        ),
-      ),
+        );
+        _loadGuests();
+      },
     );
   }
 

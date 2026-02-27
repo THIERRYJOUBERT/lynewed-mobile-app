@@ -1,22 +1,34 @@
 /// Tests for CheckoutPage.
 ///
-/// Verifies multi-step checkout flow: address, review (with flat-rate
-/// shipping), CGVU acceptance, and payment processing.
+/// Verifies multi-step checkout flow: address, shipping (FedEx dynamic),
+/// review, CGVU acceptance, and payment processing.
 library;
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/marketplace_listing.dart';
 import 'package:lynewed_beta/features/marketplace/domain/entities/shipping_address.dart';
+import 'package:lynewed_beta/features/marketplace/domain/entities/shipping_rate.dart';
 import 'package:lynewed_beta/features/marketplace/domain/repositories/marketplace_transaction_repository.dart';
+import 'package:lynewed_beta/features/marketplace/domain/usecases/calculate_shipping_rate_use_case.dart';
+import 'package:lynewed_beta/features/marketplace/domain/usecases/get_seller_shipping_address.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/pages/checkout_page.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/widgets/address_form_widget.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/widgets/cgvu_acceptance_widget.dart';
 import 'package:lynewed_beta/features/marketplace/presentation/widgets/order_summary_widget.dart';
+import 'package:lynewed_beta/features/marketplace/presentation/widgets/shipping_rate_selector.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockTransactionRepository extends Mock
     implements MarketplaceTransactionRepository {}
+
+class MockCalculateShippingRate extends Mock
+    implements CalculateShippingRateUseCase {}
+
+class MockGetSellerShippingAddress extends Mock
+    implements GetSellerShippingAddress {}
 
 MarketplaceListing _createListing({
   String id = 'listing-1',
@@ -27,6 +39,7 @@ MarketplaceListing _createListing({
   String? city = 'Paris',
   String country = 'France',
   String? countryCode = 'FR',
+  double? weightKg,
 }) {
   return MarketplaceListing(
     id: id,
@@ -41,14 +54,40 @@ MarketplaceListing _createListing({
     status: 'active',
     createdAt: DateTime(2025, 1, 1),
     updatedAt: DateTime(2025, 1, 1),
+    weightKg: weightKg,
   );
 }
 
+const _sellerAddress = ShippingAddress(
+  streetLines: ['10 Rue de Rivoli'],
+  city: 'Paris',
+  postalCode: '75001',
+  countryCode: 'FR',
+);
+
+const _fedexRates = [
+  ShippingRate(
+    serviceType: 'FEDEX_GROUND',
+    serviceName: 'FedEx Ground',
+    rateCents: 1250,
+    currency: 'USD',
+    estimatedDays: 5,
+  ),
+  ShippingRate(
+    serviceType: 'FEDEX_EXPRESS',
+    serviceName: 'FedEx Express',
+    rateCents: 2500,
+    currency: 'USD',
+    estimatedDays: 2,
+  ),
+];
+
 void main() {
   late MockTransactionRepository mockTransactionRepo;
+  late MockCalculateShippingRate mockCalculateRate;
+  late MockGetSellerShippingAddress mockGetSellerAddress;
 
   setUpAll(() {
-    // Register fallback values for mocktail.
     registerFallbackValue(
       const ShippingAddress(
         streetLines: ['123 Main St'],
@@ -57,14 +96,36 @@ void main() {
         countryCode: 'US',
       ),
     );
+    registerFallbackValue(
+      const ShippingRate(
+        serviceType: 'FLAT_RATE',
+        serviceName: 'Test',
+        rateCents: 0,
+        currency: 'USD',
+      ),
+    );
   });
 
   setUp(() {
     mockTransactionRepo = MockTransactionRepository();
+    mockCalculateRate = MockCalculateShippingRate();
+    mockGetSellerAddress = MockGetSellerShippingAddress();
 
     // Default: buyer has not accepted CGVU.
     when(() => mockTransactionRepo.hasAcceptedBuyerCgvu())
         .thenAnswer((_) async => false);
+
+    // Default: seller address found.
+    when(() => mockGetSellerAddress(any()))
+        .thenAnswer((_) async => _sellerAddress);
+
+    // Default: FedEx rates available.
+    when(() => mockCalculateRate(
+          fromAddress: any(named: 'fromAddress'),
+          toAddress: any(named: 'toAddress'),
+          category: any(named: 'category'),
+          weightKg: any(named: 'weightKg'),
+        )).thenAnswer((_) async => _fedexRates);
   });
 
   Widget buildPage({
@@ -78,23 +139,19 @@ void main() {
         offerId: offerId,
         agreedPriceCents: agreedPriceCents,
         transactionRepository: mockTransactionRepo,
+        calculateShippingRateUseCase: mockCalculateRate,
+        getSellerShippingAddress: mockGetSellerAddress,
         currentUserId: 'buyer-1',
       ),
     );
   }
 
   /// Fills address form fields required for a valid address.
-  ///
-  /// Uses hint-text-based field lookup for robustness against index changes.
-  /// Scrolls to the country dropdown before tapping it (may be off-screen).
-  /// Fills all required fields: name, phone, street, city, postal code, country.
   Future<void> fillAddress(WidgetTester tester) async {
-    // Full Name (required)
     final nameField = find.widgetWithText(TextField, 'Full Name *');
     await tester.enterText(nameField, 'Jane Doe');
     await tester.pump();
 
-    // Phone Number (required) - find by hint prefix since hint may include format example
     final phoneField = find.byWidgetPredicate(
       (w) =>
           w is TextField &&
@@ -104,30 +161,44 @@ void main() {
     await tester.enterText(phoneField, '5551234567');
     await tester.pump();
 
-    // Street Address
     final streetField = find.widgetWithText(TextField, 'Street Address');
     await tester.enterText(streetField, '123 Main St');
     await tester.pump();
 
-    // City
     final cityField = find.widgetWithText(TextField, 'City');
     await tester.enterText(cityField, 'New York');
     await tester.pump();
 
-    // Postal Code - scroll into view first (might be off-screen).
     final postalField = find.widgetWithText(TextField, 'Postal Code');
     await tester.ensureVisible(postalField);
     await tester.pumpAndSettle();
     await tester.enterText(postalField, '10001');
     await tester.pump();
 
-    // Country dropdown: scroll into view, open, then select.
     final dropdown = find.byType(DropdownButtonFormField<String>);
     await tester.ensureVisible(dropdown);
     await tester.pumpAndSettle();
     await tester.tap(dropdown);
     await tester.pumpAndSettle();
     await tester.tap(find.text('United States').last);
+    await tester.pumpAndSettle();
+  }
+
+  /// Navigate from address to shipping step (fills address + taps Continue).
+  Future<void> goToShippingStep(WidgetTester tester) async {
+    await fillAddress(tester);
+    await tester.ensureVisible(find.text('Continue'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+  }
+
+  /// Navigate from address to review step (shipping + select rate + Continue).
+  Future<void> goToReviewStep(WidgetTester tester) async {
+    await goToShippingStep(tester);
+    // Wait for rates to load, then tap Continue.
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
   }
 
@@ -142,15 +213,14 @@ void main() {
         expect(find.text('Continue'), findsOneWidget);
       });
 
-      testWidgets('should show step indicator with 3 steps', (tester) async {
+      testWidgets('should show step indicator with 4 steps', (tester) async {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
         expect(find.text('Address'), findsOneWidget);
+        expect(find.text('Shipping'), findsOneWidget);
         expect(find.text('Review'), findsOneWidget);
         expect(find.text('Confirm'), findsOneWidget);
-        // Shipping step no longer exists.
-        expect(find.text('Shipping'), findsNothing);
       });
 
       testWidgets('should disable Continue when address is not filled',
@@ -158,83 +228,199 @@ void main() {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        // Continue button should be present but disabled (onPressed is null).
         final button = find.text('Continue');
         expect(button, findsOneWidget);
       });
     });
 
-    group('step 2: review with flat-rate', () {
-      testWidgets('should show order summary after filling address',
+    group('step 2: shipping rates', () {
+      testWidgets('should fetch FedEx rates after filling address',
           (tester) async {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        await fillAddress(tester);
+        await goToShippingStep(tester);
 
-        // Tap Continue to go to review step (flat-rate auto-computed).
+        // Should show ShippingRateSelector with rates.
+        expect(find.byType(ShippingRateSelector), findsOneWidget);
+        expect(find.text('FedEx Ground'), findsOneWidget);
+        expect(find.text('FedEx Express'), findsOneWidget);
+      });
+
+      testWidgets('should auto-select cheapest rate', (tester) async {
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        await goToShippingStep(tester);
+
+        // Cheapest is FedEx Ground at $12.50 - Continue should be enabled.
+        expect(find.text('Continue'), findsOneWidget);
+      });
+
+      testWidgets('should show error with retry on FedEx API failure',
+          (tester) async {
+        when(() => mockCalculateRate(
+              fromAddress: any(named: 'fromAddress'),
+              toAddress: any(named: 'toAddress'),
+              category: any(named: 'category'),
+              weightKg: any(named: 'weightKg'),
+            )).thenThrow(Exception('FedEx API error'));
+
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        await goToShippingStep(tester);
+
+        // Should show error message with retry.
+        expect(find.text('Could not fetch shipping rates. Please try again.'),
+            findsOneWidget);
+        expect(find.text('Retry'), findsOneWidget);
+      });
+
+      testWidgets('should show generic seller address error message',
+          (tester) async {
+        when(() => mockGetSellerAddress(any())).thenThrow(
+            const SellerAddressException(
+                'Seller shipping address not configured'));
+
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        await goToShippingStep(tester);
+
+        // Should show generic message (no internal details leaked).
+        expect(
+            find.text(
+                'Unable to calculate shipping for this listing. Please contact the seller.'),
+            findsOneWidget);
+        expect(find.text('Retry'), findsOneWidget);
+      });
+
+      testWidgets('should show error when FedEx returns empty rates',
+          (tester) async {
+        when(() => mockCalculateRate(
+              fromAddress: any(named: 'fromAddress'),
+              toAddress: any(named: 'toAddress'),
+              category: any(named: 'category'),
+              weightKg: any(named: 'weightKg'),
+            )).thenAnswer((_) async => <ShippingRate>[]);
+
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        await goToShippingStep(tester);
+
+        expect(
+            find.text(
+                'No shipping options available for this route. Please try a different address.'),
+            findsOneWidget);
+        expect(find.text('Retry'), findsOneWidget);
+      });
+
+      testWidgets('should retry rate fetch when Retry tapped', (tester) async {
+        // First call fails, second succeeds.
+        var callCount = 0;
+        when(() => mockCalculateRate(
+              fromAddress: any(named: 'fromAddress'),
+              toAddress: any(named: 'toAddress'),
+              category: any(named: 'category'),
+              weightKg: any(named: 'weightKg'),
+            )).thenAnswer((_) async {
+          callCount++;
+          if (callCount == 1) throw Exception('FedEx API error');
+          return _fedexRates;
+        });
+
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        await goToShippingStep(tester);
+
+        // Should show error.
+        expect(find.text('Retry'), findsOneWidget);
+
+        // Tap retry.
+        await tester.tap(find.text('Retry'));
+        await tester.pumpAndSettle();
+
+        // Should now show rates.
+        expect(find.byType(ShippingRateSelector), findsOneWidget);
+        expect(find.text('FedEx Ground'), findsOneWidget);
+      });
+
+      testWidgets('should pass weightKg to rate calculation', (tester) async {
+        await tester.pumpWidget(buildPage(
+          listing: _createListing(weightKg: 4.5),
+        ));
+        await tester.pumpAndSettle();
+
+        await goToShippingStep(tester);
+
+        verify(() => mockCalculateRate(
+              fromAddress: any(named: 'fromAddress'),
+              toAddress: any(named: 'toAddress'),
+              category: 'dress',
+              weightKg: 4.5,
+            )).called(1);
+      });
+
+      testWidgets('should show loading indicator when rates are loading',
+          (tester) async {
+        // Use a Completer to control when rates resolve.
+        final completer = Completer<List<ShippingRate>>();
+        when(() => mockCalculateRate(
+              fromAddress: any(named: 'fromAddress'),
+              toAddress: any(named: 'toAddress'),
+              category: any(named: 'category'),
+              weightKg: any(named: 'weightKg'),
+            )).thenAnswer((_) => completer.future);
+
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        await fillAddress(tester);
         await tester.ensureVisible(find.text('Continue'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Continue'));
+        // Only pump once to stay in loading state.
+        await tester.pump();
+
+        // Should show loading indicator.
+        expect(find.text('Fetching shipping rates...'), findsOneWidget);
+
+        // Complete the future to avoid timer leak.
+        completer.complete(_fedexRates);
         await tester.pumpAndSettle();
+      });
+    });
+
+    group('step 3: review', () {
+      testWidgets('should show order summary with selected FedEx rate',
+          (tester) async {
+        await tester.pumpWidget(buildPage());
+        await tester.pumpAndSettle();
+
+        await goToReviewStep(tester);
 
         expect(find.byType(OrderSummaryWidget), findsOneWidget);
         expect(find.text('Beautiful Wedding Dress'), findsOneWidget);
       });
-
-      testWidgets(
-          'should compute international flat rate for FR listing to US buyer',
-          (tester) async {
-        await tester.pumpWidget(buildPage());
-        await tester.pumpAndSettle();
-
-        await fillAddress(tester);
-        await tester.ensureVisible(find.text('Continue'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
-
-        // FR → US = $35.00 international shipping.
-        expect(find.text('\$35.00'), findsOneWidget);
-      });
-
-      testWidgets('should compute domestic flat rate for same country',
-          (tester) async {
-        // Listing from US.
-        await tester.pumpWidget(buildPage(
-          listing: _createListing(countryCode: 'US', country: 'United States'),
-        ));
-        await tester.pumpAndSettle();
-
-        await fillAddress(tester);
-        await tester.ensureVisible(find.text('Continue'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
-
-        // US → US = $15.00 domestic shipping.
-        expect(find.text('\$15.00'), findsOneWidget);
-      });
     });
 
-    group('step 3: confirm', () {
+    group('step 4: confirm', () {
       testWidgets('should show CGVU acceptance on confirm step',
           (tester) async {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        // Navigate through steps.
-        await fillAddress(tester);
-        await tester.ensureVisible(find.text('Continue'));
-        await tester.pumpAndSettle();
+        // Navigate through all steps.
+        await goToReviewStep(tester);
+
+        // Step 3 review: Continue.
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 
-        // Step 2 review: Continue.
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
-
-        // Step 3: CGVU.
+        // Step 4: CGVU.
         expect(find.byType(CgvuAcceptanceWidget), findsOneWidget);
         expect(find.text('Pay Now'), findsOneWidget);
       });
@@ -245,7 +431,6 @@ void main() {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        // LynewedComponentStyles.backButton uses Icons.chevron_left.
         expect(find.byIcon(Icons.chevron_left), findsOneWidget);
       });
 
@@ -253,12 +438,7 @@ void main() {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        // Fill address and navigate to step 2.
-        await fillAddress(tester);
-        await tester.ensureVisible(find.text('Continue'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
+        await goToShippingStep(tester);
 
         expect(find.text('Back'), findsOneWidget);
       });
@@ -268,18 +448,11 @@ void main() {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        // Fill address and navigate to step 2.
-        await fillAddress(tester);
-        await tester.ensureVisible(find.text('Continue'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
+        await goToShippingStep(tester);
 
-        // Now tap Back.
         await tester.tap(find.text('Back'));
         await tester.pumpAndSettle();
 
-        // Should be back on address step.
         expect(find.byType(AddressFormWidget), findsOneWidget);
       });
     });
@@ -289,12 +462,7 @@ void main() {
         await tester.pumpWidget(buildPage(agreedPriceCents: 20000));
         await tester.pumpAndSettle();
 
-        // Navigate to review step.
-        await fillAddress(tester);
-        await tester.ensureVisible(find.text('Continue'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
+        await goToReviewStep(tester);
 
         // Should show agreed price ($200.00) instead of listing price ($299.99).
         expect(find.text('\$200.00'), findsOneWidget);
@@ -309,13 +477,9 @@ void main() {
         await tester.pumpWidget(buildPage());
         await tester.pumpAndSettle();
 
-        await fillAddress(tester);
-        await tester.ensureVisible(find.text('Continue'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
+        await goToReviewStep(tester);
 
-        // Step 2 review: Continue.
+        // Step 3 review: Continue.
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
 

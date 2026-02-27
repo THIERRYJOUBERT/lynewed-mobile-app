@@ -869,6 +869,172 @@ void main() {
     });
 
     // ==============================================================
+    // WEIGHTKG TESTS
+    // ==============================================================
+
+    group('weightKg field', () {
+      test('should accept weightKg in constructor', () {
+        final now = DateTime(2026, 2, 4);
+        final listing = MarketplaceListing(
+          id: 'id',
+          sellerId: 'seller',
+          title: 'Dress',
+          category: 'dress',
+          priceCents: 10000,
+          condition: 'excellent',
+          country: 'France',
+          status: 'active',
+          createdAt: now,
+          updatedAt: now,
+          weightKg: 2.5,
+        );
+
+        expect(listing.weightKg, 2.5);
+      });
+
+      test('should default weightKg to null', () {
+        final now = DateTime(2026, 2, 4);
+        final listing = MarketplaceListing(
+          id: 'id',
+          sellerId: 'seller',
+          title: 'Dress',
+          category: 'dress',
+          priceCents: 10000,
+          condition: 'excellent',
+          country: 'France',
+          status: 'active',
+          createdAt: now,
+          updatedAt: now,
+        );
+
+        expect(listing.weightKg, isNull);
+      });
+
+      test('toJson should include weight_kg when non-null', () {
+        final now = DateTime(2026, 2, 4);
+        final listing = MarketplaceListing(
+          id: 'id',
+          sellerId: 'seller',
+          title: 'Dress',
+          category: 'dress',
+          priceCents: 10000,
+          condition: 'excellent',
+          country: 'France',
+          status: 'active',
+          createdAt: now,
+          updatedAt: now,
+          weightKg: 2.5,
+        );
+
+        final json = listing.toJson();
+
+        expect(json['weight_kg'], 2.5);
+      });
+
+      test('toJson should exclude weight_kg when null', () {
+        final now = DateTime(2026, 2, 4);
+        final listing = MarketplaceListing(
+          id: 'id',
+          sellerId: 'seller',
+          title: 'Dress',
+          category: 'dress',
+          priceCents: 10000,
+          condition: 'excellent',
+          country: 'France',
+          status: 'active',
+          createdAt: now,
+          updatedAt: now,
+          weightKg: null,
+        );
+
+        final json = listing.toJson();
+
+        expect(json.containsKey('weight_kg'), isFalse);
+      });
+
+      test('fromJson should parse weight_kg when present', () {
+        final json = {
+          'id': 'id',
+          'seller_id': 'seller',
+          'title': 'Dress',
+          'category': 'dress',
+          'price_cents': 10000,
+          'condition': 'excellent',
+          'country': 'France',
+          'status': 'active',
+          'created_at': '2025-01-01T00:00:00Z',
+          'updated_at': '2025-01-01T00:00:00Z',
+          'weight_kg': 3.5,
+        };
+
+        final listing = MarketplaceListing.fromJson(json);
+
+        expect(listing.weightKg, 3.5);
+      });
+
+      test('fromJson should parse weight_kg when null/absent', () {
+        final json = {
+          'id': 'id',
+          'seller_id': 'seller',
+          'title': 'Dress',
+          'category': 'dress',
+          'price_cents': 10000,
+          'condition': 'excellent',
+          'country': 'France',
+          'status': 'active',
+          'created_at': '2025-01-01T00:00:00Z',
+          'updated_at': '2025-01-01T00:00:00Z',
+        };
+
+        final listing = MarketplaceListing.fromJson(json);
+
+        expect(listing.weightKg, isNull);
+      });
+
+      test('copyWith should preserve weightKg when not provided', () {
+        final now = DateTime(2026, 2, 4);
+        final original = MarketplaceListing(
+          id: 'id',
+          sellerId: 'seller',
+          title: 'Dress',
+          category: 'dress',
+          priceCents: 10000,
+          condition: 'excellent',
+          country: 'France',
+          status: 'active',
+          createdAt: now,
+          updatedAt: now,
+          weightKg: 2.5,
+        );
+
+        final updated = original.copyWith(title: 'New Dress');
+
+        expect(updated.weightKg, 2.5);
+      });
+
+      test('copyWith should override weightKg when provided', () {
+        final now = DateTime(2026, 2, 4);
+        final original = MarketplaceListing(
+          id: 'id',
+          sellerId: 'seller',
+          title: 'Dress',
+          category: 'dress',
+          priceCents: 10000,
+          condition: 'excellent',
+          country: 'France',
+          status: 'active',
+          createdAt: now,
+          updatedAt: now,
+          weightKg: 2.5,
+        );
+
+        final updated = original.copyWith(weightKg: 4.0);
+
+        expect(updated.weightKg, 4.0);
+      });
+    });
+
+    // ==============================================================
     // TOSTRING TESTS
     // ==============================================================
 

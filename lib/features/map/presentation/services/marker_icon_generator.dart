@@ -7,10 +7,12 @@
 library;
 
 import 'dart:async';
+import 'dart:collection';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 import 'package:http/http.dart' as http;
+import 'package:synchronized/synchronized.dart';
 
 import '../../domain/entities/map_marker.dart';
 import '../theme/map_theme.dart';
@@ -28,31 +30,53 @@ class MarkerIconConfig {
   final Offset shadowOffset;
 }
 
-/// Generates custom marker icons with avatars and styling
+/// Generates custom marker icons with avatars and styling.
+///
+/// Uses LRU caching with [LinkedHashMap] and thread-safe access via [Lock].
+/// Cache limits: 200 icons (~4 MB), 100 images (~20 MB) = ~24 MB total.
 class MarkerIconGenerator {
-  MarkerIconGenerator({MarkerIconConfig? config})
-      : _config = config ?? const MarkerIconConfig(),
-        _iconCache = {},
-        _imageCache = {};
+  MarkerIconGenerator({
+    MarkerIconConfig? config,
+    int maxIconCacheSize = 200,
+    int maxImageCacheSize = 100,
+  })  : _config = config ?? const MarkerIconConfig(),
+        _maxIconCacheSize = maxIconCacheSize,
+        _maxImageCacheSize = maxImageCacheSize,
+        _iconCache = LinkedHashMap<String, gmaps.BitmapDescriptor>(),
+        _imageCache = LinkedHashMap<String, ui.Image>(),
+        _cacheLock = Lock();
 
   final MarkerIconConfig _config;
-  final Map<String, gmaps.BitmapDescriptor> _iconCache;
-  final Map<String, ui.Image> _imageCache;
+  final int _maxIconCacheSize;
+  final int _maxImageCacheSize;
+  final LinkedHashMap<String, gmaps.BitmapDescriptor> _iconCache;
+  final LinkedHashMap<String, ui.Image> _imageCache;
+  final Lock _cacheLock;
 
-  /// Generate marker icon for a given marker
+  /// Generate marker icon for a given marker.
+  ///
+  /// Uses LRU cache: recently accessed entries are kept, oldest evicted.
+  /// Thread-safe via [Lock] to prevent race conditions on parallel calls.
   Future<gmaps.BitmapDescriptor> generateIcon(
     MapMarker marker, {
     double? size,
   }) async {
     final actualSize = size ?? 168.0; // Default for 56px * 3 dpr
     final cacheKey = _generateCacheKey(marker, actualSize);
-    
-    // Return cached icon if available
-    if (_iconCache.containsKey(cacheKey)) {
-      return _iconCache[cacheKey]!;
-    }
 
-    // Generate new icon based on type
+    // Fast path: check cache (thread-safe)
+    final cached = await _cacheLock.synchronized(() {
+      if (_iconCache.containsKey(cacheKey)) {
+        // LRU: remove and re-insert to move to end (most recently used)
+        final icon = _iconCache.remove(cacheKey)!;
+        _iconCache[cacheKey] = icon;
+        return icon;
+      }
+      return null;
+    });
+    if (cached != null) return cached;
+
+    // Slow path: generate icon (outside lock to allow parallelism)
     gmaps.BitmapDescriptor icon;
     switch (marker.type) {
       case MapMarkerType.professionalAlert:
@@ -68,18 +92,37 @@ class MarkerIconGenerator {
         icon = await _createMarketplaceIcon(marker, actualSize);
         break;
     }
-    
-    _iconCache[cacheKey] = icon;
+
+    // Insert into cache (thread-safe, with LRU eviction)
+    await _cacheLock.synchronized(() {
+      // Another call might have inserted while we were generating
+      if (_iconCache.containsKey(cacheKey)) {
+        _iconCache.remove(cacheKey);
+      }
+      // Evict LRU entry if at capacity
+      while (_iconCache.length >= _maxIconCacheSize) {
+        _iconCache.remove(_iconCache.keys.first);
+      }
+      _iconCache[cacheKey] = icon;
+    });
+
     return icon;
   }
 
-  /// Clear icon cache
+  /// Clear both icon and image caches.
   void clearCache() {
     _iconCache.clear();
     _imageCache.clear();
   }
 
+  /// Number of entries in the icon cache.
   int get cacheSize => _iconCache.length;
+
+  /// Number of entries in the image cache.
+  int get imageCacheSize => _imageCache.length;
+
+  /// Check if a specific cache key exists (for testing).
+  bool hasInCache(String cacheKey) => _iconCache.containsKey(cacheKey);
 
   String _generateCacheKey(MapMarker marker, double size) {
     return '${marker.type.name}|${marker.style.borderColorHex}|${marker.style.avatarUrl}|${marker.style.label}|$size';
@@ -264,22 +307,43 @@ class MarkerIconGenerator {
   }
 
   Future<ui.Image?> _loadImage(String url) async {
-    if (_imageCache.containsKey(url)) {
-      return _imageCache[url];
-    }
+    // Fast path: check image cache (thread-safe, LRU)
+    final cached = await _cacheLock.synchronized(() {
+      if (_imageCache.containsKey(url)) {
+        final img = _imageCache.remove(url)!;
+        _imageCache[url] = img; // Move to end (most recently used)
+        return img;
+      }
+      return null;
+    });
+    if (cached != null) return cached;
 
+    // Slow path: load image from network
+    ui.Image? img;
     try {
       final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 5));
       if (response.statusCode == 200) {
         final codec = await ui.instantiateImageCodec(response.bodyBytes);
         final frame = await codec.getNextFrame();
-        _imageCache[url] = frame.image;
-        return frame.image;
+        img = frame.image;
       }
     } catch (e) {
       debugPrint('[MarkerIconGenerator._loadImage] Error: $e');
+      return null;
     }
-    return null;
+
+    if (img == null) return null;
+    final loadedImg = img;
+
+    // Insert into image cache (thread-safe, with LRU eviction)
+    await _cacheLock.synchronized(() {
+      while (_imageCache.length >= _maxImageCacheSize) {
+        _imageCache.remove(_imageCache.keys.first);
+      }
+      _imageCache[url] = loadedImg;
+    });
+
+    return loadedImg;
   }
 
   void _drawClippedImage(Canvas canvas, Offset center, double radius, ui.Image image) {

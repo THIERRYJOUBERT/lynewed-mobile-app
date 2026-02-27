@@ -164,6 +164,7 @@ class _LynewedMapWidgetState extends State<LynewedMapWidget> {
   /// Pre-generate custom circle icons for all visible markers
   /// Generate at 144px (48*3) for crisp Retina display, displayed at 48px
   Future<void> _generateMarkersIcons() async {
+    if (!_mounted) return;
     final markers = _mapState.visibleMarkers;
     if (markers.isEmpty) return;
     
@@ -177,9 +178,13 @@ class _LynewedMapWidgetState extends State<LynewedMapWidget> {
       }
     }
     
-    // Wait for all icons to be generated
+    // Wait for all icons to be generated (protected against individual failures)
     if (futures.isNotEmpty) {
-      await Future.wait(futures);
+      try {
+        await Future.wait(futures);
+      } catch (e) {
+        debugPrint('[LynewedMapWidget._generateMarkersIcons] Some icons failed: $e');
+      }
     }
     
     // Rebuild with custom icons
@@ -194,7 +199,11 @@ class _LynewedMapWidgetState extends State<LynewedMapWidget> {
         _markerIcons[cacheKey] = icon;
       }
     } catch (e) {
-      debugPrint('[LynewedMapWidget._generateMarkerIcon] Error: $e');
+      debugPrint('[LynewedMapWidget._generateSingleIcon] Error: $e');
+      // Fallback: use default marker so the marker is always visible
+      if (_mounted) {
+        _markerIcons[cacheKey] = gmaps.BitmapDescriptor.defaultMarker;
+      }
     }
   }
 

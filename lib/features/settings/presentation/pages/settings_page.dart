@@ -132,6 +132,17 @@ class SettingsPage extends StatelessWidget {
                     ),
 
                     const SizedBox(height: 32.0),
+
+                    // App version
+                    Center(
+                      child: Text(
+                        'v.1.3.1',
+                        style: LynewedTextStyles.bodySmall.copyWith(
+                          color: LynewedColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16.0),
                   ],
                 ),
               ),

@@ -25,6 +25,7 @@ abstract class FedExRemoteDatasource {
     required ShippingAddress fromAddress,
     required ShippingAddress toAddress,
     required String category,
+    double? weightKg,
   });
 
   /// Creates a shipment and generates a shipping label.
@@ -66,6 +67,7 @@ class SupabaseFedExRemoteDatasource implements FedExRemoteDatasource {
     required ShippingAddress fromAddress,
     required ShippingAddress toAddress,
     required String category,
+    double? weightKg,
   }) async {
     final response = await _supabase.functions.invoke(
       'fedex-calculate-rate',
@@ -73,6 +75,7 @@ class SupabaseFedExRemoteDatasource implements FedExRemoteDatasource {
         'from_address': fromAddress.toFedExJson(),
         'to_address': toAddress.toFedExJson(),
         'category': category,
+        if (weightKg != null) 'package_weight_kg': weightKg,
       },
     );
 

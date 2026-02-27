@@ -86,6 +86,7 @@ class CreateListingPageState extends State<CreateListingPage> {
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
   final _brandController = TextEditingController();
+  final _weightController = TextEditingController();
 
   // Form state
   String? _selectedCountry;
@@ -136,6 +137,9 @@ class CreateListingPageState extends State<CreateListingPage> {
     _selectedCondition = listing.condition;
     _selectedSleeveLength = listing.sleeveLength;
     _selectedCountry = listing.country;
+    if (listing.weightKg != null) {
+      _weightController.text = listing.weightKg.toString();
+    }
   }
 
   Future<void> _loadExistingPhotos(String listingId) async {
@@ -155,6 +159,7 @@ class CreateListingPageState extends State<CreateListingPage> {
     _descriptionController.dispose();
     _priceController.dispose();
     _brandController.dispose();
+    _weightController.dispose();
     super.dispose();
   }
 
@@ -182,6 +187,17 @@ class CreateListingPageState extends State<CreateListingPage> {
   /// Validates the country field.
   String? validateCountry(String? value) {
     if (value == null || value.trim().isEmpty) return 'Country is required';
+    return null;
+  }
+
+  /// Validates the weight field (optional, 0.1-50.0 kg).
+  String? validateWeight(String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+    final weight = double.tryParse(value.trim());
+    if (weight == null) return 'Please enter a valid number';
+    if (weight < 0.1 || weight > 50.0) {
+      return 'Weight must be between 0.1 and 50 kg';
+    }
     return null;
   }
 
@@ -261,6 +277,9 @@ class CreateListingPageState extends State<CreateListingPage> {
         status: 'draft',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
+        weightKg: _weightController.text.trim().isEmpty
+            ? null
+            : double.tryParse(_weightController.text.trim()),
       );
 
       String listingId;
@@ -372,6 +391,9 @@ class CreateListingPageState extends State<CreateListingPage> {
         status: 'active',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
+        weightKg: _weightController.text.trim().isEmpty
+            ? null
+            : double.tryParse(_weightController.text.trim()),
       );
 
       String listingId;
@@ -892,6 +914,20 @@ class CreateListingPageState extends State<CreateListingPage> {
             }).toList(),
           ),
         ],
+        const SizedBox(height: LynewedSpacing.lg),
+
+        // Weight (optional)
+        LynewedTextField(
+          controller: _weightController,
+          label: 'Weight (kg)',
+          hint: 'Default: ${_selectedCategory == 'shoes' ? '2.0' : '3.0'} kg',
+          keyboardType:
+              const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+          ],
+          validator: validateWeight,
+        ),
       ],
     );
   }

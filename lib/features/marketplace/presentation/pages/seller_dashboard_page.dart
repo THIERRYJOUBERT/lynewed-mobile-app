@@ -507,7 +507,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: LynewedColors.background,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: LynewedBorders.borderRadiusXs,
           border: Border.all(color: LynewedColors.gray200),
         ),
         child: Row(
@@ -667,7 +667,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage> {
 
   Widget _buildThumbnail(MarketplaceListing listing) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: LynewedBorders.borderRadiusXs,
       child: SizedBox(
         width: 64,
         height: 64,

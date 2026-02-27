@@ -96,8 +96,17 @@ export class FedExClient {
       }),
     });
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`FedEx OAuth failed: ${error}`);
+      const rawBody = await response.text();
+      console.error(`FedEx OAuth failed (HTTP ${response.status}):`, rawBody);
+      try {
+        const errData = JSON.parse(rawBody);
+        const code = errData.errors?.[0]?.code || `HTTP_${response.status}`;
+        const message = errData.errors?.[0]?.message || rawBody;
+        throw new Error(JSON.stringify({ error: `FedEx OAuth failed: ${code} - ${message}`, code }));
+      } catch (e) {
+        if (e instanceof SyntaxError) throw new Error(JSON.stringify({ error: `FedEx OAuth failed: ${rawBody}`, code: `HTTP_${response.status}` }));
+        throw e;
+      }
     }
     const data = await response.json();
     this.accessToken = data.access_token;

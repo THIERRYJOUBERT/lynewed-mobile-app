@@ -140,6 +140,7 @@ async function processMagazineOrder(
     magazine_title,
     magazine_date,
     cover_photo_id,
+    quantity,
   } = metadata;
 
   // Extract shipping cost from Stripe session (set by shipping_options)
@@ -216,6 +217,7 @@ async function processMagazineOrder(
       magazine_date: magazine_date || null,
       cover_photo_id: cover_photo_id || null,
       photo_count: parseInt(photo_count || "0"),
+      quantity: parseInt(quantity || "1"),
       status: "paid",
       paid_at: now,
     })
