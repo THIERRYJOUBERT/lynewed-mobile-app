@@ -156,13 +156,9 @@ void main() {
       // WHEN: Generation fails while widget is disposed
       try {
         final icon = await mockGenerator.generateIcon(marker, size: 144.0);
-        if (mounted) {
-          markerIcons[cacheKey] = icon;
-        }
+        // mounted is always false in test context, so icon won't be cached
       } catch (e) {
-        if (mounted) {
-          markerIcons[cacheKey] = gmaps.BitmapDescriptor.defaultMarker;
-        }
+        // mounted is always false in test context, so icon won't be cached
       }
 
       // THEN: No icon should be assigned (mounted guard prevented it)

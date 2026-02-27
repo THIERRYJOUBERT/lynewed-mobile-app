@@ -32,6 +32,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace "com.lynewed.app"
     compileSdkVersion 36
+    ndkVersion "28.0.13004108"
     
 
     compileOptions {
@@ -70,6 +71,12 @@ android {
            storePassword keystoreProperties['storePassword']
        }
    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging true
+        }
+    }
 
     buildTypes {
         release {

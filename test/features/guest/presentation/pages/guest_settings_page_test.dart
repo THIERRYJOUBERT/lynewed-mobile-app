@@ -163,7 +163,7 @@ void main() {
       );
 
       expect(find.text('Application version'), findsOneWidget);
-      expect(find.text('v1.2.4'), findsOneWidget);
+      expect(find.text('v1.3.2'), findsOneWidget);
     });
 
     testWidgets('uses InkWell for menu items', (tester) async {
